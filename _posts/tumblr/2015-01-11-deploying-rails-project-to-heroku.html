@@ -1,0 +1,78 @@
+---
+layout: post
+title: Deploying Rails project to Heroku
+date: '2015-01-11T15:45:52+01:00'
+tags:
+- rtfm
+- rails
+- tutorials
+- heroku
+tumblr_url: http://shybovycha.tumblr.com/post/107790765166/deploying-rails-project-to-heroku
+---
+<p>First of all, set up the <strong>Heroku Toolbelt</strong>. It is required for all the communications with the server.</p>
+
+<p>The first step of communication with the Heroku servers is logging in. Just run <code>heroku login</code> and provide your credentials when asked.</p>
+
+<p>Then, you need to create your application or go to the folder where it is located and tune it a bit. Tuning is divided into the following steps:</p>
+
+<ul><li>tuning the <code>Gemfile</code> to include the required gems</li>
+<li>fixing the <code>database.yml</code> configurations</li>
+<li>setting the server to handle static assets correctly</li>
+</ul><p>But let&rsquo;s create out application on the Heroku servers first: <code>heroku create [app_name]</code>. If application name is not provided directly - it will be generated automatically.</p>
+
+<p>Now, our application needs two gems to be included for the <code>production</code> gems&rsquo; group:</p>
+
+<pre><code>group :production do
+    gem 'pg'
+    gem 'rails_12factor'
+    gem 'puma'
+end
+</code></pre>
+
+<p>The third gem is used as a webserver instead of WebRick, which is default <em>(puma is much, much faster!)</em>. The second one is required by Heroku. And the first one is used for PostgreSQL connectivity. If you do not wish to use database - skip it and a few next paragraphs.</p>
+
+<p>Then, let&rsquo;s add the database support for our application. It&rsquo;s done simply, running</p>
+
+<pre><code>heroku addons:add heroku-postgresql:hobby-dev
+</code></pre>
+
+<p><strong>Note:</strong> Heroku does not support <code>sqlite</code> since some times. This means you are forced to use either PostgreSQL or no database at all <em>(yes, it&rsquo;s possible! Yet, it works for simple or static web applications only&hellip;)</em>. You may want to change this if you would pay for your account. But this tutorial covers only free side of the Heroku deployment.</p>
+
+<p>Now, there are two ways to set database connection options in Rails:</p>
+
+<ol><li>set them directly at <code>config/database.yml</code> file</li>
+<li>set the environment variable <code>DATABASE_URL</code></li>
+</ol><p>We will cover both cases. For the first one, you will need this section within your <code>database.yml</code> file:</p>
+
+<pre><code>production:
+    adapter: postgresql
+    encoding: unicode
+    pool: 5
+    url: &lt;URL_GOES_HERE&gt;
+</code></pre>
+
+<p>I will show how to get the <code>&lt;URL_GOES_HERE&gt;</code> value in a second. Just keep in mind to replace it with the correct value.</p>
+
+<p>The second option, the environment variable, is set via the Heroku Toolbelt <em>(did I tell you, it is used for almost every deploy operation you will perform?)</em>.</p>
+
+<p>First you take the database URL from Heroku server:</p>
+
+<pre><code>heroku config | grep HEROKU_POSTGRESQL
+</code></pre>
+
+<p>Then, you copy the value you got <em>(it starts with <code>postgres://</code>)</em> and run the following:</p>
+
+<pre><code>heroku config:set DATABASE_URL=&lt;URL_GOES_HERE&gt;
+</code></pre>
+
+<p>Now let&rsquo;s set our application to serve static assets. It is handy, because it is the easiest way to send images, stylesheets and javascripts to clients. Go to the <code>config/environments/production.rb</code> and change both <code>config.serve_static_assets</code> and <code>config.assets.compile</code> to <code>true</code>.</p>
+
+<p><strong>But beware:</strong> if your <code>app/assets</code> files directory contains files of other extensions than Rails&rsquo; <strong>Sprockets</strong> understands - Rails (and Heroku, particularly) will try to precompile them. And that may cause many troubles. You are recommended either to &ldquo;teach&rdquo; Sprockets to skip or precompile those files, <strong>or</strong> you should exclude them from project before deploying to Heroku.</p>
+
+<p>And the last two steps separate us from our goal: first, you should push your project to Heroku&rsquo; Git repository, it created for you with the application <em>(You do not use Git yet?! How dare you?!..)</em>.</p>
+
+<p>Now, if you use database, run migrations with <code>heroku run rake db:migrate</code>.</p>
+
+<p>And, finally, see your application running in the browser: <code>heroku open</code>.</p>
+
+<p><strong>Note:</strong> if you are using some assets from the outer web (GoogleFonts, for example) and are seeing your website through the <code>https</code> protocol, you should replace all those assets&rsquo; URL protocols with <code>https</code> too.</p>

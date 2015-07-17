@@ -1,0 +1,76 @@
+---
+layout: post
+title: Abstract classes vs interfaces
+date: '2015-02-03T20:31:41+01:00'
+tags:
+- java
+- rtfm
+- tutorial
+tumblr_url: http://shybovycha.tumblr.com/post/109996204061/abstract-classes-vs-interfaces
+---
+<p>Lately I was a few times asked a question <em>&ldquo;what do we need abstract classes for?&rdquo;</em></p>
+
+<p>And today I&rsquo;ve got one more question, which inspired me to write this.</p>
+
+<p>Let us have a task to write an application, which will perform some simple arithmetic operations on numbers, represented in a different numeric systems.</p>
+
+<p>For example, our program should be able to <strong>add</strong> numbers in <strong>roman</strong>, <strong>arabic</strong> and <strong>hexadecimal</strong> systems. But later we should be able to add more operations, like <strong>division</strong>, <strong>multiplication</strong> and <strong>subtraction</strong>.</p>
+
+<p>This is where an <strong>abstract class</strong> comes to help us!</p>
+
+<p>Rather than write an <strong>interface</strong> <code>Number</code>, which will define the addition operator and then implementing it for each class like <code>RomanNumber</code> and <code>HexadecimalNumber</code> we will better use an <strong>abstract class</strong>, which will be able to add decimal numbers and will declare abstract method to convert number itself to decimal system.</p>
+
+<p>Take a look:</p>
+
+<pre><code>public interface INumber {
+    public INumber add(INumber other);
+}
+
+public class RomanNumber implements INumber {
+    public RomanNumber add(INumber other) {
+        // when `other` is not a RomanNumber
+        // convert other to RomanNumber
+        // add `other` to `this`
+    }
+}
+
+public class HexadecimalNumber implements INumber {
+    public HexadecimalNumber add(INumber other) {
+        // convert other to HexadecimalNumber and add...
+    }
+}
+</code></pre>
+
+<p>&hellip;and compare it to this:</p>
+
+<pre><code>public abstract class Number {
+    public abstract Integer toDecimal();
+    public abstract Number fromDecimal(Integer);
+
+    public Number add(Number other) {
+        returh fromDecimal(this.toDecimal() + other.toDecimal());
+    }
+}
+
+public class RomanNumber extends Number {
+    public Integer toDecimal() {
+        // convert `this` to Integer
+    }
+
+    public RomanNumber fromDecimal(Integer n) {
+        // convert `n` to RomanNumber
+    }
+}
+
+public class HexadecimalNumber extends Number {
+    public Integer toDecimal() {
+        // convert `this` to Integer
+    }
+
+    public HexadecimalNumber fromDecimal(Integer n) {
+        // convert `n` to HexadecimalNumber
+    }
+}
+</code></pre>
+
+<p>This is how we can create an abstraction: we can add or perform any other arithmetic operations regardless on which numeric system we use!</p>

@@ -1,0 +1,146 @@
+---
+layout: post
+title: Memory allocation in ASM
+date: '2015-05-06T12:20:04+02:00'
+tags:
+- rtfm
+- tutorial
+- assembly
+- nasm
+- linux
+- c++
+tumblr_url: http://shybovycha.tumblr.com/post/118273000531/memory-allocation-in-asm
+---
+<p>Currently I am working on a long arithmetic problem at the university. This problem is much more complicated than I described or than a task I shall be describing now, but here&rsquo;s the thing: I needed some part of memory to be allocated from within my function. And I needed this to be done in assembly.</p>
+
+<hr><p>Thus, I created this piece of snippet code:</p>
+
+<pre><code>; void addition(int* x, int x_len, int* y, int y_len, int* &amp;amp;z, int* z_len);
+global _Z8additionPiiS_iRS_S_
+_Z8additionPiiS_iRS_S_:
+
+    enter 0, 0
+
+    %define p_x [ebp + 8]
+    %define x_len [ebp + 12]
+    %define p_y [ebp + 16]
+    %define y_len [ebp + 20]
+    %define p_z [ebp + 24]
+    %define p_z_len [ebp + 28]
+
+addition_allocate_mem:
+
+    ; push x_len * 4 ; bytes to allocate
+    push 3 * 4 ; bytes to allocate
+    call malloc ; call malloc()
+    add esp, 4 ; undo push
+    mov edx, eax ; save returned address from malloc
+    mov eax, p_z
+    mov [eax], edx ; z = malloc(...)
+    mov eax, p_z_len
+    mov [eax], dword 3 ; *z_len = elements
+
+addition_fill_mem:
+
+    ; fill with sample values
+    mov eax, p_z
+    mov eax, [eax]
+    add eax, 0 * 4
+    mov [eax], dword 4
+
+    ; mov eax, p_z
+    add eax, 1 * 4
+    mov [eax], dword 3
+
+    ; mov eax, p_z
+    ; add eax, 2 * 4
+    add eax, 1 * 4
+    mov [eax], dword 2
+
+    leave
+    ret
+</code></pre>
+
+<p>There are, however, a few really interesting things in this code: 
+* naming of C++ functions, generated from assembly <em>(name mangling)</em>
+* memory allocation itself
+* returning data from function via pointers&hellip; <strong>in assembly!</strong></p>
+
+<p>To demonstrate how this stuff works, we need some C++ code which uses our assembly function:</p>
+
+<pre><code>#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;stdlib.h&amp;gt;
+
+// our addition function for BIG integers
+// arguments are as follows: number and its length; two first pairs are the operands
+// and the last two arguments describe the returned big integer
+// thus, the result is z = x + y
+extern "C" void addition(int* x, int x_len, int* y, int y_len, int* &amp;amp;z, int* z_len);
+
+// helper function to convert BIG integers to strings
+char* bigint2str(int* x, int len) {
+    char *res = (char*) malloc((len + 1) * sizeof(char));
+
+    for (int i = 0; i &amp;lt; len; i++) {
+        res[i] = x[i] + '0';
+    }
+
+    res[len] = '\0';
+
+    return res;
+}
+
+int main() {
+    int* a = 0;
+    int a_len = 0;
+
+    // here we add nothing with nothing
+    // and storing the result in a big integer `a`
+    addition(0, 0, 0, 0, a, &amp;amp;a_len);
+
+    printf("a = %s\n", bigint2str(a, a_len));
+
+    return 0;
+}
+</code></pre>
+
+<p>Comments in the code describe those moments which are important.</p>
+
+<p>To compile these codes and link them into one executable, use these:</p>
+
+<pre><code>nasm -g -felf32 test.asm -o test_asm.o
+g++ -g test.cpp -c -m32 -o test_c.o
+g++ -g -m32 -o test test_asm.o test_c.o
+</code></pre>
+
+<p>Now, let&rsquo;s talk about name mangling. It is really important. I shall not cover all the depths of this, only the parts, related to this article.</p>
+
+<p>We see that our function,</p>
+
+<pre><code>void addition(int* x, int x_len, int* y, int y_len, int* &amp;amp;z, int* z_len);
+</code></pre>
+
+<p>is named <code>_Z8additionPiiS_iRS_S_</code> in assembly.</p>
+
+<p><em>What&rsquo;s the..? What are all these strange prefixes?</em>  - you might ask.</p>
+
+<p>Here&rsquo;s the convention:</p>
+
+<ol><li>functions are named with the underscore and an uppercase letter</li>
+<li>function name&rsquo; length and the name itself follows that prefix</li>
+<li>arguments are stored as their types only</li>
+</ol><p>Argument type is encoded as well. For our example, we see these:</p>
+
+<ol><li><code>Pi</code> - that means, literally, <code>pointer to integer</code></li>
+<li><code>i</code> - that stands for <code>integer</code></li>
+<li><code>S_</code> - that is the same as <code>Pi</code>, equal to <code>signed integer</code>, <strong>but</strong> for some reason <em>(yes, I do not know why this happens)</em> if you try to replace it with <code>Pi</code>, your function will not be found by a linker</li>
+<li><code>RS_</code> - this is <code>a reference to a pointer to integer</code></li>
+</ol><p>To get know those conventions better, you might refer to <a href="http://www.ofb.net/gnu/gcc/gxxint_15.html">g++ internals reference</a>.</p>
+
+<p>You can decode demangled <em>(encoded)</em> function names as well. Just use <code>c++filt</code> utility:</p>
+
+<pre><code>$ c++filt -n _Z8divisionPiiS_iRS_S_
+division(int*, int, int*, int, int*&amp;amp;, int*)
+</code></pre>
+
+<p>&lsquo;til next time!</p>

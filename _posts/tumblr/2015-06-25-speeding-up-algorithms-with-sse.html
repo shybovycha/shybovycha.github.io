@@ -1,0 +1,348 @@
+---
+layout: post
+title: Speeding-up algorithms with SSE
+date: '2015-06-25T07:59:54+02:00'
+tags:
+- rtfm
+- tutorial
+- assembly
+- c++
+- sse
+tumblr_url: http://shybovycha.tumblr.com/post/122400740651/speeding-up-algorithms-with-sse
+---
+<h2>Assembly</h2>
+
+<p>Have you ever asked anyone if assembly language may be useful nowadays? So, here’s the short answer: <b>YES</b>.
+When you know how your computer works <i>(not a processor itself, but the whole thing - memory organization, math co-processor and others)</i>, you may optimize your code while writing it. In this short article I shall try to show you some use cases of optimizations, which you may incorporate with the usage of low-level programming.</p>
+
+<h2>Finding maximum</h2>
+
+<p>So, let’s start-off searching a maximum element in array. Usually, it is nothing just iterating through the array, comparing each element with some starting value. For optimization reason and for the precision’s sake we set the initial value to the first array’s element. Like this:</p>
+
+<pre><code>float max_value(float *a, int n) {
+    float res = a[0];
+    
+    for (int i = 1; i &lt; n; i++) {
+        if (a[i] &gt; res)
+            res = a[i];
+    }
+
+    return res;
+}
+</code></pre>
+
+<h2>Index-based search</h2>
+
+<p>What we could do firstly is to store not the search element itself, but its index:</p>
+
+<pre><code>float max_index(float *a, int n) {
+    int res = 0;
+    
+    for (int i = 1; i &lt; n; i++) {
+        if (a[i] &gt; a[res])
+            res = i;
+    }
+
+    return a[res];
+}
+</code></pre>
+
+<p>This very short optimization has its effect <i>(time in seconds; the value found in braces)</i>:</p>
+
+<pre><code>
+    Value-based: 0.00732200 (0.99999827)
+    Index-based: 0.00674200 (0.99999827)
+</code></pre>
+
+<h2>Vector operations</h2>
+
+<p>This is quite a universal algorithm, which could be used for any type, which allows comparing. But let’s think on how we can speed that code up. First of all, we could split array into pieces and find maximum among them.</p>
+
+<p>There is a technology, allowing that. It is called <b>SIMD</b> - <b>S</b>ingle <b>I</b>nstruction - <b>M</b>ultiple <b>D</b>ata Stream. Simply saying, it means dealing on multiple data pieces <i>(cells, variables, elements)</i> with the use of a single processor’ instruction. This is done in processor command extension called <b>SSE</b>.</p>
+
+<p><b>Note:</b> your processor or even operating system may not support these operations. So, before continuing reading this article, be sure to check if it does. On Unix systems you may look for <code>mmx|sse|sse2|sse3|sse4_1|sse4_1|avx</code> in <code>/proc/cpuinfo</code> file.</p>
+
+<p>SSE extension has a set of vector variables to be used. These variables <i>(on the lowest, assembly level, they are called <code>XMM0</code> .. <code>XMM7</code> registers)</i> allow us for storing and processing 128 bits of data as it was a set of <code>16 char</code>, <code>8 short</code>, <code>4 float/int</code>, <code>2 double</code> or <code>1 128-bit int</code> variables.</p>
+
+<p>But wait! There are other versions of SSE, allowing for different registers of different size! Check this out:</p>
+
+<p><b>SIMD extensions</b></p>
+
+<p><b>MMX - hot 1997:</b></p>
+
+<ul><li>only integer items</li>
+<li>vectors have length of <code>64 bits</code></li>
+<li>8 registers, namely <code>MM0</code>..<code>MM7</code></li>
+</ul><p><b>SSE highlights:</b></p>
+
+<ul><li>only 8 registers</li>
+<li>each register has size of 128 bit</li>
+<li>70 operations</li>
+<li>allow for floating-point operations and vector’ elements</li>
+</ul><p><b>SSE2 features:</b></p>
+
+<ul><li>adds 8 more registers <i>(so now we have <code>XMM0</code> .. <code>XMM15</code>)</i></li>
+<li>adds 144 more operations</li>
+<li>makes floating-point operations more precise</li>
+</ul><p><b>SSE3 changes:</b></p>
+
+<ul><li>adds 13 more operations</li>
+<li>allows for horizontal vector operations</li>
+</ul><p><b>SSE4 advantages:</b></p>
+
+<ul><li>adds 54 more operations (47 are given by SSE4.1 and 7 more come from SSE4.2)</li>
+</ul><p><b>AVX - brand new version:</b></p>
+
+<ul><li>vector size is now <code>256 bit</code></li>
+<li>registers are renamed to <code>YMMi</code>, while <code>XMMi</code> are the lower 128 bits of <code>YMMi</code></li>
+<li>operations now have three operands - <code>DEST</code>, <code>SRC1</code>, <code>SRC2</code> (<code>DEST = SRC1 op SRC2</code>)</li>
+</ul><p><b>SSE operations</b></p>
+
+<p>So, I mentioned <b>horizontal vector operations</b>. But let’s do it in a series.</p>
+
+<p>There are two SSE operation types: <b>scalar</b> and <b>packed</b>. Scalar operations use only the lowest elements of vectors. Packed operations deal with each element of vectors given. Look at the images below and you shall see the difference:</p>
+
+<figure class="tmblr-full" data-orig-height="193" data-orig-width="578"><img data-orig-height="193" data-orig-width="578" alt="image" src="https://41.media.tumblr.com/a360178653cbf8fa2d6ca0336b6d6887/tumblr_inline_nqhky64nQB1qh5oee_540.png"/></figure><figure class="tmblr-full" data-orig-height="183" data-orig-width="577"><img data-orig-height="183" data-orig-width="577" alt="image" src="https://40.media.tumblr.com/fb4b80b3a5a647087ed105686308e8f5/tumblr_inline_nqhkyq0E511qh5oee_540.png"/></figure><p>Horizontal operations deal on vectors in a different direction. Well, you know… The horizontal one…</p>
+
+<figure data-orig-height="185" data-orig-width="274"><img data-orig-height="185" data-orig-width="274" alt="image" src="https://40.media.tumblr.com/b8a61b7977c1246b9c94e86f3dc5a0dc/tumblr_inline_nqhkz4bm1K1qh5oee_540.png"/></figure><p>Operations may deal with <b>single-</b> or <b>double-precision</b> elements (<code>float</code> and <code>double</code> types, correspondingly).
+To determine if an operation type, you just need to look at the last two characters of operation’s name:</p>
+
+<p><code>HADDPS</code> -&gt; <code>Horizontal</code> <code>ADD</code> <code>Packed</code> <code>Single-precision</code></p>
+
+<p><b>Working with SSE</b></p>
+
+<p>To work with SSE we need to follow these three steps:</p>
+
+<ol><li>load data into XMM registers</li>
+<li>perform all the operations needed on those XMM registers</li>
+<li>store data from XMMs into usual variables</li>
+</ol><p>To use vector operations, you shall need to have some header files included in your code as well as compiler flags turned on.</p>
+
+<p>These are header files:</p>
+
+<ul><li><code>mmintrin.h</code> - MMX</li>
+<li><code>xmmintrin.h</code> - SSE</li>
+<li><code>emmintrin.h</code> - SSE2</li>
+<li><code>pmmintrin.h</code> - SSE3</li>
+<li><code>smmintrin.h</code> - SSE4.1</li>
+<li><code>nmmintrin.h</code> - SSE4.2</li>
+<li><code>immintrin.h</code> - AVX</li>
+</ul><p>Mone of the header files requires all the previous ones to be included too.
+Compiler flags are <code>-mmmx</code>, <code>-msse</code>, <code>-msse2</code>, <code>-msse3</code>, <code>-msse4</code>, <code>-mavx</code>, correspondingly. As with header files, none of these flags requires previous ones to be turned on.</p>
+
+<p><b>Data types</b></p>
+
+<p>There are three <i>“standard”</i> data types within SSE:</p>
+
+<ol><li><code>__m128</code>, which is SSE’s <code>float[4]</code></li>
+<li><code>__m128d</code> corresponds to <code>double[2]</code></li>
+<li><code>__m128i</code> represents one of these: <code>char[16]</code>, <code>short int[8]</code>, <code>int[4]</code> or <code>uint64_t[2]</code></li>
+</ol><p>Each of them needs to be converted from or to standard C++ types with its own <b>intrinsic</b> (SSE operation).</p>
+
+<p><b>Intrinsics</b></p>
+
+<p>SSE operations in C++ are named this way: <code>_mm_{OPERATION}_{SUFFIX}</code>. <b>Operation</b> is the operation on vectors you want to perform. <b>Suffix</b> is a set of flags for processor, showing in what way it should work with operands <i>(packed/scalar, single-/double- precision, etc.)</i>.</p>
+
+<p>For optimization’s sake, it is better if operands for intrisincs are aligned in memory for base 16. But do not worry, compiler will automatically decide if the variable is aligned or not and perform all the needed operations itself.</p>
+
+<p>For loading data into SSE vectors there are four intrinsics:</p>
+
+<ol><li><code>_mm_set_ps(4.0, 3.0, 2.0, 1.0)</code> -&gt; <code>[4.0, 3.0, 2.0, 1.0]</code></li>
+<li><code>_mm_set1_ps(3.0)</code> -&gt; <code>[3.0, 3.0, 3.0, 3.0]</code></li>
+<li><code>_mm_set_ss(4.0)</code> -&gt; <code>[0.0, 0.0, 0.0, 4.0]</code></li>
+<li><code>_mm_setzero_ps()</code> -&gt; <code>[0.0, 0.0, 0.0, 0.0]</code></li>
+</ol><p>And like those, there are very similar intrinsics for storing data from vectors in a usual C++ types <i>(in the examples below assume working with the same <code>__m128 t = [4.0, 3.0, 2.0, 1.0]</code>)</i>:</p>
+
+<ol><li><code>_mm_store_ps(float[4], __m128)</code> -&gt; <code>[4.0, 3.0, 2.0, 1.0]</code></li>
+<li><code>_mm_store_ss(float*, __m128)</code> -&gt; <code>1.0</code></li>
+<li><code>_mm_store_ss(float*, __m128)</code> -&gt; <code>[1.0, 1.0, 1.0, 1.0]</code></li>
+<li><code>double _mm_cvtsd_f64(__m128d)</code> -&gt; <code>1.0</code></li>
+<li><code>int _mm_cvtsi128_si32(__m128i)</code> -&gt; <code>1</code> <i>(for given <code>__m128i [4, 3, 2, 1]</code>)</i></li>
+</ol><p><b>Finding maximum</b></p>
+
+<p>So, let’s get back to finding maximum in an array. For this task we will search maximums on each 4 elements of our array, storing them in the <code>XMMi</code> register:</p>
+
+<pre><code>float max_sse(float *a, int n) {
+    float res;
+    
+    __m128 *f4 = (__m128*) a;
+    __m128 maxval = _mm_setzero_ps();
+
+    for (int i = 0; i &lt; n / 4; i++) {
+        maxval = _mm_max_ps(maxval, f4[i]);
+    }
+
+    _mm_store_ss(&amp;res, maxval);
+
+    return res;
+}
+</code></pre>
+
+<p>But if you run this code, you may notice it returns the maximum not in 100% of cases. This is because we are storing <b>four maximums</b> between <b>each portion of array</b>. So, only one of those four is the maximum. But how can we find the maximum among four numbers? Running a loop seems obvious but not effective enough…</p>
+
+<p>We may use the <code>shuffle</code> intrinsic! That is, cycle-shifting vector three times and finding maximum between that shifted vector and its previous value. That will give us the maximum in all four positions of our vector.</p>
+
+<p>Here is better explanation:</p>
+
+<pre><code>
+    // given [4, 2, 3, 1]
+    max([2, 1, 3, 4], [4, 2, 3, 1]) =&gt; [4, 2, 3, 4]
+    max([1, 3, 4, 2], [4, 2, 3, 4]) =&gt; [4, 3, 4, 4]
+    max([3, 4, 2, 1], [4, 2, 4, 4]) =&gt; [4, 4, 4, 4]
+</code></pre>
+
+<p>And here is the final C++ implementation:</p>
+
+<pre><code>float max_sse(float *a, int n) {
+    float res;
+    
+    __m128 *f4 = (__m128*) a;
+    __m128 maxval = _mm_setzero_ps();
+
+    for (int i = 0; i &lt; n / 4; i++) {
+        maxval = _mm_max_ps(maxval, f4[i]);
+    }
+
+    for (int i = 0; i &lt; 3; i++) {
+        maxval = _mm_max_ps(maxval, _mm_shuffle_ps(maxval, maxval, 0x93));
+    }
+
+    _mm_store_ss(&amp;res, maxval);
+
+    return res;
+}
+</code></pre>
+
+<p><b>And how about integers?</b></p>
+
+<p>The code for finding maximum with SSE among integer array is very, very similar to the previous one - you just need to decorate intrinsics with a different prefix and change store operation:</p>
+
+<pre><code>int max_sse_int(int *a, int n) {
+    int res;
+    
+    __m128i *f4 = (__m128i*) a;
+    __m128i maxval = _mm_setzero_si128();
+
+    for (int i = 0; i &lt; n / 4; i++) {
+        maxval = _mm_max_epi32(maxval, f4[i]);
+    }
+
+    for (int i = 0; i &lt; 3; i++) {
+        maxval = _mm_max_epi32(maxval, _mm_shuffle_epi32(maxval, 0x93));
+    }
+
+    res = _mm_cvtsi128_si32(maxval);
+
+    return res;
+}
+</code></pre>
+
+<p><b>Profit?</b></p>
+
+<p>If we compare the results of all three methods - usual loop, index-based searching and SSE, we may see something like this <i>(I ran these tests on my laptop’s i7 processor on one million random float/int values)</i>:</p>
+
+<pre><code>
+    Value-based: 0.00784100 (0.99999911)
+    Index-based: 0.00674900 (0.99999911)
+    SSE: 0.00272400 (0.99999911)
+    Value-based on integers: 0.00653000 (99)
+    Index-based on integers: 0.00583000 (99)
+    SSE4 on integers: 0.00228200 (99)
+</code></pre>
+
+<p>Here you can see that index-based searching gives some speeding-up (around <code>15%</code>). But the real speed boost is gained with SSE (almost <b><code>4 times</code></b>!).</p>
+
+<h2>Calculating the sum</h2>
+
+Now let&rsquo;s try something harder - calculating a sum of array&rsquo;s elements. Here we will use the horizontal vector operations. But first, here&rsquo;s the general algorithm:
+
+<pre><code>
+	float sum(float *a, int n) {
+		float res = 0.0;
+
+		for (int i = 0; i &lt; n; i++) {
+			res += a[i];
+		}
+
+		return res;
+	}
+</code></pre>
+
+Simple enough, huh? Now let&rsquo;s use the SSE&rsquo;s <code>_mm_add_ps</code> intrinsic. Running it on each pack of four elements will give us the summary vector of four floats:
+
+<pre><code>
+	float sum_sse(float *a, int n) {
+		float res = 0.0;
+
+		__m128 *v4 = (__m128*) a;
+		__m128 vec_sum = _mm_setzero_ps();
+
+		for (int i = 0; i &lt; n / 4; i++) {
+			vec_sum = _mm_add_ps(vec_sum, v4[i]);
+		}
+
+		_mm_store_ss(&amp;res, vec_sum);
+
+		return res;
+	}
+</code></pre>
+
+But if we now add the elements of that vector horizontaly to themselves, we would then have the two-element vector. Adding it to itself will give us the final single-element vector:
+
+<pre><code>
+	float sum_sse(float *a, int n) {
+		float res = 0.0;
+
+		__m128 *v4 = (__m128*) a;
+		__m128 vec_sum = _mm_setzero_ps();
+
+		for (int i = 0; i &lt; n / 4; i++) {
+			vec_sum = _mm_add_ps(vec_sum, v4[i]);
+		}
+
+		vec_sum = _mm_hadd_ps(vec_sum, vec_sum);
+		vec_sum = _mm_hadd_ps(vec_sum, vec_sum);
+
+		_mm_store_ss(&amp;res, vec_sum);
+
+		return res;
+	}
+</code></pre>
+
+Nice, isn&rsquo;t it? But wait! There&rsquo;s integers available too! And they need their special intrinsics!
+Have no fear, nothing that different here, only the prefixes are different:
+
+<pre><code>
+	unsigned long long sum4(int *a, int n) {
+		unsigned long long res;
+
+		__m128i *f4 = (__m128i*) a;
+		__m128i vec_sum = _mm_setzero_si128();
+
+		for (int i = 0; i &lt; n / 4; i++) {
+			vec_sum = _mm_hadd_epi32(vec_sum, f4[i]);
+		}
+
+		vec_sum = _mm_hadd_epi32(vec_sum, vec_sum);
+		vec_sum = _mm_hadd_epi32(vec_sum, vec_sum);
+
+		res = _mm_cvtsi128_si32(vec_sum);
+
+		return res;
+	}
+</code></pre>
+
+And, just to approve our assumption of speeding-up, here&rsquo;s the benchmarking <em>(on one million of elements)</em>:
+
+<pre><code>
+	Value-based: 0.00853100 (500245.28125000)
+	SSE3: 0.00319800 (500243.50000000)
+	Value-based on integers: 0.00773100 (49453512)
+	SSE4 on integers: 0.00274800 (49453512)
+</code></pre>
+
+<h2>Resources</h2>
+
+<ol><li><a href="http://www.slideshare.net/mkurnosov/3-code-vectorization-sse-avx">Code vectorization with SSE</a></li>
+<li><a href="https://software.intel.com/sites/landingpage/IntrinsicsGuide/">Intel intrinsics guide</a></li>
+</ol>

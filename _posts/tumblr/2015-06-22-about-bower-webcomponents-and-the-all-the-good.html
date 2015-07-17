@@ -1,0 +1,210 @@
+---
+layout: post
+title: About Bower, WebComponents and the all the good
+date: '2015-06-22T14:23:43+02:00'
+tags:
+- rtfm
+- tutorial
+tumblr_url: http://shybovycha.tumblr.com/post/122161655426/about-bower-webcomponents-and-the-all-the-good
+---
+<h2>About Bower, WebComponents and the all the good</h2>
+
+<h2>BEM</h2>
+
+<p>Now many of web developers use different methodologies to make their web pages sources look structured and clean. This includes BEM, which I would like to discuss in this article.</p>
+
+<p>But all those methodologies are good until you use third-parties or involve a new person in your project.</p>
+
+<p>When I first heard of BEM, I was inspired! I tried to use BEM in real life. And that seemed meaningful. Yeah, back those days I was not as experienced as I am now. And I was just diving into <b>Rails 3.1</b> and I have not heard about other nice things.</p>
+
+<p>The aim was great - to make web page use independent blocks with some structured <b>CSS class names</b> and have them all described in a nice way in CSS files.</p>
+
+<p><b>The old approach</b></p>
+
+<p>Although it may sound as a great solution good, let’s take a look on a real-world example of old good BEM:</p>
+
+<pre><code>.bwelcome__message.hidden {
+    display: none;
+}
+
+.bwelcome__message {
+    color: yellow;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.bwelcome__label {
+    font-size: 12pt;
+}
+
+.bwelcome__input {
+    display: block;
+    width: 100%;
+}
+</code></pre>
+
+<p>And the HTML:</p>
+
+<pre><code>
+    &lt;div class="bwelcome"&gt;
+        &lt;div class="bwelcome__message hiddent"&gt;Hello, {{username}}!&lt;/div&gt;
+        &lt;div class="bwelcome__label"&gt;Enter your name:&lt;/div&gt;
+        &lt;div class="bwelcome__input"&gt;&lt;/div&gt;
+    &lt;/div&gt;
+</code></pre>
+
+<p>So, here we can see that any styles shall not overlap with these ones unless they are written in a BEM-way for the same element. Nice idea, not that nice implementation… All these <code>b#{block}__#{element}</code> classes are way too long, don’t you think? Writing them eveywhere - in HTML, CSS and JavaScript is really painful.</p>
+
+<p><b>The new approach</b></p>
+
+<p>While writing this article, I saw the updated documentation page for BEM. Currently they assume you would use BEMJSON + BEMHTML to describe the whole page. I am against that - this breaks the standards. Someone might like that toolchain, but writing everything in JSON is not the way I like.</p>
+
+<h2>Introducing WebComponents</h2>
+
+<p>Yet the implementation of BEM is ugly, the idea is really great! This is just like encapsulation in OOP - one of the most mighty principles in programming. But what are the better options than BEM?</p>
+
+<p>Recently all we have seen great changes to the Web. We now have ES6, CSS3, HTML5 and all of them give us ultimate power! Old browsers’ support is now made with hacks called <i>polyfills</i>. But why should we reject ourselves to use the best of what we have in the name of <a href="http://gs.statcounter.com/#browser_version-ww-monthly-201405-201505">3% of Internet users</a>? Well, if you do have to continue supporting all those, you may just quit reading now. Or you may gather all your will and try all those brand-new features in your pet project.</p>
+
+<p>So, the new approach in web design encapsulation is WebComponents. Rather than reading the introductional texts, just check ‘em out:</p>
+
+<pre><code>
+    &lt;template id="welcome-component"&gt;
+      &lt;style&gt;
+        .message {
+          background-color: #fea;
+          padding: 10px 20px;
+          text-align: left;
+          border-radius: 5px;
+          font-family: Arial;
+        }
+      &lt;/style&gt;
+
+      &lt;div class="message"&gt;Hello, {{username}}!&lt;/div&gt;
+    &lt;/template&gt;
+
+    &lt;div class="shadow-host"&gt;&lt;/div&gt;
+    &lt;div class="message"&gt;Non-component message&lt;/div&gt;
+
+    &lt;script type="text/javascript"&gt;
+    var host = document.querySelector('.shadow-host'),
+        template = document.querySelector('#welcome-component'),
+        shadow = host.createShadowRoot();
+
+    shadow.appendChild(template.content);
+    &lt;/script&gt;
+</code></pre>
+
+<p>This code may not look so good, but it works like a charm!</p>
+
+<p><a href="http://codepen.io/shybovycha/pen/gpGJOV"><figure data-orig-width="660" data-orig-height="79" class="tmblr-full"><img src="https://40.media.tumblr.com/08701b6b73d8dcf7c78f1ba163d7f44f/tumblr_inline_nqciwfuAqT1qh5oee_540.png" alt="image" data-orig-width="660" data-orig-height="79"/></figure></a></p>
+
+<p>This example is a bit ugly - it has both CSS, HTMl and JavaScript mixing in a single file, but we’ll deal with it for a short time. Just think of the might you’ve got! You may define your own… well, it’s certainly kinda components! They are uncomfortable to be pasted to a page… They are hardly to be used with something like Angular… Well, yeah, this is as ugly as BEM.</p>
+
+<p>Now, let’s make it spicy!</p>
+
+<h2>Bower</h2>
+
+<p>Earlier I did not manage to use any package managers except <code>gem</code> and <code>apt-get</code>. Yet, I was not that stupid to install all the javascript libraries project needs with RubyGems. On my projects I had to download the needed library versions and store it in the <code>assets/javascripts</code> directory. Forever. Or at least the upgrade was needed. But then I just tried Bower. That was so easy to manage the assets! Thus, I highly recommend this way to you, dear Reader!</p>
+
+<p>To use Bower from a scratch on a brand new project, you need to</p>
+
+<ol><li>install Bower with <code>npm</code></li>
+<li>ininitialize your project with <code>bower init</code></li>
+<li>define dependencies within the <code>dependencies</code> object in your new <code>bower.json</code> file</li>
+<li>install them with <code>bower install</code></li>
+</ol><p>Then you should got all your libraries at the <code>bower_components</code> directory. And that’s it! Every package has its own dir. So you can keep track of all the versions etc.</p>
+
+<h2>Polymer</h2>
+
+<p>Let’s start cooking our demo with <a href="https://www.polymer-project.org/">Polymer</a>. First, initialize the Bower project and add this section to your fresh <code>bower.json</code> file:</p>
+
+<pre><code>"dependencies": {
+    "polymer": "Polymer/polymer#^1.0.0"
+}
+</code></pre>
+
+<p>Then run <code>bower install</code>. This will provide you with all the stuff needed.</p>
+
+<p>Now we will move our pretty <code>welcome-component</code> to a new place. Create two files: <code>welcome-component.html</code> and <code>index.html</code>. Fill the last one with <a href="http://docs.emmet.io/">Emmet</a>:</p>
+
+<pre><code>html:5
+</code></pre>
+
+<p><i>(you need to hit the “Expand” key, formely Tab at the end of this single line while editing the <code>index.html</code> file in the Emmet-powered editor)</i>. And add just a single line within HTML’ “ tag:</p>
+
+<pre><code>
+    &lt;welcome-component&gt;&lt;/welcome-component&gt;
+</code></pre>
+
+<p>Now let’s define our new component in the <code>welcome-component.html</code>:</p>
+
+<pre><code>
+    &lt;dom-module id="welcome-component"&gt;
+      &lt;style&gt;
+          .message {
+            background-color: #fea;
+            padding: 10px 20px;
+            text-align: left;
+            border-radius: 5px;
+            font-family: Arial;
+          }
+        &lt;/style&gt;
+
+        &lt;template&gt;
+          &lt;div class="message"&gt;Hello, {{username}}!&lt;/div&gt;
+        &lt;/template&gt;
+
+      &lt;script&gt;
+        Polymer({
+          is: "welcome-component"
+        });
+      &lt;/script&gt;
+    &lt;/dom-module&gt;
+</code></pre>
+
+<p>Now, import the component at the ” tag of the <code>index.html</code> file:</p>
+
+<pre><code>
+    &lt;link rel="import" href="bower_components/polymer/polymer.html"&gt; &lt;!-- imports Polymer --&gt;
+    &lt;link rel="import" href="welcome-component.html"&gt; &lt;!-- imports our component --&gt;
+</code></pre>
+
+<p>To run this quickly, you may want to use <code>http-server</code> from <code>npm</code>:</p>
+
+<pre><code>http-server -o --cors
+</code></pre>
+
+<p>And viola! We’ve just made a nice web component, which could be used really simply. And the code is totally clean!</p>
+
+<p>If you look at the HTML source, you’d see the beautiful DOM structure: we’ve got our <code>&lt;div class="message"&gt;</code> within the <code>&lt;welcome-component&gt;</code> tag.
+And its style shall never affect any other elements, even when you create another <code>&lt;div&gt;</code> outside the <code>&lt;welcome-component&gt;</code>. Seriously, you may try it!</p>
+
+<p>Yeah, I know we’ve used Polymer and that’s a cheating. But think of it as of a temporary hack you will remove when your browser will start supporting custom tags.</p>
+
+<h2>Custom tags’ custom attributes</h2>
+
+<p>Now, the last thing I’d like to show is the attributes for our custom components. We’d like to pass some data to our brand new components easily, right? So, let’s define a <code>name</code> attribute, we’ll show instead of <code>{{name}}</code>!</p>
+
+<p>To do this, we shall use Polymer’s two features. First of all, let’s define our attribute, adding this section to our <code>Polymer()</code> call:</p>
+
+<pre><code>
+    properties: {
+      name: {
+        type: String
+      }
+    }
+</code></pre>
+
+<p>Now, when we’re defined our attribute THAT simply, we should use it somehow. Polymer allows us to define a method, which will be called once component gets inserted into a webpage:</p>
+
+<pre><code>
+    ready: function() {
+      this.querySelector('.message').innerHTML = `Hello, ${this.name}!`
+    }
+</code></pre>
+
+<p>As long as you ride IOJS you may use ES6 string interpolation feature, as in the example above =) Here, <code>this</code> variable is bound to the <code>&lt;welcome-component&gt;</code> tag. So in order to change <code>.message</code> tag’s HTML, we need to find it first. For this purpose I’ve used the HTML5 <code>querySelector</code> method.</p>
+
+<h2>Conclusion goes here</h2>
+
+<p>To end-up this short tutorial on WebComponents, I would like to suggest you to read some other tutorials, especially the <a href="http://webcomponents.org/articles">WebComponents website</a>. And never stop trying something new!</p>

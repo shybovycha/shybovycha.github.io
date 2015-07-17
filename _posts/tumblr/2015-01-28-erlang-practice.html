@@ -1,0 +1,103 @@
+---
+layout: post
+title: Erlang practice
+date: '2015-01-28T15:29:00+01:00'
+tags:
+- rtfm
+- erlang
+- programming
+- tutorial
+tumblr_url: http://shybovycha.tumblr.com/post/109392787226/erlang-practice
+---
+<h2>Foreword</h2>
+
+<p>First time I faced functional programming, I was impressed. Just a bit. That was in 2012. The second time, I was studying real functional programming at the university. Today was the final test.</p>
+
+<p>We were taught many interesting things about functional programming and lot of things about Haskell. But there were only two lectures and two practices on Erlang. And nothing was told about its distributed programming abilities.</p>
+
+<p>I was a bit disappointed by this fact. So, I turned on my girlfriend&rsquo;s laptop, installed Erlang and created this short intro to distributed programming in Erlang.</p>
+
+<h2>Requirements</h2>
+
+<p>This short intro does not include Erlang tutorial and requires you to have at least two machines - either Virtual or hardware, if you wish. Even that does not really matter!</p>
+
+<h2>How to get out of a train?</h2>
+
+<p><img src="https://31.media.tumblr.com/151302ca545100e6c298290f0d5827fe/tumblr_inline_niw5irzdiz1qh5oee.jpg" alt="Gordon Freeman trying to get out of a train"/></p>
+
+<p>The first thing I gonna tell you, is really handy tip.</p>
+
+<p><strong>There are three ways to exit Erlang&rsquo; shell:</strong></p>
+
+<ol><li><strong>&ldquo;classic&rdquo;:</strong> hit <code>Ctrl + C</code>, then press <code>a</code> <em>(Abort)</em> and <code>Return</code></li>
+<li><strong>&ldquo;UNIX-way&rdquo;:</strong> two times hit <code>Ctrl + C</code></li>
+<li><strong>&ldquo;Erlang-way&rdquo;:</strong> simply type <code>q().</code> and hit <code>Return</code></li>
+</ol><p>You&rsquo;ll be happy to know &lsquo;bout last two - they are just easier!</p>
+
+<h2>Rock'n'Roll!</h2>
+
+<p>So, let&rsquo;s just dive into distributed programming! First thing you&rsquo;ll gonna need - is to know your machines&rsquo; IP addresses. Then you&rsquo;ll gonna need to point each of them to the other one - just set each other&rsquo;s hostname in the <code>/etc/hosts</code> file <em>(for Windows it&rsquo;s <code>C:\Windows\system32\drivers\etc\hosts</code>)</em>.</p>
+
+<p>I have had two laptops I named <code>moonode</code> <em>(my laptop)</em> and <code>foo</code> <em>(my girlfriend&rsquo;s laptop)</em>. So, on my Ubuntu, I added this line to <code>/etc/hosts</code>:</p>
+
+<pre><code>192.168.2.33    foonode
+</code></pre>
+
+<p>And in <code>C:\Windows\system32\drivers\etc\hosts</code> on my girlfriend&rsquo;s laptop I added this:</p>
+
+<pre><code>192.168.2.237   moonode
+</code></pre>
+
+<p><img src="https://31.media.tumblr.com/97da86d4a989b381e3b6be0069ebfdff/tumblr_inline_niw5kauPUD1qh5oee.png" alt="hosts in Windows"/></p>
+
+<p><strong>Note:</strong> I was sitting at home, so laptops were connected just to my home WiFi router. And that&rsquo;s great news for enyone, who wants to try that at home!</p>
+
+<p>Each Erlang instance was run with the corresponding shortname of machine: <code>erl -sname moo@moonode</code> and <code>erl -sname foo@foonode</code>.</p>
+
+<p>Both machines should have the same cookie to communicate. That&rsquo;s basic Erlang security, for your great good. Cookie is just a upper-cased word, stored in a <code>.erlang.cookie</code> file. For Windows, that file is in the <code>C:\Windows\</code> or <code>C:\Users\username\</code> directory. In Linux that&rsquo;s in <code>/home/username/</code> directory.</p>
+
+<h2>Wrapping-up</h2>
+
+<p>So, short summary on what you should have to run distributely in Erlang:</p>
+
+<ol><li>hostname<em>(-s)</em> of other node<em>(-s)</em> in your <code>hosts</code> file</li>
+<li>same cookie for all your nodes in <code>.erlang.cookie</code> file</li>
+<li>running instances with corresponding shortnames and hosts</li>
+</ol><h2>Running stuff</h2>
+
+<p>To show some code, I wrote this short module:</p>
+
+<pre><code>-module(test).
+-export([ start/0 ]).
+
+start() -&gt;
+    receive
+        { msg, M } -&gt;
+            io:format("&gt;&gt; ~s~n", [ M ]),
+            start();
+
+        finish -&gt;
+            io:format("&lt; finish received &gt;~n"),
+            ok
+    end.
+</code></pre>
+
+<p>Now, let&rsquo;s start that!</p>
+
+<p>First, I registered that process with some name on the <code>foo</code> node:</p>
+
+<pre><code>c(test1).
+register(foo_pid, spawn(test1, start, [])).
+</code></pre>
+
+<p>And then, the only thing I needed to do - is just send messages from node <code>moo</code>!</p>
+
+<pre><code>{ foo_pid, foo@foonode } ! { msg, "Obey!" }.
+flush().
+</code></pre>
+
+<p><img src="https://31.media.tumblr.com/2e65bfca4e6815d4eced646bee021e5f/tumblr_inline_niw5l8tH3Y1qh5oee.png" alt="moonode"/></p>
+
+<p><img src="https://31.media.tumblr.com/36462ec965b63fc9183a216f4be73c8d/tumblr_inline_niw5lnNbgc1qh5oee.png" alt="foonode"/></p>
+
+<p>Much cooler than writing ping-pong programs, huh? =)</p>

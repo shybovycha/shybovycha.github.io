@@ -1,0 +1,136 @@
+---
+layout: post
+title: Microsoft' error messages cipher
+date: '2015-01-09T21:43:12+01:00'
+tags:
+- programming
+- rtfm
+- fun
+tumblr_url: http://shybovycha.tumblr.com/post/107622125006/microsoft-error-messages-cipher
+---
+<p>I have a T-SQL trigger creation script, which runs OK:</p>
+
+<pre><code>CREATE TRIGGER data_modified ON Northwind.dbo.Customers FOR INSERT, UPDATE, DELETE
+AS
+
+declare @rows as int;
+set @rows = @@ROWCOUNT;
+
+IF @rows = 0
+BEGIN
+    print 'no rows were affected';
+    return;
+end
+
+if exists(select * from inserted)
+begin
+    if exists(select * from deleted)
+    begin
+        print 'updated ' + @rows + ' rows';
+    end
+    else
+    begin
+        print 'inserted ' + @rows + ' rows';
+    end
+end
+else
+begin
+    print 'deleted ' + @rows + ' rows';
+end
+</code></pre>
+
+<p>Yet, when I run some <code>INSERT</code> query, I got an error saying:</p>
+
+<pre><code>Msg 245, Level 16, State 1, Procedure data_modified, Line 21
+Conversion failed when converting the varchar value 'inserted ' to data type int.
+</code></pre>
+
+<p>Let&rsquo;s look onto the source of that trigger, at line 18:</p>
+
+<pre><code>USE [Northwind]
+GO
+/****** Object:  Trigger [dbo].[data_modified]    Script Date: 09.01.2015 18:18:14 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+    ALTER TRIGGER [dbo].[data_modified] ON [Northwind].[dbo].[Customers] FOR INSERT, UPDATE, DELETE
+    AS
+
+    declare @rows as int;
+    set @rows = @@ROWCOUNT;
+
+    IF @rows = 0
+    BEGIN
+        print 'no rows were affected';
+        return;
+    end
+
+    if exists(select * from inserted)
+    begin
+        if exists(select * from deleted)
+        begin
+            print 'updated ' + @rows + ' rows';
+        end
+        else
+        begin
+            print 'inserted ' + @rows + ' rows';
+        end
+    end
+    else
+    begin
+        print 'deleted ' + @rows + ' rows';
+    end
+</code></pre>
+
+<p>Here&rsquo;s the error:</p>
+
+<pre><code>if exists(select * from inserted)
+</code></pre>
+
+<p>But wait, that can&rsquo;t be true!</p>
+
+<p>The problem is a bit deeper, with the <code>@rows</code> variable:</p>
+
+<pre><code>print 'updated ' + @rows + ' rows';
+</code></pre>
+
+<p>while being declared as:</p>
+
+<pre><code>declare @rows as int;
+</code></pre>
+
+<p>It can not be printed right away, so it needs to be cast:</p>
+
+<pre><code>CREATE TRIGGER data_modified ON Northwind.dbo.Customers FOR INSERT, UPDATE, DELETE
+AS
+
+declare @rows as int;
+declare @rows_s as varchar(10);
+set @rows = @@ROWCOUNT;
+set @rows_s = cast(@rows as varchar);
+
+IF @rows = 0
+BEGIN
+    print 'no rows were affected';
+    return;
+end
+
+if exists(select * from inserted)
+begin
+    if exists(select * from deleted)
+    begin
+        print 'updated ' + @rows_s + ' rows';
+    end
+    else
+    begin
+        print 'inserted ' + @rows_s + ' rows';
+    end
+end
+else
+begin
+    print 'deleted ' + @rows_s + ' rows';
+end
+</code></pre>
+
+<p>Try to guess where&rsquo;s your mistake, using that error message! ;)</p>
