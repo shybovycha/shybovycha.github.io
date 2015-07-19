@@ -15,44 +15,48 @@ tumblr_url: http://shybovycha.tumblr.com/post/122400740651/speeding-up-algorithm
 <p>Have you ever asked anyone if assembly language may be useful nowadays? So, here’s the short answer: <b>YES</b>.
 When you know how your computer works <i>(not a processor itself, but the whole thing - memory organization, math co-processor and others)</i>, you may optimize your code while writing it. In this short article I shall try to show you some use cases of optimizations, which you may incorporate with the usage of low-level programming.</p>
 
+<!--more-->
+
 <h2>Finding maximum</h2>
 
 <p>So, let’s start-off searching a maximum element in array. Usually, it is nothing just iterating through the array, comparing each element with some starting value. For optimization reason and for the precision’s sake we set the initial value to the first array’s element. Like this:</p>
 
-<pre><code>float max_value(float *a, int n) {
+{% highlight cpp %}
+float max_value(float *a, int n) {
     float res = a[0];
-    
-    for (int i = 1; i &lt; n; i++) {
-        if (a[i] &gt; res)
+
+    for (int i = 1; i < n; i++) {
+        if (a[i] > res)
             res = a[i];
     }
 
     return res;
 }
-</code></pre>
+{% endhighlight %}
 
 <h2>Index-based search</h2>
 
 <p>What we could do firstly is to store not the search element itself, but its index:</p>
 
-<pre><code>float max_index(float *a, int n) {
+{% highlight cpp %}
+float max_index(float *a, int n) {
     int res = 0;
-    
-    for (int i = 1; i &lt; n; i++) {
-        if (a[i] &gt; a[res])
+
+    for (int i = 1; i < n; i++) {
+        if (a[i] > a[res])
             res = i;
     }
 
     return a[res];
 }
-</code></pre>
+{% endhighlight %}
 
 <p>This very short optimization has its effect <i>(time in seconds; the value found in braces)</i>:</p>
 
-<pre><code>
+{% highlight bash %}
     Value-based: 0.00732200 (0.99999827)
     Index-based: 0.00674200 (0.99999827)
-</code></pre>
+{% endhighlight %}
 
 <h2>Vector operations</h2>
 
@@ -162,21 +166,22 @@ Compiler flags are <code>-mmmx</code>, <code>-msse</code>, <code>-msse2</code>, 
 
 <p>So, let’s get back to finding maximum in an array. For this task we will search maximums on each 4 elements of our array, storing them in the <code>XMMi</code> register:</p>
 
-<pre><code>float max_sse(float *a, int n) {
+{% highlight cpp %}
+float max_sse(float *a, int n) {
     float res;
-    
+
     __m128 *f4 = (__m128*) a;
     __m128 maxval = _mm_setzero_ps();
 
-    for (int i = 0; i &lt; n / 4; i++) {
+    for (int i = 0; i < n / 4; i++) {
         maxval = _mm_max_ps(maxval, f4[i]);
     }
 
-    _mm_store_ss(&amp;res, maxval);
+    _mm_store_ss(&res, maxval);
 
     return res;
 }
-</code></pre>
+{% endhighlight %}
 
 <p>But if you run this code, you may notice it returns the maximum not in 100% of cases. This is because we are storing <b>four maximums</b> between <b>each portion of array</b>. So, only one of those four is the maximum. But how can we find the maximum among four numbers? Running a loop seems obvious but not effective enough…</p>
 
@@ -184,50 +189,52 @@ Compiler flags are <code>-mmmx</code>, <code>-msse</code>, <code>-msse2</code>, 
 
 <p>Here is better explanation:</p>
 
-<pre><code>
+{% highlight cpp %}
     // given [4, 2, 3, 1]
-    max([2, 1, 3, 4], [4, 2, 3, 1]) =&gt; [4, 2, 3, 4]
-    max([1, 3, 4, 2], [4, 2, 3, 4]) =&gt; [4, 3, 4, 4]
-    max([3, 4, 2, 1], [4, 2, 4, 4]) =&gt; [4, 4, 4, 4]
-</code></pre>
+    max([2, 1, 3, 4], [4, 2, 3, 1]) => [4, 2, 3, 4]
+    max([1, 3, 4, 2], [4, 2, 3, 4]) => [4, 3, 4, 4]
+    max([3, 4, 2, 1], [4, 2, 4, 4]) => [4, 4, 4, 4]
+{% endhighlight %}
 
 <p>And here is the final C++ implementation:</p>
 
-<pre><code>float max_sse(float *a, int n) {
+{% highlight cpp %}
+float max_sse(float *a, int n) {
     float res;
-    
+
     __m128 *f4 = (__m128*) a;
     __m128 maxval = _mm_setzero_ps();
 
-    for (int i = 0; i &lt; n / 4; i++) {
+    for (int i = 0; i < n / 4; i++) {
         maxval = _mm_max_ps(maxval, f4[i]);
     }
 
-    for (int i = 0; i &lt; 3; i++) {
+    for (int i = 0; i < 3; i++) {
         maxval = _mm_max_ps(maxval, _mm_shuffle_ps(maxval, maxval, 0x93));
     }
 
-    _mm_store_ss(&amp;res, maxval);
+    _mm_store_ss(&res, maxval);
 
     return res;
 }
-</code></pre>
+{% endhighlight %}
 
 <p><b>And how about integers?</b></p>
 
 <p>The code for finding maximum with SSE among integer array is very, very similar to the previous one - you just need to decorate intrinsics with a different prefix and change store operation:</p>
 
-<pre><code>int max_sse_int(int *a, int n) {
+{% highlight cpp %}
+int max_sse_int(int *a, int n) {
     int res;
-    
+
     __m128i *f4 = (__m128i*) a;
     __m128i maxval = _mm_setzero_si128();
 
-    for (int i = 0; i &lt; n / 4; i++) {
+    for (int i = 0; i < n / 4; i++) {
         maxval = _mm_max_epi32(maxval, f4[i]);
     }
 
-    for (int i = 0; i &lt; 3; i++) {
+    for (int i = 0; i < 3; i++) {
         maxval = _mm_max_epi32(maxval, _mm_shuffle_epi32(maxval, 0x93));
     }
 
@@ -235,20 +242,20 @@ Compiler flags are <code>-mmmx</code>, <code>-msse</code>, <code>-msse2</code>, 
 
     return res;
 }
-</code></pre>
+{% endhighlight %}
 
 <p><b>Profit?</b></p>
 
 <p>If we compare the results of all three methods - usual loop, index-based searching and SSE, we may see something like this <i>(I ran these tests on my laptop’s i7 processor on one million random float/int values)</i>:</p>
 
-<pre><code>
+{% highlight bash %}
     Value-based: 0.00784100 (0.99999911)
     Index-based: 0.00674900 (0.99999911)
     SSE: 0.00272400 (0.99999911)
     Value-based on integers: 0.00653000 (99)
     Index-based on integers: 0.00583000 (99)
     SSE4 on integers: 0.00228200 (99)
-</code></pre>
+{% endhighlight %}
 
 <p>Here you can see that index-based searching gives some speeding-up (around <code>15%</code>). But the real speed boost is gained with SSE (almost <b><code>4 times</code></b>!).</p>
 
@@ -256,70 +263,70 @@ Compiler flags are <code>-mmmx</code>, <code>-msse</code>, <code>-msse2</code>, 
 
 Now let&rsquo;s try something harder - calculating a sum of array&rsquo;s elements. Here we will use the horizontal vector operations. But first, here&rsquo;s the general algorithm:
 
-<pre><code>
+{% highlight cpp %}
 	float sum(float *a, int n) {
 		float res = 0.0;
 
-		for (int i = 0; i &lt; n; i++) {
+		for (int i = 0; i < n; i++) {
 			res += a[i];
 		}
 
 		return res;
 	}
-</code></pre>
+{% endhighlight %}
 
 Simple enough, huh? Now let&rsquo;s use the SSE&rsquo;s <code>_mm_add_ps</code> intrinsic. Running it on each pack of four elements will give us the summary vector of four floats:
 
-<pre><code>
+{% highlight cpp %}
 	float sum_sse(float *a, int n) {
 		float res = 0.0;
 
 		__m128 *v4 = (__m128*) a;
 		__m128 vec_sum = _mm_setzero_ps();
 
-		for (int i = 0; i &lt; n / 4; i++) {
+		for (int i = 0; i < n / 4; i++) {
 			vec_sum = _mm_add_ps(vec_sum, v4[i]);
 		}
 
-		_mm_store_ss(&amp;res, vec_sum);
+		_mm_store_ss(&res, vec_sum);
 
 		return res;
 	}
-</code></pre>
+{% endhighlight %}
 
 But if we now add the elements of that vector horizontaly to themselves, we would then have the two-element vector. Adding it to itself will give us the final single-element vector:
 
-<pre><code>
+{% highlight cpp %}
 	float sum_sse(float *a, int n) {
 		float res = 0.0;
 
 		__m128 *v4 = (__m128*) a;
 		__m128 vec_sum = _mm_setzero_ps();
 
-		for (int i = 0; i &lt; n / 4; i++) {
+		for (int i = 0; i < n / 4; i++) {
 			vec_sum = _mm_add_ps(vec_sum, v4[i]);
 		}
 
 		vec_sum = _mm_hadd_ps(vec_sum, vec_sum);
 		vec_sum = _mm_hadd_ps(vec_sum, vec_sum);
 
-		_mm_store_ss(&amp;res, vec_sum);
+		_mm_store_ss(&res, vec_sum);
 
 		return res;
 	}
-</code></pre>
+{% endhighlight %}
 
 Nice, isn&rsquo;t it? But wait! There&rsquo;s integers available too! And they need their special intrinsics!
 Have no fear, nothing that different here, only the prefixes are different:
 
-<pre><code>
+{% highlight cpp %}
 	unsigned long long sum4(int *a, int n) {
 		unsigned long long res;
 
 		__m128i *f4 = (__m128i*) a;
 		__m128i vec_sum = _mm_setzero_si128();
 
-		for (int i = 0; i &lt; n / 4; i++) {
+		for (int i = 0; i < n / 4; i++) {
 			vec_sum = _mm_hadd_epi32(vec_sum, f4[i]);
 		}
 
@@ -330,16 +337,16 @@ Have no fear, nothing that different here, only the prefixes are different:
 
 		return res;
 	}
-</code></pre>
+{% endhighlight %}
 
 And, just to approve our assumption of speeding-up, here&rsquo;s the benchmarking <em>(on one million of elements)</em>:
 
-<pre><code>
+{% highlight bash %}
 	Value-based: 0.00853100 (500245.28125000)
 	SSE3: 0.00319800 (500243.50000000)
 	Value-based on integers: 0.00773100 (49453512)
 	SSE4 on integers: 0.00274800 (49453512)
-</code></pre>
+{% endhighlight %}
 
 <h2>Resources</h2>
 

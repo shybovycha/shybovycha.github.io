@@ -15,6 +15,7 @@ $spacing-unit:     30px;
 
 $text-color:       #111;
 $background-color: #fdfdfd;
+$page-content-background: #F0EEE6;
 $brand-color:      #2a7ae2;
 
 $grey-color:       #828282;
@@ -42,11 +43,19 @@ $on-laptop:        800px;
     }
 }
 
+.page-content {
+  background-color: $page-content-background;
+}
+
 
 
 // Import partials from `sass_dir` (defaults to `_sass`)
 @import
         "base",
         "layout",
-        "syntax-highlighting"
+        "syntax-highlighting",
+        "bourbon/bourbon",
+        "neat/neat",
+        "centered-navigation",
+        "flex-boxes"
 ;
