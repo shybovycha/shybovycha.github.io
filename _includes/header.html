@@ -1,5 +1,5 @@
 <div class="container-fluid header">
-  <div class="col-md-4 visible-md-up text-center">
+  <div class="col-md-4 hidden-sm-down text-center">
     <a href="{{ site.baseurl }}/">
       <img src="{{ '/images/photo.jpg' | prepend: site.baseurl }}" alt="photo" class="img-circle photo">
     </a>
@@ -9,13 +9,13 @@
     <h1>Artem Szubowicz</h1>
     <h2>Software developer</h2>
 
-    <div class="col-md-4">
+    <div class="col-xs-12 col-md-4">
       <span><span id="next-post-countdown" /></span>
       <span>until next post</span>
     </div>
 
-    <div class="col-md-7 p-r-0">
-      <ul class="nav nav-pills pull-right">
+    <div class="col-xs-12 col-md-7 p-r-0">
+      <ul id="main-menu" class="nav nav-pills">
         <li class="nav-item">
           <a href="{{ '/' | prepend: site.baseurl }}" class="nav-link btn btn-md btn-info">Home</a>
         </li>

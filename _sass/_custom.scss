@@ -79,11 +79,12 @@ $background-image: url(/images/background2.png);
       }
     }
   }
+
   .carousel-inner {
     .carousel-item {
       text-align: center;
-      height: 350px;
-      max-height: 350px;
+      height: 295px;
+      max-height: 295px;
       overflow: hidden;
     }
   }
@@ -94,6 +95,10 @@ $background-image: url(/images/background2.png);
     background: $background-image;
     background-attachment: fixed;
     background-repeat: no-repeat;
+  }
+
+  #main-menu {
+    float: right;
   }
 
   .post .title .timestamp {
@@ -107,6 +112,22 @@ $background-image: url(/images/background2.png);
 @media (max-width: map-get($grid-breakpoints, md)) {
   body {
     background: $background-color;
+  }
+
+  .header {
+    max-height: none;
+  }
+
+  #main-menu {
+    text-align: center;
+    margin: 25px 0 0 0;
+    float: none !important;
+    margin-top: 2em;
+
+    .nav-item {
+      margin: 5px 0;
+      float: none;
+    }
   }
 
   .main-container {
