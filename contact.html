@@ -4,4 +4,32 @@ title: Contact
 permalink: /contact/
 ---
 
-You can always reach me via <a href="email:shybovycha@gmail.com">email</a>.
+<div class="row">
+  <div class="col-sm-6">
+    Feel free to contact me via this form.
+  </div>
+
+  <div class="col-sm-6">
+    <form action="//formspree.io/shybovycha@gmail.com" method="POST">
+      <fieldset class="form-group">
+        <input class="form-control" type="text" name="name" placeholder="Your name" required>
+      </fieldset>
+
+      <fieldset class="form-group">
+        <input class="form-control" type="email" name="_replyto" placeholder="Your e-mail" required>
+      </fieldset>
+
+      <input class="form-control" type="hidden" name="_subject" value="Moo Foo Blog: new message!" />
+      <input class="form-control" type="text" name="_gotcha" style="display:none" />
+
+      <fieldset class="form-group">
+        <textarea class="form-control" name="message" placeholder="Your message" rows="5" required></textarea>
+      </fieldset>
+
+      <fieldset class="form-group text-center">
+        <input class="btn btn-primary" type="submit" value="Send">
+      </fieldset>
+    </form>
+
+  </div>
+</div>

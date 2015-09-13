@@ -1,21 +1,28 @@
-<header class="centered-navigation" role="banner">
-  <nav role="navigation">
-    <a class="site-title" href="{{ site.baseurl }}/">{{ site.title }}</a>
+<div class="container-fluid header">
+  <div class="col-md-4 visible-md-up text-center">
+    <a href="{{ site.baseurl }}/">
+      <img src="{{ '/images/photo.jpg' | prepend: site.baseurl }}" alt="photo" class="img-circle photo">
+    </a>
+  </div>
 
-      {% for page in site.pages %}
-        {% if page.title %}
-        <a class="nav-link" href="{{ page.url | prepend: site.baseurl }}">{{ page.title }}</a>
-        {% endif %}
-      {% endfor %}
-<!--
-      <li class="nav-link"><a href="javascript:void(0)">Programming</a></li>
-      <li class="nav-link"><a href="javascript:void(0)">Photos</a></li>
-      <li class="nav-link logo">
-        <a href="{{ site.baseurl }}/" class="logo">
-          <img src="https://raw.githubusercontent.com/thoughtbot/refills/master/source/images/placeholder_logo_3_dark.png" alt="Logo image">
-        </a>
-      </li>
-      <li class="nav-link"><a href="javascript:void(0)">About</a></li>
-      <li class="nav-link"><a href="javascript:void(0)">Contact</a></li> -->
-  </nav>
-</header>
+  <div class="col-md-8 col-xs-12 text">
+    <h1>Artem Szubowicz</h1>
+    <h2>Software developer</h2>
+
+    <div class="col-md-7 col-md-offset-4 p-r-0">
+      <ul class="nav nav-pills pull-right">
+        <li class="nav-item">
+          <a href="{{ '/' | prepend: site.baseurl }}" class="nav-link btn btn-md btn-info">Home</a>
+        </li>
+
+        {% for page in site.pages %}
+          {% if page.title %}
+            <li class="nav-item">
+              <a href="{{ page.url | prepend: site.baseurl }}" class="nav-link btn btn-md btn-info">{{ page.title }}</a>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>

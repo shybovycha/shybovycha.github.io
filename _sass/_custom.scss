@@ -1,0 +1,102 @@
+$grid-breakpoints: (
+  // Extra small screen / phone
+  xs: 0,
+  // Small screen / phone
+  sm: 34em,
+  // Medium screen / tablet
+  md: 48em,
+  // Large screen / desktop
+  lg: 62em,
+  // Extra large screen / wide desktop
+  xl: 75em
+) !default;
+
+$background-image: url(/images/background2.png);
+
+.header {
+  background: $post-background-color;
+  padding: 20px 0;
+  max-height: 220px;
+
+  .text {
+    margin: 25px 0;
+  }
+
+  .photo {
+    max-height: 165px;
+  }
+}
+
+.photo-large {
+  display: inline-block;
+}
+
+.post {
+  background: $post-background-color;
+  margin: 20px 0;
+  padding: 30px 25px;
+
+  .title {
+    position: relative;
+    border-bottom: 1px solid $grey-color-light;
+    border-right: 1px solid $grey-color-light;
+    margin-bottom: 15px;
+
+    .timestamp {
+      position: absolute;
+      right: -1px;
+      top: -1em;
+    }
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+  }
+}
+
+.site-footer {
+  background: $post-background-color;
+  padding: 20px 0 15px 0;
+}
+
+@media (min-width: map-get($grid-breakpoints, md)) {
+  body {
+    background: $background-image;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+
+  .post .title .timestamp {
+    right: 0.5em;
+    position: absolute;
+    top: 0.65em;
+    background: rgba(60, 60, 60, 0.2);
+  }
+}
+
+@media (max-width: map-get($grid-breakpoints, md)) {
+  body {
+    background: $background-color;
+  }
+
+  .main-container {
+    padding: 0;
+
+    .posts-wrapper {
+      padding: 0;
+    }
+
+    .post {
+      margin: 20px 0;
+    }
+  }
+
+  .post {
+    width: 100%;
+
+    .title {
+      border: none;
+    }
+  }
+}

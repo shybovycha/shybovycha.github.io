@@ -18,7 +18,8 @@ tumblr_url: http://shybovycha.tumblr.com/post/110887869996/abstract-class-vs-int
 
 <p>Check it out:</p>
 
-<pre><code>public interface IVector {
+{% highlight java %}
+public interface IVector {
     public void Vector(); // something like a default constructror
 }
 
@@ -28,11 +29,12 @@ public class Vector2d implements IVector {
     public void Vector() {
     }
 }
-</code></pre>
+{% endhighlight %}
 
 <p>and compare it to this:</p>
 
-<pre><code>public abstract class BaseVector {
+{% highlight java %}
+public abstract class BaseVector {
     public abstract BaseVector() {
     }
 }
@@ -43,4 +45,4 @@ public class Vector2d extends BaseVector {
         super();
     }
 }
-</code></pre>
+{% endhighlight %}

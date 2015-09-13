@@ -16,13 +16,14 @@ tumblr_url: http://shybovycha.tumblr.com/post/114483612351/decorator-pattern-in-
 
 <p>Thus, Decorator pattern is a way of wrapping some method’s or class’ behaviour. In Python it may be done with <strong>Context Managers:</strong></p>
 
-<pre><code>from contextlib import contextmanager
+{% highlight python %}
+from contextlib import contextmanager
 
 @contextmanager
 def tag(name):
-    print "&amp;lt;%s&amp;gt;" % name,
+    print "<%s>" % name,
     yield
-    print "&amp;lt;/%s&amp;gt;" % name,
+    print "</%s>" % name,
 
 with tag("h1"):
     print "moo",
@@ -31,19 +32,21 @@ print
 
 with tag("div"):
     print "foo",
-</code></pre>
+{% endhighlight %}
 
 <p>This code will end up wrapping <code>print "foo"</code> and <code>print "moo"</code> methods with printing some HTML tags around &lsquo;em:</p>
 
-<pre><code>&lt;h1&gt;moo&lt;/h1&gt;
-&lt;div&gt;foo&lt;/div&gt;
-</code></pre>
+{% highlight html %}
+<h1>moo</h1>
+<div>foo</div>
+{% endhighlight %}
 
 <p>That is interesting as it implements Decorator design pattern in a bit hard-coded way, but using language features, not OOP ones.</p>
 
-<p>Compare it to the <em>&ldquo;standard&rdquo;</em> OOP implementation in Python:</p>
+<p>Compare it to the <em>"standard"</em> OOP implementation in Python:</p>
 
-<pre><code># -*-coding:utf-8 -*-
+{% highlight python %}
+# -*-coding:utf-8 -*-
 class SimpleText(object):
     def __init__(self, text):
         self.text = text
@@ -60,14 +63,14 @@ class TagDecorator(SimpleText):
         self.tag = tag
 
     def content(self):
-        return '&lt;{0}&gt;{1}&lt;/{0}&gt;'.format(self.tag, super(TagDecorator, self).content())
+        return '<{0}>{1}</{0}>'.format(self.tag, super(TagDecorator, self).content())
 
 a = SimpleText('moo')
 print('SimpleText: %s' % a)
 
 b = TagDecorator('moo', 'h1')
 print('TagDecorator (h1): %s' % b)
-</code></pre>
+{% endhighlight %}
 
 <p>This one looks a bit&hellip; ugly&hellip; right? And though Python does not really care of which type are <code>a</code> and <code>b</code>, we may not need all this class hierarchy.</p>
 

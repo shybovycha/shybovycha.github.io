@@ -2,24 +2,36 @@
 layout: default
 ---
 
-<div class="home">
+<div class="col-xs-12 posts-wrapper">
+  {% for post in paginator.posts %}
+    <div class="post">
+      <div class="title">
+        <span class="timestamp label label-info pull-right hidden-md-down">
+          {{ post.date | date: "%b %-d, %Y" }}
+        </span>
 
-  <div class="post-list flex-boxes">
-    {% for post in site.posts %}
-      <div class="flex-box">
-        <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
+        <span class="small hidden-md-up">
+          {{ post.date | date: "%b %-d, %Y" }}
+        </span>
 
-        <h2 class="flex-title">
-          {% if post.tags contains 'quote' %}
-            "{{ post.title }}"
-          {% else %}
-            <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
-          {% endif %}
-        </h2>
+        {% unless post.tags contains 'quote' %}
+          <h3>
+            {{ post.title }}
+          </h3>
+        {% endunless %}
       </div>
-    {% endfor %}
-  </div>
 
-  <p class="rss-subscribe">subscribe <a href="{{ "/feed.xml" | prepend: site.baseurl }}">via RSS</a></p>
+      {% if post.tags contains 'quote' %}
+        <blockquote class="blockquote blockquote-reverse">
+          {{ post.title }}
+        </blockquote>
+      {% else %}
+        {{ post.excerpt }}
 
+        <div class="text-right">
+          <a class="btn btn-sm btn-primary" href="{{ post.url | prepend: site.baseurl }}">Read more</a>
+        </div>
+      {% endif %}
+    </div>
+  {% endfor %}
 </div>
