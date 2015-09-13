@@ -60,6 +60,35 @@ $background-image: url(/images/background2.png);
   padding: 20px 0 15px 0;
 }
 
+.media {
+  img.media-object {
+    max-width: 50px;
+    max-height: 50px;
+  }
+}
+
+#photo-sample-carousel {
+  .carousel-indicators {
+    bottom: 5px;
+
+    li {
+      border: 1px solid #90BF00;
+
+      &.active {
+        background-color: #90BF00;
+      }
+    }
+  }
+  .carousel-inner {
+    .carousel-item {
+      text-align: center;
+      height: 350px;
+      max-height: 350px;
+      overflow: hidden;
+    }
+  }
+}
+
 @media (min-width: map-get($grid-breakpoints, md)) {
   body {
     background: $background-image;

@@ -10,6 +10,175 @@ permalink: /about/
   </div>
 
   <div class="col-sm-8">
-    Hello! My name is Artem and I like blogging!
+    <p>
+      Hello! My name is Artem and I like blogging!
+    </p>
+
+    <p>
+      There are many things you may find on this blog. They are mostly about programming, but
+      that is not the only thing I am interested in. I love travelling, riding bicycles,
+      creating 3D models, shooting photos. I am learning to ride snowboard, to play the guitar,
+      making some stuff with soldering and MCUs. And I love my girlfriend =)
+    </p>
+
+    <p>
+      Some of those come to me easily, some of them <em>(like playing the guitar or riding snowboard)</em> - not.
+      Here are some of my photos:
+    </p>
+
+    <div id="photo-sample-carousel" class="carousel slide" data-ride="carousel">
+      <ol class="carousel-indicators">
+        <li class="active" data-target="#photo-sample-carousel" data-slide-to="0"></li>
+        <li data-target="#photo-sample-carousel" data-slide-to="1"></li>
+        <li data-target="#photo-sample-carousel" data-slide-to="2"></li>
+        <li data-target="#photo-sample-carousel" data-slide-to="3"></li>
+        <li data-target="#photo-sample-carousel" data-slide-to="4"></li>
+        <li data-target="#photo-sample-carousel" data-slide-to="5"></li>
+        <li data-target="#photo-sample-carousel" data-slide-to="6"></li>
+        <li data-target="#photo-sample-carousel" data-slide-to="7"></li>
+      </ol>
+
+      <div class="carousel-inner" role="listbox">
+        <div class="carousel-item active">
+          <img src="{{'/images/photo-samples/sample1.jpg'|prepend:site.baseurl}}" alt="">
+
+          <div class="carousel-caption">Pieniny, Poland</div>
+        </div>
+
+        <div class="carousel-item">
+          <img src="{{'/images/photo-samples/sample2.jpg'|prepend:site.baseurl}}" alt="">
+
+          <div class="carousel-caption">Prague, Czech Republic</div>
+        </div>
+
+        <div class="carousel-item">
+          <img src="{{'/images/photo-samples/sample3.jpg'|prepend:site.baseurl}}" alt="">
+
+          <div class="carousel-caption">Vienn, Austria</div>
+        </div>
+
+        <div class="carousel-item">
+          <img src="{{'/images/photo-samples/sample4.jpg'|prepend:site.baseurl}}" alt="">
+
+          <div class="carousel-caption">Cabo da Roca, Portugal</div>
+        </div>
+
+        <div class="carousel-item">
+          <img src="{{'/images/photo-samples/sample5.jpg'|prepend:site.baseurl}}" alt="">
+
+          <div class="carousel-caption">Palacio de Pena, Portugal</div>
+        </div>
+
+        <div class="carousel-item">
+          <img src="{{'/images/photo-samples/sample6.jpg'|prepend:site.baseurl}}" alt="">
+
+          <div class="carousel-caption">Oko Morskie, Poland</div>
+        </div>
+
+        <div class="carousel-item">
+          <img src="{{'/images/photo-samples/sample7.jpg'|prepend:site.baseurl}}" alt="">
+
+          <div class="carousel-caption">Park Ojcówski, Poland</div>
+        </div>
+
+        <div class="carousel-item">
+          <img src="{{'/images/photo-samples/sample8.jpg'|prepend:site.baseurl}}" alt="">
+
+          <div class="carousel-caption">Gdańsk, Poland</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-12">
+    <p>And the topics listed below dominate on this blog.</p>
+
+    <ul class="media-list">
+      <li class="media">
+        <div class="media-left"><img src="{{ '/images/camera.jpg' }}" alt="" class="media-object"></div>
+        <div class="media-body">
+          <h4 class="media-heading">photography</h4>
+          <span>I use these for shooting photos:</span>
+          <ul>
+            <li>my girlfriend's Nikon D3100 with Nikkor 35mm / 1.8</li>
+            <li>my first DSLR, Pentax K-5 II with Pentax 18-135mm / 3.5</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="media">
+        <div class="media-left"><img src="{{ '/images/lambda.jpg' | prepend:site.baseurl }}" alt="lambda" class="media-object"></div>
+        <div class="media-body">
+          <h4 class="media-heading">functional programming</h4>
+          <ul>
+            <li>Erlang</li>
+            <li>Haskell</li>
+            <li>Clojure</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="media">
+        <div class="media-left"><img src="{{ '/images/rails.png' | prepend:site.baseurl}}" alt="" class="media-object"></div>
+        <div class="media-body">
+          <h4 class="media-heading">web development</h4>
+          <span>server-side:</span>
+          <ul>
+            <li>PHP</li>
+            <li>NodeJS</li>
+            <li>Rails</li>
+          </ul>
+
+          <span>client-side:</span>
+          <ul>
+            <li>CSS</li>
+            <li>JavaScript</li>
+            <li>Angular</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="media">
+        <div class="media-left"><img src="{{ '/images/ogre3d.png' | prepend:site.baseurl }}" alt="" class="media-object"></div>
+        <div class="media-body">
+          <h4 class="media-heading">3D graphics</h4>
+          <ul>
+            <li>OGRE 3D</li>
+            <li>Irrlicht</li>
+            <li>OpenGL</li>
+            <li>Blender</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="media">
+        <div class="media-left"><img src="{{ '/images/atmel.jpg' | prepend:site.baseurl }}" alt="" class="media-object"></div>
+        <div class="media-body">
+          <h4 class="media-heading">assembly</h4>
+          <ul>
+            <li>NASM and assembly language</li>
+            <li>MCUs</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="media">
+        <div class="media-left"><img src="{{ '/images/interview.png' | prepend:site.baseurl }}" alt="" class="media-object"></div>
+        <div class="media-body">
+          <h4 class="media-heading">tips &amp; tricks:</h4>
+          <ul>
+            <li>interesting questions from interviews</li>
+            <li>different hacks and researches</li>
+          </ul>
+        </div>
+      </li>
+
+      <!--<li class="media">
+        (.media-left>img.media-object)+(.media-body>h4.media-heading+p)
+      </li>-->
+    </ul>
   </div>
 </div>
