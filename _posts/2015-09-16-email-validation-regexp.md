@@ -12,7 +12,7 @@ different options, including **effective** and **psycho** solutions.
 
 <!--more-->
 
-From [CPAN](search.cpan.org/~pdwarren/Mail-RFC822-Address-0.3/Address.pm):
+From [CPAN](http://search.cpan.org/~pdwarren/Mail-RFC822-Address-0.3/Address.pm):
 
 <blockquote>
 Mail::RFC822::Address: regexp-based address validation
