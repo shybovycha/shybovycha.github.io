@@ -178,7 +178,7 @@ globally - only as plugins for Gulp:
 npm install --save-dev gulp gulp-babel gulp-scss gulp-jade gulp-install
 {% endhighlight %}
 
-And the project dependencies. Let's make them use fixed versions, so when we update our project,
+I will describe how Gulp works and how we can use it in our project in a minute. For now, let's just install the project dependencies. Let's make them use fixed versions, so when we update our project,
 nothing gets broken. To make our development quick, we'll be using *Twitter Bootstrap*.
 Let's fill out the `bower.json` file automatically:
 
@@ -187,7 +187,15 @@ bower init
 bower install --save bootstrap angular
 {% endhighlight %}
 
-Now let's write a build task for Gulp. Just write this code in the `gulpfile.js`:
+These commands create a directory `bower_components`, containing all the dependencies installed, each in its own sub-directory. With that in mind, we will be referencing our front-end dependencies, relatively to their catalogs within the `bower_components` directory.
+
+Now let's write a build task for Gulp. Gulp is a streamed build tool. That means, that each operation you perform, passes its result to another operation as the input argument. So, for example, if you run `gulp.src('src/styles/*.scss')`, it will return you an object with the list of all the SCSS files and the magic `pipe()` method. And when you call the `gulp.src(...).pipe(scss())`, Gulp will pass that list to the SCSS compiler plugin, so you will get a compiled CSS code. That is, not a CSS file itself, but a compressed, merged, CSS file' content.
+
+And that describes the second important feature of Gulp: it does not store the intermediate operation results. It is almost like a functional programming.
+
+So, how to store that list of results?
+
+Just write this code in the `gulpfile.js`:
 
 {% highlight js %}
 var gulp = require('gulp'),
