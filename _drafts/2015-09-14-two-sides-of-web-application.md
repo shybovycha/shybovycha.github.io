@@ -163,6 +163,84 @@ Now, since we separated our front-end part of application from back-end part, we
 languages to write stylesheets and views. And even controllers! So let's take the most from 2015 and use the newest
 tool set: *Jade*, *ES6+* and *SCSS*. And put all them together with *Bower* and *Gulp*.
 
+All those Jade, SCSS and ES6 are not supported by a browser out-of-the box. They must be compiled to HTML, CSS and JS in order to be recognized by a browser. But they are here to help you writing code quickly. I listed some of their key features below.
+
+**Jade** is a tempalte rendering engine with its own markup language. It is somehow similar to Haml and Slim - it
+nests XHTML nodes with indentation, closes tags automatically... But it is especially good at writing complex web
+pages, consisting of *layouts* and *partials*.
+
+*Layouts* are big templates, containing placeholders, where
+concrete partials will be placed. So, for example, you may create a separate layout for your webshop' landing
+page, account page and shopping cart. They will be different. And all of them will use different sets of partials.
+But, for example, a footer and a quick shopping cart preview or user account widget (the one with a link to user's
+account page) will be the same. To prevent duplicating those widgets' code on each of the layouts, we extract them
+to a separate files, called *partials* and then just make a reference (a placeholder) in our layouts, saying
+*"place that partial's content here"*.
+
+In case with Jade, we may override or extend existing partials in a layout, without touching partial' file itself.
+So, for example, if we want to make user's avatar to be shown in a user account widget only on a product page, we just override user widget partial on a product page, removing the part with avatar.
+
+**SCSS** is a way to simplify writing CSS. It is so simple, but so powerful, that you will fall in love with it
+after first couple of stylesheets! See, in CSS when you write a long selector, specifying many parents, you may
+find your stylesheets ugly and huge, when describing different children of one, deeply nested parent.
+
+So, let's say you are having a user widget. And it may be placed both on page' header, footer and sidebar. But
+the avatar image will look differently on each of those - it must be smaller in header and footer. So you
+start writing selectors like `.sidebar .user-widget .avatar img` and `.header .user-widget .avatar img`.
+That's painful, but not that much, if you have just a couple of those. But as your website grows, you
+start getting really, really upset about that.
+
+And here's where SCSS is just a revelation: its great power is in its *selectors*, *variables* and *mixins*.
+
+*Selectors* allow you to describe selector' nesting just as you'd be writing C code:
+
+{% highlight scss %}
+.header {
+    // header styles
+
+    .user-widget {
+        // header user-widget styles
+
+        .avatar {
+            // maybe something differs in avatar itself?
+
+            img {
+                // ah! here's it!
+            }
+        }
+    }
+}
+{% endhighlight %}
+
+*Variables* allow you to get rid of all those magic values. So if you use one color many times across your styles,
+you just extract it into a named constant and use the pretty named value everywhere!
+
+*Mixins* allow even more: you may extract the parts of the styles into a named and even **parametrized** function!
+
+Relating on all those, you may re-write your user widget as follows:
+
+{% highlight scss %}
+$header-avatar-size 50px;
+$sidebar-avatar-size 150px;
+
+@mixin avatar($avatar_size) {
+    max-width: $avatar_size;
+    max-height: $avatar_size;
+}
+
+.header {
+    .user-widget .avatar {
+        @include avatar($header-avatar-size);
+    }
+}
+
+.sidebar {
+    .user-widget .avatar {
+        @include avatar($sidebar-avatar-size);
+    }
+}
+{% endhighlight %}
+
 I found Gulp to be super-easy for tasks like compiling stylesheets, views and javascripts.
 
 But first of all, let's initialize an NPM project with `npm init`. Then, we need to install our development tools:
