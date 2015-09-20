@@ -580,6 +580,8 @@ gulp.src(['public/', 'bower_components/'])
 As you can see, we used Jade's block extending and split our templates into one layout and many partials, so
 our file tree is clean and changing any of the pages will not be a hard task.
 
+<a href="https://github.com/shybovycha/two-sides-of-web-application/tree/628f216b8e7d904e040035b31c3d0c546d8f1e5e" class="btn btn-info">Full code of these steps</a>
+
 ## Architecture details
 
 In our front-end application we will use something called *MVVM*. That is a design pattern, kindly provided
@@ -675,8 +677,6 @@ And so we can define corresponding Angular controllers:
         </tr>
     </tbody>
 </table>
-
-<a href="https://github.com/shybovycha/two-sides-of-web-application/tree/75f23bf61c29d3247e20f9a9f5727ccd0b685ad3" class="btn btn-info">Full code of these steps</a>
 
 ## Next time: Angular injection
 
