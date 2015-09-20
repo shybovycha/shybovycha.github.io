@@ -90,6 +90,19 @@ $background-image: url(/images/background2.png);
   }
 }
 
+.btn.read-more {
+  $read-more-btn-color: rgb(120, 161, 171);
+  $read-more-btn-color-hover: rgb(73, 122, 134);
+
+  background-color: $read-more-btn-color;
+  border-color: $read-more-btn-color;
+
+  &:hover {
+    background-color: $read-more-btn-color-hover;
+    border-color: $read-more-btn-color-hover;
+  }
+}
+
 @media (min-width: map-get($grid-breakpoints, md)) {
   body {
     background: $background-image;

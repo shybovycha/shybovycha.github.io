@@ -2,36 +2,4 @@
 layout: default
 ---
 
-<div class="col-xs-12 posts-wrapper">
-  {% for post in paginator.posts %}
-    <div class="post">
-      <div class="title">
-        <span class="timestamp label label-info pull-right hidden-md-down">
-          {{ post.date | date: "%b %-d, %Y" }}
-        </span>
-
-        <span class="small hidden-md-up">
-          {{ post.date | date: "%b %-d, %Y" }}
-        </span>
-
-        {% unless post.tags contains 'quote' %}
-          <h3>
-            {{ post.title }}
-          </h3>
-        {% endunless %}
-      </div>
-
-      {% if post.tags contains 'quote' %}
-        <blockquote class="blockquote blockquote-reverse">
-          {{ post.title }}
-        </blockquote>
-      {% else %}
-        {{ post.excerpt }}
-
-        <div class="text-right">
-          <a class="btn btn-sm btn-primary" href="{{ post.url | prepend: site.baseurl }}">Read more</a>
-        </div>
-      {% endif %}
-    </div>
-  {% endfor %}
-</div>
+{% include index.html %}
