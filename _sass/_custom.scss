@@ -96,10 +96,12 @@ $background-image: url(/images/background2.png);
 
   background-color: $read-more-btn-color;
   border-color: $read-more-btn-color;
+  color: white;
 
   &:hover {
     background-color: $read-more-btn-color-hover;
     border-color: $read-more-btn-color-hover;
+    color: white;
   }
 }
 

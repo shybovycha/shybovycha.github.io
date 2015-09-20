@@ -220,8 +220,8 @@ you just extract it into a named constant and use the pretty named value everywh
 Relating on all those, you may re-write your user widget as follows:
 
 {% highlight scss %}
-$header-avatar-size 50px;
-$sidebar-avatar-size 150px;
+$header-avatar-size: 50px;
+$sidebar-avatar-size: 150px;
 
 @mixin avatar($avatar_size) {
     max-width: $avatar_size;
@@ -241,26 +241,27 @@ $sidebar-avatar-size 150px;
 }
 {% endhighlight %}
 
-I found Gulp to be super-easy for tasks like compiling stylesheets, views and javascripts.
-
-But first of all, let's initialize an NPM project with `npm init`. Then, we need to install our development tools:
+I found Gulp to be super-easy for tasks like compiling stylesheets, views and javascripts. But before
+we continue with Gulp, let's initialize an NPM project with `npm init` and install the plugins required:
 
 {% highlight bash %}
-npm install -g gulp bower
+npm install -g gulp
 {% endhighlight %}
 
-We will be building our Jade, SCSS and ES6+ files with Gulp, so we do not need to install all those tools
-globally - only as plugins for Gulp:
+And Gulp plugins:
 
 {% highlight bash %}
-npm install --save-dev gulp gulp-babel gulp-scss gulp-jade gulp-install
+npm install --save-dev gulp gulp-babel gulp-scss gulp-jade
 {% endhighlight %}
 
-I will describe how Gulp works and how we can use it in our project in a minute. For now, let's just install the project dependencies. Let's make them use fixed versions, so when we update our project,
-nothing gets broken. To make our development quick, we'll be using *Twitter Bootstrap*.
-Let's fill out the `bower.json` file automatically:
+I will describe how Gulp works and how we can use it in our project in a minute. For now, let's
+just install the front-end dependencies. Let's make them use fixed versions, so when we update our project,
+nothing gets broken. To make our development quick, we'll be using *Twitter Bootstrap* and manage all
+fron-end dependencies with *Bower*. Bower will fill out the `bower.json`, a file, telling Bower
+which libraries to use, automatically:
 
 {% highlight bash %}
+npm install -g bower
 bower init
 bower install --save bootstrap angular
 {% endhighlight %}
@@ -269,23 +270,19 @@ These commands create a directory `bower_components`, containing all the depende
 
 Now let's write a build task for Gulp. Gulp is a streamed build tool. That means, that each operation you perform, passes its result to another operation as the input argument. So, for example, if you run `gulp.src('src/styles/*.scss')`, it will return you an object with the list of all the SCSS files and the magic `pipe()` method. And when you call the `gulp.src(...).pipe(scss())`, Gulp will pass that list to the SCSS compiler plugin, so you will get a compiled CSS code. That is, not a CSS file itself, but a compressed, merged, CSS file' content.
 
-And that describes the second important feature of Gulp: it does not store the intermediate operation results. It is almost like a functional programming.
+And that describes the second important feature of Gulp: it does not store the intermediate operation results. It is almost like a functional programming - you just have the input data. Then you call a chain of functions on it,
+passing the result of one function call to the next function as its input. Same happens here, but in not that
+strict manner - since we are using Javascript, we can store the intermediate results in a memory. But to store
+the results in the files, we should pass them to the `gulp.dest(...)` function. Depending on function, looking
+to store its results, `gulp.dest()` may point to a directory or a single file, where the results will be stored.
 
-So, how to store that list of results?
-
-Just write this code in the `gulpfile.js`:
+Below is our first Gulp task. Write this code in the `gulpfile.js`:
 
 {% highlight js %}
 var gulp = require('gulp'),
     sass = require('gulp-scss'),
     babel = require('gulp-babel'),
-    jade = require('gulp-jade'),
-    install = require('gulp-install');
-
-gulp.task('install', function () {
-    gulp.src([ 'bower.json', 'package.json' ])
-        .pipe(install());
-});
+    jade = require('gulp-jade');
 
 gulp.task('build', function () {
     gulp.src('src/views/**/*.jade')
@@ -302,10 +299,10 @@ gulp.task('build', function () {
 });
 {% endhighlight %}
 
-This tells Gulp to define two tasks - `install`, which installs all NPM and Bower dependencies, and
-`build`, which compiles all the Jade, SCSS and ES6+ files into HTML, CSS and JS files, correspondingly.
-Compiled files are placed within the `public/` directory, so we may easily render them with almost any
-web-server. But first things first, we need to prepare directory structure like this for our `build` task:
+This tells Gulp to define `build` task, which compiles all the Jade, SCSS and ES6+ files into HTML, CSS
+and JS files, correspondingly. Compiled files are placed within the `public/` directory, so we may
+easily render them with almost any web-server. But first things first, we need to prepare directory structure
+like this for our task:
 
 {% highlight bash %}
 .
@@ -362,8 +359,17 @@ async function f() {
 f()
 {% endhighlight %}
 
-And to actually check our task, we need to run it with `gulp build`. Now, you may open the HTML generated
-from Jade in a browser, but it will look ugly, because your browser will doubtly find stylesheets and javascripts.
+And to actually check our task, we need to run it with
+
+{% highlight bash %}
+gulp build
+{% endhighlight %}
+
+Now, you may open the HTML generated from Jade in a browser, but it will look ugly, because your
+browser will doubtly find stylesheets and javascripts that simply. To make the magic happen, we
+will use another Gulp plugin, `gulp-server-livereload`. Generally, the development process with
+different build tools looks very similar nowadays: you set up the environment, find the plugins
+you need, install and configure them - and vióla!
 
 ## Why these ones?
 
