@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Two sides of web application. Part 1
-date: '2015-09-14T17:44:39+01:00'
+date: '2015-09-20T20:18:39+01:00'
 ---
 
 # Two sides of web application. Part 1
@@ -268,6 +268,8 @@ async function f() {
 f()
 {% endhighlight %}
 
+<a href="https://github.com/shybovycha/two-sides-of-web-application/tree/10f770a5ca64fad1cb6e58bc957e5210bc95bda3" class="btn btn-info">Full code of these steps</a>
+
 And to actually check our task, we need to run it with
 
 {% highlight bash %}
@@ -332,6 +334,8 @@ in the `public/` directory. To check how this awesomeness works, start `gulp ser
 [`localhost:3000/test.html`](localhost:3000/test.html) page and then change, for example,
 color for the `h1` tag to green. Save the SCSS file and just switch to the browser window, **do not reload
 it manually**.
+
+<a href="https://github.com/shybovycha/two-sides-of-web-application/tree/07f6cda21da377719861f41f89064a414e808268" class="btn btn-info">Full code of these steps</a>
 
 ## Templates
 
@@ -671,6 +675,8 @@ And so we can define corresponding Angular controllers:
         </tr>
     </tbody>
 </table>
+
+<a href="https://github.com/shybovycha/two-sides-of-web-application/tree/75f23bf61c29d3247e20f9a9f5727ccd0b685ad3" class="btn btn-info">Full code of these steps</a>
 
 ## Next time: Angular injection
 
