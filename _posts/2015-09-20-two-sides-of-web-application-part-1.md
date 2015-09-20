@@ -1,10 +1,10 @@
 ---
 layout: post
-title: Two sides of web application
+title: Two sides of web application. Part 1
 date: '2015-09-14T17:44:39+01:00'
 ---
 
-# Two sides of web application
+# Two sides of web application. Part 1
 
 ## Prologue
 
@@ -676,116 +676,3 @@ And so we can define corresponding Angular controllers:
 
 This is the end of the first part of my huge research article. In the next post I will show
 how to add Angular into our front-end application.
-
------
-
-## Angular injection
-
-To start using Angular, we need to add it as a dependency.
-
------
-
-## Why these ones?
-
-I decided to write BDD tests with *Cucumber* and *Jest*. To interoperate with browser we will be using Selenium.
-But it needs a webdriver to communicate with browser. For this purpose we will use *Webdriverio*.
-Why these ones? Why not using Protractor?
-
-You should not be looking for a reason to stay with selected technology, unless you are running a long-lasting
-enterprise solution. For example, keeping protractor with his hell-hard syntax for simple operations only
-because it can handle downloading and running webdrivers for selenium out-of-the box... Or using ugly-looking
-*expect* from npm because it is popular a bit... Or *chai.js* for its `.eventually()` method of handling promises...
-
-## Promises
-
-{% highlight javascript %}
-  this.Then(/^he can (not )?see retina images$/, function (negation, callback) {
-       var pattern = (negation ? /^((?!@2x).)*$/ : /@2x/);
-
-       element(by.css('.norton-logo img'))
-           .getAttribute('src')
-           .then(function (src) {
-               expect(src).toMatch(pattern);
-           })
-           .then(function () {
-               element(by.css())
-                   .getCssValue('background')
-                   .then(function (background) {
-                       expect(background).toMatch(pattern);
-                   });
-           });
-   });
-{% endhighlight %}
-
-{% highlight js %}
-  this.Then(/^he can (not )?see retina images$/, function (negation, callback) {
-        var pattern = (negation ? /^((?!@2x).)*$/ : /@2x/);
-
-        var findNortonLogo = function () {
-            return element(by.css('.norton-logo img')).getAttribute('src');
-        };
-
-        var checkNortonLogoSrc = function (src) {
-            var deferred = protractor.promise.defer();
-
-            expect(src).toMatch(pattern);
-            deferred.fulfill();
-
-            return deferred.promise;
-        };
-
-        var findHomepageLogo = function () {
-            return element(by.css('.homepage')).getCssValue('background');
-        };
-
-        var checkHomepageLogoBackground = function (background) {
-            var deferred = protractor.promise.defer();
-
-            expect(background).toMatch(pattern);
-            deferred.fulfill();
-
-            return deferred.promise;
-        };
-
-        browser.waitForAngular()
-            .then(findNortonLogo)
-            .then(checkNortonLogoSrc)
-            .then(findHomepageLogo)
-            .then(checkHomepageLogoBackground)
-            .then(callback);
-    });
-{% endhighlight %}
-
-## Frank
-
-*Sinatra + Sequel*
-
-## Try some Grapes
-
-*Napa = Grape + ActiveRecord*
-
-## Scale it
-
-*Scala + Play + Squeryl | SORM*
-
-## Rethink half of it
-
-*NodeJS + RethinkDB*
-
-## Switch to Java
-
-YEAH!
-
-*Groovy?*
-
-## Add some lists
-
-*Clojure + Compojure + ???*
-
-## Go with the flow
-
-*Go + ??? + ???*
-
-## Performance?
-
-*Performance tests, run from another machine; clean restart server before each test*
