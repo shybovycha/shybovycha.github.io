@@ -362,8 +362,8 @@ html(lang="en")
     head
         block head
             title OurStats
-            link(rel="stylesheet", href="bootstrap/dist/css/bootstrap.css")
-            link(rel="stylesheet", href="bootstrap/dist/css/bootstrap-theme.css")
+            link(rel="stylesheet" href="bootstrap/dist/css/bootstrap.css")
+            link(rel="stylesheet" href="bootstrap/dist/css/bootstrap-theme.css")
             script(src="bootstrap/dist/js/bootstrap.js")
 
     body
@@ -384,10 +384,10 @@ block content
         p.lead
             .row
                 .col-xs-12.col-md-1
-                    a.btn.btn-primary.btn-lg(href="#", role="button") Sign in
+                    a.btn.btn-primary.btn-lg(href="#" role="button") Sign in
 
                 .col-xs-12.col-md-1
-                    a.btn.btn-success.btn-lg(href="#", role="button") Sign up
+                    a.btn.btn-success.btn-lg(href="#" role="button") Sign up
 {% endhighlight %}
 
 *`src/views/new_session.jade`:*
@@ -401,13 +401,13 @@ block content
             h3 Sign up
             form
                 fieldset.form-group
-                    input.form-control(type="text", placeholder="Your name")
+                    input.form-control(type="text" placeholder="Your name")
                 fieldset.form-group
-                    input.form-control(type="email", placeholder="Email")
+                    input.form-control(type="email" placeholder="Email")
                 fieldset.form-group
-                    input.form-control(type="password", placeholder="Password")
+                    input.form-control(type="password" placeholder="Password")
                 fieldset.form-group
-                    input.form-control(type="password", placeholder="Password confirmation")
+                    input.form-control(type="password" placeholder="Password confirmation")
                 fieldset.form-group.text-center
                     button.btn.btn-primary(type="submit") Sign up
 
@@ -417,9 +417,9 @@ block content
             h3 Sign in
             form
                 fieldset.form-group
-                    input.form-control(type="email", placeholder="Email")
+                    input.form-control(type="email" placeholder="Email")
                 fieldset.form-group
-                    input.form-control(type="password", placeholder="Password")
+                    input.form-control(type="password" placeholder="Password")
                 fieldset.form-group.text-center
                     button.btn.btn-success(type="submit") Sign in
 {% endhighlight %}
@@ -435,11 +435,11 @@ block content
             h3 Account settings
             form
                 fieldset.form-group
-                    input.form-control(type="text", placeholder="Your name")
+                    input.form-control(type="text" placeholder="Your name")
                 fieldset.form-group
-                    input.form-control(type="password", placeholder="Password")
+                    input.form-control(type="password" placeholder="Password")
                 fieldset.form-group
-                    input.form-control(type="password", placeholder="Password confirmation")
+                    input.form-control(type="password" placeholder="Password confirmation")
                 fieldset.form-group.text-center
                     button.btn.btn-success(type="submit") Save
 {% endhighlight %}
