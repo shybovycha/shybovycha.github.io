@@ -664,6 +664,10 @@ And so we can define corresponding Angular controllers:
             <td>appList</td>
         </tr>
         <tr>
+            <td>/apps/new</td>
+            <td>newApp</td>
+        </tr>
+        <tr>
             <td>/app/:id</td>
             <td>appDetails</td>
         </tr>

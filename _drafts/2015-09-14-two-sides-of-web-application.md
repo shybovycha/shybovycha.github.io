@@ -683,6 +683,61 @@ how to add Angular into our front-end application.
 
 To start using Angular, we need to add it as a dependency.
 
+**DO NOT FORGET TO ADD `ng-app="myAppName"` for `<body>` tag!**
+
+We eliminated almost all our `block` and `extends layouts/default.jade` instructions. So why are we
+still using Jade? - Because it still simplifies our job!
+
+We added a lot of dummy data, forgot a few routes, named our resources in a bad manner... But even
+counting all those mistakes, it took nearly 2 hrs to write an Angular application fron scratch!
+And that is the power of our architecture! All the next parts of this huge-research-post-series
+describe how I look for such powerful solution for a server-side.
+
+-----
+
+## Resourceful services
+
+{% highlight js %}
+ourStatsApp.factory('session', [ '$http', 'accountData',
+    ($http, accountData) => {
+        return {
+            get: (account) => {
+                var params = {
+                    email: account.email,
+                    password: account.password
+                };
+
+                $http.post('/sessions/get', params)
+                    .then((response) => {
+                        account = response.data;
+                        accountData.set(account);
+                    })
+                    .catch((response) => {
+                        accountData.reset();
+                    });
+            },
+
+            create: (account) => {
+                var params = {
+                    name: account.name,
+                    email: account.email,
+                    password: account.password
+                };
+
+                $http.post('/sessions/create', params)
+                    .then((response) => {
+                        account = response.data;
+                        accountData.set(account);
+                    })
+                    .catch((response) => {
+                        accountData.reset();
+                    });
+            }
+        }
+    }
+]);
+{% endhighlight %}
+
 -----
 
 ## Why these ones?
