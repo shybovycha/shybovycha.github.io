@@ -7,7 +7,10 @@ published: True
 
 ---
 
-At my work we've lately been having a discussions on email validation. I recalled a post on [habrahabr](http://habrahabr.ru/post/55820/), showing 
+<img src="/images/regex.jpg" class="img-responsive img-sm img-rounded pull-right">
+
+At my work we've lately been having a discussions on email validation. I recalled a post on 
+[habrahabr](http://habrahabr.ru/post/55820/), showing 
 different options, including **effective** and **psycho** solutions.
 
 <!--more-->
