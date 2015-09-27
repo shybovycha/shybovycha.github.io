@@ -83,9 +83,13 @@ $background-image: url(/images/background2.png);
   .carousel-inner {
     .carousel-item {
       text-align: center;
-      height: 295px;
-      max-height: 295px;
       overflow: hidden;
+
+      img {
+        display: inline-block;
+        height: 400px;
+        max-height: 400px;
+      }
     }
   }
 }
