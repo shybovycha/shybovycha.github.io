@@ -4,44 +4,51 @@ title: Two sides of web application. Part 3
 categories: []
 tags: []
 published: True
+
 ---
 
-## Spring Boot
-
-Initialize Maven project:
+## Preparation
 
 {% highlight bash %}
-mvn archetype:generate -DgroupId=com.mycompany.app -DartifactId=my-app -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+gem install napa
+napa new napa-test1
+cd napa-test1
 {% endhighlight %}
 
-Add Spring Boot to `pom.xml`:
+napa by default sets ruby to `2.0.0` in both `Gemfile` and `.ruby-version`, so if you are using a newer one
+you need to fix both files.
 
-{% highlight xml %}
-<build>
-    <plugins>
-        <plugin>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-maven-plugin</artifactId>
-        </plugin>
-    </plugins>
-</build>
-
-<parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>1.2.6.RELEASE</version>
-</parent>
-
-<dependencies>
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-web</artifactId>
-    </dependency>
-</dependencies>
+{% highlight bash %}
+bundle
+napa generate model User name:string email:string password_hash:string
+napa generate model Visitor ip:string browser:string
+napa generate model Application name:string token:string
 {% endhighlight %}
 
-Development run: `mvn spring-boot:run`
-Build project: `mvn clean install package`
-Production run: `java -jar target/my-app-1.0-SNAPSHOT.jar`
+napa uses the buggy version of `mysql2` gem, so fix this in your `Gemfile` setting version to `'~> 0.3.20'`.
 
-Application servers: `resin`, `jlupin`
+{% highlight bash %}
+rake db:create
+rake db:migrate
+napa generate api user
+napa generate api session
+napa generate api application
+napa generate api track
+{% endhighlight %}
+
+napa creates default API called `HelloApi` and presenter for it, remove them:
+
+{% highlight bash %}
+rm app/apis/hello_api.rb
+rm app/representers/hello_representer.rb
+{% endhighlight %}
+
+Mount our APIs in `app/apis/applicaiton_api.rb`:
+
+{% highlight ruby %}
+mount ApplicationsApi => '/apps'
+mount SessionsApi => '/session'
+mount UsersApi => '/user'
+mount TracksApi => '/track'
+{% endhighlight %}
+

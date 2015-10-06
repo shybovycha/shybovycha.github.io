@@ -16,6 +16,46 @@ These days, many web developers use different methodologies to make their web pa
 
 <!--more-->
 
+BEM *(Block Element Modifier)* is a convention for naming CSS classes in a such way so they do not overlap.
+Doing so you may turn your page into a set of independent blocks, or *components*. According to BEM,
+you name your CSS classes as follows: `BlockName__ElementName__ElementModifier`.
+
+`BlockName` is a name of a *component*, your element belongs to. This may be a menu, a gallery or a widget,
+for example.
+
+`ElementName` is a name of element of the block. Good examples of elements are label, title, avatar, menu_item,
+etc.
+
+`ElementModifier` is a more complex thing. This is a state of element, which defines how element may look
+like in a certain conditions. This may be a checkbox' `checked` status, `focus` property or `is_menu_opened`
+flag. Modifier may have one of two types:
+
+* `boolean`, where modifier is just a flag, showing if element's property is active or not
+* `key-value`, where modifier points to one of many possible property values
+
+For example, boolean modifiers are: `checked`, `big` (is element big or not), `hovered`, `opened`, etc.
+Key-value modifiers may be, for instance, `menu_type_bullet` or `menu_type_numbers`, `menu_top`, `menu_left`
+or `menu_right` (representing menu' position).
+
+Combining those three you may determine the look of any element and its state:
+
+{% highlight css %}
+.navigation__menu__position_left {...}
+.navigation__menu__position_right { ... }
+
+.top_menu__avatar__small { ... }
+.top_menu__avatar__medium { ... }
+
+/* more meaningful */
+.user_widget__avatar__menu_position_top { ... }
+.user_widget__avatar__menu_position_left { ... }
+.user_widget__avatar__menu_position_right { ... }
+
+/* more simple */
+.button__big { ... }
+.button__red { ... }
+{% endhighlight %}
+
 The aim of BEM is great - to make the web page use independent blocks with some structured **CSS class names** and have them all described in a nice way in the CSS files. Whilst it may sound like a Holy Grail for the Web, let's take a look at a real-world example of how BEM is used.
 
 There are, in fact, two approaches of BEM.
@@ -59,7 +99,17 @@ So, here we can see that any styles should not overlap with the defined ones unl
 
 **The new approach**
 
-But what about the newer version of BEM? Currently its authors assume you would use BEMJSON + BEMHTML to describe the whole page:
+But what about the newer version of BEM? Its authors developed a toolbox with their own framework,
+containing many tools to help you use BEM methodology. It contains two interesting tools - **BEMJSON**
+and **BEMHTML**. Those two allow you to define your views with JavaScript and JSON.
+
+To use them, just install `bem` with `npm`: `npm install bem`. Then you will be able to create your pages
+with either BEM, BEMTREE, BEMHTML and BEMJSON. This has two advantages to writing pages by your own:
+
+1. they come with plugins, so you may have some parts of CSS ready to use out-of-the-box
+2. it replaces writing all the selectors manually with writing them via commands of the `bem` utility
+
+For instance, here's how your page may look like when being made with BEMHTML:
 
 {% highlight js %}
 ({
@@ -84,7 +134,40 @@ But what about the newer version of BEM? Currently its authors assume you would 
  })
 {% endhighlight %}
 
-This is basically the whole page, described in one JSON file, which will then be compiled into an HTML page. Using this approach allows you not only to pack the blocks and elements into one structure, but also to spice it up with some JavaScript, which handles those components.
+And here's how it may look like when made with BEMJSON:
+
+{% highlight js %}
+exports.deps = [
+    {
+        "block": "page",
+        "elem": "css",
+        "attrs": { "src": "_hello.css" }
+    },
+    {
+        "block": "page",
+        "elem": "js",
+        "attrs": { "src": "_hello.js" }
+    },
+    {
+        "block": "page",
+        "elem": "meta"
+    },
+    {
+        "block": "header"
+    },
+    {
+        "block": "content"
+    },
+    {
+        "block": "footer"
+    }
+];
+{% endhighlight %}
+
+Those two may work both together, when you define general page structure with BEMJSON and each block you
+define with BEMHTML, or separatedly, when you define all your page in either BEMJSON or BEMHTML.
+
+But anyway, in BEMJSON or BEMHTML or whatever, the whole page is described in one JS file, which will then be compiled into an HTML page. Using this approach allows you not only to pack the blocks and elements into one structure, but also to spice it up with some JavaScript, which handles those components.
 
 Sounds great and may be somewhat helpful for new projects. But I believe there's a better solution.
 
@@ -94,7 +177,11 @@ Although the implementation of BEM is clumsy, the idea is really great! This is 
 
 Recently we have all seen great changes to the Web. We now have ES6, CSS3, HTML5 and all of them give us ultimate power! Support for old browsers is now provided with hacks called *polyfills*. But why should we stop ourselves using the best of what we have in the name of [3% of Internet users](http://gs.statcounter.com/#browser_version-ww-monthly-201405-201505)? Well, if you really do have to continue supporting all of those, you could just stop reading now. Or you could concentrate all your will and try out all these brand-new features in your pet project.
 
-So, the new approach in web design encapsulation uses WebComponents. Rather than reading the introductory texts, let's just check ‘em out:
+So, the new approach in web design encapsulation uses WebComponents. This is a technology, which does not
+works everywhere. This is contraversary to a BEM methodology, where you only define a CSS classes, which
+are supported since very early CSS versions.
+
+So, welcome the WebComponents' example:
 
 {% highlight html %}
 <template id="welcome-component">
@@ -123,7 +210,7 @@ So, the new approach in web design encapsulation uses WebComponents. Rather than
     </script>
 {% endhighlight %}
 
-This code may not look so good, but it works like a charm!
+This code may not look so good, as it might, but it works like a charm!
 
 <p><a href="http://codepen.io/shybovycha/pen/gpGJOV"><figure data-orig-width="660" data-orig-height="79" class="tmblr-full"><img src="https://40.media.tumblr.com/08701b6b73d8dcf7c78f1ba163d7f44f/tumblr_inline_nqciwfuAqT1qh5oee_540.png" alt="image" data-orig-width="660" data-orig-height="79"/></figure></a></p>
 
@@ -131,7 +218,10 @@ This example is a bit ugly - it has both CSS, HTML and JavaScript mixed in a sin
 
 Well, yeah, this is as ugly as BEM.
 
-Now, let’s make it spicy!
+But now you defined a component of your web-page, which you can then reuse with copying just one portion
+of XHTML in place. And placing it inside a totally different web page will not break it down - both
+HTML and CSS are separated and isolated and will not overlap with any other style or martkup. But
+let’s try out our web component!
 
 ## Bower
 
