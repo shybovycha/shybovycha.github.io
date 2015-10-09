@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Custom logging with tumbre
+title: Custom logging with timbre
 categories: []
 tags: []
 published: True
