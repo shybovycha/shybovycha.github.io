@@ -35,7 +35,7 @@ And so we went non-functional way first... We wrote a Java class, having two met
 words recursively. The idea was, to make a new word by appending it with each letter, then appending
 each of the alphabet' letters to this word and so on, until we get all the words of `N` characters.
 
-*IMAGE GOES HERE*
+<img class="img-responsive pull-right" style="max-height: 150px" src="{{ '/images/looong-tasks-with-clojure/collaborative-java.png' | prepend: site.baseurl }}" />
 
 When our pretty class was created and working *(for some cases)*, we decided to do it more
 Java-correct and created two more classes, implementing a single interface, doing the same thing
@@ -256,7 +256,13 @@ no time. Saying *almost* I mean the time, needed to construct and store an objec
 Just a simple, plain class' instance.
 
 But that was not an option - it took nearly `45 minutes` to find all the 6-letter words even
-when using `pmap`...
+when using `pmap` and eaten SO much damn memory!..
+
+<img class="img-responsive pull-right" style="max-height: 150px" src="{{ '/images/looong-tasks-with-clojure/mem-consumption-1.png' | prepend: site.baseurl }}" />
+
+However, idle REPL eats much memory too:
+
+<img class="img-responsive pull-right" style="max-height: 150px" src="{{ '/images/looong-tasks-with-clojure/idle-repl-memory.png' | prepend: site.baseurl }}" />
 
 {% highlight clojure %}
 (defn seq-contains? [coll target]
@@ -289,7 +295,7 @@ on the screen is a habit from my student years...
 
 The memory consumption got minimal:
 
-**IMAGE GOES HERE**
+<img class="img-responsive pull-right" style="max-height: 150px" src="{{ '/images/looong-tasks-with-clojure/mem-consumption-2.png' | prepend: site.baseurl }}" />
 
 And the time consumption was not **that** good, though...
 
