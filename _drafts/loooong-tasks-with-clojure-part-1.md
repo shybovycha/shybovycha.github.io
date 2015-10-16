@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Loooong tasks with Clojure. Part 1
+title: Loooong lists with Clojure
 categories: []
 tags: []
 published: True
@@ -311,3 +311,9 @@ bba60169d41b2dce7d0b37b2f9d637e0 kolej
 7914da949837cbdecf35cbf5951ad518 argon
 "Elapsed time: 73796.575567 msecs"
 {% endhighlight %}
+
+## Profit?
+
+*But where's the Saint Graal for brute-forcing like that? How to speed that algorithm?*
+I don't know, actually =) Well, I know how to do it with *OpenMP*, I have a couple of
+ideas on how this task could be distributed, but those desire a separate article.
