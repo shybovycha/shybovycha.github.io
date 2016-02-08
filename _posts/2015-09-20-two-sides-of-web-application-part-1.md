@@ -15,24 +15,24 @@ So did we at the last hackathon we were attending - we started with `rails new t
 spent half of the day integrating our blank app with Angular, Paperclip, creating API methods
 and so on. But the effort we needed to accomplish our goal (quite simple web app) was really huge.
 
-So I decided to find the best combination of backend and front-end technologies to cause
+So I decided to find the best combination of backend and frontend technologies to cause
 less pain.
 
-At the project I was lastly introduced into, the line between front-end and back-end is
-distinguished really clearly: we have an API, written in Clojure and thin front-end application,
+At the project I was lastly introduced into, the line between frontend and back-end is
+distinguished very clearly: we have an API, written in Clojure and thin frontend application,
 made with Angular and working on a generated set of static assets - HTMLs, CSS and JS files
 *(but under the hood we are using HAML and SCSS)*.
 
 The application I will be implementing throughout the whole article has the same architecture:
-it has RESTful API and MVVM on the front-end, made with Angular. You are welcome to the journey
+it has RESTful API and MVVM on the frontend, made with Angular. You are welcome to the journey
 of research and new technologies!
 
 <!--more-->
 
 ## Why not go with Rails?
 
-Because Rails is oftenly being overused. Especially if you install all of front-end libraries
-*(like Angular, Bootstrap, some Angular plugins, etc.)* as RubyGems. Front-end should stay
+Because Rails is oftenly being overused. Especially if you install all of frontend libraries
+*(like Angular, Bootstrap, some Angular plugins, etc.)* as RubyGems. Frontend should stay
 on the front end of the application; you should not tight your application at some precise
 version of the JS script, provided by a gem and rely on author's way to integrate it with
 Rails.
@@ -93,13 +93,13 @@ Now, let's decide what pages our application will have and how will they look li
 
 ## Build with the right tools!
 
-Now, since we separated our front-end part of application from back-end part, we may use different preprocessing
+Now, since we separated our frontend part of application from back-end part, we may use different preprocessing
 languages to write stylesheets and views. And even controllers! So let's take the most from 2015 and use the newest
 tool set: *Jade*, *ES6+* and *SCSS*. And put all them together with *Bower* and *Gulp*.
 
 All those Jade, SCSS and ES6 are not supported by a browser out-of-the box. They must be compiled to HTML, CSS and JS in order to be recognized by a browser. But they are here to help you writing code quickly. I listed some of their key features below.
 
-**Jade** is a tempalte rendering engine with its own markup language. It is somehow similar to Haml and Slim - it
+**Jade** is a template rendering engine with its own markup language. It is somehow similar to Haml and Slim - it
 nests XHTML nodes with indentation, closes tags automatically... But it is especially good at writing complex web
 pages, consisting of *layouts* and *partials*.
 
@@ -189,9 +189,9 @@ npm install --save-dev gulp gulp-babel gulp-scss gulp-jade
 {% endhighlight %}
 
 I will describe how Gulp works and how we can use it in our project in a minute. For now, let's
-just install the front-end dependencies. Let's make them use fixed versions, so when we update our project,
+just install the frontend dependencies. Let's make them use fixed versions, so when we update our project,
 nothing gets broken. To make our development quick, we'll be using *Twitter Bootstrap* and manage all
-fron-end dependencies with *Bower*. Bower will fill out the `bower.json`, a file, telling Bower
+frontend dependencies with *Bower*. Bower will fill out the `bower.json`, a file, telling Bower
 which libraries to use, automatically:
 
 {% highlight bash %}
@@ -200,7 +200,7 @@ bower init
 bower install --save bootstrap angular
 {% endhighlight %}
 
-These commands create a directory `bower_components`, containing all the dependencies installed, each in its own sub-directory. With that in mind, we will be referencing our front-end dependencies, relatively to their catalogs within the `bower_components` directory.
+These commands create a directory `bower_components`, containing all the dependencies installed, each in its own sub-directory. With that in mind, we will be referencing our frontend dependencies, relatively to their catalogs within the `bower_components` directory.
 
 Now let's write a build task for Gulp. Gulp is a streamed build tool. That means, that each operation you perform, passes its result to another operation as the input argument. So, for example, if you run `gulp.src('src/styles/*.scss')`, it will return you an object with the list of all the SCSS files and the magic `pipe()` method. And when you call the `gulp.src(...).pipe(scss())`, Gulp will pass that list to the SCSS compiler plugin, so you will get a compiled CSS code. That is, not a CSS file itself, but a compressed, merged, CSS file' content.
 
@@ -302,12 +302,12 @@ gulp build
 {% endhighlight %}
 
 Now, you may open the HTML generated from Jade in a browser, but it will look ugly, because your
-browser will doubtly find stylesheets and javascripts that simply. To make the magic happen, we
+browser will doubtedly find stylesheets and javascripts that simply. To make the magic happen, we
 will use another Gulp plugin, `gulp-server-livereload`. Generally, the development process with
 different build tools looks very similar nowadays: you set up the environment, find the plugins
 you need, install and configure them - and vióla!
 
-I've chosen that server plugin because it comes with one handy feature: it automatically re-loads
+I've chosen that server plugin because it comes with one handy feature: it automatically reloads
 the opened pages in your web-browser if any of the files you are browsing has changed. Here's
 the code of our serving task:
 
@@ -333,11 +333,11 @@ gulp.task('watch', function () {
 });
 {% endhighlight %}
 
-Here we used two new features of Gulp: *watching for file changes* and *running existin tasks from another task*.
+Here we used two new features of Gulp: *watching for file changes* and *running existing tasks from another task*.
 Simple? Yeah, **that** simple! So we just tell Gulp: *keep an eye on those files - if anything happens - run
 those tasks immediately!* - and the magic happens.
 
-But why shoud we run two tasks? Let's merge them into one so we just run `gulp serve` and get both live reload
+But why should we run two tasks? Let's merge them into one so we just run `gulp serve` and get both live reload
 and live re-compilation:
 
 {% highlight js %}
@@ -606,8 +606,8 @@ our file tree is clean and changing any of the pages will not be a hard task.
 
 ## Architecture details
 
-In our front-end application we will use something called *MVVM*. That is a design pattern, kindly provided
-by Angular. So our *views* will be displaying data and transfering it to controllers *(or ViewModels)*, and
+In our frontend application we will use something called *MVVM*. That is a design pattern, kindly provided
+by Angular. So our *views* will be displaying data and transferring it to controllers *(or ViewModels)*, and
 all the logic, handling that data will be defined in *controllers* and *services*, representing *Models*.
 Actually, our models will be handled on a server-side, and services will only provide an interface to them.
 But that is totally another story and will be described later.
@@ -708,12 +708,12 @@ And so we can define corresponding Angular controllers:
 
 *Angular.js* is a framework by Google for making **SPA**s (*Single-Page Application*).
 SPA is a great architecture, where you have a thin back-end server, providing an API
-to your slim front-end application. And the most interesting part here, is that you have
+to your slim frontend application. And the most interesting part here, is that you have
 all your application' pages in a one place, loaded once. And they are switched by a router
 in a user's web-browser. So all the communication with server is stripped to data
 manipulation requests (*creation, updating and reading data from server*) and first-time
 request, sending the HTML, CSS and JavaScripts to user's browser. And then, all the
-interactions are performed in a browser. At maximum, front-end application can request
+interactions are performed in a browser. At maximum, frontend application can request
 a partial or some assets (*like images*) from a web-server.
 
 Basically, here's how SPA works:
@@ -756,7 +756,7 @@ Yeah, we definitely need some clarifications about those two new words.
 Angular defines a few kind of bricks, you may use to build an entire application:
 
 1. **templates** - dynamically changed HTML files
-2. **two-way data binding**, used mostly within **interpolations** - a mechanizm
+2. **two-way data binding**, used mostly within **interpolations** - a mechanism
 for sharing dynamically changed *(by either user of javascript)* data between
 views and code
 3. **controllers**, holding **scope** - are JavaScript objects, containing variables and
@@ -772,7 +772,7 @@ On the other hand, in MVVM architecture we have three layers:
 2. **View** - user interface layer
 3. **ViewModel** - stores data to be shown on UI or which was retrieved from UI
 
-Accordingly to this scheme, in Angular we have the next logic division:
+Accordingly to this scheme, in Angular we have the next logic structure:
 
 1. **Model** - **Services**
 2. **Views** - **Templates**, **Directives**
@@ -821,7 +821,7 @@ OurStatsControllers.controller('LandingPageCtrl', [ '$scope',
 ]);
 {% endhighlight %}
 
-Here we defined a module `OurStatsControllers`, which will contain all the controlelrs
+Here we defined a module `OurStatsControllers`, which will contain all the controllers
 and a `LandingPageCtrl` controller, which is a module of the same name, with a single
 dependency - `$scope` and its implementation. As you can see, the `$scope` appears
 here twice - first time as a dependency name and second time as an argument
@@ -829,7 +829,7 @@ to controller' definition function. That's exactly how **dependency injection** 
 with Angular. Here we defined a scope variable for our controller too, called `apps`.
 We will use it in just a moment.
 
-Now we need to inject our controlelrs module into our application. So we just add a
+Now we need to inject our controllers module into our application. So we just add a
 dependency entry inside our application declaration:
 
 {% highlight js %}
@@ -839,7 +839,7 @@ var OurStatsApp = angular.module('OurStatsApp', [ 'OurStatsController' ]);
 As we already defined the `OurStatsController` module, we do not need to provide
 an implementation for it.
 
-But to make our controller work properly, we need either to declare it on front-end,
+But to make our controller work properly, we need either to declare it on frontend,
 making it handle static piece of a page, or make our application use different
 controller and view, depending on a route in a browser's address line.
 
