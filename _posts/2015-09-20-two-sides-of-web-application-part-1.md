@@ -4,8 +4,6 @@ title: Two sides of web application. Part 1
 date: '2015-09-20T20:18:39+01:00'
 ---
 
-# Two sides of web application. Part 1
-
 ## Prologue
 
 How do we usually create a web application? We run a bootstraping script, which provides
