@@ -7,7 +7,7 @@ published: True
 
 ---
 
-# Newton Game Dynamics + Irrlicht tutorial
+<img class="img-responsive pull-right" style="max-height: 150px" src="{{ '/images/slow.gif' | prepend: site.baseurl }}" />
 
 This post will be really short. This is just a reference to my tutorial, which I
 updated recently. It has been a long time since I wrote anything on game development,
