@@ -9,6 +9,8 @@ twitter_username: shybovycha
 github_username:  shybovycha
 excerpt_separator: '<!--more-->'
 paginate: 10
+highlighter: pygments
+gems: [jekyll-paginate]
 
 # Build settings
 markdown: kramdown
