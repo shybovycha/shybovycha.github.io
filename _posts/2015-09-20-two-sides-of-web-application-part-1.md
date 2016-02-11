@@ -6,32 +6,23 @@ date: '2015-09-20T20:18:39+01:00'
 
 ## Prologue
 
-How do we usually create a web application? We run a bootstraping script, which provides
-us with a skeleton of our application and then just extend it with the features we need.
+How do we usually create a web application? We run a bootstrapping script, which provides us with a skeleton of our application and then we just extend it with the features we need.
 
-So did we at the last hackathon we were attending - we started with `rails new twf` and
-spent half of the day integrating our blank app with Angular, Paperclip, creating API methods
-and so on. But the effort we needed to accomplish our goal (quite simple web app) was really huge.
+That's exactly what we did at the last hackathon we were attending - we started with `rails new twf` and spent half of the day integrating our blank app with Angular, Paperclip, creating API methods and so on. But the effort we needed to accomplish our goal (quite a simple web app) was really huge.
 
-So I decided to find the best combination of backend and frontend technologies to cause
-less pain.
+So I decided to find the best combination of backend and frontend technologies that would cause less pain.
 
-At the project I was lastly introduced into, the line between frontend and back-end is
-distinguished very clearly: we have an API, written in Clojure and thin frontend application,
-made with Angular and working on a generated set of static assets - HTMLs, CSS and JS files
-*(but under the hood we are using HAML and SCSS)*.
+At the project I was recently introduced to, the line between frontend and backend is distinguished very clearly: we have an API, written in Clojure and thin frontend application, made with Angular that works on a generated set of static assets - HTMLs, CSS and JS files *(but under the hood we are using HAML and SCSS)*.
 
-The application I will be implementing throughout the whole article has the same architecture:
-it has RESTful API and MVVM on the frontend, made with Angular. You are welcome to the journey
-of research and new technologies!
+The application I will be implementing throughout the whole article has the same architecture: it has RESTful API and MVVM on the frontend, made with Angular. I welcome you to the journey of research and new technologies!
 
 <!--more-->
 
 ## Why not go with Rails?
 
-Because Rails is oftenly being overused. Especially if you install all of frontend libraries
+Because Rails is often overused. Especially if you install all of frontend libraries
 *(like Angular, Bootstrap, some Angular plugins, etc.)* as RubyGems. Frontend should stay
-on the front end of the application; you should not tight your application at some precise
+on the front end of the application; you should not lock your application at some precise
 version of the JS script, provided by a gem and rely on author's way to integrate it with
 Rails.
 
@@ -42,26 +33,26 @@ must be small, by design.
 ## The goal
 
 Before we start, let's think of what we will be creating. Will it be a web shop? Or a blog?
-No, we need something outstanding! Something we were never doing before...
+No, we need something outstanding! Something we've done never before...
 
-After a hour of imaging what it may be, I decided to go with web analytics tool. A prototype,
-which will be able to tell how many visitors did your web application gained lastly.
+After an hour of imaging what it may be, I decided to go with web analytics tool. A prototype,
+which will be able to tell how many visitors your web application gained recently.
 
-It should not be too complicated, because, you know, it's just a tutorial... So we will be
+It shouldn't be too complicated, because, you know, it's just a tutorial... So we will be
 tracking users' location and browser only. And we will be showing statistics on a chart
-*(values like total visitors, browser usage)* and in table *(the same info as on chart)*.
+*(values like total visitors, browser usage)* and in a table *(the same info as on chart)*.
 
 ## General architecture
 
-First thing we need to think of is how we will be gathering the information about users.
-It's quite easy - we just need to get a request from visitor. Of any kind -
+The first thing we need to think of is how we will be gathering the information about users.
+It's quite easy - we just need to get a request from a visitor. Of any kind -
 it may be a request to get an image, a file, a stylesheet or a script.
 
 Then we will just parse headers from that request and save the extracted data in the
 database. The only problem here is: *how to get unique key from each request?*. We may use
 visitor's IP address. It's the easiest way.
 
-Now, let's decide what pages our application will have and how will they look like.
+Now, let’s decide what pages will our application have and what will they look like:
 
 <div class="row">
     <div class="col-xs-12 col-md-3">
@@ -91,13 +82,13 @@ Now, let's decide what pages our application will have and how will they look li
 
 ## Build with the right tools!
 
-Now, since we separated our frontend part of application from back-end part, we may use different preprocessing
+Now, since we separated our frontend part of application from the backend part, we may use different preprocessing
 languages to write stylesheets and views. And even controllers! So let's take the most from 2015 and use the newest
-tool set: *Jade*, *ES6+* and *SCSS*. And put all them together with *Bower* and *Gulp*.
+tool set: *Jade*, *ES6+* and *SCSS*. And put them all together with *Bower* and *Gulp*.
 
-All those Jade, SCSS and ES6 are not supported by a browser out-of-the box. They must be compiled to HTML, CSS and JS in order to be recognized by a browser. But they are here to help you writing code quickly. I listed some of their key features below.
+All those Jade, SCSS and ES6 are not supported by a browser out-of-the box. They must be compiled to HTML, CSS and JS in order to be recognized by the browser. But they are here to help you writing code quickly. I listed some of their key features below.
 
-**Jade** is a template rendering engine with its own markup language. It is somehow similar to Haml and Slim - it
+**Jade** is a template rendering engine with its own markup language. It is somewhat similar to Haml and Slim - it
 nests XHTML nodes with indentation, closes tags automatically... But it is especially good at writing complex web
 pages, consisting of *layouts* and *partials*.
 
@@ -106,20 +97,20 @@ concrete partials will be placed. So, for example, you may create a separate lay
 page, account page and shopping cart. They will be different. And all of them will use different sets of partials.
 But, for example, a footer and a quick shopping cart preview or user account widget (the one with a link to user's
 account page) will be the same. To prevent duplicating those widgets' code on each of the layouts, we extract them
-to a separate files, called *partials* and then just make a reference (a placeholder) in our layouts, saying
+to separate files, called *partials* and then just make a reference (a placeholder) in our layouts, saying
 *"place that partial's content here"*.
 
-In case with Jade, we may override or extend existing partials in a layout, without touching partial' file itself.
-So, for example, if we want to make user's avatar to be shown in a user account widget only on a product page, we just override user widget partial on a product page, removing the part with avatar.
+In case of Jade, we may override or extend existing partials in a layout, without touching partial's file itself.
+So, for example, if we want to make user's avatar to be shown in a user account widget only on a product page, we just override user widget partial on a product page, removing the part with the avatar.
 
-**SCSS** is a way to simplify writing CSS. It is so simple, but so powerful, that you will fall in love with it
-after first couple of stylesheets! See, in CSS when you write a long selector, specifying many parents, you may
+**SCSS** is a way to simplify writing CSS. It is so simple, yet so powerful, that you will fall in love with it
+after the first few stylesheets! See, in CSS when you write a long selector, specifying many parents, you may
 find your stylesheets ugly and huge, when describing different children of one, deeply nested parent.
 
-So, let's say you are having a user widget. And it may be placed both on page' header, footer and sidebar. But
+So, let's say you are having a user widget. And it may be placed both on page's header, footer and sidebar. But
 the avatar image will look differently on each of those - it must be smaller in header and footer. So you
 start writing selectors like `.sidebar .user-widget .avatar img` and `.header .user-widget .avatar img`.
-That's painful, but not that much, if you have just a couple of those. But as your website grows, you
+That's painful, but not that much, if you have just a couple of those. However, as your website grows, you
 start getting really, really upset about that.
 
 And here's where SCSS is just a revelation: its great power is in its *selectors*, *variables* and *mixins*.
@@ -149,7 +140,7 @@ you just extract it into a named constant and use the pretty named value everywh
 
 *Mixins* allow even more: you may extract the parts of the styles into a named and even **parametrized** function!
 
-Relating on all those, you may re-write your user widget as follows:
+Relating on all of those, you may re-write your user widget as follows:
 
 {% highlight scss %}
 $header-avatar-size: 50px;
@@ -187,10 +178,15 @@ npm install --save-dev gulp gulp-babel gulp-scss gulp-jade
 {% endhighlight %}
 
 I will describe how Gulp works and how we can use it in our project in a minute. For now, let's
-just install the frontend dependencies. Let's make them use fixed versions, so when we update our project,
-nothing gets broken. To make our development quick, we'll be using *Twitter Bootstrap* and manage all
-frontend dependencies with *Bower*. Bower will fill out the `bower.json`, a file, telling Bower
-which libraries to use, automatically:
+just install the frontend dependencies.
+
+### Bower
+
+Let's fix our frontend on specific versions of frontend libraries, so when we update the whole project, nothing gets broken. To make our development quick, we’ll use *Twitter Bootstrap*. All the frontend dependencies will be managed by a tool called *Bower*.
+
+Bower is a tool like `npm`, but used strictly with frontend libraries like *jQuery*, *Angular*, *Twitter Bootstrap* and many others. It's important to keep frontend libraries separate from the backend ones, so we can keep our backend application completely separate from frontend one.
+
+Bower comes with a command-line tool, `bower`, which we will use to fill out the `bower.json` file. It is used by Bower to specify which libraries does our application require:
 
 {% highlight bash %}
 npm install -g bower
@@ -203,9 +199,9 @@ These commands create a directory `bower_components`, containing all the depende
 Now let's write a build task for Gulp. Gulp is a streamed build tool. That means, that each operation you perform, passes its result to another operation as the input argument. So, for example, if you run `gulp.src('src/styles/*.scss')`, it will return you an object with the list of all the SCSS files and the magic `pipe()` method. And when you call the `gulp.src(...).pipe(scss())`, Gulp will pass that list to the SCSS compiler plugin, so you will get a compiled CSS code. That is, not a CSS file itself, but a compressed, merged, CSS file' content.
 
 And that describes the second important feature of Gulp: it does not store the intermediate operation results. It is almost like a functional programming - you just have the input data. Then you call a chain of functions on it,
-passing the result of one function call to the next function as its input. Same happens here, but in not that
-strict manner - since we are using Javascript, we can store the intermediate results in a memory. But to store
-the results in the files, we should pass them to the `gulp.dest(...)` function. Depending on function, looking
+passing the result of one function call to the next function as its input. Same happens here, but in
+a manner not that strict - since we are using Javascript, we can store the intermediate results in the memory. But to store
+the results in the files, we should pass them to the `gulp.dest(...)` function. Depending on the function, looking
 to store its results, `gulp.dest()` may point to a directory or a single file, where the results will be stored.
 
 Below is our first Gulp task. Write this code in the `gulpfile.js`:
@@ -300,10 +296,10 @@ gulp build
 {% endhighlight %}
 
 Now, you may open the HTML generated from Jade in a browser, but it will look ugly, because your
-browser will doubtedly find stylesheets and javascripts that simply. To make the magic happen, we
+browser will doubtfully find stylesheets and javascripts that easily. To make the magic happen, we
 will use another Gulp plugin, `gulp-server-livereload`. Generally, the development process with
 different build tools looks very similar nowadays: you set up the environment, find the plugins
-you need, install and configure them - and vióla!
+you need, install and configure them - and violà!
 
 I've chosen that server plugin because it comes with one handy feature: it automatically reloads
 the opened pages in your web-browser if any of the files you are browsing has changed. Here's
@@ -705,7 +701,7 @@ And so we can define corresponding Angular controllers:
 ## Angular
 
 *Angular.js* is a framework by Google for making **SPA**s (*Single-Page Application*).
-SPA is a great architecture, where you have a thin back-end server, providing an API
+SPA is a great architecture, where you have a thin backend server, providing an API
 to your slim frontend application. And the most interesting part here, is that you have
 all your application' pages in a one place, loaded once. And they are switched by a router
 in a user's web-browser. So all the communication with server is stripped to data
@@ -1017,7 +1013,7 @@ from **part 1**.
 
 ## First resource
 
-Let's create a Session resource. Since we have no back-end part, we should stub
+Let's create a Session resource. Since we have no backend part, we should stub
 the data. We will use Angular **Services**. That's easy: a service defines a
 function, returning, say, an object. That object will be used every time you
 call a service. And you may use not objects only - you may return functions,
