@@ -42,6 +42,7 @@ DEPENDENCIES
   jekyll
   jekyll-paginate
   pygments.rb
+  sass
 
 BUNDLED WITH
    1.11.2

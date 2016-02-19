@@ -101,6 +101,12 @@ $background-image: url(/images/background2.png);
   }
 }
 
+.highlight {
+  background: #F3F3F3;
+  padding: 10px 10px 5px 10px;
+  border-radius: 5px;
+}
+
 .btn.read-more {
   $read-more-btn-color: rgb(120, 161, 171);
   $read-more-btn-color-hover: rgb(73, 122, 134);

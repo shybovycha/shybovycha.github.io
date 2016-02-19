@@ -161,7 +161,7 @@ ourStatsControllers.factory('Session', [ '$http', 'AccountData',
 ]);
 {% endhighlight %}
 
-And now we can implement the controller to pick up the newely added service:
+And now we can implement the controller to pick up the newly added service:
 
 {% highlight js %}
 ourStatsControllers.controller('NewSessionCtrl', [ '$scope', 'Session', 'AccountData',
