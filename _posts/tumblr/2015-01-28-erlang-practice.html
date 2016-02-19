@@ -17,6 +17,8 @@ tumblr_url: http://shybovycha.tumblr.com/post/109392787226/erlang-practice
 
 <p>I was a bit disappointed by this fact. So, I turned on my girlfriend&rsquo;s laptop, installed Erlang and created this short intro to distributed programming in Erlang.</p>
 
+<!--more-->
+
 <h2>Requirements</h2>
 
 <p>This short intro does not include Erlang tutorial and requires you to have at least two machines - either Virtual or hardware, if you wish. Even that does not really matter!</p>
@@ -67,7 +69,8 @@ tumblr_url: http://shybovycha.tumblr.com/post/109392787226/erlang-practice
 
 <p>To show some code, I wrote this short module:</p>
 
-<pre><code>-module(test).
+{% highlight erlang %}
+-module(test).
 -export([ start/0 ]).
 
 start() -&gt;
@@ -80,21 +83,23 @@ start() -&gt;
             io:format("&lt; finish received &gt;~n"),
             ok
     end.
-</code></pre>
+{% endhighlight %}
 
 <p>Now, let&rsquo;s start that!</p>
 
 <p>First, I registered that process with some name on the <code>foo</code> node:</p>
 
-<pre><code>c(test1).
+{% highlight erlang %}
+c(test1).
 register(foo_pid, spawn(test1, start, [])).
-</code></pre>
+{% endhighlight %}
 
 <p>And then, the only thing I needed to do - is just send messages from node <code>moo</code>!</p>
 
-<pre><code>{ foo_pid, foo@foonode } ! { msg, "Obey!" }.
+{% highlight erlang %}
+{ foo_pid, foo@foonode } ! { msg, "Obey!" }.
 flush().
-</code></pre>
+{% endhighlight %}
 
 <p><img src="https://31.media.tumblr.com/2e65bfca4e6815d4eced646bee021e5f/tumblr_inline_niw5l8tH3Y1qh5oee.png" alt="moonode"/></p>
 

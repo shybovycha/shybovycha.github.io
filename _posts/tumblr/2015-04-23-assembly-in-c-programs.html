@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Assembly in C++ programs
+title: 'Assembly in C++ programs'
 date: '2015-04-23T13:18:11+02:00'
 tags:
 - rtfm
@@ -13,7 +13,7 @@ tumblr_url: http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-program
 <h2>Foreword</h2>
 
 <p>Writing code in assembly language in 2015 seems stupid and meaningless. Yet, this subject has a few huge pros:</p>
-<!--more-->
+
 <ol><li>understanding how computers/compilers/programs work</li>
 <li>optimizations while writing a complex or performance-critical applications</li>
 <li>fun</li>
@@ -23,7 +23,7 @@ tumblr_url: http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-program
 
 <p>This article is academical mostly. People who study something like <em>low-level programming</em> at their universities may be interested.</p>
 
-<p><!-- more --></p>
+<!--more-->
 
 <h2>Simplest function in NASM</h2>
 
@@ -31,7 +31,7 @@ tumblr_url: http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-program
 
 <p>Our first program will do nothing. It will just contain globally available function, named <code>myfunc</code>.</p>
 
-<pre><code>
+{% highlight asm %}
     BITS 32
 
     section .text
@@ -44,7 +44,7 @@ tumblr_url: http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-program
 
         leave
         ret
-</code></pre>
+{% endhighlight %}
 
 <p>This is barely a something useful, but that’s how it looks like. A simple function, which does nothing, has no arguments and returns nothing.</p>
 
@@ -61,31 +61,30 @@ tumblr_url: http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-program
 <li>link our object files into a single binary one</li>
 </ol><p>So, we need to interference with assembly from within our C++ code. And declare an external function. Here’s how our dummy program may look like:</p>
 
-<pre><code>
-    #include &lt;stdio.h&gt;
+{% highlight c %}
+#include <stdio.h>
 
-    extern "C" void myfunc();
+extern "C" void myfunc();
 
-    int main() {
-        myfunc();
+int main() {
+    myfunc();
 
-        return 0;
-    }
-</code></pre>
+    return 0;
+}
+{% endhighlight %}
 
 <p>Compiling this contains three steps, as I mentioned above:</p>
 
-<p>&lt;</p>
-
-<p>pre&gt;<code>
-    g++ -c -m32 -g test.cpp -o test_c.o
-    nasm -felf32 -g test.asm -o test_asm.o
-    g++ -m32 -g test_c.o test_asm.o -o test</code></p>
+<pre><code>
+g++ -c -m32 -g test.cpp -o test_c.o
+nasm -felf32 -g test.asm -o test_asm.o
+g++ -m32 -g test_c.o test_asm.o -o test
+</code></pre>
 
 <p>Let’s take a look over each of these closely.</p>
 
 <pre><code>
-    g++ -c -m32 -g test.cpp -o test_c.o
+g++ -c -m32 -g test.cpp -o test_c.o
 </code></pre>
 
 <p>This tells compiler a few things:</p>
@@ -99,7 +98,7 @@ tumblr_url: http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-program
 <p>Now, compiling assembly code command:</p>
 
 <pre><code>
-    nasm -felf32 -g test.asm -o test_asm.o
+nasm -felf32 -g test.asm -o test_asm.o
 </code></pre>
 
 <p>This provides compiler with these options:</p>
@@ -113,78 +112,78 @@ tumblr_url: http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-program
 
 <p>Now let’s make our function do something for a great good. For example, sum-up two numbers. We will end-up with this function declaration:</p>
 
-<pre><code>
-    extern "C" int sum_two_numbers(int a, int b);
-</code></pre>
+{% highlight c %}
+extern "C" int sum_two_numbers(int a, int b);
+{% endhighlight %}
 
 <p>The values <code>a</code> and <code>b</code> are integer. This means, each of them is <strong>4-byte wide</strong>. You can find sizes of different C types writing a very simple program:</p>
 
-<pre><code>
-    #include &lt;stdio.h&gt;
+{% highlight c %}
+#include <stdio.h>
 
-    int main() {
-        printf("size(char) = %d bytes\n", sizeof(char));
-        printf("size(short) = %d bytes\n", sizeof(short));
-        printf("size(int) = %d bytes\n", sizeof(int));
-        printf("size(long) = %d bytes\n", sizeof(long));
-        printf("size(long long) = %d bytes\n", sizeof(long long));
-        printf("size(float) = %d bytes\n", sizeof(float));
-        printf("size(double) = %d bytes\n", sizeof(double));
-        printf("size(long double) = %d bytes\n", sizeof(long double));
+int main() {
+    printf("size(char) = %d bytes\n", sizeof(char));
+    printf("size(short) = %d bytes\n", sizeof(short));
+    printf("size(int) = %d bytes\n", sizeof(int));
+    printf("size(long) = %d bytes\n", sizeof(long));
+    printf("size(long long) = %d bytes\n", sizeof(long long));
+    printf("size(float) = %d bytes\n", sizeof(float));
+    printf("size(double) = %d bytes\n", sizeof(double));
+    printf("size(long double) = %d bytes\n", sizeof(long double));
 
-        printf("size(char*) = %d bytes\n", sizeof(char*));
-        printf("size(short*) = %d bytes\n", sizeof(short*));
-        printf("size(int*) = %d bytes\n", sizeof(int*));
-        printf("size(long*) = %d bytes\n", sizeof(long*));
-        printf("size(long long*) = %d bytes\n", sizeof(long long*));
-        printf("size(float*) = %d bytes\n", sizeof(float*));
-        printf("size(double*) = %d bytes\n", sizeof(double*));
-        printf("size(long double*) = %d bytes\n", sizeof(long double*));
+    printf("size(char*) = %d bytes\n", sizeof(char*));
+    printf("size(short*) = %d bytes\n", sizeof(short*));
+    printf("size(int*) = %d bytes\n", sizeof(int*));
+    printf("size(long*) = %d bytes\n", sizeof(long*));
+    printf("size(long long*) = %d bytes\n", sizeof(long long*));
+    printf("size(float*) = %d bytes\n", sizeof(float*));
+    printf("size(double*) = %d bytes\n", sizeof(double*));
+    printf("size(long double*) = %d bytes\n", sizeof(long double*));
 
-        return 0;
-    }
-</code></pre>
+    return 0;
+}
+{% endhighlight %}
 
 <p>On my laptop this code printed this:</p>
 
 <pre><code>
-    size(char) = 1 bytes
-    size(short) = 2 bytes
-    size(int) = 4 bytes
-    size(long) = 8 bytes
-    size(long long) = 8 bytes
-    size(float) = 4 bytes
-    size(double) = 8 bytes
-    size(long double) = 16 bytes
-    size(char*) = 8 bytes
-    size(short*) = 8 bytes
-    size(int*) = 8 bytes
-    size(long*) = 8 bytes
-    size(long long*) = 8 bytes
-    size(float*) = 8 bytes
-    size(double*) = 8 bytes
-    size(long double*) = 8 bytes
+size(char) = 1 bytes
+size(short) = 2 bytes
+size(int) = 4 bytes
+size(long) = 8 bytes
+size(long long) = 8 bytes
+size(float) = 4 bytes
+size(double) = 8 bytes
+size(long double) = 16 bytes
+size(char*) = 8 bytes
+size(short*) = 8 bytes
+size(int*) = 8 bytes
+size(long*) = 8 bytes
+size(long long*) = 8 bytes
+size(float*) = 8 bytes
+size(double*) = 8 bytes
+size(long double*) = 8 bytes
 </code></pre>
 
 <p>But when run in <strong>32-bit</strong> mode, these numbers changed:</p>
 
 <pre><code>
-    size(char) = 1 bytes
-    size(short) = 2 bytes
-    size(int) = 4 bytes
-    size(long) = 4 bytes
-    size(long long) = 8 bytes
-    size(float) = 4 bytes
-    size(double) = 8 bytes
-    size(long double) = 12 bytes
-    size(char*) = 4 bytes
-    size(short*) = 4 bytes
-    size(int*) = 4 bytes
-    size(long*) = 4 bytes
-    size(long long*) = 4 bytes
-    size(float*) = 4 bytes
-    size(double*) = 4 bytes
-    size(long double*) = 4 bytes
+size(char) = 1 bytes
+size(short) = 2 bytes
+size(int) = 4 bytes
+size(long) = 4 bytes
+size(long long) = 8 bytes
+size(float) = 4 bytes
+size(double) = 8 bytes
+size(long double) = 12 bytes
+size(char*) = 4 bytes
+size(short*) = 4 bytes
+size(int*) = 4 bytes
+size(long*) = 4 bytes
+size(long long*) = 4 bytes
+size(float*) = 4 bytes
+size(double*) = 4 bytes
+size(long double*) = 4 bytes
 </code></pre>
 
 <p>The difference in atomic types is really “ghostly”, namely <code>long</code> and <code>long double</code> are <strong>4-byte longer</strong> in 64-bit mode. But when it comes to pointer types, we have twice longer variables.</p>
@@ -195,87 +194,87 @@ tumblr_url: http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-program
 
 <p>To show this difference, we will write a few short functions and look at their assembly code. Here they are:</p>
 
-<pre><code>
-    char func1() {
-        return 'x';
-    }
+{% highlight c %}
+char func1() {
+    return 'x';
+}
 
-    char func2(char x) {
-        return x;
-    }
+char func2(char x) {
+    return x;
+}
 
-    short func3() {
-        return 1;
-    }
+short func3() {
+    return 1;
+}
 
-    short func4(short x) {
-        return x;
-    }
+short func4(short x) {
+    return x;
+}
 
-    int func5() {
-        return 2;
-    }
+int func5() {
+    return 2;
+}
 
-    int func6(int x) {
-        return x;
-    }
+int func6(int x) {
+    return x;
+}
 
-    long long func7() {
-        return 2147483647;
-    }
+long long func7() {
+    return 2147483647;
+}
 
-    long long func8(long long x) {
-        return x;
-    }
+long long func8(long long x) {
+    return x;
+}
 
-    float func9() {
-        return 3.14f;
-    }
+float func9() {
+    return 3.14f;
+}
 
-    float func10(float x) {
-        return x;
-    }
+float func10(float x) {
+    return x;
+}
 
-    double func11() {
-        return 3.15;
-    }
+double func11() {
+    return 3.15;
+}
 
-    double func12(double x) {
-        return x;
-    }
+double func12(double x) {
+    return x;
+}
 
-    long double func13() {
-        return 3.16;
-    }
+long double func13() {
+    return 3.16;
+}
 
-    long double func14(long double x) {
-        return x;
-    }
+long double func14(long double x) {
+    return x;
+}
 
-    int main() {
-        func1();
-        func2('x');
-        func3();
-        func4(1);
-        func5();
-        func6(2);
-        func7();
-        func8(3);
-        func9();
-        func10(3.14f);
-        func11();
-        func12(3.14);
-        func13();
-        func14(3.14);
+int main() {
+    func1();
+    func2('x');
+    func3();
+    func4(1);
+    func5();
+    func6(2);
+    func7();
+    func8(3);
+    func9();
+    func10(3.14f);
+    func11();
+    func12(3.14);
+    func13();
+    func14(3.14);
 
-        return 0;
-    }
-</code></pre>
+    return 0;
+}
+{% endhighlight %}
 
 <p>Compile it with <code>g++</code> using this command:</p>
 
 <pre><code>
-    g++ -S -m32 -c -masm=intel test1.cpp -o test1.asm
+g++ -S -m32 -c -masm=intel test1.cpp -o test1.asm
 </code></pre>
 
 <p>I’ll explain this line’s options:</p>
@@ -291,36 +290,36 @@ tumblr_url: http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-program
 
 <p>But let’s go back and take a look at, let’s say, <code>func1</code> function assembly:</p>
 
-<pre><code>
-    _Z5func1v:
-    .LFB0:
-        .cfi_startproc
-        push    ebp
-        .cfi_def_cfa_offset 8
-        .cfi_offset 5, -8
-        mov ebp, esp
-        .cfi_def_cfa_register 5
-        mov eax, 120
-        pop ebp
-        .cfi_restore 5
-        .cfi_def_cfa 4, 4
-        ret
-        .cfi_endproc
-    .LFE0:
-        .size   _Z5func1v, .-_Z5func1v
-        .globl  _Z5func2c
-        .type   _Z5func2c, @function
-</code></pre>
+{% highlight asm %}
+_Z5func1v:
+.LFB0:
+    .cfi_startproc
+    push    ebp
+    .cfi_def_cfa_offset 8
+    .cfi_offset 5, -8
+    mov ebp, esp
+    .cfi_def_cfa_register 5
+    mov eax, 120
+    pop ebp
+    .cfi_restore 5
+    .cfi_def_cfa 4, 4
+    ret
+    .cfi_endproc
+.LFE0:
+    .size   _Z5func1v, .-_Z5func1v
+    .globl  _Z5func2c
+    .type   _Z5func2c, @function
+{% endhighlight %}
 
 <p>Yeah, monstrous&hellip; Cleaning it up and using <code>enter</code> and <code>leave</code>, we have only this:</p>
 
-<pre><code>
-    _Z5func1v:
-        enter 0, 0
-        mov eax, 120
-        leave
-        ret
-</code></pre>
+{% highlight asm %}
+_Z5func1v:
+    enter 0, 0
+    mov eax, 120
+    leave
+    ret
+{% endhighlight %}
 
 <p>See, the return value is stored in a <code>EAX</code> register. That’s how we should return values from our functions. When it comes to a larger data types, we may return values via <code>EDX:EAX</code> registers’ pair. Yeah, strange, but that is a <strong>convention</strong>.</p>
 
@@ -328,40 +327,40 @@ tumblr_url: http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-program
 
 <p><strong>32-bit func7:</strong></p>
 
-<pre><code>
-    _Z5func7v:
-        enter 0, 0
-        mov eax, 2147483647
-        mov edx, 0
-        leave
-        ret
-</code></pre>
+{% highlight asm %}
+_Z5func7v:
+    enter 0, 0
+    mov eax, 2147483647
+    mov edx, 0
+    leave
+    ret
+{% endhighlight %}
 
 <p><strong>64-bit func7:</strong></p>
 
-<pre><code>
-    _Z5func8l:
-        enter 0, 0
-        mov QWORD PTR [rbp-8], rdi
-        mov rax, QWORD PTR [rbp-8]
-        leave
-        ret
-</code></pre>
+{% highlight asm %}
+_Z5func8l:
+    enter 0, 0
+    mov QWORD PTR [rbp-8], rdi
+    mov rax, QWORD PTR [rbp-8]
+    leave
+    ret
+{% endhighlight %}
 
 <p>See, there are two registers used in a 32-bit mode, <code>EAX = 2147483647</code> and <code>EDX = 0</code>. The second register is used for a sign value. If we’d change the return value for our C++ function to return a negative value:</p>
 
-<pre><code>
-    long long func7() {
-        return -2147483647;
-    }
-</code></pre>
+{% highlight c %}
+long long func7() {
+    return -2147483647;
+}
+{% endhighlight %}
 
 <p>We will end-up with this code in a 32-bit mode:</p>
 
-<pre><code>
-    mov eax, -2147483647
-    mov edx, -1
-</code></pre>
+{% highlight asm %}
+mov eax, -2147483647
+mov edx, -1
+{% endhighlight %}
 
 <p>And in 64-bit mode it will have only one operation:</p>
 
@@ -371,60 +370,60 @@ tumblr_url: http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-program
 
 <p>Now let’s take a look over the <code>func8</code> function:</p>
 
-<pre><code>
-    _Z5func8x:
-        enter 0, 0
-        sub esp, 8
-        mov eax, DWORD PTR [ebp+8]
-        mov DWORD PTR [ebp-8], eax
-        mov eax, DWORD PTR [ebp+12]
-        mov DWORD PTR [ebp-4], eax
-        mov eax, DWORD PTR [ebp-8]
-        mov edx, DWORD PTR [ebp-4]
-        leave
-        ret
-</code></pre>
+{% highlight asm %}
+_Z5func8x:
+    enter 0, 0
+    sub esp, 8
+    mov eax, DWORD PTR [ebp+8]
+    mov DWORD PTR [ebp-8], eax
+    mov eax, DWORD PTR [ebp+12]
+    mov DWORD PTR [ebp-4], eax
+    mov eax, DWORD PTR [ebp-8]
+    mov edx, DWORD PTR [ebp-4]
+    leave
+    ret
+{% endhighlight %}
 
 <p>We may clean it up removing all those <code>DWORD PTR</code> type hints:</p>
 
-<pre><code>
-    _Z5func8x:
-        enter 0, 0
-        sub esp, 8
-        mov eax, [ebp+8]
-        mov [ebp-8], eax
-        mov eax, [ebp+12]
-        mov [ebp-4], eax
-        mov eax, [ebp-8]
-        mov edx, [ebp-4]
-        leave
-        ret
-</code></pre>
+{% highlight asm %}
+_Z5func8x:
+    enter 0, 0
+    sub esp, 8
+    mov eax, [ebp+8]
+    mov [ebp-8], eax
+    mov eax, [ebp+12]
+    mov [ebp-4], eax
+    mov eax, [ebp-8]
+    mov edx, [ebp-4]
+    leave
+    ret
+{% endhighlight %}
 
 <p>All the memory “by the negative side” of <code>EBP</code> is dedicated to local variables. All the memory “by the positive side” of <code>EBP</code> is the one with arguments, passed to our function.</p>
 
 <p>Taking that into account, we may rewrite our assembly function as this:</p>
 
-<pre><code>
-    _Z5func8x:
-        enter 0, 0
+{% highlight asm %}
+_Z5func8x:
+    enter 0, 0
 
-        %define x1 dword[ebp+8]
-        %define x2 dword[ebp+12]
-        %define tmp1 dword[ebp-8]
-        %define tmp2 dword[ebp-4]
+    %define x1 dword[ebp+8]
+    %define x2 dword[ebp+12]
+    %define tmp1 dword[ebp-8]
+    %define tmp2 dword[ebp-4]
 
-        sub esp, 8
-        mov eax, x1
-        mov tmp1, eax
-        mov eax, x2
-        mov tmp2, eax
-        mov eax, tmp1
-        mov edx, tmp2
+    sub esp, 8
+    mov eax, x1
+    mov tmp1, eax
+    mov eax, x2
+    mov tmp2, eax
+    mov eax, tmp1
+    mov edx, tmp2
 
-        leave
-        ret
-</code></pre>
+    leave
+    ret
+{% endhighlight %}
 
 <p>Now it became more readable.</p>
 
@@ -446,42 +445,42 @@ tumblr_url: http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-program
 
 <p>Let’s for example calculate a sum of an array elements:</p>
 
-<pre><code>
-    #include &lt;stdio.h&gt;
+{% highlight c %}
+#include <stdio.h>
 
-    extern "C" int sum(int n, int *a);
+extern "C" int sum(int n, int *a);
 
-    int main() {
-        int n = 5, a[] = { 1, 2, 7, 9, -4 };
+int main() {
+    int n = 5, a[] = { 1, 2, 7, 9, -4 };
 
-        // 1 + 2 + 7 + 9 - 4 = 15
-        printf("sum(a) = %d\n", sum(n, a));
+    // 1 + 2 + 7 + 9 - 4 = 15
+    printf("sum(a) = %d\n", sum(n, a));
 
-        return 0;
-    }
-</code></pre>
+    return 0;
+}
+{% endhighlight %}
 
 <p>And let’s create the function <code>sum</code> in NASM. To start off, we’ll use a function, receiving two arguments, <code>int</code> and <code>int*</code> and returning a zero.</p>
 
-<pre><code>
-    BITS 32
+{% highlight asm %}
+BITS 32
 
-    section .text
+section .text
 
-    global sum
+global sum
 
-    sum:
+sum:
 
-        enter 0, 0
+    enter 0, 0
 
-        %define n dword [ebp + 8]
-        %define a dword [ebp + 12]
+    %define n dword [ebp + 8]
+    %define a dword [ebp + 12]
 
-        mov eax, 0
+    mov eax, 0
 
-        leave
-        ret
-</code></pre>
+    leave
+    ret
+{% endhighlight %}
 
 <p>Now what we would like to do is to add each element of array to our <code>result</code> variable <em>(oh, we do not have one yet!)</em>. To do this, we will use two registers: <code>ECX</code> to count how many elements we have added and <code>EAX</code> to store the sum. Each element’s address is <code>*a + 4 * i</code> or address of <code>a[0]</code> plus <code>4 bytes</code> times <code>i</code>, our element number.</p>
 
@@ -491,38 +490,38 @@ tumblr_url: http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-program
 
 <p>Now everything what we need is to add all those hints into a single program:</p>
 
-<pre><code>
-    BITS 32
+{% highlight asm %}
+BITS 32
 
-    section .text
+section .text
 
-    global sum
+global sum
 
-    sum:
+sum:
 
-        enter 0, 0
+    enter 0, 0
 
-        %define n dword [ebp + 8]
-        %define a dword [ebp + 12]
+    %define n dword [ebp + 8]
+    %define a dword [ebp + 12]
 
-        mov eax, 0 ; EAX = sum = 0
-        mov ebx, a ; EBX = *a
-        mov ecx, n ; ECX = i = n
+    mov eax, 0 ; EAX = sum = 0
+    mov ebx, a ; EBX = *a
+    mov ecx, n ; ECX = i = n
 
-    add_loop:
+add_loop:
 
-        add eax, [ebx + 4 * ecx - 4] ; EAX += a[i]
+    add eax, [ebx + 4 * ecx - 4] ; EAX += a[i]
 
-        dec ecx ; ECX --
-        cmp ecx, 0
+    dec ecx ; ECX --
+    cmp ecx, 0
 
-        jg add_loop ; if ECX &gt; 0 then goto add_loop
+    jg add_loop ; if ECX &gt; 0 then goto add_loop
 
-        ; EAX contains the sum here
+    ; EAX contains the sum here
 
-        leave
-        ret
-</code></pre>
+    leave
+    ret
+{% endhighlight %}
 
 <p>Note that I subtract four bytes in an element address: <code>[ebx + 4 * ecx - 4]</code>. That’s because our i'th element starts at <code>*a + (i * 4)</code> byte, but we have <code>i = n</code> on the beginning. Thus, first iteration will try to add element, starting at <code>*a + (n * 4)</code> byte, which does not exist in our array <em>(the 5th element)</em>. So, we need to subtract one element’ size from our <code>[ebx + 4 * ecx]</code> address.</p>
 
@@ -532,29 +531,29 @@ tumblr_url: http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-program
 
 <p><strong>manual loop</strong>:</p>
 
-<pre><code>
-    mov ecx, n
+{% highlight asm %}
+mov ecx, n
 
-    add_loop:
+add_loop:
 
-        ; do something
+    ; do something
 
-        dec ecx
-        cmp ecx, 0
-        jg add_loop
-</code></pre>
+    dec ecx
+    cmp ecx, 0
+    jg add_loop
+{% endhighlight %}
 
 <p><strong>with <code>loop</code> instruction</strong>:</p>
 
-<pre><code>
-    mov ecx, n
+{% highlight asm %}
+mov ecx, n
 
-    add_loop:
+add_loop:
 
-        ; do something
+    ; do something
 
-        loop add_loop
-</code></pre>
+    loop add_loop
+{% endhighlight %}
 
 <p>We’ve just saved two lines of code!</p>
 
@@ -576,64 +575,64 @@ tumblr_url: http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-program
 
 <p>We shall write a function of this declaration:</p>
 
-<pre><code>
-    #include &lt;stdio.h&gt;
+{% highlight c %}
+#include <stdio.h>
 
-    extern "C" long double dot_product(int n, long double *v1, long double *v2);
+extern "C" long double dot_product(int n, long double *v1, long double *v2);
 
-    int main() {
-        long double v1[] = { 3, 5 };
-        long double v2[] = { 4, 2 };
-        int n = 2;
+int main() {
+    long double v1[] = { 3, 5 };
+    long double v2[] = { 4, 2 };
+    int n = 2;
 
-        // 3*4 + 5*2 = 12 + 10 = 22
-        printf("dot_product(v1, v2) = %0.4f\n", dot_product(n, v1, v2));
+    // 3*4 + 5*2 = 12 + 10 = 22
+    printf("dot_product(v1, v2) = %0.4f\n", dot_product(n, v1, v2));
 
-        return 0;
-    }
-</code></pre>
+    return 0;
+}
+{% endhighlight %}
 
 <p>This one will calculate a dot product of two <em>n-element</em> vectors.</p>
 
-<pre><code>
-    BITS 32
+{% highlight asm %}
+BITS 32
 
-    section .text
+section .text
 
-        global dot_product
+    global dot_product
 
-    dot_product:
+dot_product:
 
-        enter 0, 0
+    enter 0, 0
 
-        %define n dword[ebp + 8]
-        %define v1 dword[ebp + 12]
-        %define v2 dword[ebp + 16]
+    %define n dword[ebp + 8]
+    %define v1 dword[ebp + 12]
+    %define v2 dword[ebp + 16]
 
-        mov ecx, n
-        mov edx, v1
-        mov ebx, v2
+    mov ecx, n
+    mov edx, v1
+    mov ebx, v2
 
-        fldz ; stack: 0 ( = tail)
+    fldz ; stack: 0 ( = tail)
 
-    add_loop:
+add_loop:
 
-        fld tword [edx] ; stack: v1, tail
-        fld tword [ebx] ; stack: v2, v1, tail
+    fld tword [edx] ; stack: v1, tail
+    fld tword [ebx] ; stack: v2, v1, tail
 
-        fmulp st1, st0 ; stack: v2 * v1, tail
-        faddp st1, st0 ; stack: v2 * v1 + tail
+    fmulp st1, st0 ; stack: v2 * v1, tail
+    faddp st1, st0 ; stack: v2 * v1 + tail
 
-        add edx, 12
-        add ebx, 12
+    add edx, 12
+    add ebx, 12
 
-        loop add_loop
+    loop add_loop
 
-    just_exit:
+just_exit:
 
-        leave
-        ret
-</code></pre>
+    leave
+    ret
+{% endhighlight %}
 
 <p>The algorithm of a code above may be written as follows:</p>
 
@@ -654,105 +653,105 @@ tumblr_url: http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-program
 
 <p><strong>C program</strong>:</p>
 
-<pre><code>
-    #include &lt;stdio.h&gt;
+{% highlight c %}
+#include <stdio.h>
 
-    extern void surface_and_volume(float a, float b, float c, float *v, float *s);
+extern void surface_and_volume(float a, float b, float c, float *v, float *s);
 
-    int main() {
-      float surface = 0, volume = 0;
+int main() {
+  float surface = 0, volume = 0;
 
-      surface_and_volume(4, 5, 6, &amp;volume, &amp;surface);
+  surface_and_volume(4, 5, 6, &amp;volume, &amp;surface);
 
-      printf("volume: %0.3f surface: %0.3f\n", volume, surface);
+  printf("volume: %0.3f surface: %0.3f\n", volume, surface);
 
-      return 0;
-    }
-</code></pre>
+  return 0;
+}
+{% endhighlight %}
 
 <p><strong>NASM program</strong>:</p>
 
-<pre><code>
-    BITS 32
+{% highlight asm %}
+BITS 32
 
-    section .text
+section .text
 
-        global surface_and_volume
+    global surface_and_volume
 
-    surface_and_volume:
+surface_and_volume:
 
-        enter 0, 0
+    enter 0, 0
 
-        %define a dword[ebp+8]
-        %define b dword[ebp+12]
-        %define c dword[ebp+16]
-        %define vol_ptr dword [ebp+20] ; a*b*c
-        %define surf_ptr dword [ebp+24] ; a*a*2 + b*b*2 + c*c*2
+    %define a dword[ebp+8]
+    %define b dword[ebp+12]
+    %define c dword[ebp+16]
+    %define vol_ptr dword [ebp+20] ; a*b*c
+    %define surf_ptr dword [ebp+24] ; a*a*2 + b*b*2 + c*c*2
 
-        mov eax, vol_ptr
-        mov ebx, surf_ptr
+    mov eax, vol_ptr
+    mov ebx, surf_ptr
 
-        fldz ; st6
-        fldz ; st5
-        fldz ; st4
-        fld c ; st3
-        fld b ; st2
-        fld a ; st1
-        fldz ; st0
+    fldz ; st6
+    fldz ; st5
+    fldz ; st4
+    fld c ; st3
+    fld b ; st2
+    fld a ; st1
+    fldz ; st0
 
-        ; calculate volume
-        fsub st0, st0 ; st0 = 0
-        fadd st1 ; st0 = a
-        fmul st2 ; st0 *= b
-        fmul st3 ; st0 *= c
+    ; calculate volume
+    fsub st0, st0 ; st0 = 0
+    fadd st1 ; st0 = a
+    fmul st2 ; st0 *= b
+    fmul st3 ; st0 *= c
 
-        fst dword [eax]
+    fst dword [eax]
 
-        ; calculate surface
+    ; calculate surface
 
-        fsub st0, st0 ; st0 = 0
-        fadd st1 ; st0 = a
-        fmul st2 ; st0 *= b
-        fadd st4, st0 ; st4 = a*b
+    fsub st0, st0 ; st0 = 0
+    fadd st1 ; st0 = a
+    fmul st2 ; st0 *= b
+    fadd st4, st0 ; st4 = a*b
 
-        fsub st0, st0 ; st0 = 0
-        fadd st1 ; st0 = a
-        fmul st3 ; st0 *= c
-        fadd st5, st0 ; st5 = a*c
+    fsub st0, st0 ; st0 = 0
+    fadd st1 ; st0 = a
+    fmul st3 ; st0 *= c
+    fadd st5, st0 ; st5 = a*c
 
-        fsub st0, st0 ; st0 = 0
-        fadd st2 ; st0 = b
-        fmul st3
-        fadd st6, st0 ; st6 = b*c
+    fsub st0, st0 ; st0 = 0
+    fadd st2 ; st0 = b
+    fmul st3
+    fadd st6, st0 ; st6 = b*c
 
-        fsub st0, st0 ; st0 = 0
-        fadd st4
-        fadd st5
-        fadd st6 ; st0 = a*b + a*c + b*c
-        fadd st0 ; st0 = 2*(a*b + a*c + b*c)
+    fsub st0, st0 ; st0 = 0
+    fadd st4
+    fadd st5
+    fadd st6 ; st0 = a*b + a*c + b*c
+    fadd st0 ; st0 = 2*(a*b + a*c + b*c)
 
-    just_exit:
+just_exit:
 
-        fst dword [ebx]
+    fst dword [ebx]
 
-        ; free float stack
-        fstp a
-        fstp a
-        fstp a
-        fstp a
-        fstp a
-        fstp a
+    ; free float stack
+    fstp a
+    fstp a
+    fstp a
+    fstp a
+    fstp a
+    fstp a
 
-        ret
-</code></pre>
+    ret
+{% endhighlight %}
 
 <p>Compile it as usual and run with GDB:</p>
 
 <pre><code>
-    g++ -c -m32 -g test3.c -o test3_c.o
-    nasm -felf32 -g test3.asm -o test3_asm.o
-    g++ -m32 -g test3_asm.o test3_c.o -o test3
-    gdb test3
+g++ -c -m32 -g test3.c -o test3_c.o
+nasm -felf32 -g test3.asm -o test3_asm.o
+g++ -m32 -g test3_asm.o test3_c.o -o test3
+gdb test3
 </code></pre>
 
 <p>Now, when you&rsquo;re in a debugger&rsquo; console, you may run debugging commands. Here are a few of them:</p>

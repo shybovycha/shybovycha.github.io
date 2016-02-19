@@ -15,41 +15,46 @@ tumblr_url: http://shybovycha.tumblr.com/post/110527446781/rails-tips
 
 <p>Let us have class:</p>
 
-<pre><code>class Moo
+{% highlight ruby %}
+class Moo
   private
 
   def self.foo
     puts 'foo'
   end
 end
-</code></pre>
+{% endhighlight %}
 
 <p>Here, class method <code>foo</code> is not private:</p>
 
-<pre><code>Foo.foo
-=&gt; 'foo'
-</code></pre>
+{% highlight ruby %}
+Foo.foo
+=> 'foo'
+{% endhighlight %}
 
 <h2>Instance with params</h2>
 
-<p>Oftenly there is a need to create a class instance and set it some params (or, maybe, call some methods on it). It&rsquo;s done usually like this:</p>
+<p>Oftenly there is a need to create a class instance and set it some params (or, maybe, call some methods on it). It's done usually like this:</p>
 
-<pre><code>moo = Moo.new
+{% highlight ruby %}
+moo = Moo.new
 moo.foo = 'foo'
 moo.bar
-</code></pre>
+{% endhighlight %}
 
-<p>This can be shortened with the use of <code>tap</code> method:</p>
+<p>This can be shortened with the use of `tap` method:</p>
 
-<pre><code>moo = Moo.new.tap { |a| a.foo = 'foo'; a.bar }
-</code></pre>
+{% highlight ruby %}
+moo = Moo.new.tap { |a| a.foo = 'foo'; a.bar }
+{% endhighlight %}
 
 <p>Yet, it is more ruby-convenient and ruby-style to do it with the initialization block:</p>
 
-<pre><code>class Moo
+{% highlight ruby %}
+class Moo
   attr_accessor :foo
 
-  def initialize(&amp;block)
+  def initialize(&block)
     yield self if block_given?
   end
 
@@ -64,13 +69,14 @@ moo = Moo.new do |a|
 end
 
 puts moo.foo
-</code></pre>
+{% endhighlight %}
 
 <p>Or even like this:</p>
 
-<pre><code>class Moo
-  def initialize(&amp;block)
-    instance_eval &amp;block if block_given?
+{% highlight ruby %}
+class Moo
+  def initialize(&block)
+    instance_eval &block if block_given?
   end
 
   def moo(val = nil)
@@ -89,13 +95,14 @@ a = Moo.new do
 end
 
 puts a.moo
-</code></pre>
+{% endhighlight %}
 
 <h2>Code-dependent migrations</h2>
 
 <p>When you have your migrations using your code, for example, like this:</p>
 
-<pre><code>class CreateDataVolumes &lt; ActiveRecord::Migration
+{% highlight ruby %}
+class CreateDataVolumes < ActiveRecord::Migration
   def up
     Data::VOLUMES.times do |volume|
       create_table "data_#{volume}" do |t|
@@ -104,14 +111,15 @@ puts a.moo
     end
   end
 end
-</code></pre>
+{% endhighlight %}
 
 <p>you then have a problem when updating your code. In our example, if you remove the constant <code>Data::VOLUMES</code>, you will have to either manually search for all the usages of this constant, or have a really <em>intelliJent</em> IDE ;)</p>
 
 <p>Rather than using your existing code, stub it and copy-and-paste all migration-dependent code to the stubbing class:</p>
 
-<pre><code>class CreateDataVolumes &lt; ActiveRecord::Migration
-  class Data &lt; AR::Base
+{% highlight ruby %}
+class CreateDataVolumes < ActiveRecord::Migration
+  class Data < AR::Base
     VOLUMES
   end
 
@@ -121,6 +129,6 @@ end
     end
   end
 end
-</code></pre>
+{% endhighlight %}
 
 <p>Example with constant is rather stupid, whilst you may have some more critical code.</p>

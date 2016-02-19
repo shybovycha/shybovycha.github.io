@@ -8,9 +8,11 @@ tags:
 - tutorial
 tumblr_url: http://shybovycha.tumblr.com/post/109996204061/abstract-classes-vs-interfaces
 ---
-<p>Lately I was a few times asked a question <em>&ldquo;what do we need abstract classes for?&rdquo;</em></p>
+<p>Lately I was a few times asked a question <em>"what do we need abstract classes for?"</em></p>
 
-<p>And today I&rsquo;ve got one more question, which inspired me to write this.</p>
+<p>And today I've got one more question, which inspired me to write this.</p>
+
+<!--more-->
 
 <p>Let us have a task to write an application, which will perform some simple arithmetic operations on numbers, represented in a different numeric systems.</p>
 
@@ -22,7 +24,8 @@ tumblr_url: http://shybovycha.tumblr.com/post/109996204061/abstract-classes-vs-i
 
 <p>Take a look:</p>
 
-<pre><code>public interface INumber {
+{% highlight java %}
+public interface INumber {
     public INumber add(INumber other);
 }
 
@@ -39,11 +42,12 @@ public class HexadecimalNumber implements INumber {
         // convert other to HexadecimalNumber and add...
     }
 }
-</code></pre>
+{% endhighlight %}
 
 <p>&hellip;and compare it to this:</p>
 
-<pre><code>public abstract class Number {
+{% highlight java %}
+public abstract class Number {
     public abstract Integer toDecimal();
     public abstract Number fromDecimal(Integer);
 
@@ -71,6 +75,6 @@ public class HexadecimalNumber extends Number {
         // convert `n` to HexadecimalNumber
     }
 }
-</code></pre>
+{% endhighlight %}
 
 <p>This is how we can create an abstraction: we can add or perform any other arithmetic operations regardless on which numeric system we use!</p>
