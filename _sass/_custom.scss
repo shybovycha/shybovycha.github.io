@@ -31,6 +31,11 @@ $background-image: url(/images/background2.png);
   display: inline-block;
 }
 
+.vspace {
+  min-height: 1.5em;
+  display: inline-block;
+}
+
 .post {
   background: $post-background-color;
   margin: 20px 0;
