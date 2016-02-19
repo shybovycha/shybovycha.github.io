@@ -6,7 +6,7 @@ date: '2016-02-11T13:47:39+01:00'
 
 <div class="row">
     <div class="col-md-6 col-xs-12">
-        {% include two-sides-of-web-application-reference.html %}
+        {% include references/two-sides-of-web-application.html %}
     </div>
 
     <div class="col-md-6 col-xs-12 text-xs-center text-md-right">

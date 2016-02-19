@@ -16,13 +16,13 @@ tumblr_url: http://shybovycha.tumblr.com/post/82491993325/what-i-always-forget-a
 
 <p>You could define one this way:</p>
 
-<pre><code>
+{% highlight ruby %}
 module Moo
   def initialize(x)
     @x = x
   end
 end
-</code></pre>
+{% endhighlight %}
 
 <p>But when you try to call <code>Moo.new</code> you will get a <code>method missing</code> error.  When you try to run <code>Moo.initialize</code> you will get a <code>private method called</code> error.</p>
 
@@ -48,20 +48,22 @@ end
 
 <p>The reality is plain however:</p>
 
-<pre><code>
-irb(main):005:0&gt; Object.superclass
-=&gt; BasicObject
-irb(main):006:0&gt; Class.superclass
-=&gt; Module
-irb(main):007:0&gt; Module.superclass
-=&gt; Object
-irb(main):008:0&gt; BasicObject.superclass
-=&gt; nil
-</code></pre>
+{% highlight ruby %}
+irb(main):005:0> Object.superclass
+=> BasicObject
+irb(main):006:0> Class.superclass
+=> Module
+irb(main):007:0> Module.superclass
+=> Object
+irb(main):008:0> BasicObject.superclass
+=> nil
+{% endhighlight %}
 
 <p>So, you can even draw a chain:</p>
 
-<pre>BasicObject =&gt; Object =&gt; Module =&gt; Class</pre>
+{% highlight haskell %}
+BasicObject => Object => Module => Class
+{% endhighlight %}
 
 <h2>Some hints</h2>
 
