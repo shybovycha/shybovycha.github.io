@@ -1,6 +1,6 @@
 <div class="col-xs-12 posts-wrapper">
   {% for post in paginator.posts %}
-    <div class="post">
+    <div class="post" data-url="{{ post.url | prepend: site.baseurl }}">
       <div class="title">
         <span class="timestamp label label-info pull-right hidden-md-down">
           {{ post.date | date: "%b %-d, %Y" }}
@@ -24,9 +24,11 @@
       {% else %}
         {{ post.excerpt }}
 
+        {% if post.content != post.excerpt %}
         <div class="text-right">
           <a class="btn btn-sm btn-primary read-more" href="{{ post.url | prepend: site.baseurl }}">Read more</a>
         </div>
+        {% endif %}
       {% endif %}
     </div>
   {% endfor %}
