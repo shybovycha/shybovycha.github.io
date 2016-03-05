@@ -9,7 +9,7 @@ tumblr_url: http://shybovycha.tumblr.com/post/116811050801/history-is-nothing-bu
 
 {% highlight haskell %}
     newLanguage :: Language -> Language -> Language
-    newLanguage = refactorTo Haskell Java8
-    newLanguage = refactorTo Haskell Scala
-    newLanguage = refactorTo Haskell CSharp
+    newLanguage = Haskell `refactorTo` Java8
+    newLanguage = Haskell `refactorTo` Scala
+    newLanguage = Haskell `refactorTo` CSharp
 {% endhighlight %}
