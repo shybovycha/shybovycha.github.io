@@ -277,7 +277,7 @@ Now let’s define our new component in `welcome-component.html`:
       </style>
 
       <template>
-        <div class="message">Hello, !</div>
+        <div class="message">Hello, {{ name }}!</div>
       </template>
 
     <script>
@@ -288,7 +288,7 @@ Now let’s define our new component in `welcome-component.html`:
   </dom-module>
 {% endhighlight %}
 
-Now, import the component at the ” tag of the `index.html` file:
+Now, add our new component importing to the `<head>` tag of the `index.html` file:
 
 {% highlight html %}
 <link rel="import" href="bower_components/polymer/polymer.html" /> <!-- imports Polymer -->
