@@ -242,7 +242,7 @@ Then you should end up with all your libraries in the `bower_components` directo
 
 Let’s start cooking our demo with [Polymer](https://www.polymer-project.org/). First, initialize the Bower project and add this section to your fresh `bower.json` file:
 
-{% highlight json %}
+{% highlight js %}
 "dependencies": {
     "polymer": "Polymer/polymer#^1.0.0"
 }
@@ -256,7 +256,7 @@ Now we will move our pretty `welcome-component` to a new place. Create two files
 html:5
 {% endhighlight %}
 
-*(you need to hit the “Expand” key, formerly Tab, at the end of this single line while editing the`index.html`* *file in an Emmet-powered editor)*. And add just a single line within the HTML’ “ tag:
+*(you need to hit the “Expand” key, formerly Tab, at the end of this single line while editing the`index.html`* *file in an Emmet-powered editor)*. And add just a single line within the HTML’ `<body>` tag:
 
 {% highlight html %}
 <welcome-component></welcome-component>
@@ -314,22 +314,30 @@ Now, the last thing I’d like to show is the attributes for our custom componen
 To do this, we shall use two Polymer features. First of all, let’s define our attribute, adding this section to our `Polymer()` call:
 
 {% highlight js %}
+Polymer({
+    ...
     properties: {
       name: {
         type: String
       }
     }
+    ...
+});
 {% endhighlight %}
 
 Now that we’ve defined our attribute THAT simply, we should use it somehow. Polymer allows us to define a method, which will be called once the component gets inserted into a webpage:
 
 {% highlight js %}
+Polymer({
+    ...
     ready: function() {
       this.querySelector('.message').innerHTML = `Hello, ${this.name}!`
     }
+    ...
+});
 {% endhighlight %}
 
-As long as you're riding IOJS you can use the ES6 string interpolation feature, as in the example above =) Here, the `this` variable is bound to the `<welcome-component>` tag. So in order to change the `.message` tag’s HTML, we need to find it first. For this purpose I’ve used the HTML5 `querySelector` method.
+As long as you're riding <s>IOJS</s> NodeJS 5.0+, you can use the ES6 string interpolation feature, as in the example above =) Here, the `this` variable is bound to the `<welcome-component>` tag. So in order to change the `.message` tag's HTML, we need to find it first. For this purpose I’ve used the HTML5 `querySelector` method.
 
 Cool enough, right?
 
