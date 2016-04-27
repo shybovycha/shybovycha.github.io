@@ -183,7 +183,8 @@ are supported since very early CSS versions.
 
 So, welcome the WebComponents' example:
 
-{% highlight html %}
+{% highlight handlebars %}
+{% raw %}
 <template id="welcome-component">
       <style>
         .message {
@@ -195,7 +196,7 @@ So, welcome the WebComponents' example:
         }
       </style>
 
-      <div class="message">Hello, !</div>
+      <div class="message">Hello, {{name}}!</div>
     </template>
 
     <div class="shadow-host"></div>
@@ -208,6 +209,7 @@ So, welcome the WebComponents' example:
 
     shadow.appendChild(template.content);
     </script>
+{% endraw %}
 {% endhighlight %}
 
 This code may not look so good, as it might, but it works like a charm!
@@ -265,6 +267,7 @@ html:5
 Now let’s define our new component in `welcome-component.html`:
 
 {% highlight handlebars %}
+{% raw %}
  <dom-module id="welcome-component">
     <style>
         .message {
@@ -286,6 +289,7 @@ Now let’s define our new component in `welcome-component.html`:
       });
     </script>
   </dom-module>
+{% endraw %}
 {% endhighlight %}
 
 Now, add our new component importing to the `<head>` tag of the `index.html` file:
