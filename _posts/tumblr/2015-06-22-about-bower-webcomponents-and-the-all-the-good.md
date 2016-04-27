@@ -264,7 +264,7 @@ html:5
 
 Now let’s define our new component in `welcome-component.html`:
 
-{% highlight html %}
+{% highlight mustache %}
  <dom-module id="welcome-component">
     <style>
         .message {
