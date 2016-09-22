@@ -1,17 +1,17 @@
---
+---
 layout: post
-title: Big-O notation
+title: Big O notation
 categories: []
 tags: []
---
+---
 
-The best big-O notation explanation I've ever saw I've found on... Google Play Market! I was
+The best big O notation explanation I've ever saw I've found on... Google Play Market! I was
 hanging around, looking for the suggested software and, for some reason, I've decided to
 install some educational application for programmers. And here's what I've found...
 
 <!--more-->
 
-Big-O notation shows, how many steps or memory units will the algorithm use to complete, 
+Big O notation shows, how many steps or memory units will the algorithm use to complete, 
 at its maximum. Here's an example:
 
 {% highlight java %}
@@ -72,7 +72,7 @@ the maximum needed amount of steps to complete. Just as follows:
 
 Here comes the comparison of the known complexities: `O(1) < O(log n) < O(n) < O(n*log n) < O(n^m)`.
 
-But we can measure not time consumption only, using the big-O notation. It is also handy for memory
+But we can measure not time consumption only, using the big O notation. It is also handy for memory
 complexity measurements.
 
 Here the same rules apply, except of _"steps to complete"_ we use 
