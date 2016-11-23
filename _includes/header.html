@@ -1,35 +1,18 @@
-<div class="container-fluid header">
-  <div class="col-md-4 hidden-sm-down text-center">
-    <a href="{{ site.baseurl }}/">
-      <img src="{{ '/images/photo.jpg' | prepend: site.baseurl }}" alt="photo" class="img-circle photo">
-    </a>
+<nav class="navbar navbar-light bg-faded">
+  <a class="navbar-brand" href="{{ site.baseurl }}/">
+    <img src="{{ '/images/photo.jpg' | prepend: site.baseurl }}" width="30" height="30" class="rounded d-inline-block align-top" alt="">
+
+    <div class="d-inline-block nav-icon">
+      <div>Artem Shoobovych</div>
+      <div>Software developer</div>
+    </div>
+  </a>
+
+  <div class="nav navbar-nav">
+    <a class="nav-link nav-item {% if page.url == '/' %}active{% endif %}" href="{{ '/' | prepend: site.baseurl }}">Home</a>
+
+    <a class="nav-link nav-item {% if page.url == '/about/' %}active{% endif %}" href="{{ '/about/' | prepend: site.baseurl }}">About</a>
+
+    <a class="nav-link nav-item {% if page.url == '/contact/' %}active{% endif %}" href="{{ '/contact/' | prepend: site.baseurl }}">Contact</a>
   </div>
-
-  <div class="col-md-8 col-xs-12 text">
-    <div class="hidden-md-down visible-md-up">
-      <h1>Artem Szubowicz</h1>
-      <h2>Software developer</h2>
-    </div>
-    
-    <div class="hidden-md-up text-center">
-      <h2>Artem Szubowicz</h2>
-      <h3>Software developer</h3>
-    </div>
-
-    <div class="col-xs-12 col-md-7 col-md-offset-4 p-r-0">
-      <ul id="main-menu" class="nav nav-pills">
-        <li class="nav-item">
-          <a href="{{ '/' | prepend: site.baseurl }}" class="nav-link btn btn-md btn-info">Home</a>
-        </li>
-
-        {% for page in site.pages %}
-          {% if page.title %}
-            <li class="nav-item">
-              <a href="{{ page.url | prepend: site.baseurl }}" class="nav-link btn btn-md btn-info">{{ page.title }}</a>
-            </li>
-          {% endif %}
-        {% endfor %}
-      </ul>
-    </div>
-  </div>
-</div>
+</nav>

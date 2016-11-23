@@ -2,7 +2,7 @@
   {% for post in paginator.posts %}
     <div class="post">
       <div class="title">
-        <span class="timestamp label label-info pull-right hidden-md-down">
+        <span class="timestamp tag tag-info tag-pill pull-right hidden-sm-down">
           {{ post.date | date: "%b %-d, %Y" }}
         </span>
 
@@ -11,11 +11,7 @@
         </span>
 
         {% unless post.tags contains 'quote' %}
-          <h3>
-            <a class="anchor" href="{{ post.url | prepend: site.baseurl }}">#</a>
-
-            {{ post.title }}
-          </h3>
+          <h3>{{ post.title }}</h3>
         {% endunless %}
       </div>
 
@@ -27,9 +23,9 @@
         {{ post.excerpt }}
 
         {% if post.content != post.excerpt %}
-        <div class="text-right">
-          <a class="btn btn-sm btn-primary read-more" href="{{ post.url | prepend: site.baseurl }}">Read more</a>
-        </div>
+          <div class="read-more-container">
+            <a class="btn btn-sm btn-primary read-more" href="{{ post.url | prepend: site.baseurl }}">Read more</a>
+          </div>
         {% endif %}
       {% endif %}
     </div>

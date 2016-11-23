@@ -13,6 +13,12 @@ $grid-breakpoints: (
 
 $background-image: url(/images/background2.png);
 
+.gallery {
+  img {
+    display: inline-block;
+  }
+}
+
 .header {
   background: $post-background-color;
   padding: 20px 0;
@@ -47,9 +53,15 @@ $background-image: url(/images/background2.png);
     border-right: 1px solid $grey-color-light;
     margin-bottom: 15px;
 
+    h3 {
+      padding-right: 110px;
+    }
+
     .timestamp {
-      position: absolute;
-      right: 1em;
+      //position: absolute;
+      //right: 1em;
+      //font-size: 0.75em;
+      //padding: 0 10px;
     }
   }
 
@@ -127,9 +139,21 @@ $background-image: url(/images/background2.png);
   border-radius: 5px;
 }
 
+@media (max-width: 768px) {
+  .read-more-container {
+    text-align: left;
+  }
+}
+
+@media (min-width: 768px) {
+  .read-more-container {
+    text-align: right;
+  }
+}
+
 .btn.read-more {
-  $read-more-btn-color: rgb(120, 161, 171);
-  $read-more-btn-color-hover: rgb(73, 122, 134);
+  $read-more-btn-color: #32a571;
+  $read-more-btn-color-hover: #238659;
 
   background-color: $read-more-btn-color;
   border-color: $read-more-btn-color;
@@ -140,6 +164,22 @@ $background-image: url(/images/background2.png);
     border-color: $read-more-btn-color-hover;
     color: white;
   }
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-center {
+  text-align: center;
+}
+
+figure > pre {
+  margin-bottom: 0.3em;
 }
 
 @media (min-width: map-get($grid-breakpoints, md)) {
@@ -156,8 +196,8 @@ $background-image: url(/images/background2.png);
   .post .title .timestamp {
     right: 0.5em;
     position: absolute;
-    top: 0.65em;
-    background: rgba(60, 60, 60, 0.2);
+    top: 0.85em;
+    //background: rgba(60, 60, 60, 0.2);
   }
 }
 
@@ -201,4 +241,12 @@ $background-image: url(/images/background2.png);
       border: none;
     }
   }
+}
+
+.navbar {
+  border-radius: 0 !important;
+}
+
+.nav-icon {
+  font-size: 0.5em;
 }

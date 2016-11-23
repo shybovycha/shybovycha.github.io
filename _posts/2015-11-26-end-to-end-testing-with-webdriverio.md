@@ -20,12 +20,15 @@ In my case, we first tried to use _Protractor_ with _Chai.js_. That time we ende
 up with almost unsupportable bunch of code, succeeding in 100% of runs.
 
 Next time we eliminated *Chai* and reworked all our tests to use *Protractor* only.
-This time tests worked and were more readable *(I did not like the syntax, but it worked...)*,
-but after upgrading libraries *(including Protractor)*, success ratio of running tests
-falled down to 40%.
+So the code became more clear *(I did not like the syntax, but it worked...)*,
+but after upgrading libraries *(including Protractor)*, the ratio of successfull
+test runs decreased to just 40%.
 
-We worked two days, trying to fix those tests. And that's how *webdriverio* came to
-our project.
+We worked for two days, trying to fix those tests. And that's how *webdriverio*
+came to our project.
+
+And here's a short tutorial on how to implement E2E tests with *webdriverio* in
+a sample project.
 
 <!--more-->
 
@@ -53,7 +56,11 @@ After installing that module, you may manage and run your Selenium with
 ./node_modules/selenium-standalone/bin/selenium-standalone start
 {% endhighlight %}
 
-Now, all the tests we will be writing with *Jasmine*, so we need that one:
+Now, in all our tests we will be using using *Jasmine*, since it allows to
+create a beautiful code, which is easy to support (if you need the maximum
+help from your customer - consider using *Cucumber* and BDD approach - I will
+cover this topic in one of my future posts). So we need to add Jasmine
+dependency to our project:
 
 {% highlight bash %}
 npm install --save jasmine
@@ -77,20 +84,57 @@ This will create this directory structure for you:
 
 
 So now you may place your tests in the `spec` directory, on any level. Just
-remember to name your test files with the `spec` postfix.
+remember to name your test files with the `spec` postfix
+(for ex. `spec/feature1_spec.js` or `tests/spec/Feature1spec.js`).
+To change that lowercase `spec` postfix, specify which files Jasmine should
+look for in the `spec/support/jasmine.json` file, using the option `spec_files`.
+For example, you can make it look for both `*_spec` and `*Spec` (underscore and
+camel case file naming) postfixes:
 
-The last, but not least, we need *webdriverio* itself:
+{% highlight json %}
+{
+    "spec_dir": "spec",
+    "spec_files": [
+        "features/**/*[sS]pec.js",
+        "**/*_spec.js",
+        "**/*_Spec.js"
+    ]
+}
+{% endhighlight %}
+
+The `spec_dir` option specifies the directory, where the test files are located.
+And the `spec_files` option is what we are mostly interested in: it tells Jasmine
+the pattern, it should use to check if a file (inside the `#{spec_dir}` directory)
+is a test file or not. For example, the first value, `"features/**/*[sS]pec.js"`,
+tells that any file, whose path is `spec/features/{any directory nesting depth}/*Spec.js`
+as well as any file with a path `spec/features/{any directory nesting depth}/*spec.js` is a
+file, containing a test definition.
+
+The last, but not least, we need the *webdriverio* itself:
 
 {% highlight bash %}
 npm install --save webdriverio
 {% endhighlight %}
 
-And now we are ready to make some coding!
+And now we are ready to make some code!
 
-## The build process
+## Preparation
 
-First of all, we need the helper, initializing our browser client before any
-tests are run. Let's define this in the `spec/helpers/settings.js` file:
+First of all, we need to initialize the Selenium client.
+Generally speaking, it's a special browser instance, which will be used for
+our tests only and when all the tests are done - it will be closed automatically.
+This browser (or a client) provides a programmable interface, e.g. executes commands
+we ask it to execute. The commands allow, for example, to manipulate the currently opened document
+(just like you used to do with javascript in the developer tools in your browser) -
+find an element, click it, retrieve its computed styles, etc. It also allows to manipulate
+the browser window itself - open a new tab, get and set its properties like width, height, position
+and many others.
+
+So we really need that client for our tests - that's the core! And we need that to run all our
+tests (we don't want to run a new browser instance for each separate test case, right?). So we
+can put all the code, initializing Selenium client in a helper script and make Jasmine run it
+before all (again, **not each, but all** - I'll explain why this is essential in a moment) tests.
+Let's define this in the `spec/helpers/settings.js` file:
 
 {% highlight js %}
 var webdriverio = require('webdriverio');
@@ -127,13 +171,30 @@ exports.baseUrl = config.baseUrl;
 
 This code does three simple, but really important things:
 
-1. it sets up the *webdriverio* **for all the tests**, opens browser window
-*(set in the `browserName` option)* and navigates to the page, defined in `baseUrl` option
-2. makes Jasmine wait a bit longer for assertions in the test, before making it
-**failed on timeout** *(when Jasmine has timed out, waiting for any assertions)*
-3. sets *webdriverio* client instance for each test in `this.client` member
+1. it sets up the *webdriverio* (which is an enhanced wrapper for Selenium client)
+**for all the tests**, opens browser *(configured by the `browserName` option)* window
+and navigates to the page, defined in the `baseUrl` option
+2. makes Jasmine wait a bit longer for each assertion in the tests, before marking it as
+**failed on timeout** *(when Jasmine has timed out, waiting for an assertion)*
+3. makes *webdriverio* client instance available in any test through the `this.client` member
+(where `this` means the test instance)
 
-Assume our application is a webshop - it has three pages: `/#/products`, `/#/billing-details`
+See, this code is run once, previous to **all** the tests, found by Jasmine. This is defined
+by the `beforeAll()` call. We could use the `beforeEach()` function instead, but since opening
+a new browser (Selenium client) instance is a time-consuming task, it's better to do it once
+and then just operate on an existing instance, opening new tabs when necessary. Thus is why
+we are using `beforeAll()` for all the tests *in the scope*.
+
+Here I've mentioned another essential thing, *the test scope*. Test scope is the current set of tests.
+It could be defined by the `describe("description", function () { /* test code */ })` function call.
+But since we have no `describe()` calls before the `beforeAll` and `afterAll` calls, Jasmine
+assumes we want to use those functions for all the known tests. But if you use the `beforeAll` inside
+the `describe()` block, then this function (`beforeAll()`) will be run before all the tests,
+*defined inside that `describe()` block*.
+
+## First scenario
+
+Assume our application is a simple webshop - it has three pages: `/#/products`, `/#/billing-details`
 and `/#/order-summary`. Rather simple webshop:
 
 <img src="{{'/images/e2e-testing-with-webdriverio/webshop1.png'|prepend:site.baseurl}}" alt="">
@@ -142,6 +203,26 @@ and `/#/order-summary`. Rather simple webshop:
 
 And here is our first scenario: user selects the iPhone, clicks *"Buy"*, fills in
 his billing details and waits for his brand-new iPhone to come.
+
+In terms of BDD it could be described in a scenario like this:
+
+{% highlight gherkin %}
+Feature: Placing an order
+    Scenario: Ordering a single product
+        Given a webshop page
+            And a guest user
+        When the user selects the "iPhone" product
+            And clicks the "Buy" button
+            And fills out the billing details correctly
+            And clicks the "Submit" button
+        Then the "Billing successfull" page is shown
+{% endhighlight %}
+
+This scenario is great for the customer. And it's awesome if the customer
+is able to provide developer(-s) with a number of such scenarios.
+But our test will be more kind of "developer-friendly".
+
+Let's create a `specs/ordering_a_single_product_spec.js` file:
 
 {% highlight js %}
 var settings = require('../helpers/settings.js');
@@ -185,8 +266,11 @@ you did in previous test cases defines your current state. For example, after ou
 *'when user selects iPhone he gets redirected to the billing-details page'*, we stay on the page
 we finished shortly.
 
-Given that, we will not add additional checks or `waitForExist()`s to get to the next steps. So the
-next step is filling out billing details:
+Given that, we will not add additional checks or `waitForExist()`s to get to the next steps. 
+
+## Dealing with forms
+
+The next step is filling out billing details:
 
 {% highlight js %}
 describe('when user provides his billing details', function () {
@@ -220,6 +304,8 @@ describe('when user provides his billing details', function () {
 {% endhighlight %}
 
 The new thing here is how we fill out input fields with *webdriverio* - using the `setValue()` method.
+
+## Advanced element lookup
 
 The last page we need to check is `order-summary`. Here we want to check if the order total
 is exactly the same, as our iPhone' price. But this is where things got tricky: we have two
@@ -265,6 +351,11 @@ children
 3. speaking of children, we've also got a parent matcher, `ancestor-or-self::div[@ng-repeat]`, which
 looks for `<div>` element with `ng-repeat` attribute in the current element or any of its parents
 4. you may noticed a concatenation of all those matchers with `and` keyword
+
+## Wrapping up
+
+So that was a really short example on how to use Jasmine, webdriverio and how to create end-to-end tests.
+As promised, I will cover the BDD testing and Cucumber in some of my future posts.
 
 ## References
 
