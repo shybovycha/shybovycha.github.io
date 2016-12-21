@@ -1,13 +1,17 @@
 ---
 layout: post
-title: clojure-guards
+title: Clojure guards
 categories: []
 tags: []
 published: True
-
+date: '2016-12-21T12:54:00'
 ---
 
-# Clojure guards
+Once I wanted to have something like a pretty "match" operator from Scala, but in Clojure.
+And hence there are no default options for it in Clojure out of the box, here are some
+alternatives I've found in the Internet.
+
+<!--more-->
 
 ## Using `guard` macro
 
