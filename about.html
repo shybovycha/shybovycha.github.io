@@ -106,21 +106,23 @@ permalink: /about/
 </div>
 
 <script>
-  var galleryElt = $('#photo-sample-carousel');
+  $(function () {
+    var galleryElt = $('#photo-sample-carousel');
 
-  var gallery = $(galleryElt).carousel({
-    interval: 3000
-  });
+    var gallery = $(galleryElt).carousel({
+      interval: 3000
+    });
 
-  var hammerGallery = new Hammer(galleryElt[0]);
+    var hammerGallery = new Hammer(galleryElt[0]);
 
-  hammerGallery.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL });
+    hammerGallery.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL });
 
-  hammerGallery.on('swipe', function (evt) {
-    if (evt.direction == Hammer.DIRECTION_LEFT) {
-      gallery.carousel('next');
-    } else if (evt.direction == Hammer.DIRECTION_RIGHT) {
-      gallery.carousel('prev');
-    }
+    hammerGallery.on('swipe', function (evt) {
+      if (evt.direction == Hammer.DIRECTION_LEFT) {
+        gallery.carousel('next');
+      } else if (evt.direction == Hammer.DIRECTION_RIGHT) {
+        gallery.carousel('prev');
+      }
+    });
   });
 </script>

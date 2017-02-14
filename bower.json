@@ -1,0 +1,25 @@
+{
+  "name": "shybovycha.github.io",
+  "homepage": "https://github.com/shybovycha/shybovycha.github.io",
+  "authors": [
+    "Artem Shubovych <shybovycha@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "hammerjs": "^2.0.8",
+    "jquery": "^3.1.1",
+    "bootstrap": "v4.0.0-alpha.6",
+    "jquery.countdown": "^2.2.0",
+    "tether": "1.4.0"
+  }
+}

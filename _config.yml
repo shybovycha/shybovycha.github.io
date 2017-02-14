@@ -14,3 +14,4 @@ gems: [jekyll-paginate]
 
 # Build settings
 markdown: kramdown
+exclude: ['bower_components', 'node_modules', 'package.json', 'bower.json', '_sass', '_js', '_css', '.sass-cache', 'main.js']
