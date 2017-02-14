@@ -50,10 +50,10 @@ var count$ = 0;
 
 var App = {
     view: function () {
-      return m("main", [
-        m("button", { class: "decrement", onclick: function () { count$--; } }, "Decrement"),
-        m("button", { class: "increment", onclick: function () { count$++; } }, "Increment"),
-        m("p", {}, "Counter: " + count$),
+      return m('main', [
+        m('button', { class: 'decrement', onclick: function () { count$--; } }, 'Decrement'),
+        m('button', { class: 'increment', onclick: function () { count$++; } }, 'Increment'),
+        m('p', {}, 'Counter: ' + count$),
       ]);
     }
 };
@@ -116,3 +116,8 @@ Here's a diagram, showing all the transformations:
 <img src="{{ '/images/functional_web/CycleJS_example.png' | prepend: site.baseurl }}" alt="Event transformations diagram">
 
 So once a click event _(on one of two buttons, of course)_ appears, it is transformed to either `-1` or `1`, depending on the button which fired that event; then this number is added to the existing _(which might appear to be empty)_ event stream `action$`; then the sum is calculated over all the numbers in that stream; then the sum is transformed into a virtual DOM tree; and lastly, the virtual DOM tree is returned from a view function and Cycle does its job to update the actual DOM. And since there always will be a different value of sum in our example, the DOM will always be updated.
+
+## libc
+
+My own implementation
+
