@@ -67,7 +67,7 @@ permalink: /about/
 <div class="vspace"></div>
 
 <div class="row m-y">
-  <div class="col-xs-12 col-md-4">
+  <div class="col-xs-12 col-md-4 text-center m-y">
     <img src="{{ '/images/photo-large.jpg' | prepend:site.baseurl }}" alt="photo-large" class="photo-large">
   </div>
 
@@ -87,7 +87,7 @@ permalink: /about/
       Some of those come to me easily, some of them <em>(like playing the guitar or riding snowboard)</em> - not.
     </p>
 
-    <p>And the topics listed below dominate on this blog.</p>
+    <p>On this blog you'll find articles on these topics:</p>
 
     <div class="row">
       <div class="col-xs-12">
@@ -104,3 +104,23 @@ permalink: /about/
     </li>-->
   </div>
 </div>
+
+<script>
+  var galleryElt = $('#photo-sample-carousel');
+
+  var gallery = $(galleryElt).carousel({
+    interval: 3000
+  });
+
+  var hammerGallery = new Hammer(galleryElt[0]);
+
+  hammerGallery.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL });
+
+  hammerGallery.on('swipe', function (evt) {
+    if (evt.direction == Hammer.DIRECTION_LEFT) {
+      gallery.carousel('next');
+    } else if (evt.direction == Hammer.DIRECTION_RIGHT) {
+      gallery.carousel('prev');
+    }
+  });
+</script>

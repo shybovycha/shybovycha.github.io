@@ -13,6 +13,10 @@ $grid-breakpoints: (
 
 $background-image: url(/images/background2.png);
 
+.m-y {
+  margin: 1em 0;
+}
+
 .gallery {
   img {
     display: inline-block;
@@ -245,6 +249,16 @@ figure > pre {
 
 .navbar {
   border-radius: 0 !important;
+  padding: 0 !important;
+}
+
+.nav-link.nav-item.active {
+  border-bottom: 3px solid rgba(10, 10, 10, 1.0);
+  padding-bottom: 10px;
+}
+
+.navbar-brand {
+  padding: 5px 15px;
 }
 
 .nav-icon {
