@@ -15,7 +15,7 @@ between pages using web-components? Do we need to create a separate file for eac
 
 <!--more-->
 
-In my [previous post]({% post_url 2015-07-12-reactjs-introduction %}) I covered React, Riot,
+In my [previous post]({% post_url tumblr/2015-07-12-reactjs-introduction %}) I covered React, Riot,
 Angular 2.0 and Polymer. Now the time has passed and Angular 1.5 is here. So I decided to
 extend my knowledge and fill the gaps in a brand-new methodology.
 

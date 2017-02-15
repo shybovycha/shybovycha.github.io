@@ -1,25 +1,4 @@
-$grid-breakpoints: (
-  // Extra small screen / phone
-  xs: 0,
-  // Small screen / phone
-  sm: 34em,
-  // Medium screen / tablet
-  md: 48em,
-  // Large screen / desktop
-  lg: 62em,
-  // Extra large screen / wide desktop
-  xl: 75em
-) !default;
-
-$background-image: url(/images/background2.png);
-
-// @media (min-width: map-get($grid-breakpoints, md)) {
-//   body {
-//     background: $background-image;
-//     background-attachment: fixed;
-//     background-repeat: no-repeat;
-//   }
-// }
+@import "grid", "variables";
 
 @media (max-width: map-get($grid-breakpoints, md)) {
   body {
@@ -34,49 +13,14 @@ body {
   font-size: 1rem;
   line-height: 1.5;
   color: #373a3c;
-  background: $background-color;
-  background: $background-image;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
+  background: $background-color $background-image no-repeat top left fixed;
+  // background: $background-color;
 }
 
 img {
   &.rounded {
     border-radius: .25rem;
   }
-}
-
-code {
-  padding: .2rem .4rem;
-  // font-size: 90%;
-  color: #bd4147;
-  background-color: #f7f7f9;
-  border-radius: .25rem;
-}
-
-pre {
-  overflow: scroll;
-  font-size: 1rem;
-  margin-bottom: 0.3em;
-
-  code {
-    padding: 0;
-    font-size: inherit;
-    color: inherit;
-    background-color: transparent;
-    border-radius: 0;
-  }
-}
-
-pre, kbd, code {
-  font-family: Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
-}
-
-.highlight {
-  margin: 0;
-  background: #F3F3F3;
-  padding: 10px 10px 5px 10px;
-  border-radius: 5px;
 }
 
 a {
@@ -144,189 +88,17 @@ nav {
   }
 }
 
-.container {
-  .post {
-    background: $post-background-color;
-    margin: 20px 0;
-    padding: 30px 25px;
-
-    .img-sm {
-      max-width: 100px;
-      max-height: 100px;
-    }
-
-    img {
-      display: inline-block;
-      max-width: 100%;
-    }
-
-    .title {
-      .anchor {
-        // visibility: hidden;
-
-        &:hover {
-          text-decoration: none;
-        }
-      }
-    }
-
-    &:hover {
-      .title .anchor {
-        visibility: visible;
-      }
-    }
-
-    .title {
-      display: flex;
-      align-items: center;
-
-      h2.post-title {
-        flex-grow: 1;
-      }
-
-      .timestamp {
-        border-radius: .5rem;
-        padding: .35rem;
-        background: #5bc0de;
-        color: white;
-        font-weight: 600;
-        font-size: 0.65rem;
-      }
-    }
-  }
-}
-
 @media screen and (min-width: map-get($grid-breakpoints, md)) {
   .container {
     padding: 1rem 3rem;
   }
 }
 
-@media screen and (max-width: map-get($grid-breakpoints, md)) {
-  .container {
-    .post {
-      .title {
-        flex-direction: column;
-        align-items: flex-start;
-        margin-bottom: 1rem;
-        overflow: hidden;
-      }
-    }
-  }
-}
-
-.btn {
-  background-color: $theme-color;
-  border: none;
-  color: white;
-
-  display: inline-block;
-  font-weight: 400;
-  line-height: 1.25;
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: middle;
-  cursor: pointer;
-
-  text-decoration: none;
-
-  &:hover {
-    background-color: darken($theme-color, 0.1); //#238659;
-    border-color: darken($theme-color, 0.1); //#238659;
-    text-decoration: none;
-  }
-
-  &:active {
-    text-decoration: none;
-  }
-
-  &.btn-sm {
-    padding: .25rem .5rem;
-    font-size: .875rem;
-    border-radius: .2rem;
-  }
-
-  &.btn-md {
-    padding: .5rem .75rem;
-    font-size: 1rem;
-    border-radius: .4rem;
-  }
-}
-
-.site-footer {
-  display: flex;
-  justify-content: space-around;
-  background: $post-background-color;
-  padding: 20px 0 15px 0;
-}
-
-.carousel {
-  .carousel-inner {
-    display: flex;
-    // flex-direction: row;
-    flex-wrap: wrap;
-    // overflow: hidden;
-
-    .carousel-item {
-      display: flex;
-      position: relative;
-      flex-direction: column;
-      color: white;
-      align-items: center;
-      margin: .5rem;
-      align-self: center;
-      font-size: .85rem;
-
-      img {
-        max-height: 200px;
-      }
-
-      .carousel-caption {
-        bottom: .5rem;
-        position: absolute;
-      }
-    }
-  }
-}
-
-.post .post-content img.photo-large {
-  float: left;
-  max-width: 250px;
-  margin: 0 .5rem;
-}
-
-input, textarea {
-  margin: 40px 25px;
-  width: 200px;
-  display: block;
-  border: none;
-  padding: 10px 0;
-  border-bottom: solid 1px $theme-color;
-  transition: all 0.3s cubic-bezier(.64,.09,.08,1);
-  background: linear-gradient(to bottom, rgba(255,255,255,0) 96%, $theme-color 4%);
-  background-position: -200px 0;
-  background-size: 200px 100%;
-  background-repeat: no-repeat;
-  color: darken($theme-color, 20%);
-
-  padding-top: 1.5em;
-
-  &::-webkit-input-placeholder {
-    transition: all 0.3s ease-in-out;
-    visibility: visible !important;
-  }
-
-  &:focus, &:valid {
-    box-shadow: none;
-    outline: none;
-    background-position: 0 0;
-
-    &::-webkit-input-placeholder {
-      color: $theme-color;
-      font-size: 11px;
-      transform: translateY(-1em);
-      visibility: visible !important;
-    }
+.container {
+  .post {
+    background: $post-background-color;
+    margin: 20px 0;
+    padding: 30px 25px;
   }
 }
 
@@ -336,83 +108,9 @@ input, textarea {
   margin: 1em 0;
 }
 
-.gallery {
-  img {
-    display: inline-block;
-  }
-}
-
-.header {
-  background: $post-background-color;
-  padding: 20px 0;
-  max-height: 220px;
-
-  .text {
-    margin: 25px 0;
-  }
-
-  .photo {
-    max-height: 165px;
-  }
-}
-
-.photo-large {
-  display: inline-block;
-}
-
 .vspace {
   min-height: 1.5em;
   display: block;
-}
-
-.media {
-  img.media-object {
-    max-width: 50px;
-    max-height: 50px;
-  }
-}
-
-// #photo-sample-carousel {
-//   .carousel-indicators {
-//     bottom: 5px;
-
-//     li {
-//       border: 1px solid #90BF00;
-
-//       &.active {
-//         background-color: #90BF00;
-//       }
-//     }
-//   }
-
-//   .carousel-inner {
-//     .carousel-item {
-//       text-align: center;
-//       overflow: hidden;
-
-//       img {
-//         display: inline-block;
-//         height: 400px;
-//         max-height: 400px;
-//       }
-//     }
-//   }
-// }
-
-
-.btn.read-more {
-  $read-more-btn-color: #32a571;
-  $read-more-btn-color-hover: #238659;
-
-  background-color: $read-more-btn-color;
-  border-color: $read-more-btn-color;
-  color: white;
-
-  &:hover {
-    background-color: $read-more-btn-color-hover;
-    border-color: $read-more-btn-color-hover;
-    color: white;
-  }
 }
 
 .text-left {

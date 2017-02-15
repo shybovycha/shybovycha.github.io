@@ -10,10 +10,20 @@ github_username:  shybovycha
 excerpt_separator: '<!--more-->'
 paginate: 10
 highlighter: rouge
-gems: [jekyll-paginate]
+gems: [jekyll-paginate, jemoji]
 
 # Build settings
 markdown: kramdown
 
 sass:
   style: compressed
+
+compress_html:
+  clippings: all
+  comments: ["<!--", "-->"]
+  endings: all
+  ignore:
+    envs: []
+  blanklines: true
+  profile: false
+  startings: []

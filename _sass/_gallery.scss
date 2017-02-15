@@ -1,0 +1,38 @@
+.photo-large {
+  display: inline-block;
+}
+
+.carousel {
+  .carousel-inner {
+    display: flex;
+    // flex-direction: row;
+    flex-wrap: wrap;
+    // overflow: hidden;
+
+    .carousel-item {
+      display: flex;
+      position: relative;
+      flex-direction: column;
+      color: white;
+      align-items: center;
+      margin: .5rem;
+      align-self: center;
+      font-size: .85rem;
+
+      img {
+        max-height: 200px;
+      }
+
+      .carousel-caption {
+        bottom: .5rem;
+        position: absolute;
+      }
+    }
+  }
+}
+
+.post .post-content img.photo-large {
+  float: left;
+  max-width: 250px;
+  margin: 0 .5rem;
+}

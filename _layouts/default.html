@@ -1,6 +1,15 @@
+---
+layout: compress
+---
+
 <!DOCTYPE html>
 <html>
-  {% include head.html %}
+  <head>
+    {% include head.html %}
+
+    <link rel="stylesheet" href="{{ '/css/main.css' | prepend: site.baseurl }}">
+    <script type="text/javascript" src="{{ "/js/custom.js" | prepend: site.baseurl }}"></script>
+  </head>
 
   <body>
     {% include header.html %}
