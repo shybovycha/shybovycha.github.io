@@ -21,6 +21,10 @@ img {
   &.rounded {
     border-radius: .25rem;
   }
+
+  &.img-fluid {
+    max-width: 100%;
+  }
 }
 
 a {
