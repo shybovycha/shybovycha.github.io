@@ -17,5 +17,5 @@ in the remake of my old <a href="{% post_url tumblr/2015-04-06-shootthem %}">Sho
 Like this *(early preview, made with Unity 3D in ~3 hrs)*:
 
 <div class="text-center">
-    <img src="{{ '/images/shootthem/ShootThem1.2-screen1-compressed.png' | prepend: site.baseurl }}" alt="" class="img-responsive">
+    <img src="{{ '/images/shootthem/ShootThem1.2-screen1-compressed.jpg' | prepend: site.baseurl }}" alt="" class="img-responsive">
 </div>
