@@ -13,6 +13,20 @@ $grid-breakpoints: (
 
 $background-image: url(/images/background2.png);
 
+// @media (min-width: map-get($grid-breakpoints, md)) {
+//   body {
+//     background: $background-image;
+//     background-attachment: fixed;
+//     background-repeat: no-repeat;
+//   }
+// }
+
+@media (max-width: map-get($grid-breakpoints, md)) {
+  body {
+    background: $background-color;
+  }
+}
+
 body {
   padding: 0;
   margin: 0;
@@ -20,6 +34,10 @@ body {
   font-size: 1rem;
   line-height: 1.5;
   color: #373a3c;
+  background: $background-color;
+  background: $background-image;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
 
 img {
@@ -407,18 +425,4 @@ input, textarea {
 
 .text-center {
   text-align: center;
-}
-
-@media (min-width: map-get($grid-breakpoints, md)) {
-  body {
-    background: $background-image;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
-  }
-}
-
-@media (max-width: map-get($grid-breakpoints, md)) {
-  body {
-    background: $background-color;
-  }
 }
