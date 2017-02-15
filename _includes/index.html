@@ -1,18 +1,14 @@
-<div class="col-xs-12 posts-wrapper">
+<div class="posts-wrapper">
   {% for post in paginator.posts %}
     <div class="post">
       <div class="title">
-        <span class="timestamp tag tag-info tag-pill pull-right hidden-sm-down">
-          {{ post.date | date: "%b %-d, %Y" }}
-        </span>
-
-        <span class="small hidden-md-up">
-          {{ post.date | date: "%b %-d, %Y" }}
-        </span>
-
         {% unless post.tags contains 'quote' %}
-          <h3>{{ post.title }}</h3>
+          <h2 class="post-title">{{ post.title }}</h2>
         {% endunless %}
+
+        <span class="timestamp">
+          {{ post.date | date: "%b %-d, %Y" }}
+        </span>
       </div>
 
       {% if post.tags contains 'quote' %}

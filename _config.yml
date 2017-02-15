@@ -14,3 +14,6 @@ gems: [jekyll-paginate]
 
 # Build settings
 markdown: kramdown
+
+sass:
+  style: compressed
