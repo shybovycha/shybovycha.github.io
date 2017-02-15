@@ -27,69 +27,6 @@
     pre, kbd, code {
       font-family: Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
     }
-
-    .highlight {
-      margin: 0;
-      background: #F3F3F3;
-      padding: 10px 10px 5px 10px;
-      border-radius: 5px;
-    }
-
-    .img-sm {
-      max-width: 100px;
-      max-height: 100px;
-    }
-
-    img {
-      display: inline-block;
-      max-width: 100%;
-    }
-
-    .title {
-      display: flex;
-      align-items: center;
-
-      h2.post-title {
-        flex-grow: 1;
-      }
-
-      .timestamp {
-        border-radius: .5rem;
-        padding: .35rem;
-        background: #5bc0de;
-        color: white;
-        font-weight: 600;
-        font-size: 0.65rem;
-      }
-    }
-  }
-}
-
-@media screen and (max-width: map-get($grid-breakpoints, md)) {
-  .container {
-    .post {
-      .title {
-        flex-direction: column;
-        align-items: flex-start;
-        margin-bottom: 1rem;
-        overflow: hidden;
-      }
-    }
-  }
-}
-
-.btn.read-more {
-  $read-more-btn-color: #32a571;
-  $read-more-btn-color-hover: #238659;
-
-  background-color: $read-more-btn-color;
-  border-color: $read-more-btn-color;
-  color: white;
-
-  &:hover {
-    background-color: $read-more-btn-color-hover;
-    border-color: $read-more-btn-color-hover;
-    color: white;
   }
 }
 
