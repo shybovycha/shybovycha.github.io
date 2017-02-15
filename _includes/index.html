@@ -19,8 +19,8 @@
         {{ post.excerpt }}
 
         {% if post.content != post.excerpt %}
-          <div class="read-more-container">
-            <a class="btn btn-sm btn-primary read-more" href="{{ post.url | prepend: site.baseurl }}">Read more</a>
+          <div class="text-right read-more-container">
+            <a class="btn btn-md btn-primary read-more" href="{{ post.url | prepend: site.baseurl }}">Read more</a>
           </div>
         {% endif %}
       {% endif %}

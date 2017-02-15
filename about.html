@@ -6,19 +6,9 @@ permalink: /about/
 
 <div class="row">
   <div class="col-xs-12">
-    <div id="photo-sample-carousel" class="carousel slide" data-ride="carousel">
-      <ol class="carousel-indicators">
-        <li class="active" data-target="#photo-sample-carousel" data-slide-to="0"></li>
-        <li data-target="#photo-sample-carousel" data-slide-to="1"></li>
-        <li data-target="#photo-sample-carousel" data-slide-to="2"></li>
-        <li data-target="#photo-sample-carousel" data-slide-to="3"></li>
-        <li data-target="#photo-sample-carousel" data-slide-to="4"></li>
-        <li data-target="#photo-sample-carousel" data-slide-to="5"></li>
-        <li data-target="#photo-sample-carousel" data-slide-to="6"></li>
-      </ol>
-
-      <div class="carousel-inner" role="listbox">
-        <div class="carousel-item active">
+    <div class="carousel">
+      <div class="carousel-inner">
+        <div class="carousel-item">
           <img src="{{'/images/photo-samples/sample1.jpg'|prepend:site.baseurl}}" alt="">
 
           <div class="carousel-caption">Pieniny, Poland</div>
@@ -104,23 +94,3 @@ permalink: /about/
     </li>-->
   </div>
 </div>
-
-<script>
-  var galleryElt = $('#photo-sample-carousel');
-
-  var gallery = $(galleryElt).carousel({
-    interval: 3000
-  });
-
-  var hammerGallery = new Hammer(galleryElt[0]);
-
-  hammerGallery.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL });
-
-  hammerGallery.on('swipe', function (evt) {
-    if (evt.direction == Hammer.DIRECTION_LEFT) {
-      gallery.carousel('next');
-    } else if (evt.direction == Hammer.DIRECTION_RIGHT) {
-      gallery.carousel('prev');
-    }
-  });
-</script>

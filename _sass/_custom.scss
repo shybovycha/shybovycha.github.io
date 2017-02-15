@@ -198,8 +198,8 @@ nav {
 }
 
 .btn {
-  background-color: #32a571;
-  border-color: #32a571;
+  background-color: $theme-color;
+  border: none;
   color: white;
 
   display: inline-block;
@@ -213,8 +213,8 @@ nav {
   text-decoration: none;
 
   &:hover {
-    background-color: #238659;
-    border-color: #238659;
+    background-color: darken($theme-color, 0.1); //#238659;
+    border-color: darken($theme-color, 0.1); //#238659;
     text-decoration: none;
   }
 
@@ -227,6 +227,12 @@ nav {
     font-size: .875rem;
     border-radius: .2rem;
   }
+
+  &.btn-md {
+    padding: .5rem .75rem;
+    font-size: 1rem;
+    border-radius: .4rem;
+  }
 }
 
 .site-footer {
@@ -234,6 +240,76 @@ nav {
   justify-content: space-around;
   background: $post-background-color;
   padding: 20px 0 15px 0;
+}
+
+.carousel {
+  .carousel-inner {
+    display: flex;
+    // flex-direction: row;
+    flex-wrap: wrap;
+    // overflow: hidden;
+
+    .carousel-item {
+      display: flex;
+      position: relative;
+      flex-direction: column;
+      color: white;
+      align-items: center;
+      margin: .5rem;
+      align-self: center;
+      font-size: .85rem;
+
+      img {
+        max-height: 200px;
+      }
+
+      .carousel-caption {
+        bottom: .5rem;
+        position: absolute;
+      }
+    }
+  }
+}
+
+.post .post-content img.photo-large {
+  float: left;
+  max-width: 250px;
+  margin: 0 .5rem;
+}
+
+input, textarea {
+  margin: 40px 25px;
+  width: 200px;
+  display: block;
+  border: none;
+  padding: 10px 0;
+  border-bottom: solid 1px $theme-color;
+  transition: all 0.3s cubic-bezier(.64,.09,.08,1);
+  background: linear-gradient(to bottom, rgba(255,255,255,0) 96%, $theme-color 4%);
+  background-position: -200px 0;
+  background-size: 200px 100%;
+  background-repeat: no-repeat;
+  color: darken($theme-color, 20%);
+
+  padding-top: 1.5em;
+
+  &::-webkit-input-placeholder {
+    transition: all 0.3s ease-in-out;
+    visibility: visible !important;
+  }
+
+  &:focus, &:valid {
+    box-shadow: none;
+    outline: none;
+    background-position: 0 0;
+
+    &::-webkit-input-placeholder {
+      color: $theme-color;
+      font-size: 11px;
+      transform: translateY(-1em);
+      visibility: visible !important;
+    }
+  }
 }
 
 // ---- OLD ----
