@@ -10,7 +10,7 @@ date: '2016-02-11T13:47:39+01:00'
     </div>
 
     <div class="col-md-6 col-xs-12 text-xs-center text-md-right">
-        <img class="img-responsive" style="max-height: 150px" src="{{ '/images/two-sides-of-web-application/Gyroscopic-Navigational-Footwear-compressed.jpg' | prepend: site.baseurl }}" />
+        <img class="img-responsive" style="max-height: 150px" src="{{ '/images/two-sides-of-web-application/Gyroscopic-Navigational-Footwear-compressed.jpg' | prepend: site.baseurl }}" alt="Funny image" />
     </div>
 </div>
 

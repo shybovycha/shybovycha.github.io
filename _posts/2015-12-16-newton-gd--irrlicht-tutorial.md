@@ -7,7 +7,7 @@ published: True
 
 ---
 
-<img class="img-responsive pull-right" style="max-height: 150px" src="{{ '/images/slow.gif' | prepend: site.baseurl }}" />
+<img class="img-responsive pull-right" style="max-height: 150px" src="{{ '/images/slow-compressed.gif' | prepend: site.baseurl }}" alt="Slowpoke image" />
 
 This post will be really short. This is just a reference to my tutorial, which I
 updated recently. It has been a long time since I wrote anything on game development,
