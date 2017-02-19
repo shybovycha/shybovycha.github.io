@@ -229,11 +229,11 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
     };
 
     function view(state, dispatch) {
-      return c('div', [
-        c('button', { click: () => dispatch('INCREMENT') }, 'Increment'),
-        c('button', { click: () => dispatch('DECREMENT') }, 'Decrement'),
-        c('div', `Count: ${ state }`)
-      ]);
+      return ['div', [
+        ['button', { click: () => dispatch('INCREMENT') }, 'Increment'],
+        ['button', { click: () => dispatch('DECREMENT') }, 'Decrement'],
+        ['div', `Count: ${ state }`]
+      ]];
     };
 
     var app = createApplication(initialState, update, view);
@@ -497,11 +497,11 @@ function update(state, message) {
 };
 
 function view(state, dispatch) {
-  return c('div', [
-    c('button', { click: () => dispatch('INCREMENT') }, 'Increment'),
-    c('button', { click: () => dispatch('DECREMENT') }, 'Decrement'),
-    c('div', `Count: ${ state }`)
-  ]);
+  return ['div', [
+    ['button', { click: () => dispatch('INCREMENT') }, 'Increment'],
+    ['button', { click: () => dispatch('DECREMENT') }, 'Decrement'],
+    ['div', `Count: ${ state }`]
+  ]];
 };
 
 var app = createApplication(initialState, update, view);
@@ -511,7 +511,7 @@ app.mount(document.body);
 
 <a href="http://codepen.io/shybovycha/pen/dNEgNa" target="_blank" class="btn btn-md">Run this code</a>
 
-All the DOM nodes are created using function `c(tag, [attributes], [text | children])` _(just like Mithril uses `m()` function)_. That's why the library is called **libc**.
+All the DOM nodes are created using the array returned, which should match pattern `[tag, {attributes}, (text | [children]))` _(just like Mithril uses `m()` function or Elm uses `div` and other helper functions)_. Originally, `libc` used `c()` helper function to do that _(similar to Mithril's `m()` function)_, and that's why it was called `libC`.
 
 The library makes use of a VirtualDOM approach to create a virtual DOM tree and chech which nodes/node properties need changes and reflect only the needed changes in a real DOM tree.
 
@@ -519,10 +519,10 @@ The library makes use of a VirtualDOM approach to create a virtual DOM tree and 
 
 There are however couple highlights regarding `libc`:
 
-* it can create arbitrary tags _(DOM nodes)_ with the `c()` function, so it's quite easy to use it in couple with other libraries _(such as Angular-material, React or Polymer, for instance)_
+* it can create arbitrary tags _(DOM nodes)_ within the `view()` function _(the first element in each array is tag name, which could be pretty much anything)_, so it's quite easy to use it in couple with other libraries _(such as Angular-material, React or Polymer, for instance)_
 * properties, whose value is a function are automatically mapped to event listeners; taking into account that property names could be arbitrary as well, you may add event listeners to your custom events
-* again, property names could be arbitrary, so you can use even angular ones if you want: `c('div', { 'ng-repeat': 'item in items' }, '{{item.name}}')`
-* both `properties` and `children or text` arguments of a `c()` function are optional; thus you can create empty DOM elements: `c('hr')`
+* again, property names could be arbitrary, so you can use even angular ones if you want: `['div', { 'ng-repeat': 'item in items' }, '{{item.name}}']`
+* both `properties` and `children or text` arguments are optional; thus you can create empty DOM elements: `['hr']`
 * to enable communication with your applications from the outside, application instance, returned by the `createApplication()` function, has the `dispatch(message)` method
 
 In later posts I'll provide more examples of using `libc`.
