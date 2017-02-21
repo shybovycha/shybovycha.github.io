@@ -106,9 +106,19 @@ float max_index(float *a, int n) {
 
 <p>There are two SSE operation types: <b>scalar</b> and <b>packed</b>. Scalar operations use only the lowest elements of vectors. Packed operations deal with each element of vectors given. Look at the images below and you shall see the difference:</p>
 
-<figure class="tmblr-full" data-orig-height="193" data-orig-width="578"><img data-orig-height="193" data-orig-width="578" alt="image" src="https://41.media.tumblr.com/a360178653cbf8fa2d6ca0336b6d6887/tumblr_inline_nqhky64nQB1qh5oee_540.png"/></figure><figure class="tmblr-full" data-orig-height="183" data-orig-width="577"><img data-orig-height="183" data-orig-width="577" alt="image" src="https://40.media.tumblr.com/fb4b80b3a5a647087ed105686308e8f5/tumblr_inline_nqhkyq0E511qh5oee_540.png"/></figure><p>Horizontal operations deal on vectors in a different direction. Well, you know… The horizontal one…</p>
+<div>
+    <img src="{{ '/tumblr_files/speeding_up_with_sse/tumblr_inline_nqhky64nQB1qh5oee_500.png' | prepend: site.baseurl }}"/>
+</div>
+<div>
+<img src="{{ '/tumblr_files/speeding_up_with_sse/tumblr_inline_nqhkyq0E511qh5oee_500.png' | prepend: site.baseurl }}"/>
+</div>
+<p>Horizontal operations deal on vectors in a different direction. Well, you know… The horizontal one…</p>
+<div>
+<img src="{{ '/tumblr_files/speeding_up_with_sse/tumblr_inline_nqhkz4bm1K1qh5oee_400.png' | prepend: site.baseurl }}"/>
+</div>
 
-<figure data-orig-height="185" data-orig-width="274"><img data-orig-height="185" data-orig-width="274" alt="image" src="https://40.media.tumblr.com/b8a61b7977c1246b9c94e86f3dc5a0dc/tumblr_inline_nqhkz4bm1K1qh5oee_540.png"/></figure><p>Operations may deal with <b>single-</b> or <b>double-precision</b> elements (<code>float</code> and <code>double</code> types, correspondingly).
+<p>Operations may deal with <b>single-</b> or <b>double-precision</b> elements (<code>float</code> and <code>double</code> types, correspondingly).
+
 To determine if an operation type, you just need to look at the last two characters of operation’s name:</p>
 
 <p><code>HADDPS</code> -&gt; <code>Horizontal</code> <code>ADD</code> <code>Packed</code> <code>Single-precision</code></p>
@@ -189,12 +199,81 @@ float max_sse(float *a, int n) {
 
 <p>Here is better explanation:</p>
 
+<p>If we want to cycle-shift a 4-number array, we use <code>_mm_shuffle_ps</code> intrisinc.</p>
+
+<p>It takes 3 parameters: <code>m1</code>, <code>m2</code> and <code>mask</code>. First two are four-word (four-number) packs.
+The mask consists of four numbers and shows which elements of pack <code>m2</code> and which elements of pack <code>m1</code>
+will form the result. This mask could be obtained using <code>_MM_SHUFFLE(z, y, x, w)</code> macro, which forms an integer
+according to the formula <code>(z << 6) | (y << 4) | (x << 2) | w</code>.</p>
+
+<p>Given those definitions, the call <code>m3 = _mm_shuffle_ps(m1, m2, _MM_SHUFFLE(z, y, x, w))</code> is equal to the
+formula <code>m3 = (m2(z) << 6) | (m2(y) << 4) | (m1(x) << 2) | m1(w)</code>.</p>
+
+<p>So we want to shift a pack by one element right, like this: <code>[4, 2, 3, 1] => [2, 3, 1, 4]</code>.
+We need to pass the initial pack, <code>[4, 2, 3, 1]</code> twice: <code>_mm_shuffle_ps([4, 2, 3, 1], [4, 2, 3, 1], mask)</code>
+and form a mask, which will use elements <code>[2, 3]</code> for the higher words of a result and elements <code>[3, 1]</code>
+for the lower words. These elements can be then indexed as follows:
+
+<pre>
++-----------+---------+
+| index     | 3 2 1 0 |
++-----------+---------+
+| element   | 4 2 3 1 |
++-----------+---------+
+</pre>
+</p>
+
+<p>So to get the pair <code>[2, 3]</code> we need elements with indices <code>[2, 1]</code>. And to get pair <code>[1, 4]</code> we
+need elements with indices <code>[0, 3]</code>.</p>
+
+<p>Given that, we can use macro <code>_MM_SHUFFLE()</code> to generate the mask: <code>_MM_SHUFFLE(2, 1, 0, 3)</code>.
+And the final formula looks like this: <code>_mm_shuffle_ps(m1, m2, _MM_SHUFFLE(2, 1, 0, 3))</code>.</p>
+
+<pre>
++--+---------+
+|  | 3 2 1 0 |
++------------+
+|m1| 4 2 3 1 |
++------------+
+|m2| 4 2 3 1 |
++------------+
+|m3| 2 3 1 4 |
++------------+
+</pre>
+
+<p>And our <code>max</code> function in pseudo-code looks like this:</p>
+
 {% highlight cpp %}
-    // given [4, 2, 3, 1]
-    max([2, 1, 3, 4], [4, 2, 3, 1]) => [4, 2, 3, 4]
-    max([1, 3, 4, 2], [4, 2, 3, 4]) => [4, 3, 4, 4]
-    max([3, 4, 2, 1], [4, 2, 4, 4]) => [4, 4, 4, 4]
+    // given val = [4, 2, 3, 1]
+    maxval = val;
+
+    for (int i = 0; i < 3; i++) {
+        val = _mm_shuffle_ps(val, val, _MM_SHUFFLE(2, 1, 0, 3));
+        maxval = _mm_max_ps(maxval, val);
+    }
 {% endhighlight %}
+
+<p>Which will be executed like this:</p>
+
+{% highlight groovy %}
+    // preparation
+    maxval = [ 4, 2, 3, 1]
+
+    // i = 0
+    val = _mm_shuffle_ps(val, val, _MM_SHUFFLE(2, 1, 0, 3)) // = [2, 3, 1, 4]
+    maxval = _mm_max_ps([4, 2, 3, 1], [2, 3, 1, 4]) // = [4, 3, 3, 4]
+
+    // i = 1
+    val = _mm_shuffle_ps(val, val, _MM_SHUFFLE(2, 1, 0, 3)) // = [3, 1, 4, 2]
+    maxval = _mm_max_ps([4, 3, 3, 4], [3, 1, 4, 2]) // = [4, 3, 4, 4]
+
+    // i = 2
+    val = _mm_shuffle_ps(val, val, _MM_SHUFFLE(2, 1, 0, 3)) // = [1, 4, 2, 3]
+    maxval = _mm_max_ps([4, 3, 4, 4], [1, 4, 2, 3]) // = [4, 4, 4, 4]
+{% endhighlight %}
+
+<p>The <code>_MM_SHUFFLE(2, 1, 0, 3)</code> call could be expanded to <code>(2 << 6) | (1 << 4) | (0 << 2) | 3</code>,
+which equals to <code>147</code> or <code>0x93</code> in HEX.</p>
 
 <p>And here is the final C++ implementation:</p>
 
