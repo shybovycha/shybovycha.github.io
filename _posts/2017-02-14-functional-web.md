@@ -62,7 +62,9 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
     ReactDOM.render(<App />, document.body);
     {% endhighlight %}
 
-    <a href="http://codepen.io/shybovycha/pen/dNErOY" target="_blank" class="btn btn-md">Run this code</a>
+    <p>
+      <a href="http://codepen.io/shybovycha/pen/dNErOY" target="_blank" class="btn btn-md">Run this code</a>
+    </p>
   </div>
 
   <div class="col">
