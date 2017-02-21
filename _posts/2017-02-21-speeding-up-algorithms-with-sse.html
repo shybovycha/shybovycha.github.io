@@ -56,8 +56,8 @@ float max_index(float *a, int n) {
 <p>This very short optimization has its effect <i>(time in seconds; the value found in braces)</i>:</p>
 
 {% highlight bash %}
-    Value-based: 0.00732200 (0.99999827)
-    Index-based: 0.00674200 (0.99999827)
+Value-based: 0.00732200 (0.99999827)
+Index-based: 0.00674200 (0.99999827)
 {% endhighlight %}
 
 <h2>Vector operations</h2>
@@ -246,32 +246,32 @@ And the final formula looks like this: <code>_mm_shuffle_ps(m1, m2, _MM_SHUFFLE(
 <p>And our <code>max</code> function in pseudo-code looks like this:</p>
 
 {% highlight cpp %}
-    // given val = [4, 2, 3, 1]
-    maxval = val;
+// given val = [4, 2, 3, 1]
+maxval = val;
 
-    for (int i = 0; i < 3; i++) {
-        val = _mm_shuffle_ps(val, val, _MM_SHUFFLE(2, 1, 0, 3));
-        maxval = _mm_max_ps(maxval, val);
-    }
+for (int i = 0; i < 3; i++) {
+    val = _mm_shuffle_ps(val, val, _MM_SHUFFLE(2, 1, 0, 3));
+    maxval = _mm_max_ps(maxval, val);
+}
 {% endhighlight %}
 
 <p>Which will be executed like this:</p>
 
 {% highlight groovy %}
-    // preparation
-    maxval = [ 4, 2, 3, 1]
+// preparation
+maxval = [ 4, 2, 3, 1]
 
-    // i = 0
-    val = _mm_shuffle_ps(val, val, _MM_SHUFFLE(2, 1, 0, 3)) // = [2, 3, 1, 4]
-    maxval = _mm_max_ps([4, 2, 3, 1], [2, 3, 1, 4]) // = [4, 3, 3, 4]
+// i = 0
+val = _mm_shuffle_ps(val, val, _MM_SHUFFLE(2, 1, 0, 3)) // = [2, 3, 1, 4]
+maxval = _mm_max_ps([4, 2, 3, 1], [2, 3, 1, 4]) // = [4, 3, 3, 4]
 
-    // i = 1
-    val = _mm_shuffle_ps(val, val, _MM_SHUFFLE(2, 1, 0, 3)) // = [3, 1, 4, 2]
-    maxval = _mm_max_ps([4, 3, 3, 4], [3, 1, 4, 2]) // = [4, 3, 4, 4]
+// i = 1
+val = _mm_shuffle_ps(val, val, _MM_SHUFFLE(2, 1, 0, 3)) // = [3, 1, 4, 2]
+maxval = _mm_max_ps([4, 3, 3, 4], [3, 1, 4, 2]) // = [4, 3, 4, 4]
 
-    // i = 2
-    val = _mm_shuffle_ps(val, val, _MM_SHUFFLE(2, 1, 0, 3)) // = [1, 4, 2, 3]
-    maxval = _mm_max_ps([4, 3, 4, 4], [1, 4, 2, 3]) // = [4, 4, 4, 4]
+// i = 2
+val = _mm_shuffle_ps(val, val, _MM_SHUFFLE(2, 1, 0, 3)) // = [1, 4, 2, 3]
+maxval = _mm_max_ps([4, 3, 4, 4], [1, 4, 2, 3]) // = [4, 4, 4, 4]
 {% endhighlight %}
 
 <p>The <code>_MM_SHUFFLE(2, 1, 0, 3)</code> call could be expanded to <code>(2 << 6) | (1 << 4) | (0 << 2) | 3</code>,
@@ -330,12 +330,12 @@ int max_sse_int(int *a, int n) {
 <p>If we compare the results of all three methods - usual loop, index-based searching and SSE, we may see something like this <i>(I ran these tests on my laptop’s i7 processor on one million random float/int values)</i>:</p>
 
 {% highlight bash %}
-    Value-based: 0.00784100 (0.99999911)
-    Index-based: 0.00674900 (0.99999911)
-    SSE: 0.00272400 (0.99999911)
-    Value-based on integers: 0.00653000 (99)
-    Index-based on integers: 0.00583000 (99)
-    SSE4 on integers: 0.00228200 (99)
+Value-based: 0.00784100 (0.99999911)
+Index-based: 0.00674900 (0.99999911)
+SSE: 0.00272400 (0.99999911)
+Value-based on integers: 0.00653000 (99)
+Index-based on integers: 0.00583000 (99)
+SSE4 on integers: 0.00228200 (99)
 {% endhighlight %}
 
 <p>Here you can see that index-based searching gives some speeding-up (around <code>15%</code>). But the real speed boost is gained with SSE (almost <b><code>4 times</code></b>!).</p>
@@ -345,88 +345,88 @@ int max_sse_int(int *a, int n) {
 Now let&rsquo;s try something harder - calculating a sum of array&rsquo;s elements. Here we will use the horizontal vector operations. But first, here&rsquo;s the general algorithm:
 
 {% highlight cpp %}
-    float sum(float *a, int n) {
-        float res = 0.0;
+float sum(float *a, int n) {
+    float res = 0.0;
 
-        for (int i = 0; i < n; i++) {
-            res += a[i];
-        }
-
-        return res;
+    for (int i = 0; i < n; i++) {
+        res += a[i];
     }
+
+    return res;
+}
 {% endhighlight %}
 
 Simple enough, huh? Now let&rsquo;s use the SSE&rsquo;s <code>_mm_add_ps</code> intrinsic. Running it on each pack of four elements will give us the summary vector of four floats:
 
 {% highlight cpp %}
-    float sum_sse(float *a, int n) {
-        float res = 0.0;
+float sum_sse(float *a, int n) {
+    float res = 0.0;
 
-        __m128 *v4 = (__m128*) a;
-        __m128 vec_sum = _mm_setzero_ps();
+    __m128 *v4 = (__m128*) a;
+    __m128 vec_sum = _mm_setzero_ps();
 
-        for (int i = 0; i < n / 4; i++) {
-            vec_sum = _mm_add_ps(vec_sum, v4[i]);
-        }
-
-        _mm_store_ss(&res, vec_sum);
-
-        return res;
+    for (int i = 0; i < n / 4; i++) {
+        vec_sum = _mm_add_ps(vec_sum, v4[i]);
     }
+
+    _mm_store_ss(&res, vec_sum);
+
+    return res;
+}
 {% endhighlight %}
 
 But if we now add the elements of that vector horizontaly to themselves, we would then have the two-element vector. Adding it to itself will give us the final single-element vector:
 
 {% highlight cpp %}
-    float sum_sse(float *a, int n) {
-        float res = 0.0;
+float sum_sse(float *a, int n) {
+    float res = 0.0;
 
-        __m128 *v4 = (__m128*) a;
-        __m128 vec_sum = _mm_setzero_ps();
+    __m128 *v4 = (__m128*) a;
+    __m128 vec_sum = _mm_setzero_ps();
 
-        for (int i = 0; i < n / 4; i++) {
-            vec_sum = _mm_add_ps(vec_sum, v4[i]);
-        }
-
-        vec_sum = _mm_hadd_ps(vec_sum, vec_sum);
-        vec_sum = _mm_hadd_ps(vec_sum, vec_sum);
-
-        _mm_store_ss(&res, vec_sum);
-
-        return res;
+    for (int i = 0; i < n / 4; i++) {
+        vec_sum = _mm_add_ps(vec_sum, v4[i]);
     }
+
+    vec_sum = _mm_hadd_ps(vec_sum, vec_sum);
+    vec_sum = _mm_hadd_ps(vec_sum, vec_sum);
+
+    _mm_store_ss(&res, vec_sum);
+
+    return res;
+}
 {% endhighlight %}
 
 Nice, isn&rsquo;t it? But wait! There&rsquo;s integers available too! And they need their special intrinsics!
 Have no fear, nothing that different here, only the prefixes are different:
 
 {% highlight cpp %}
-    unsigned long long sum4(int *a, int n) {
-        unsigned long long res;
+unsigned long long sum4(int *a, int n) {
+    unsigned long long res;
 
-        __m128i *f4 = (__m128i*) a;
-        __m128i vec_sum = _mm_setzero_si128();
+    __m128i *f4 = (__m128i*) a;
+    __m128i vec_sum = _mm_setzero_si128();
 
-        for (int i = 0; i < n / 4; i++) {
-            vec_sum = _mm_hadd_epi32(vec_sum, f4[i]);
-        }
-
-        vec_sum = _mm_hadd_epi32(vec_sum, vec_sum);
-        vec_sum = _mm_hadd_epi32(vec_sum, vec_sum);
-
-        res = _mm_cvtsi128_si32(vec_sum);
-
-        return res;
+    for (int i = 0; i < n / 4; i++) {
+        vec_sum = _mm_hadd_epi32(vec_sum, f4[i]);
     }
+
+    vec_sum = _mm_hadd_epi32(vec_sum, vec_sum);
+    vec_sum = _mm_hadd_epi32(vec_sum, vec_sum);
+
+    res = _mm_cvtsi128_si32(vec_sum);
+
+    return res;
+}
 {% endhighlight %}
 
 And, just to approve our assumption of speeding-up, here&rsquo;s the benchmarking <em>(on one million of elements)</em>:
 
 {% highlight bash %}
-    Value-based: 0.00853100 (500245.28125000)
-    SSE3: 0.00319800 (500243.50000000)
-    Value-based on integers: 0.00773100 (49453512)
-    SSE4 on integers: 0.00274800 (49453512)
+Value-based: 0.00853100 (500245.28125000)
+SSE3: 0.00319800 (500243.50000000)
+Value-based on integers: 0.00773100 (49453512)
+SSE4 on integers: 0.00274800 (49453512)
 {% endhighlight %}
 
 <h2>Resources</h2>
