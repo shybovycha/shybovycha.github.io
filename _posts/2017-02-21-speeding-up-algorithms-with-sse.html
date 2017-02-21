@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Speeding-up algorithms with SSE
-date: '2015-06-25T07:59:54+02:00'
+date: '2017-02-21T17:59:54+02:00'
 tags:
 - rtfm
 - tutorial
@@ -10,16 +10,18 @@ tags:
 - sse
 tumblr_url: http://shybovycha.tumblr.com/post/122400740651/speeding-up-algorithms-with-sse
 ---
-<h2>Assembly</h2>
 
-<p>Have you ever asked anyone if assembly language may be useful nowadays? So, here’s the short answer: <b>YES</b>.
+<p>Have you ever asked anyone if assembly language might be useful nowadays? So, here’s the short answer: <b>YES</b>.
 When you know how your computer works <i>(not a processor itself, but the whole thing - memory organization, math co-processor and others)</i>, you may optimize your code while writing it. In this short article I shall try to show you some use cases of optimizations, which you may incorporate with the usage of low-level programming.</p>
+
+<p>Recently I was reading through my old posts and found out there is a gap in the article about SSE - the post did not cover some of
+the implementation caveats. I decided to fulfill this and re-publish a new version.</p>
 
 <!--more-->
 
 <h2>Finding maximum</h2>
 
-<p>So, let’s start-off searching a maximum element in array. Usually, it is nothing just iterating through the array, comparing each element with some starting value. For optimization reason and for the precision’s sake we set the initial value to the first array’s element. Like this:</p>
+<p>So, let’s start-off searching a maximum element in the array. Usually, it is nothing just iterating through the array, comparing each element with some starting value. For optimization reason and for the precision’s sake we set the initial value to the first array’s element. Like this:</p>
 
 {% highlight cpp %}
 float max_value(float *a, int n) {
@@ -343,88 +345,88 @@ int max_sse_int(int *a, int n) {
 Now let&rsquo;s try something harder - calculating a sum of array&rsquo;s elements. Here we will use the horizontal vector operations. But first, here&rsquo;s the general algorithm:
 
 {% highlight cpp %}
-	float sum(float *a, int n) {
-		float res = 0.0;
+    float sum(float *a, int n) {
+        float res = 0.0;
 
-		for (int i = 0; i < n; i++) {
-			res += a[i];
-		}
+        for (int i = 0; i < n; i++) {
+            res += a[i];
+        }
 
-		return res;
-	}
+        return res;
+    }
 {% endhighlight %}
 
 Simple enough, huh? Now let&rsquo;s use the SSE&rsquo;s <code>_mm_add_ps</code> intrinsic. Running it on each pack of four elements will give us the summary vector of four floats:
 
 {% highlight cpp %}
-	float sum_sse(float *a, int n) {
-		float res = 0.0;
+    float sum_sse(float *a, int n) {
+        float res = 0.0;
 
-		__m128 *v4 = (__m128*) a;
-		__m128 vec_sum = _mm_setzero_ps();
+        __m128 *v4 = (__m128*) a;
+        __m128 vec_sum = _mm_setzero_ps();
 
-		for (int i = 0; i < n / 4; i++) {
-			vec_sum = _mm_add_ps(vec_sum, v4[i]);
-		}
+        for (int i = 0; i < n / 4; i++) {
+            vec_sum = _mm_add_ps(vec_sum, v4[i]);
+        }
 
-		_mm_store_ss(&res, vec_sum);
+        _mm_store_ss(&res, vec_sum);
 
-		return res;
-	}
+        return res;
+    }
 {% endhighlight %}
 
 But if we now add the elements of that vector horizontaly to themselves, we would then have the two-element vector. Adding it to itself will give us the final single-element vector:
 
 {% highlight cpp %}
-	float sum_sse(float *a, int n) {
-		float res = 0.0;
+    float sum_sse(float *a, int n) {
+        float res = 0.0;
 
-		__m128 *v4 = (__m128*) a;
-		__m128 vec_sum = _mm_setzero_ps();
+        __m128 *v4 = (__m128*) a;
+        __m128 vec_sum = _mm_setzero_ps();
 
-		for (int i = 0; i < n / 4; i++) {
-			vec_sum = _mm_add_ps(vec_sum, v4[i]);
-		}
+        for (int i = 0; i < n / 4; i++) {
+            vec_sum = _mm_add_ps(vec_sum, v4[i]);
+        }
 
-		vec_sum = _mm_hadd_ps(vec_sum, vec_sum);
-		vec_sum = _mm_hadd_ps(vec_sum, vec_sum);
+        vec_sum = _mm_hadd_ps(vec_sum, vec_sum);
+        vec_sum = _mm_hadd_ps(vec_sum, vec_sum);
 
-		_mm_store_ss(&res, vec_sum);
+        _mm_store_ss(&res, vec_sum);
 
-		return res;
-	}
+        return res;
+    }
 {% endhighlight %}
 
 Nice, isn&rsquo;t it? But wait! There&rsquo;s integers available too! And they need their special intrinsics!
 Have no fear, nothing that different here, only the prefixes are different:
 
 {% highlight cpp %}
-	unsigned long long sum4(int *a, int n) {
-		unsigned long long res;
+    unsigned long long sum4(int *a, int n) {
+        unsigned long long res;
 
-		__m128i *f4 = (__m128i*) a;
-		__m128i vec_sum = _mm_setzero_si128();
+        __m128i *f4 = (__m128i*) a;
+        __m128i vec_sum = _mm_setzero_si128();
 
-		for (int i = 0; i < n / 4; i++) {
-			vec_sum = _mm_hadd_epi32(vec_sum, f4[i]);
-		}
+        for (int i = 0; i < n / 4; i++) {
+            vec_sum = _mm_hadd_epi32(vec_sum, f4[i]);
+        }
 
-		vec_sum = _mm_hadd_epi32(vec_sum, vec_sum);
-		vec_sum = _mm_hadd_epi32(vec_sum, vec_sum);
+        vec_sum = _mm_hadd_epi32(vec_sum, vec_sum);
+        vec_sum = _mm_hadd_epi32(vec_sum, vec_sum);
 
-		res = _mm_cvtsi128_si32(vec_sum);
+        res = _mm_cvtsi128_si32(vec_sum);
 
-		return res;
-	}
+        return res;
+    }
 {% endhighlight %}
 
 And, just to approve our assumption of speeding-up, here&rsquo;s the benchmarking <em>(on one million of elements)</em>:
 
 {% highlight bash %}
-	Value-based: 0.00853100 (500245.28125000)
-	SSE3: 0.00319800 (500243.50000000)
-	Value-based on integers: 0.00773100 (49453512)
-	SSE4 on integers: 0.00274800 (49453512)
+    Value-based: 0.00853100 (500245.28125000)
+    SSE3: 0.00319800 (500243.50000000)
+    Value-based on integers: 0.00773100 (49453512)
+    SSE4 on integers: 0.00274800 (49453512)
 {% endhighlight %}
 
 <h2>Resources</h2>
