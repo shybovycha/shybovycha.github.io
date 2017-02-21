@@ -342,7 +342,9 @@ SSE4 on integers: 0.00228200 (99)
 
 <h2>Calculating the sum</h2>
 
+<p>
 Now let&rsquo;s try something harder - calculating a sum of array&rsquo;s elements. Here we will use the horizontal vector operations. But first, here&rsquo;s the general algorithm:
+</p>
 
 {% highlight cpp %}
 float sum(float *a, int n) {
@@ -356,7 +358,9 @@ float sum(float *a, int n) {
 }
 {% endhighlight %}
 
+<p>
 Simple enough, huh? Now let&rsquo;s use the SSE&rsquo;s <code>_mm_add_ps</code> intrinsic. Running it on each pack of four elements will give us the summary vector of four floats:
+</p>
 
 {% highlight cpp %}
 float sum_sse(float *a, int n) {
@@ -375,7 +379,7 @@ float sum_sse(float *a, int n) {
 }
 {% endhighlight %}
 
-But if we now add the elements of that vector horizontaly to themselves, we would then have the two-element vector. Adding it to itself will give us the final single-element vector:
+<p>But if we now add the elements of that vector horizontaly to themselves, we would then have the two-element vector. Adding it to itself will give us the final single-element vector:</p>
 
 {% highlight cpp %}
 float sum_sse(float *a, int n) {
@@ -397,8 +401,8 @@ float sum_sse(float *a, int n) {
 }
 {% endhighlight %}
 
-Nice, isn&rsquo;t it? But wait! There&rsquo;s integers available too! And they need their special intrinsics!
-Have no fear, nothing that different here, only the prefixes are different:
+<p>Nice, isn&rsquo;t it? But wait! There&rsquo;s integers available too! And they need their special intrinsics!
+Have no fear, nothing that different here, only the prefixes are different:</p>
 
 {% highlight cpp %}
 unsigned long long sum4(int *a, int n) {
@@ -420,7 +424,7 @@ unsigned long long sum4(int *a, int n) {
 }
 {% endhighlight %}
 
-And, just to approve our assumption of speeding-up, here&rsquo;s the benchmarking <em>(on one million of elements)</em>:
+<p>And, just to approve our assumption of speeding-up, here&rsquo;s the benchmarking <em>(on one million of elements)</em>:</p>
 
 {% highlight bash %}
 Value-based: 0.00853100 (500245.28125000)
