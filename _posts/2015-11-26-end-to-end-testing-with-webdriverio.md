@@ -266,7 +266,7 @@ you did in previous test cases defines your current state. For example, after ou
 *'when user selects iPhone he gets redirected to the billing-details page'*, we stay on the page
 we finished shortly.
 
-Given that, we will not add additional checks or `waitForExist()`s to get to the next steps. 
+Given that, we will not add additional checks or `waitForExist()`s to get to the next steps.
 
 ## Dealing with forms
 
