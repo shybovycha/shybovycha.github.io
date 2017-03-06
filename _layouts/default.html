@@ -22,17 +22,6 @@ layout: compress
 
     {% include footer.html %}
 
-    <script>
-      (function () {
-        let head = document.querySelector('head');
-
-        ["{{'/css/main.css' | prepend: site.baseurl}}"].forEach(href => {
-          let elt = document.createElement('link');
-          elt.rel = 'stylesheet';
-          elt.href = href;
-          head.appendChild(elt);
-        });
-      })();
-    </script>
+    <link rel="stylesheet" href="{{'/css/main.css' | prepend: site.baseurl}}" />
   </body>
 </html>
