@@ -10,7 +10,7 @@ date: '2016-02-11T13:47:39+01:00'
     </div>
 
     <div class="col-md-6 col-xs-12 text-xs-center text-md-right">
-        <img class="img-responsive" style="max-height: 150px" src="{{ '/images/two-sides-of-web-application/Gyroscopic-Navigational-Footwear-compressed.jpg' | prepend: site.baseurl }}" alt="Funny image" />
+        <img data-src="{{ '/images/two-sides-of-web-application/Gyroscopic-Navigational-Footwear-compressed.jpg' | prepend: site.baseurl }}" class="img-responsive" style="max-height: 150px" alt="Funny image" />
     </div>
 </div>
 
@@ -31,25 +31,25 @@ Now, let’s decide what pages will our application have and what will they look
 <div class="row">
     <div class="col-xs-12 col-md-3">
         <a href="{{ '/images/two-sides-of-web-application/part1/screen1.png' | prepend:site.baseurl }}">
-            <img src="{{ '/images/two-sides-of-web-application/part1/screen1.png' | prepend:site.baseurl }}" alt="page 1" class="image-responsive">
+            <img data-src="{{ '/images/two-sides-of-web-application/part1/screen1.png' | prepend:site.baseurl }}" alt="page 1" class="image-responsive">
         </a>
     </div>
 
     <div class="col-xs-12 col-md-3">
         <a href="{{ '/images/two-sides-of-web-application/part1/screen2.png' | prepend:site.baseurl }}">
-            <img src="{{ '/images/two-sides-of-web-application/part1/screen2.png' | prepend:site.baseurl }}" alt="page 2" class="image-responsive">
+            <img data-src="{{ '/images/two-sides-of-web-application/part1/screen2.png' | prepend:site.baseurl }}" alt="page 2" class="image-responsive">
         </a>
     </div>
 
     <div class="col-xs-12 col-md-3">
         <a href="{{ '/images/two-sides-of-web-application/part1/screen3.png' | prepend:site.baseurl }}">
-            <img src="{{ '/images/two-sides-of-web-application/part1/screen3.png' | prepend:site.baseurl }}" alt="page 3" class="image-responsive">
+            <img data-src="{{ '/images/two-sides-of-web-application/part1/screen3.png' | prepend:site.baseurl }}" alt="page 3" class="image-responsive">
         </a>
     </div>
 
     <div class="col-xs-12 col-md-3">
         <a href="{{ '/images/two-sides-of-web-application/part1/screen4.png' | prepend:site.baseurl }}">
-            <img src="{{ '/images/two-sides-of-web-application/part1/screen4.png' | prepend:site.baseurl }}" alt="page 4" class="image-responsive">
+            <img data-src="{{ '/images/two-sides-of-web-application/part1/screen4.png' | prepend:site.baseurl }}" alt="page 4" class="image-responsive">
         </a>
     </div>
 </div>

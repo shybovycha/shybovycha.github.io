@@ -23,5 +23,15 @@ layout: compress
     {% include footer.html %}
 
     <link rel="stylesheet" href="{{'/css/main.css' | prepend: site.baseurl}}" />
+
+    <script>
+      window.addEventListener('DOMContentLoaded', function () {
+        var images = [].slice.apply(document.querySelectorAll('img[data-src]'));
+
+        images.forEach(function (img) {
+          img.src = img.getAttribute('data-src');
+        });
+      });
+    </script>
   </body>
 </html>
