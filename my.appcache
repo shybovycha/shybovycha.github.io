@@ -8,7 +8,7 @@ CACHE:
 {{ main.css | prepend: site.baseurl }}
 {% for page in site.pages %}{% if page.url != '/my.appcache' %}{{ page.url | prepend: site.baseurl }}{% endif %}
 {% endfor %}
-{% for item in site.static_files %}{{ item.path | prepend: site.baseurl }}
+{% for item in site.static_files %}{% unless item.path contains 'portfolio' or item.path contains 'photo-samples' or item.path contains 'carpathian_mountains_2014' %}{{ item.path | prepend: site.baseurl }}{% endunless %}
 {% endfor %}
 {% for item in site.scripts %}{{ item.url | prepend: site.baseurl }}
 {% endfor %}
