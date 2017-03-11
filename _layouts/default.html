@@ -23,7 +23,7 @@ layout: compress
     {% include footer.html %}
 
     <script async>
-      document.addEventListener('DOMContentLoaded', function () {
+      window.addEventListener('load', function () {
         // defer loading images
         var images = [].slice.apply(document.querySelectorAll('img[data-src]'));
 
