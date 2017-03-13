@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "libc.js: component interaction"
-date: '2017-03-06T19:57:24+02:00'
+date: '2017-03-12T23:22:24+02:00'
 ---
 
 <img data-src="{{ '/images/microverse-battery.jpg' | prepend: site.baseurl }}" alt="">
