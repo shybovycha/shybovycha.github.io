@@ -45,6 +45,30 @@ coordinates:
 
 <img data-src="{{ '/images/entanglement/tiles-1.png' | prepend: site.baseurl }}" alt="">
 
+Now, there's a tricky thing regarding this coordinate system: how should we know, where to render
+the actual tile image on a screen? E. g. how can we convert coordinates in this system back to a
+cartesian one?
+
+After short math on a piece of paper, I've implemented a function, which does that:
+
+{% highlight swift %}
+func uv2xy(_ uv: (Int, Int)) -> (Int, Int) {
+    let u = uv.0, v = uv.1
+    let kx = Float(u - v) * (3.0 / 2.0)
+    let ky = Float(u + v) * (sqrt(3.0) / 2.0)
+    let x = Int(ceil(kx * Float(tileSideLength)))
+    let y = Int(ceil(ky * Float(tileSideLength)))
+
+    let cx = 9 * (tileSideLength)
+    let cy = Int(ceil(8.0 * sqrt(3.0) * Float(tileSideLength)))
+
+    return (cx + x, cy - y)
+}
+{% endhighlight %}
+
+As you can see, it depends on tile side length. This is the major tile parameter. Since I render tiles
+based on that parameter.
+
 # Tiles
 
 Each tile should have six lines. To do that, I created 12 _"connection slots"_, two on each
@@ -56,3 +80,411 @@ Then, by generating six random pairs of integer numbers from range `[1, 12]`, we
 connections inside a single tile. Then a tile might look like this:
 
 <img data-src="{{ '/images/entanglement/tile-sample.png' | prepend: site.baseurl }}" alt="">
+
+To display a tile, I've developed a prototype tile in SVG:
+
+{% highlight xml %}
+<svg height="232" width="232">
+  <polygon points="55.0,5.0 155.0,5.0 205.0,92.0 155.0,178.0 55.0,178.0 5.0,92.0" style="fill:none;stroke:#000;stroke-width:2" />
+</svg>
+{% endhighlight %}
+
+And to make this template re-usable, I've dropped in a _"side length"_ parameter. Pre-calculating
+pins' slots positions and hexagon's vertex positions and making it parametric _(with a side length
+parameter)_, I've got this function, which generates a tile:
+
+{% highlight swift %}
+class TileImageGenerator {
+    let vertices: [(Int, Int)] = [(50, 0), (150, 0), (200, 87), (150, 173), (50, 173), (0, 87)]
+
+    var width: Int
+    var height: Int
+    var scaleCoefficient: Float
+    var centerX: Int
+    var centerY: Int
+
+    init(sideLength: Int) {
+        self.scaleCoefficient = Float(self.sideLength) / 100.0
+
+        self.width = Int(ceil(2.0 * Float(self.sideLength)))
+        self.height = Int(ceil(1.73 * Float(self.sideLength)))
+
+        self.centerX = (self.width / 2)
+        self.centerY = (self.height / 2)
+    }
+
+    func borderTile() -> UIImage {
+        let size = CGSize(width: self.width, height: self.height)
+        let opaque = false
+        let scale: CGFloat = 0
+
+        UIGraphicsBeginImageContextWithOptions(size, opaque, scale)
+        let context = UIGraphicsGetCurrentContext()
+
+        // draw outer shape
+        let shapePathRef: CGMutablePath = CGMutablePath()
+
+        context?.setFillColor(UIColor.black.cgColor)
+        context?.setLineJoin(CGLineJoin.round)
+
+        for i in 1...(self.vertices.count - 1) {
+            let x1 = CGFloat(Float(self.vertices[i].0) * self.scaleCoefficient)
+            let y1 = CGFloat(Float(self.vertices[i].1) * self.scaleCoefficient)
+
+            if i == 1 {
+                let x0 = CGFloat(Float(self.vertices[i - 1].0) * self.scaleCoefficient)
+                let y0 = CGFloat(Float(self.vertices[i - 1].1) * self.scaleCoefficient)
+
+                shapePathRef.move(to: CGPoint(x: x0, y: y0))
+            }
+
+            shapePathRef.addLine(to: CGPoint(x: x1, y: y1))
+        }
+
+        shapePathRef.closeSubpath()
+
+        context?.addPath(shapePathRef)
+        context?.fillPath()
+
+        // finish drawing
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+
+        return image!
+    }
+}
+{% endhighlight %}
+
+Now, if I want to draw connection lines, I can just spicy that code with pre-calculated pin slots
+connections coordinates and, using some neat line stroke technique, draw tile exactly as shown above:
+
+{% highlight swift %}
+class RenderingParams {
+    var sideLength: Int
+    var stroke: Int = 1
+    var pathStroke: Int = 4
+    var strokeColor: UIColor
+    var pathColor: UIColor
+    var highlightPathColor: UIColor
+    var markPathColor: UIColor
+
+    init(sideLength: Int,
+        stroke: Int = 1,
+        pathStroke: Int = 4,
+        strokeColor: UIColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1.0),
+        pathColor: UIColor = UIColor.white,
+        highlightPathColor: UIColor = UIColor(red: 0.9, green: 0.5, blue: 0.5, alpha: 1.0),
+        markPathColor: UIColor = UIColor(red: 0.9, green: 0.15, blue: 0.15, alpha: 1.0)) {
+            self.sideLength = sideLength
+            self.stroke = stroke
+            self.pathStroke = pathStroke
+            self.strokeColor = strokeColor
+            self.pathColor = pathColor
+            self.highlightPathColor = highlightPathColor
+            self.markPathColor = markPathColor
+    }
+}
+
+class TileImageGenerator {
+    let vertices: [(Int, Int)] = [(50, 0), (150, 0), (200, 87), (150, 173), (50, 173), (0, 87)]
+    let pins: [(Int, Int)] = [(83, 0), (116, 0), (166, 29), (182, 58), (182, 116), (166, 145), (116, 173), (83, 173), (34, 145), (18, 116), (18, 58), (34, 29)]
+
+    var width: Int
+    var height: Int
+    var scaleCoefficient: Float
+    var centerX: Int
+    var centerY: Int
+
+    var renderingParams: RenderingParams
+
+    init(renderingParams: RenderingParams) {
+        self.renderingParams = renderingParams
+
+        self.scaleCoefficient = Float(self.sideLength) / 100.0
+
+        self.width = Int(ceil(2.0 * Float(self.sideLength + (self.renderingParams.stroke * 2))))
+        self.height = Int(ceil(1.73 * Float(self.sideLength + (self.renderingParams.stroke * 2))))
+
+        self.centerX = (self.width / 2)
+        self.centerY = (self.height / 2)
+    }
+
+    func nonEmptyTile(_ tileParams: TileParams) -> UIImage {
+        let size = CGSize(width: self.width, height: self.height)
+        let opaque = false
+        let scale: CGFloat = 0
+
+        UIGraphicsBeginImageContextWithOptions(size, opaque, scale)
+        let context = UIGraphicsGetCurrentContext()
+
+        // draw outer shape
+        let shapePathRef: CGMutablePath = CGMutablePath()
+
+        context?.setFillColor(UIColor(red: 0.88, green: 0.88, blue: 0.88, alpha: 1.0).cgColor)
+        context?.setLineJoin(CGLineJoin.round)
+
+        for i in 1...(self.vertices.count - 1) {
+            let x1 = CGFloat(Float(self.vertices[i].0) * self.scaleCoefficient + Float(self.renderingParams.stroke * 2))
+            let y1 = CGFloat(Float(self.vertices[i].1) * self.scaleCoefficient + Float(self.renderingParams.stroke * 2))
+
+            if i == 1 {
+                let x0 = CGFloat(Float(self.vertices[i - 1].0) * self.scaleCoefficient + Float(self.renderingParams.stroke * 2))
+                let y0 = CGFloat(Float(self.vertices[i - 1].1) * self.scaleCoefficient + Float(self.renderingParams.stroke * 2))
+
+                shapePathRef.move(to: CGPoint(x: x0, y: y0))
+            }
+
+            shapePathRef.addLine(to: CGPoint(x: x1, y: y1))
+        }
+
+        shapePathRef.closeSubpath()
+
+        context?.addPath(shapePathRef)
+        context?.fillPath()
+
+        // draw connections
+        for (c0, c1) in tileParams.connections {
+            context?.setLineWidth(CGFloat(self.renderingParams.pathStroke))
+
+            let connectionPathRef: CGMutablePath = CGMutablePath()
+            var pathColor: CGColor
+
+            if tileParams.mark.contains(where: { ($0.0 == c0 && $0.1 == c1) || ($0.0 == c1 && $0.1 == c0) }) {
+                pathColor = self.markPathColor.cgColor
+            } else if tileParams.highlight.contains(where: { ($0.0 == c0 && $0.1 == c1) || ($0.0 == c1 && $0.1 == c0) }) {
+                pathColor = self.renderingParams.highlightPathColor.cgColor
+            } else {
+                pathColor = self.renderingParams.pathColor.cgColor
+            }
+
+            let p0x = CGFloat(Float(self.pins[c0].0) * self.scaleCoefficient + Float(self.renderingParams.stroke * 2))
+            let p0y = CGFloat(Float(self.pins[c0].1) * self.scaleCoefficient + Float(self.renderingParams.stroke * 2))
+
+            let p1x = CGFloat(Float(self.pins[c1].0) * self.scaleCoefficient + Float(self.renderingParams.stroke * 2))
+            let p1y = CGFloat(Float(self.pins[c1].1) * self.scaleCoefficient + Float(self.renderingParams.stroke * 2))
+
+            connectionPathRef.move(to: CGPoint(x: p0x, y: p0y))
+            connectionPathRef.addQuadCurve(to: CGPoint(x: p1x, y: p1y), control: CGPoint(x: self.centerX, y: self.centerY))
+
+            context?.setLineWidth(CGFloat(Float(self.renderingParams.pathStroke) * 1.25))
+            context?.setStrokeColor(UIColor.black.cgColor)
+            context?.addPath(connectionPathRef)
+            context?.strokePath()
+
+            context?.setLineWidth(CGFloat(self.renderingParams.pathStroke))
+            context?.setStrokeColor(pathColor)
+            context?.addPath(connectionPathRef)
+            context?.strokePath()
+        }
+
+        // stroke out the outer shape to cover the paths
+        context?.setStrokeColor(self.renderingParams.strokeColor.cgColor)
+        context?.setLineWidth(CGFloat(Float(self.renderingParams.stroke)))
+        context?.addPath(shapePathRef)
+        context?.strokePath()
+
+        // finish drawing
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+
+        return image!
+    }
+}
+{% endhighlight %}
+
+As you can see, two major things happened here:
+
+1. I encapsulated all the parameters like line stroke width and line colors ina a separate class, `RenderingParams`
+2. I added rendering lines using two-time rendering technique to emulate borders over connection lines; e. g. I first draw a thick line, filled with the stroke color, which should be applied, and then I render a thinner line with exactly the same coordinates, but different color; doing so, the bottom line becomes just a background for the top one
+
+Now, tiles should be rotated. To do that, two tricks have been applied:
+
+1. as we have our tiles drawn as `UIImage`, we can simply rotate that image around its center to create the visual effect of rotation
+2. as we have our connection pins as a plain array, we can just re-calculate the indices of connection's _"input"_ and _"output"_
+
+There are a couple of points, which should be described previous to the algorithm of a tile rotation.
+
+The tiles are connected using those connection pins. And based on the coordinates of a tile and its
+neighbour, we can tell, which pins of those two will be connected. And since our game goal is to prolong
+a single line, by keeping track of which connections of which tiles form a line, we may define a couple
+rules:
+
+* given connected pins inside one tile, we may describe that connection in two pins' indices, namely _"input"_ and _"output"_
+* connections of a tile, not involved in forming a line, can be treated in either way - input and output could be named in a reversed order _(again, **unless they are forming line**, otherwise it's essential to say where the line comes from and where it ends inside a given tile)_
+* the central tile will have only one output - the one, where the line starts its journey; let it be the connection pair `(0, 0)`
+* one can easily calculate the neighbour's output, given the last tile of a line path and its successor
+
+Let's define a class `Tile`:
+
+{% highlight swift %}
+class Tile {
+    var connections: [(Int, Int)]
+}
+{% endhighlight %}
+
+Simple enough, right? Now let's assume our program will fill out `connections` list automatically and
+all the tiles will be assigned the correct list of connections. Given that, we may define two helper
+methods on a `Tile` class:
+
+{% highlight swift %}
+class Tile {
+    var connections: [(Int, Int)]
+
+    func output(from input: Int) -> Int {
+        for (inPin, outPin) in self.connections {
+            if inPin == input {
+                return outPin
+            }
+
+            if outPin == input {
+                return inPin
+            }
+        }
+    }
+
+    func input(from output: Int) -> Int {
+        if (output % 2) == 0 {
+            return (output + 12 - 5) % 12
+        } else {
+            return (output + 12 + 5) % 12
+        }
+    }
+}
+{% endhighlight %}
+
+The first one, `output(from input: Int)` will return us the output index inside a given tile, where the line
+will come out from, when entering our tile from input with index `from`.
+
+So, for example, given a tile with connections
+
+{% highlight swift %}
+let t: Tile = Tile()
+t.connections = [(0, 1), (11, 8), (10, 5), (3, 4), (6, 2), (7, 9)]
+{% endhighlight %}
+
+the call `t.output(from: 11)` will give us `8`, which could be easily found from the list of connections
+by hand.
+
+The second method will give us the input index inside the neighbour tile, which is connected to an output of
+the given tile.
+
+And for the example above, the call `t.input(from: 0)` will give us `7`. And here's an image to show why:
+
+<img data-src="{{ '/images/entanglement/entanglement-tile-neighbours.png' | prepend: site.baseurl }}" alt="">
+
+Since there is only one way of correctly placing each next tile, this behavior is constant for any of
+two successive tiles.
+
+And now it's finally the time to explain the rotation of the tiles!
+
+After a tile has been assigned a set of connected pins, the rotation should preserve those connections.
+The rotation operation uses modulo operation, as in case with calculating neighbour tile's input pin index,
+but in a scale of each connection pair _(pair of input and output)_:
+
+{% highlight swift %}
+class Tile {
+    // ...
+
+    func rotate(_ direction: Int) {
+        self.connections = self.connections.map { (input: Int, output: Int) in
+            ((input + (direction * 2) + 12) % 12, (output + (direction * 2) + 12) % 12)
+        }
+    }
+
+    //...
+}
+{% endhighlight %}
+
+Here, `direction` is either `1` for clockwise rotation or `-1` for counter-clockwise rotation.
+
+# Path prediction
+
+Finding a place where to put the next tile is an iterative process, which hardly depends on a current tile
+(its connections and position) and the tiles which are already placed on the field.
+
+At the very beginning of the game, the next place could be set as a constant and is always above the
+central tile _(so if the central tile has position `(4, 4)`, then the next place would be `(5, 5)` - along the diagonal in our coordinate system)_.
+
+To track the boundaries of a field and the beginning of the line _(in other words - the places, where the line can not go)_, I inherited a `Tile` class with a set of other classes just to track if the game can
+continue or not: `ZeroTile` and `BorderTile` represent restricted bounds of a game field.
+
+Now, given the output of a current tile, which the line will use to continue through the tile,
+we can predict where the next tile should be put on a field:
+
+{% highlight swift %}
+func findNextPlace(_ path: Path, currentPosition: (Int, Int)) -> (Int, Int) {
+    var u: Int, v: Int
+    (u, v) = currentPosition
+
+    let output: Int = path.lastOutput()
+
+    switch output {
+    case 0, 1:
+        return (u + 1, v + 1)
+    case 2, 3:
+        return (u + 1, v)
+    case 4, 5:
+        return (u, v - 1)
+    case 6, 7:
+        return (u - 1, v - 1)
+    case 8, 9:
+        return (u - 1, v)
+    case 10, 11:
+        return (u, v + 1)
+    default:
+        return (u, v)
+    }
+}
+{% endhighlight %}
+
+If, however, there is a tile at the next place on the field, we should use its connections to determine
+the next position.
+
+Otherwise, if the next position is either the border of a field or an empty space - we stop the search.
+
+Search itself is just as simple as that:
+
+{% highlight swift %}
+func findFuturePath(_ tile: NonEmptyTile) throws -> (Path, (Int, Int)) {
+    if self.isPathFinished() {
+        throw GameError.gameOver
+    }
+
+    let tmpPath: Path = Path()
+    var tmpNextPlace: (Int, Int) = self.nextPlace
+    var u: Int, v: Int
+
+    tmpPath.items = [self.path.items.last!]
+
+    (u, v) = tmpNextPlace
+
+    while true {
+        let lastOutput: Int = tmpPath.lastOutput()
+        var nextTile: Tile
+
+        if u == self.nextPlace.0 && v == self.nextPlace.1 {
+            nextTile = tile
+        } else {
+            nextTile = self.tiles[u][v]
+        }
+
+        if !(nextTile is NonEmptyTile) {
+            break
+        }
+
+        tmpPath.expand(u, v: v, input: nextTile.input(to: lastOutput), output: try nextTile.outputFromNeighbourOutput(from: lastOutput))
+
+        tmpNextPlace = self.findNextPlace(tmpPath, nextPlace: tmpNextPlace)
+
+        if u == tmpNextPlace.0 && v == tmpNextPlace.1 {
+            break
+        }
+
+        (u, v) = tmpNextPlace
+    }
+
+    tmpPath.items.removeFirst()
+
+    return (tmpPath, tmpNextPlace)
+}
+{% endhighlight %}
