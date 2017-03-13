@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Entanglement
-date: '2017-03-12T01:57:24+02:00'
+date: '2017-03-13T11:42:24+02:00'
 ---
 
 <img data-src="{{ '/images/entanglement/ios-screen1.png' | prepend: site.baseurl }}" alt="">
@@ -29,6 +29,46 @@ _(which is Swift 3 by the moment of writing this post)_.
 In this post I'll describe some interesting decisions I made while creating this game.
 
 <!--more-->
+
+# The game
+
+The idea of the game is to prolong the line as much as possible by using the tiles with pieces
+of path for a line. At the beginning of the game, a single tile is placed at the center of a
+hexagonal field and the line starts from that tile. You are also given a tile in the "pocket",
+which you can swap with the currently active one. At each turn, a game will place a new tile
+at the end of the line and you have three actions available:
+
+1. rotate the current tile clockwise or counter-clockwise, as many times as you want
+2. swap the current tile with one in the pocket; you can repeat this action as many times as you want too
+3. place the tile; this action is performed once and can not be undone
+
+But the trick here is: each tile contains six line pieces. And by using one of them, be aware
+that other pieces might be used later as well.
+
+When you place a tile, you get one point for the first piece of the line, which prolongs it.
+You also get one point more for the next piece, if it prolongs the line too. For the third
+line piece you'll get 3 points and so on. The point here is: the more pieces you connect in
+a single move - the more points you get.
+
+# Implementation
+
+My implementation contains several core elements:
+
+1. tiles
+2. field
+3. tile renderer
+4. game itself
+
+Tiles contain information on the line pieces they contain and provide methods to rotate themselves
+and find connections with neighbour tiles.
+
+Field contains information on all the tiles on the field - where they are placed and how they are
+rotated.
+
+Tile renderer simply draws tiles into an image. Doing so allows to have animation for tile rotation.
+
+Game holds all the data on the game state - tile in the pocket, currently selected tile, line path
+done so far and a score.
 
 # Field
 
@@ -488,3 +528,23 @@ func findFuturePath(_ tile: NonEmptyTile) throws -> (Path, (Int, Int)) {
     return (tmpPath, tmpNextPlace)
 }
 {% endhighlight %}
+
+# Counting points
+
+This task is quite simple, compared to the others described above. When a user places a tile, we estimate
+the length of a predicted path and add numbers from `[1..L]` _(where `L` is the length of the predicted path)_
+to score. This could be expressed as a sum of a finite arithmetic sequence with a step of `1`:
+
+<img data-src="{{ '/images/entanglement/score_equation.gif' | prepend: site.baseurl }}" alt="">
+
+# UI, AppStore and others
+
+The end result of this coding excercise looks like at the very top of this post:
+
+<img data-src="{{ '/images/entanglement/ios-screen1.png' | prepend: site.baseurl }}" alt="">
+
+During the course at the university, I was made to add a database, networking and a couple more views
+to the game _(to show that I did learn something during the course)_. But for the end-user those are
+not necessary. I've added Facebook login, local database of high scores and views for those. But at its core,
+the game does need some refactoring, which is what happening right now _(the code in this post does not strictly correspond to the one on a GitHub, but rather has major enhancements)_. Unless it is done - the game probably won't appear in
+the AppStore. But hopely it will come to your phone once!
