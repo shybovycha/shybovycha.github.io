@@ -13,30 +13,30 @@ Using OpenCV is an interesting decision: if you want to create a beautiful OO ar
 for your program, you'd rather use something like Java. But I didn't manage to run OpenCV
 in Java =P
 
-So I decided to write my code in C++. Yeah, tough solution... And in some
-time I saw why it was not the best one: my architecture was too bold *(435 LOC)* and it didn't even
-contained four method implementations!
+So I decided to write my code in C++. Yeah, tough decision... After spending some time implementing that,
+I understood why it was not the best decision: my solution was too heavy *(435 LOC)* and it didn't even
+contained four major method' implementations!
 
-Then I sit back and thought: *"Couldn't I use C++ for video/image reading only? And write the rest of the code in a more OOP-friendly language?"*. And that's when I started looking for a language with nice syntax and OOP features *(like interfaces, short array syntax, tuples/maps, etc.)* and found D.
+Then I sit back and thought: *"Couldn't I use C++ for video/image reading only? And write the rest of the code in a more OOP-friendly language?"*. And that's when I started looking for a language with nice syntax and OOP features *(like interfaces, short array syntax, tuples/maps, etc.)* and found D language.
 
-I've been looking at D since loooong time ago, but actually never tried it for writing anything
-more complex than a *"Hello, World!"*. *"That's my star time!"* - is what I thought.
+I've been looking at D a very long time ago, but had never actually tried it for writing anything
+more complex than a *"Hello, World!"*  program. *"That's my star time!"* - I thought.
 
-My idea was:
+My idea was to:
 
 1. create small C++ library for video IO
-2. create D program, using that C++ library to read and process video
+2. create D program, which processes video, read using that C++ library
 
 D offeres nice C++ interop, except it requires you to define classes/functions signatures you
-are importing from C++. That was not a big deal for me since I had no huge classes written yet.
+are importing from C++. That was not a big deal for me since I had no complex classes written yet.
 
 <!--more-->
 
 ## First steps
 
-Standard example from D website works like a charm:
+Standard example from a tutorial on D website works like a charm:
 
-*C++ code:*
+`cpp_lib.cpp`:
 
 {% highlight cpp %}
 #include <iostream>
@@ -82,7 +82,7 @@ void deleteInstance(Derived *&d)
 }
 {% endhighlight %}
 
-*D code:*
+`main.d`:
 
 {% highlight d %}
 extern(C++)
@@ -126,7 +126,7 @@ void main()
 }
 {% endhighlight %}
 
-Compiled this one with `c++ -c cpp_lib.cpp -o cpp_lib.o && dmd cpp_lib.o main.d` and ran - *it works*.
+Compiled this one with `c++ -c cpp_lib.cpp -o cpp_lib.o && dmd cpp_lib.o main.d` and ran - *and it worked*.
 
 Now it's time to add some OpenCV code!
 
@@ -216,7 +216,7 @@ c++ -c video_reader.cpp -o video_reader.o -I/usr/local/opt/opencv3/include
 dmd video_reader.o main.d -L-lstdc++ -L-lopencv_videoio -L-lopencv_core -L-lopencv_imgproc -L-L/usr/local/opt/opencv3/lib
 {% endhighlight %}
 
-Instead, there are errors from D compiler:
+Instead, there were errors from D compiler:
 
 {% highlight bash %}
 Error: Internal Compiler Error: unsupported type string
@@ -229,7 +229,11 @@ WTF?! Internal compiler error?! And what's wrong with strings?
 ## Fixing everything
 
 Alright, maybe it's caused by us,
-using `string` type in `VideoReader::readFile(string filename)` method signature. Let's fix it:
+using `string` type in `VideoReader::readFile(string filename)` method signature, which D could not
+simply understand *(since it's not D's string, rather it's a class from C++'s STL library)*.
+
+If we change `string` to `char*`, which is basically a common way to work with strings since C98, it
+should work.
 
 `video_reader.cpp`:
 
@@ -283,9 +287,9 @@ clang: error: linker command failed with exit code 1 (use -v to see invocation)
 --- errorlevel 1
 {% endhighlight %}
 
-Wow! That's actually not that interesting, but rather understandable: C++ does not generate
+Wow! That's actually not that interesting, but simple to understand: C++ does not generate
 any bytecode, which is not used by C++ program. So we should explicitly tell C++ compiler,
-which methods we do want to have code generated:
+which methods we do want to generate code for:
 
 {% highlight cpp %}
 class Video {
@@ -325,6 +329,10 @@ Video* VideoReader::readFile(const char* filename) {
 }
 {% endhighlight %}
 
+The trick here is to first *declare* the whole class. Note: if we extract this declaration to a separate header file - it
+won't be compiled, since headers are not **compile units**. And if we then *define* *(implement)* methods, those implementations
+will become compile units and the code for them will be generated even if they are not explicitly used in the program.
+
 Now we've made something like standard C++ code - with a *header* and *implementation*.
 But D compiler could not link our program again!
 
@@ -337,10 +345,10 @@ clang: error: linker command failed with exit code 1 (use -v to see invocation)
 --- errorlevel 1
 {% endhighlight %}
 
-What? Why? We've declared that method explicitly! Or maybe not?.. Let's look at our object file:
+What? Why? We've declared that method explicitly! Or maybe not?.. Let's look at our object file using `nm` utility:
+`nm video_reader.o`.
 
-{% highlight bash %}
-$ nm video_reader.o
+{% highlight asm %}
 00000000000001d8 s GCC_except_table1
 0000000000000258 s GCC_except_table10
 0000000000000308 s GCC_except_table12
@@ -398,14 +406,20 @@ extern(C++)
 }
 {% endhighlight %}
 
-Yeah! Our code compiled and linked successfully! Let's run it:
+The `@disable` annotation marks the method *(in our case - constructor of a `Video` class)* to be excluded from
+code generation. So in our case we won't have a default constructor for `Video` class, which D generates for us
+implicitly. And when we try to link our code, linker can not find the code for a no-argument constructor. So we then
+have two options: either we define a no-argument, "default" constructor in our C++ library, **or** we prevent D
+from generating it for us.
+
+Yeah! Our code compiled and linked successfully! Now let's run it:
 
 {% highlight bash %}
 [2]    99945 segmentation fault  ./video_reader
 {% endhighlight %}
 
-What? Wrong again?! Okay, that's really strange. And no debugging information.
-Adding some debugging `writeln()`'s shows it's caused by the `getFrameCount()` method call:
+What? Wrong again?! Okay, that's really strange. And no debugging information provided.
+Adding some debugging info with `writeln()`'s shows it's caused by the `getFrameCount()` method call:
 
 {% highlight d %}
 void main()
@@ -446,21 +460,27 @@ Seems like no:
 (D) sizeof(uint) = 4
 {% endhighlight %}
 
-Googling and trying semi-random solutions showed that signatures for constant methods
-in C++ are a bit different in D:
+The trick here is that signature for constant method in C++ differs from such in D:
+
+`C++`:
+
+{% highlight cpp %}
+class Video {
+public:
+    unsigned int getFrameCount() const;
+};
+{% endhighlight %}
+
+`D`:
 
 {% highlight d %}
-extern(C++)
+class Video
 {
-    class Video
-    {
-        @disable this();
-        final uint getFrameCount() const;
-    }
+    final uint getFrameCount() const;
 }
 {% endhighlight %}
 
-And only now the code compiles successfully!
+If we build and run our code now, everything works fine:
 
 {% highlight bash %}
 Video length: 318
@@ -468,5 +488,5 @@ Video length: 318
 
 ## The end?
 
-These simple errors were hard to bypass intuitively. But may there be even more?..
-If so - this post will become longer =)
+These simple errors were hard to find and fix intuitively. But what does it have in common
+with beautiful code? Stay tuned for more`!
