@@ -486,6 +486,133 @@ If we build and run our code now, everything works fine:
 Video length: 318
 {% endhighlight %}
 
+<!--
+## Build tools
+
+So we now have quite a complex build process: we need to run C++ compiler for library, then we run DMD to compile
+and link our D code... May we use existing tools to simplify this?
+
+I will use Bazel for this purpose.
+
+First of all, lets organize our project's directory structure:
+
+{% highlight tree %}
+.
+├── WORKSPACE
+├── lib
+│   ├── BUILD
+│   └── video_reader.cpp
+└── main
+    ├── BUILD
+    └── main.d
+{% endhighlight %}
+
+The `BUILD` files will contain all the build process steps' definitions. And we'll put project settings into
+`WORKSPACE` file.
+
+The first step is to build C++ library. We already have the command which does that:
+
+{% highlight bash %}
+c++ -c video_reader.cpp -o video_reader.o -I/usr/local/opt/opencv3/include
+{% endhighlight %}
+
+This command could be split into variables, describing compilation:
+
+* compiler is `c++`
+* source file is `video_reader.cpp`
+* output file is `video_reader.o`
+* additional header files are located in the `/usr/local/opt/opencv3/include` directory
+* we need object file generation *(set by the `-c` flag)*
+
+Since we are building library, we will use a specific Bazel's task for that:
+
+`lib/BUILD`:
+
+{% highlight bazel %}
+cc_library(
+    name = "video_reader_lib",
+    srcs = ["video_reader.cpp"],
+    visibility = ["//main:__pkg__"],
+)
+{% endhighlight %}
+
+The line `visibility = ["//main:__pkg__"]` indicates that the target `video_reader_lib` will be visible from the
+`main/BUILD` file.
+
+We now need to specify the OpenCV header files location:
+
+{% highlight bazel %}
+cc_library(
+    name = "video_reader_lib",
+    srcs = ["video_reader.cpp"],
+    copts = [
+        "-I/usr/local/opt/opencv3/include"
+    ],
+    visibility = ["//main:__pkg__"],
+)
+{% endhighlight %}
+
+Turning on the `-c` flag is just an addition to the `copts` array:
+
+{% highlight bazel %}
+cc_library(
+    name = "video_reader_lib",
+    srcs = ["video_reader.cpp"],
+    copts = [
+        "-I/usr/local/opt/opencv3/include",
+        "-c"
+    ],
+    visibility = ["//main:__pkg__"],
+)
+{% endhighlight %}
+
+Now we would like to have our D code compiled. D is not supported out-of-the-box by Bazel. So we will need to
+install a corresponding plugin to enable it. Let's add it to our `WORKSPACE` file:
+
+{% highlight bazel %}
+http_archive(
+    name = "io_bazel_rules_d",
+    url = "http://bazel-mirror.storage.googleapis.com/github.com/bazelbuild/rules_d/archive/0.0.1.tar.gz",
+    sha256 = "6f83ecd38c94a8ff5a68593b9352d08c2bf618ea8f87917c367681625e2bc04e",
+    strip_prefix = "rules_d-0.0.1",
+)
+
+load("@io_bazel_rules_d//d:d.bzl", "d_repositories")
+
+d_repositories()
+{% endhighlight %}
+
+We compiled our D program and linked it with this command:
+
+{% highlight bash %}
+dmd video_reader.o main.d -L-lstdc++ -L-lopencv_videoio -L-lopencv_core -L-lopencv_imgproc -L-L/usr/local/opt/opencv3/lib
+{% endhighlight %}
+
+Its parameters are:
+
+* sources: `video_reader.o` and `main.d`
+* linker arguments: `-L-lstdc++ -L-lopencv_videoio -L-lopencv_core -L-lopencv_imgproc -L-L/usr/local/opt/opencv3/lib`
+
+Only two of them, huh? Alright then... Let's define the build target in the `main/BUILD` file:
+
+{% highlight bazel %}
+load("@io_bazel_rules_d//d/d", "d_source_library")
+
+d_binary(
+    name = "main",
+    srcs = ["main.d"],
+    deps = ["//lib:video_reader_lib"],
+    linkopts = [
+        "-lstdc++",
+        "-lopencv_videoio",
+        "-lopencv_core",
+        "-lopencv_imgproc",
+        "-L/usr/local/opt/opencv3/lib"
+    ],
+)
+{% endhighlight %}
+-->
+
 ## The end?
 
 These simple errors were hard to find and fix intuitively. But what does it have in common

@@ -51,6 +51,7 @@ let view = fun (model) => {
 
 
 {% highlight mustache %}
+{% raw %}
 <table>
   <thead>
     <tr>
@@ -89,4 +90,5 @@ let view = fun (model) => {
     }
   };
 </script>
+{% endraw %}
 {% endhighlight %}

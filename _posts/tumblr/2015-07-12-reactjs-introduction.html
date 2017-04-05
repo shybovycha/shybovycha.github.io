@@ -351,7 +351,7 @@ provides developers with component architecture - HTML and JS encapsulation, but
 
 <p><strong>tweet-box.ts:</strong></p>
 
-{% highlight java %}
+{% highlight csharp %}
   /// <reference path="../typings/angular2/angular2.d.ts" />
   import {Component, View, bootstrap, formDirectives} from 'angular2/angular2';
 
@@ -378,12 +378,14 @@ provides developers with component architecture - HTML and JS encapsulation, but
 <p><strong>tweet-box.html:</strong></p>
 
 {% highlight mustache %}
+{% raw %}
   <div class="well clearfix">
     <textarea class="form-control" [(ng-model)]="text"></textarea>
     <br/>
     <span>{{ maxLength - text.length }}</span>
     <button class="btn btn-primary pull-right">Tweet</button>
   </div>
+{% endraw %}
 {% endhighlight %}
 
 <p>Here, as you can see, data binding is used, so there is no more need in event handling. And you can use
