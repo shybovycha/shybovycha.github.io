@@ -132,6 +132,8 @@ Horizontal operations deal on vectors in a different direction. Instead of opera
     <img data-src="{{ '/images/sse-optimizations/haddps.png' | prepend: site.baseurl }}" alt="">
 </div>
 
+<!--more-->
+
 So there are six "types" of operations, as described above. They are:
 
 * operations, dealing with **scalar** or **double** values
