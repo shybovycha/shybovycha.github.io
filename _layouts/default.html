@@ -7,9 +7,9 @@ layout: compress
   <head>
     {% include head.html %}
 
-    <meta name="host" content="{{ site.host }}">
+    <meta name="host" content="{{ jekyll.environment }}">
 
-    {% if site.host != '127.0.0.1' %}
+    {% if jekyll.environment != 'development' %}
       {% include google_analytics.html %}
       {% include yandex_analytics.html %}
       {% include gostats_analytics.html %}
