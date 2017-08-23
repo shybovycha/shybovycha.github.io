@@ -31,6 +31,7 @@ But how do we read the matrix `D`?
 
 Let us have a graph:
 
+<!--
 ```graphviz
 digraph G {
     // layout = "circo";
@@ -42,9 +43,12 @@ digraph G {
     1->0 [label = "7"];
 }
 ```
+-->
+
+<img data-src="{{ '/images/floyd-warshall/floyd-warshall-graph-sample.png' | prepend: site.baseurl }}" alt="">
 
 <div class="info">
-In *GraphViz* it would be described as follows:
+In <em>GraphViz</em> it would be described as follows:
 
 {% highlight dot %}
 digraph G {
