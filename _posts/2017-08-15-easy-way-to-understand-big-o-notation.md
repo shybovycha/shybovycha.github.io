@@ -14,6 +14,8 @@ Big O notation is the most widely used method which describes algorithm complexi
 
 > For an algorithm that uses a data structure of size n, what is the runtime com-plexity or space complexity of the algorithm? The answer to such questions often uses big O notations to describe the algorithm complexity, such as `O(1)`, `O(n)`, `O(n^2)` or `O(log(n))`.
 
+<!--more-->
+
 ## Big O for time complexity
 
 Here we don't want to discuss big O in a mathematical way. Basically, when analyzing the time complexity for an algorithm, big O notation is used to describe the rough estimate of the number of "steps" to complete the algorithm. Let's take the following example:

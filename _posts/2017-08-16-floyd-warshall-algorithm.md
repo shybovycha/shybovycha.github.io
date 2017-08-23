@@ -27,6 +27,8 @@ The Floyd-Warshall algorithm performs these steps:
 
 But how do we read the matrix `D`?
 
+<!--more-->
+
 ## Inputs
 
 Let us have a graph:
