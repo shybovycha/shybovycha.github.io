@@ -15,6 +15,8 @@ Have you ever asked anyone if assembly language might be useful nowadays? So, he
 
 Recently I was reading through my old posts and found out there is a gap in the article about SSE - the post did not cover some of the implementation caveats. I decided to fulfill this and re-publish a new version.
 
+<!--more-->
+
 ## Finding maximum
 
 So, let’s start-off searching a maximum element in the array. Usually, it is nothing just iterating through the array, comparing each element with some starting value. For optimization reason and for the precision’s sake we set the initial value to the first array’s element. Like this:
