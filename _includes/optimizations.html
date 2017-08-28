@@ -1,0 +1,26 @@
+<script async>
+  window.addEventListener('load', function () {
+    // defer loading images
+    var images = [].slice.apply(document.querySelectorAll('img[data-src]'));
+
+    images.forEach(function (img) {
+      img.src = img.getAttribute('data-src');
+    });
+
+    // defer main.css
+    var head = document.querySelector('head');
+    var styles = ["{{'/css/main.css' | prepend: site.baseurl}}"];
+
+    styles.forEach(function (src) {
+      var elt = document.createElement('link');
+
+      elt.rel = 'stylesheet';
+      elt.href = src;
+
+      head.appendChild(elt);
+    });
+
+    // load heavy body background
+    document.body.style['background'] = 'url(/images/background2-compressed.jpg) no-repeat top left fixed';
+  });
+</script>
