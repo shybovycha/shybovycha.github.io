@@ -10,7 +10,7 @@ And tried to recall my D3 knowledge.
 
 I've also found a minimalistic, but helpful example / screenshot of some Gantt chart implementation:
 
-<img data-src="{{ '/images/gantt_chart_with_d3/gantt-sample.png' | prepend: site.baseurl }}" alt="">
+<img data-src="{{ '/images/gantt_chart_with_d3/gantt-sample_optimized.png' | prepend: site.baseurl }}" alt="">
 
 Challenges here were:
 
@@ -23,7 +23,7 @@ And since D3 is a data-driven library, I was using map/reduce everywhere.
 
 And here's the result:
 
-<img data-src="{{ '/images/gantt_chart_with_d3/d3-gantt-chart.png' | prepend: site.baseurl }}" alt="">
+<img data-src="{{ '/images/gantt_chart_with_d3/d3-gantt-chart_optimized.png' | prepend: site.baseurl }}" alt="">
 
 The code is under the cut.
 

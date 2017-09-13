@@ -4,7 +4,7 @@ title: Entanglement
 date: '2017-03-13T11:42:24+02:00'
 ---
 
-<img data-src="{{ '/images/entanglement/ios-screen1.png' | prepend: site.baseurl }}" alt="">
+<img data-src="{{ '/images/entanglement/ios-screen1_optimized.png' | prepend: site.baseurl }}" alt="">
 
 # Entanglement?
 
