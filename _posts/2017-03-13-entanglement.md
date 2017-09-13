@@ -10,12 +10,12 @@ date: '2017-03-13T11:42:24+02:00'
 
 Some time ago there was a game popular over there, called Entanglement:
 
-<img data-src="{{ '/images/entanglement/web-screen1.webp' | prepend: site.baseurl }}" alt="">
+<img data-src="{{ '/images/entanglement/web-screen1.jpg' | prepend: site.baseurl }}" alt="">
 
 There are a few implementations of this game under Android:
 
-<img data-src="{{ '/images/entanglement/android-screen1.webp' | prepend: site.baseurl }}" alt="">
-<img data-src="{{ '/images/entanglement/android-screen2.webp' | prepend: site.baseurl }}" alt="">
+<img data-src="{{ '/images/entanglement/android-screen1.jpg' | prepend: site.baseurl }}" alt="">
+<img data-src="{{ '/images/entanglement/android-screen2.jpg' | prepend: site.baseurl }}" alt="">
 
 But there was no such game for iOS. And as I pursued my second M. Sc. degree, I have had a course
 "iOS development", where we were learning to use Swift and iOS platform.
