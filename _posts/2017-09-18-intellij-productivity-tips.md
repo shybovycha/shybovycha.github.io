@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "IntelliJ performance tips"
+title: "IntelliJ productivity tips"
 date: '2017-09-18T18:00:00+11:00'
 ---
 
