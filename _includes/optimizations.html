@@ -1,15 +1,53 @@
 <script async>
-  window.addEventListener('DOMContentLoaded', function () {
+  window.addEventListener('load', function () {
+    var lazyLoadImage = function (imgElt) {
+      var src = imgElt.getAttribute('data-src');
+      var img = new Image();
+
+      img.onload = function () {
+        if (!!imgElt.parent) {
+          imgElt.parent.replaceChild(img, imgElt);
+        } else {
+          imgElt.src = src;
+        }
+      };
+
+      img.src = src;
+    };
+
+    var elementInViewport = function (elt) {
+      var rect = elt.getBoundingClientRect();
+      return (rect.top >= 0 && rect.left >= 0 && rect.top <= (window.innerHeight * 3 || document.documentElement.clientHeight * 3));
+    };
+
     // defer loading images
     var images = [].slice.apply(document.querySelectorAll('img[data-src]'));
+    var visibleImages = [], invisibleImages = [];
 
-    images.forEach(function (img) {
-      img.src = img.getAttribute('data-src');
+    images.forEach(function (imgElt) {
+      (elementInViewport(imgElt) ? visibleImages : invisibleImages).push(imgElt);
+    });
+
+    // immediately load visible images
+    setTimeout(function () {
+      visibleImages.forEach(lazyLoadImage);
+    }, 0);
+
+    // defer invisible images to be lazy-loaded
+    window.addEventListener('scroll', function () {
+      invisibleImages = invisibleImages.filter(function (imgElt) {
+        if (elementInViewport(imgElt)) {
+          lazyLoadImage(imgElt);
+          return false;
+        } else {
+          return true;
+        }
+      });
     });
 
     // defer main.css
     var head = document.querySelector('head');
-    var styles = ["{{'/css/main.css' | prepend: site.baseurl}}"];
+    var styles = [ "{{'/css/main.css' | prepend: site.baseurl}}" ];
 
     styles.forEach(function (src) {
       var elt = document.createElement('link');
@@ -20,7 +58,9 @@
       head.appendChild(elt);
     });
 
-    // load heavy body background
-    document.body.style['background'] = 'url(/images/background2-compressed.jpg) no-repeat top left fixed';
+    setTimeout(function () {
+      // load heavy body background
+      document.body.style['background'] = 'url(/images/background2-compressed.jpg) no-repeat top left fixed';
+    }, 0);
   });
 </script>
