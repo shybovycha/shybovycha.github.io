@@ -1,27 +1,27 @@
 ---
 layout: post
 title: Floyd-Warshall algorithm
-date: '2017-04-09T11:38:24+02:00'
+date: '2017-09-04T11:38:24+11:00'
 ---
 
 ## The story behind this post
 
-Recently I've received `+10` karma on StackOverflow. I was interested for what question or answer and clicked to check this. It appeared
-to be a [**seven-year-old** answer](https://stackoverflow.com/a/4526639/330471) about Floyd-Warshall algorithm. I was surprised both of my bad English back those days and the very small sense the answer had. So I've rewritten it and here's the brand-new version!
+Recently I've received `+10` karma on StackOverflow. I was curious for what question or answer and clicked to check this. It appeared
+to be a [**seven-year-old** answer](https://stackoverflow.com/a/4526639/330471) about a Floyd-Warshall algorithm. I was surprised both of my bad English back those days and the very small value the answer had. So I've revised it and here it is -- the brand-new version!
 
 ## The definitions
 
-Let us have a graph, described by matrix `D`, where `D[i][j]` is the length of edge `(i -> j)` *(from graph's vertex with index `i` to the vertex with index `j`)*.
+Let us have a graph, described by matrix `D`, where `D[i][j]` is the length of the edge `(i -> j)` *(from graph's vertex with index `i` to the vertex with index `j`)*.
 
-Matrix `D` has the size of `N * N`, where `N` is total number of vertices in graph, because we can reach the maximum of paths by connecting each graph's vertex to each other.
+Matrix `D` has the size of `N * N`, where `N` is a total number of vertices in a graph because we can reach the maximum of paths by connecting each graph's vertex to each other.
 
-Also we'll need matrix `R`, where we will store shortest paths (`R[i][j]` contains the index of a next vertex in the shortest path, starting at vertex `i` and ending at vertex `j`).
+Also, we'll need matrix `R`, where we will store shortest paths (`R[i][j]` contains the index of a next vertex in the shortest path, starting at vertex `i` and ending at vertex `j`).
 
 Matrix `R` has the same size as `D`.
 
 The Floyd-Warshall algorithm performs these steps:
 
-1. initialize the matrix of all the paths between any two pairs or vertices in a graph with the edge's end vertex *(this is important, since this value will be used for path reconstruction)*
+1. initialize the matrix of all the paths between any two pairs of vertices in a graph with the edge's end vertex *(this is important since this value will be used for path reconstruction)*
 
 2. for each pair of connected vertices *(read: for each edge `(u -> v)`)*, `u` and `v`, find the vertex, which forms shortest path between them: if the vertex `k` defines two valid edges `(u -> k)` and `(k -> v)` *(if they are present in the graph)*, which are together shorter than path `(u -> v)`, then assume the shortest path between `u` and `v` lies through `k`; set the shortest pivot point in matrix `R` for edge `(u -> v)` to be the corresponding pivot point for edge `(u -> k)`
 

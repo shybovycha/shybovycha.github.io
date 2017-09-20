@@ -19,8 +19,8 @@ What's hidden beneath the next version of the library?
 
 <!--more-->
 
-The next logical step in library development was to make interaction between components smooth and
-natural. I was primarly thinking of two options:
+The next logical step in library development was to make the interaction between components smooth and
+natural. I was primarily thinking of two options:
 
 1. inheriting component from a `VirtualDOMNode` class
 2. passing both properties and children as arguments to the `view` function of a component
@@ -29,17 +29,17 @@ I'll first describe the second approach a bit: since properties and children bas
 a `VirtualDOMNode` itself, that meant to pass a `VirtualDOMNode` instance to the `view` function.
 And if I did so, I'd get `Mithril.js`.
 
-If I inherit component class from a `VirtualDOMNode`, I'd step away from the initial purpose
+If I inherit a component class from a `VirtualDOMNode`, I'd step away from the initial purpose
 of keeping `view` and `update` functions separated and pure.
 
-The library exposed a `Store` class, which is very similar to [Redux](http://redux.js.org).
+The library exposes a `Store` class, which is very similar to [Redux](http://redux.js.org).
 This class was also used internally to handle components' state changes. But that did not
 solve the problem in any way.
 
-So what I did eventually is I created a `Component` class, which encapsulated both `view` and
+I ended up creating a `Component` class, which encapsulated both `view` and
 `update` functions, internal component state and the `dispatch` function, which operated on
 the component's internal state. I also exposed the `render()` method, which could then be used
-to bind component to an external `Store` object _(which I'll cover in a minute)_.
+to bind a component to an external `Store` object _(which I'll cover in a minute)_.
 
 # Re-using components
 
@@ -194,7 +194,7 @@ counterStore.onStateChanged(() => Counter.render());
 Counter.init({ store: counterStore }).mount(document.body);
 {% endhighlight %}
 
-Here you can see how to create a store with an initial state. Initial state could be pretty
+Here you can see how to create a store with an initial state. The initial state could be pretty
 much anything - a number, a string, an array, an object...
 
 Using store's `onAction(handler)` and `onStateChanged(handler)` methods, we can set

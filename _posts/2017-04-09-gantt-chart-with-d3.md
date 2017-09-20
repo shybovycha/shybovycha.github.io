@@ -1,10 +1,10 @@
 ---
 layout: post
 title: Gantt chart with D3.js
-date: '2017-04-09T11:44:24+02:00'
+date: '2017-04-09T11:04:24+02:00'
 ---
 
-At work I've had a task to implement a Gantt chart diagram to show dependencies and order of some... let's say, milestones.
+At work, I've had a task to implement a Gantt chart diagram to show dependencies and order of some... let's say, milestones.
 Given this feature is in a very unstable beta in Google Charts, I thought to myself: *"Why don't I implement it on my own?"*.
 And tried to recall my D3 knowledge.
 
@@ -12,20 +12,20 @@ I've also found a minimalistic, but helpful example / screenshot of some Gantt c
 
 <img data-src="{{ '/images/gantt_chart_with_d3/gantt-sample_optimized.png' | prepend: site.baseurl }}" alt="">
 
-Challenges here were:
+The challenges I've faced were:
 
 1. order milestones on a timeline
 2. scale milestones to fit in a viewport
 3. create pretty connection lines
 4. center text inside each milestone
 
-And since D3 is a data-driven library, I was using map/reduce everywhere.
+And since D3 is a data-driven library, I've used map/reduce where possible.
 
-And here's the result:
+Here's how the result looked like:
 
 <img data-src="{{ '/images/gantt_chart_with_d3/d3-gantt-chart_optimized.png' | prepend: site.baseurl }}" alt="">
 
-The code is under the cut.
+The full implementation code is under the cut.
 
 <!--more-->
 

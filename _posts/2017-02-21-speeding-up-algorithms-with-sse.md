@@ -11,7 +11,7 @@ tags:
 tumblr_url: http://shybovycha.tumblr.com/post/122400740651/speeding-up-algorithms-with-sse
 ---
 
-Have you ever asked anyone if assembly language might be useful nowadays? So, here’s the short answer: **YES**. When you know how your computer works _(not a processor itself, but the whole thing - memory organization, math co-processor and others)_, you may optimize your code while writing it. In this short article I shall try to show you some use cases of optimizations, which you may incorporate with the usage of low-level programming.
+Have you ever asked anyone if assembly language might be useful nowadays? So, here’s the short answer: **YES**. When you know how your computer works _(not a processor itself, but the whole thing - memory organization, math co-processor and others)_, you may optimize your code while writing it. In this short article, I shall try to show you some use cases of optimizations, which you may incorporate with the usage of low-level programming.
 
 Recently I was reading through my old posts and found out there is a gap in the article about SSE - the post did not cover some of the implementation caveats. I decided to fulfill this and re-publish a new version.
 
@@ -60,28 +60,28 @@ Index-based: 0.00674200 (0.99999827)
 
 ## Vector operations
 
-This is quite a universal algorithm, which could be used for any type, which allows comparing. But let’s think on how we can speed that code up. First of all, we could split array into pieces and find maximum among them.
+This is quite a universal algorithm, which could be used for any type, which allows comparing. But let’s think abotu how we can speed up that code. First of all, we could split the array into pieces and find maximum among them.
 
-There is a technology, allowing that. It is called **SIMD** - **S**ingle **I**nstruction - **M**ultiple **D**ata Stream. Simply saying, it means dealing on multiple data pieces _(cells, variables, elements)_ with the use of a single processor’ instruction. This is done in processor command extension called **SSE**.
+There is a technology, allowing that. It is called **SIMD** - **S**ingle **I**nstruction - **M**ultiple **D**ata Stream. Simply saying, it means dealing with multiple data pieces _(cells, variables, elements)_ with the use of a single processor’ instruction. This is done in processor command extension called **SSE**.
 
 **Note:** your processor or even operating system may not support these operations. So, before continuing reading this article, be sure to check if it does. On Unix systems you may look for `mmx|sse|sse2|sse3|sse4_1|sse4_1|avx` in `/proc/cpuinfo` file.
 
 SSE extension has a set of vector variables to be used. These variables _(on the lowest, assembly level, they are called `XMM0` .. `XMM7` registers)_ allow us for storing and processing 128 bits of data as it was a set of `16 char`, `8 short`, `4 float/int`, `2 double` or `1 128-bit int` variables.
 
-But wait! There are other versions of SSE, allowing for different registers of different size! Check this out:
+But wait! There are other versions of SSE, allowing for different registers of a different size! Check this out:
 
 **SIMD extensions**
 
 **MMX - hot 1997:**
 
 *   only integer items
-*   vectors have length of `64 bits`
+*   vectors have a length of `64 bits`
 *   8 registers, namely `MM0`..`MM7`
 
 **SSE highlights:**
 
 *   only 8 registers
-*   each register has size of 128 bit
+*   each register has a size of 128 bit
 *   70 operations
 *   allow for floating-point operations and vector’ elements
 
@@ -148,7 +148,7 @@ To determine if an operation type, you just need to look at the last two charact
 
 **Working with SSE**
 
-Images above describe how processor instructions _(assembly commands)_ work. To map those onto C++ functions, you only need to replace assembly operation with the corresponding function fron SSE headers _(I'll cover that in just a second)_. But the main goal of those explanations above was to give you an idea how operations themselves work and where do they store results.
+Images above describe how processor instructions _(assembly commands)_ work. To map those onto C++ functions, you only need to replace assembly operation with the corresponding function from SSE headers _(I'll cover that in just a second)_. But the main goal of those explanations above was to give you an idea how operations themselves work and where do they store results.
 
 To work with SSE we need to follow these three steps:
 
@@ -156,7 +156,7 @@ To work with SSE we need to follow these three steps:
 2. perform all the operations needed on those XMM registers
 3. store data from XMMs into usual variables
 
-To use vector operations, you shall need to have some header files included in your code as well as compiler flags turned on.
+To use vector operations, you shall need to have some header files included in your code, as well as compiler flags, turned on.
 
 These are header files:
 
@@ -182,9 +182,9 @@ Each of them needs to be converted from or to standard C++ types with its own **
 
 **Intrinsics**
 
-SSE operations in C++ are named this way: `_mm_{OPERATION}_{SUFFIX}`. **Operation** is the operation on vectors you want to perform. **Suffix** is a set of flags for processor, showing in what way it should work with operands _(packed/scalar, single-/double- precision, etc.)_.
+SSE operations in C++ are named this way: `_mm_{OPERATION}_{SUFFIX}`. The **operation** is the operation on vectors you want to perform. The **suffix** is a set of flags for a processor, showing in what way it should work with operands _(packed/scalar, single-/double- precision, etc.)_.
 
-For optimization’s sake, it is better if operands for intrisincs are aligned in memory for base 16\. But do not worry, compiler will automatically decide if the variable is aligned or not and perform all the needed operations itself.
+For optimization’s sake, it is better if operands for intrinsincs are aligned in memory for base 16\. But do not worry, the compiler will automatically decide if the variable is aligned or not and perform all the needed operations itself.
 
 For loading data into SSE vectors there are four intrinsics:
 
@@ -203,7 +203,7 @@ And like those, there are very similar intrinsics for storing data from vectors 
 
 **Finding maximum**
 
-So, let’s get back to finding maximum in an array. For this task we will search maximums on each 4 elements of our array, storing them in the `XMMi` register:
+So, let’s get back to finding the maximum in an array. For this task we will search maximums on each 4 elements of our array, storing them in the `XMMi` register:
 
 {% highlight cpp %}
 float max_sse(float *a, int n) {
@@ -222,15 +222,15 @@ float max_sse(float *a, int n) {
 }
 {% endhighlight %}
 
-But if you run this code, you may notice it returns the maximum not in 100% of cases. This is because we are storing **four maximums** between **each portion of array**. So, only one of those four is the maximum. But how can we find the maximum among four numbers? Running a loop seems obvious but not effective enough…
+But if you run this code, you may notice it returns the maximum, not in 100% of cases. This is because we are storing **four maximums** between **each portion of an array**. So, only one of those four is the maximum. But how can we find the maximum among four numbers? Running a loop seems obvious but not effective enough…
 
 We may use the `shuffle` intrinsic! That is, cycle-shifting vector three times and finding maximum between that shifted vector and its previous value. That will give us the maximum in all four positions of our vector.
 
-Here is better explanation:
+Here is a better explanation:
 
 If we want to cycle-shift a 4-number array, we use `_mm_shuffle_ps` intrisinc.
 
-It takes 3 parameters: `m1`, `m2` and `mask`. First two are four-word (four-number) packs. The mask consists of four numbers and shows which elements of pack `m2` and which elements of pack `m1` will form the result. This mask could be obtained using `_MM_SHUFFLE(z, y, x, w)` macro, which forms an integer according to the formula `(z << 6) | (y << 4) | (x << 2) | w`.
+It takes 3 parameters: `m1`, `m2`, and `mask`. First two are four-word (four-number) packs. The mask consists of four numbers and shows which elements of pack `m2` and which elements of pack `m1` will form the result. This mask could be obtained using `_MM_SHUFFLE(z, y, x, w)` macro, which forms an integer according to the formula `(z << 6) | (y << 4) | (x << 2) | w`.
 
 Given those definitions, the call `m3 = _mm_shuffle_ps(m1, m2, _MM_SHUFFLE(z, y, x, w))` is equal to the formula `m3 = (m2(z) << 6) | (m2(y) << 4) | (m1(x) << 2) | m1(w)`.
 
@@ -244,7 +244,7 @@ So we want to shift a pack by one element right, like this: `[4, 2, 3, 1] => [2,
 +-----------+---------+
 {% endhighlight %}
 
-So to get the pair `[2, 3]` we need elements with indices `[2, 1]`. And to get pair `[1, 4]` we need elements with indices `[0, 3]`.
+So to get the pair `[2, 3]` we need elements with indices `[2, 1]`. And to get the pair `[1, 4]` we need elements with indices `[0, 3]`.
 
 Given that, we can use macro `_MM_SHUFFLE()` to generate the mask: `_MM_SHUFFLE(2, 1, 0, 3)`. And the final formula looks like this: `_mm_shuffle_ps(m1, m2, _MM_SHUFFLE(2, 1, 0, 3))`.
 
@@ -396,7 +396,7 @@ float sum_sse(float *a, int n) {
 }
 {% endhighlight %}
 
-But if we now add the elements of that vector horizontaly to themselves, we would then have the two-element vector. Adding it to itself will give us the final single-element vector:
+But if we now add the elements of that vector horizontally to themselves, we would then have the two-element vector. Adding it to itself will give us the final single-element vector:
 
 {% highlight cpp %}
 float sum_sse(float *a, int n) {
@@ -467,9 +467,9 @@ Remember, how integers are stored in a binary system? Say, 14:
     | bin(14) = | 0   0   1   1   1   0  |
     +-----------+------------------------+
 
-E.g. binary representation of `14` is: <code>14<sub>2</sub> = 001110</code>. Leading zeroes could be skipped in binary system _(as there might be as many of those as you wish)_.
+E.g. binary representation of `14` is: <code>14<sub>2</sub> = 001110</code>. Leading zeroes could be skipped in a binary system _(as there might be as many of those as you wish)_.
 
-Similar thing happens to floating-point numbers: the difference is that computer stores the negative powers of two:
+A similar thing happens to floating-point numbers: the difference is that computer stores the negative powers of two:
 
     +------------+-----------------------------------------+
     |     n      | 5        4       3      2     1    0    |
@@ -483,7 +483,7 @@ Similar thing happens to floating-point numbers: the difference is that computer
     | bin(0.9) = | 0        0       1      1      1    0   |
     +------------------------------------------------------+
 
-As you can see, using 5 bits is not enough to represent 0.9, but only `0.875`. Even if we use 32 bits _(which is just a `float` data type in C)_, we will have <code>0.011001100110011001100110011001110<sub>2</sub></code>, which is `0.8999999999068677`, but still, it's not exactly what we wanted. On 64 bits _(`double` type in C)_ it is better, `0.8999999999999999`, but, again, not exact value. And if we try adding one million unprecise numbers, we will probably get unprecise result.
+As you can see, using 5 bits is not enough to represent 0.9, but only `0.875`. Even if we use 32 bits _(which is just a `float` data type in C)_, we will have <code>0.011001100110011001100110011001110<sub>2</sub></code>, which is `0.8999999999068677`, but still, it's not exactly what we wanted. On 64 bits _(`double` type in C)_ it is better, `0.8999999999999999`, but, again, not exact value. And if we try adding one million unprecise numbers, we will probably get the unprecise result.
 
 Another big limitation of SSE is that initial data should be aligned to contain the number of elements, which is a multiply of either 2 or 4 _(depending on the SSE operation type you are using - scalar or double)_.
 

@@ -42,7 +42,7 @@ all Rails' features will become a ballast to your app, which must be small, by d
 
 ## The goal
 
-Before we start, let's think of what we will be creating. Will it be a web shop? Or a blog?
+Before we start, lets think of what we will be creating. Will it be a web shop? Or a blog?
 No, we need something outstanding! Something we were never doing before...
 
 After a hour of imaging what it may be, I decided to go with web analytics tool. A prototype,
@@ -62,14 +62,14 @@ Then we will just parse headers from that request and save the extracted data in
 database. The only problem here is: *how to get unique key from each request?*. We may use
 visitor's IP address. It's the easiest way.
 
-Now, let's decide what pages our application will have and how will they look like.
+Now, lets decide what pages our application will have and how will they look like.
 
 **TODO: IMAGES GO HERE**
 
 ## Build with the right tools!
 
 Now, since we separated our front-end part of application from back-end part, we may use different preprocessing
-languages to write stylesheets and views. And even controllers! So let's take the most from 2015 and use the newest
+languages to write stylesheets and views. And even controllers! So lets take the most from 2015 and use the newest
 tool set: *Jade*, *ES6+* and *SCSS*. And put all them together with *Bower* and *Gulp*.
 
 All those Jade, SCSS and ES6 are not supported by a browser out-of-the box. They must be compiled to HTML, CSS and JS in order to be recognized by a browser. But they are here to help you writing code quickly. I listed some of their key features below.
@@ -93,7 +93,7 @@ So, for example, if we want to make user's avatar to be shown in a user account 
 after first couple of stylesheets! See, in CSS when you write a long selector, specifying many parents, you may
 find your stylesheets ugly and huge, when describing different children of one, deeply nested parent.
 
-So, let's say you are having a user widget. And it may be placed both on page' header, footer and sidebar. But
+So, lets say you are having a user widget. And it may be placed both on page' header, footer and sidebar. But
 the avatar image will look differently on each of those - it must be smaller in header and footer. So you
 start writing selectors like `.sidebar .user-widget .avatar img` and `.header .user-widget .avatar img`.
 That's painful, but not that much, if you have just a couple of those. But as your website grows, you
@@ -151,7 +151,7 @@ $sidebar-avatar-size: 150px;
 {% endhighlight %}
 
 I found Gulp to be super-easy for tasks like compiling stylesheets, views and javascripts. But before
-we continue with Gulp, let's initialize an NPM project with `npm init` and install the plugins required:
+we continue with Gulp, lets initialize an NPM project with `npm init` and install the plugins required:
 
 {% highlight bash %}
 npm install -g gulp
@@ -163,7 +163,7 @@ And Gulp plugins:
 npm install --save-dev gulp gulp-babel gulp-scss gulp-jade
 {% endhighlight %}
 
-I will describe how Gulp works and how we can use it in our project in a minute. For now, let's
+I will describe how Gulp works and how we can use it in our project in a minute. For now, lets
 just install the front-end dependencies. Let's make them use fixed versions, so when we update our project,
 nothing gets broken. To make our development quick, we'll be using *Twitter Bootstrap* and manage all
 fron-end dependencies with *Bower*. Bower will fill out the `bower.json`, a file, telling Bower
@@ -177,7 +177,7 @@ bower install --save bootstrap angular
 
 These commands create a directory `bower_components`, containing all the dependencies installed, each in its own sub-directory. With that in mind, we will be referencing our front-end dependencies, relatively to their catalogs within the `bower_components` directory.
 
-Now let's write a build task for Gulp. Gulp is a streamed build tool. That means, that each operation you perform, passes its result to another operation as the input argument. So, for example, if you run `gulp.src('src/styles/*.scss')`, it will return you an object with the list of all the SCSS files and the magic `pipe()` method. And when you call the `gulp.src(...).pipe(scss())`, Gulp will pass that list to the SCSS compiler plugin, so you will get a compiled CSS code. That is, not a CSS file itself, but a compressed, merged, CSS file' content.
+Now lets write a build task for Gulp. Gulp is a streamed build tool. That means, that each operation you perform, passes its result to another operation as the input argument. So, for example, if you run `gulp.src('src/styles/*.scss')`, it will return you an object with the list of all the SCSS files and the magic `pipe()` method. And when you call the `gulp.src(...).pipe(scss())`, Gulp will pass that list to the SCSS compiler plugin, so you will get a compiled CSS code. That is, not a CSS file itself, but a compressed, merged, CSS file' content.
 
 And that describes the second important feature of Gulp: it does not store the intermediate operation results. It is almost like a functional programming - you just have the input data. Then you call a chain of functions on it,
 passing the result of one function call to the next function as its input. Same happens here, but in not that
@@ -225,8 +225,8 @@ like this for our task:
 | |____views
 {% endhighlight %}
 
-This may seem odd to the paragraph, dedicated to build tools, but let's check how our tasks work.
-To do this, we need to write some test files to check our `build` task. So let's create one of each kind:
+This may seem odd to the paragraph, dedicated to build tools, but lets check how our tasks work.
+To do this, we need to write some test files to check our `build` task. So lets create one of each kind:
 
 *`src/views/index.jade`:*
 
@@ -584,7 +584,7 @@ all the logic, handling that data will be defined in *controllers* and *services
 Actually, our models will be handled on a server-side, and services will only provide an interface to them.
 But that is totally another story and will be described later.
 
-For now let's integrate Angular in our application. And we will start, deciding how we will split our
+For now lets integrate Angular in our application. And we will start, deciding how we will split our
 application on the Angular layer. Pages we described above are used for these actions:
 
 <table class="table table-bordered">

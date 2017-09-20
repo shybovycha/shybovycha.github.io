@@ -20,11 +20,11 @@ There are a few implementations of this game under Android:
 But there was no such game for iOS. And as I pursued my second M. Sc. degree, I have had a course
 "iOS development", where we were learning to use Swift and iOS platform.
 
-As a course project I decided to implement this game. In Swift. Originally the game was implemented
+I decided to implement this game as my course project. In Swift. Originally the game was implemented
 in Swift 2 _(there was no Swift 3 back those days)_.
 
 And recently I decided to refactor the game a bit and update it to the most recent Swift version
-_(which is Swift 3 by the moment of writing this post)_.
+_(which is Swift 3 at the moment of writing this post)_.
 
 In this post I'll describe some interesting decisions I made while creating this game.
 
@@ -33,13 +33,13 @@ In this post I'll describe some interesting decisions I made while creating this
 # The game
 
 The idea of the game is to prolong the line as much as possible by using the tiles with pieces
-of path for a line. At the beginning of the game, a single tile is placed at the center of a
+of a path for a line. At the beginning of the game, a single tile is placed at the center of a
 hexagonal field and the line starts from that tile. You are also given a tile in the "pocket",
 which you can swap with the currently active one. At each turn, a game will place a new tile
 at the end of the line and you have three actions available:
 
 1. rotate the current tile clockwise or counter-clockwise, as many times as you want
-2. swap the current tile with one in the pocket; you can repeat this action as many times as you want too
+2. swap the current tile with one in the pocket; you can repeat this action as many times as you want to
 3. place the tile; this action is performed once and can not be undone
 
 But the trick here is: each tile contains six line pieces. And by using one of them, be aware
@@ -47,7 +47,7 @@ that other pieces might be used later as well.
 
 When you place a tile, you get one point for the first piece of the line, which prolongs it.
 You also get one point more for the next piece, if it prolongs the line too. For the third
-line piece you'll get 3 points and so on. The point here is: the more pieces you connect in
+line piece, you'll get 3 points and so on. The point here is: the more pieces you connect in
 a single move - the more points you get.
 
 # Implementation
@@ -60,21 +60,21 @@ My implementation contains several core elements:
 4. game itself
 
 Tiles contain information on the line pieces they contain and provide methods to rotate themselves
-and find connections with neighbour tiles.
+and find connections with neighbor tiles.
 
-Field contains information on all the tiles on the field - where they are placed and how they are
+The field contains information on all the tiles on the field - where they are placed and how they are
 rotated.
 
-Tile renderer simply draws tiles into an image. Doing so allows to have animation for tile rotation.
+Tile renderer simply draws tiles into an image. Doing so allows having an animation for tile rotation.
 
-Game holds all the data on the game state - tile in the pocket, currently selected tile, line path
+The game holds all the data on the game state - tile in the pocket, currently selected tile, line path
 done so far and a score.
 
 # Field
 
-The core of the game are tiles. The tiles are hexagons. And the whole field is hexagonal.
+The core of the game is tiles. The tiles are hexagons. And the whole field is hexagonal.
 The problem was to handle the positions of all the tiles in a handy manner. Thus I decided
-to go from a standard cartesian coordinate system, which has 90&deg; angle between axes
+to go from a standard Cartesian coordinate system, which has 90&deg; angle between axes
 and go for a one with 120&deg;:
 
 <img data-src="{{ '/images/entanglement/120-deg-coordinate-system.png' | prepend: site.baseurl }}" alt="">
@@ -86,8 +86,7 @@ coordinates:
 <img data-src="{{ '/images/entanglement/tiles-1.png' | prepend: site.baseurl }}" alt="">
 
 Now, there's a tricky thing regarding this coordinate system: how should we know, where to render
-the actual tile image on a screen? E. g. how can we convert coordinates in this system back to a
-cartesian one?
+the actual tile image on a screen? E. g. how can we convert coordinates in this system back to Cartesian?
 
 After short math on a piece of paper, I've implemented a function, which does that:
 
@@ -116,7 +115,7 @@ side of a tile, as shown below:
 
 <img data-src="{{ '/images/entanglement/tile-connections-1.png' | prepend: site.baseurl }}" alt="">
 
-Then, by generating six random pairs of integer numbers from range `[1, 12]`, we can obtain actual
+Then, by generating six random pairs of integer numbers from the range `[1, 12]`, we can obtain actual
 connections inside a single tile. Then a tile might look like this:
 
 <img data-src="{{ '/images/entanglement/tile-sample.png' | prepend: site.baseurl }}" alt="">
@@ -342,17 +341,17 @@ Now, tiles should be rotated. To do that, two tricks have been applied:
 1. as we have our tiles drawn as `UIImage`, we can simply rotate that image around its center to create the visual effect of rotation
 2. as we have our connection pins as a plain array, we can just re-calculate the indices of connection's _"input"_ and _"output"_
 
-There are a couple of points, which should be described previous to the algorithm of a tile rotation.
+There are a couple of points, which should be described prior to the algorithm of a tile rotation.
 
 The tiles are connected using those connection pins. And based on the coordinates of a tile and its
-neighbour, we can tell, which pins of those two will be connected. And since our game goal is to prolong
+neighbor, we can tell, which pins of those two will be connected. And since our game goal is to prolong
 a single line, by keeping track of which connections of which tiles form a line, we may define a couple
 rules:
 
 * given connected pins inside one tile, we may describe that connection in two pins' indices, namely _"input"_ and _"output"_
-* connections of a tile, not involved in forming a line, can be treated in either way - input and output could be named in a reversed order _(again, **unless they are forming line**, otherwise it's essential to say where the line comes from and where it ends inside a given tile)_
+* connections of a tile, not involved in forming a line, can be treated in either way - input and output could be named in a reversed order _(again, **unless they are forming a line**, otherwise it's essential to say where the line comes from and where it ends inside a given tile)_
 * the central tile will have only one output - the one, where the line starts its journey; let it be the connection pair `(0, 0)`
-* one can easily calculate the neighbour's output, given the last tile of a line path and its successor
+* one can easily calculate the neighbor's output, given the last tile of a line path and its successor
 
 Let's define a class `Tile`:
 
@@ -405,12 +404,12 @@ t.connections = [(0, 1), (11, 8), (10, 5), (3, 4), (6, 2), (7, 9)]
 the call `t.output(from: 11)` will give us `8`, which could be easily found from the list of connections
 by hand.
 
-The second method will give us the input index inside the neighbour tile, which is connected to an output of
+The second method will give us the input index inside the neighbor tile, which is connected to an output of
 the given tile.
 
 And for the example above, the call `t.input(from: 0)` will give us `7`. And here's an image to show why:
 
-<img data-src="{{ '/images/entanglement/entanglement-tile-neighbours.png' | prepend: site.baseurl }}" alt="">
+<img data-src="{{ '/images/entanglement/entanglement-tile-neighbors.png' | prepend: site.baseurl }}" alt="">
 
 Since there is only one way of correctly placing each next tile, this behavior is constant for any of
 two successive tiles.
@@ -418,8 +417,8 @@ two successive tiles.
 And now it's finally the time to explain the rotation of the tiles!
 
 After a tile has been assigned a set of connected pins, the rotation should preserve those connections.
-The rotation operation uses modulo operation, as in case with calculating neighbour tile's input pin index,
-but in a scale of each connection pair _(pair of input and output)_:
+The rotation operation uses modulo operation, as with calculating neighbor tile's input pin index,
+but on a scale of each connection pair _(a pair of input and output)_:
 
 {% highlight swift %}
 class Tile {
@@ -443,9 +442,9 @@ Finding a place where to put the next tile is an iterative process, which hardly
 (its connections and position) and the tiles which are already placed on the field.
 
 At the very beginning of the game, the next place could be set as a constant and is always above the
-central tile _(so if the central tile has position `(4, 4)`, then the next place would be `(5, 5)` - along the diagonal in our coordinate system)_.
+central tile _(so if the central tile has the position `(4, 4)`, then the next place would be `(5, 5)` - along with the diagonal in our coordinate system)_.
 
-To track the boundaries of a field and the beginning of the line _(in other words - the places, where the line can not go)_, I inherited a `Tile` class with a set of other classes just to track if the game can
+To track the boundaries of a field and the beginning of the line _(in other words - the places, where the line cannot go)_, I inherited a `Tile` class with a set of other classes just to track if the game can
 continue or not: `ZeroTile` and `BorderTile` represent restricted bounds of a game field.
 
 Now, given the output of a current tile, which the line will use to continue through the tile,
@@ -537,14 +536,14 @@ to score. This could be expressed as a sum of a finite arithmetic sequence with 
 
 <img data-src="{{ '/images/entanglement/score_equation.gif' | prepend: site.baseurl }}" alt="">
 
-# UI, AppStore and others
+# UI, AppStore, and others
 
-The end result of this coding excercise looks like at the very top of this post:
+The end result of this coding exercise looks like at the very top of this post:
 
 <img data-src="{{ '/images/entanglement/ios-screen1.png' | prepend: site.baseurl }}" alt="">
 
 During the course at the university, I was made to add a database, networking and a couple more views
-to the game _(to show that I did learn something during the course)_. But for the end-user those are
-not necessary. I've added Facebook login, local database of high scores and views for those. But at its core,
+to the game _(to show that I did learn something during the course)_. But for the end-user, those are
+not necessary. I've added Facebook login, the local database of high scores and views for those. But at its core,
 the game does need some refactoring, which is what happening right now _(the code in this post does not strictly correspond to the one on a GitHub, but rather has major enhancements)_. Unless it is done - the game probably won't appear in
-the AppStore. But hopely it will come to your phone once!
+the AppStore. But hopefully it will come to your phone once!
