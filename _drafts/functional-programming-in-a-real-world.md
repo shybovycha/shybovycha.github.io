@@ -1,4 +1,8 @@
-# Functional programming in a real world
+---
+layout: post
+title: 'Functional programming in a real world'
+date: '2018-01-13T18:01:00+01:00'
+---
 
 There are lots of talks about how beautiful functional programming is,
 how it simplifies our lives, making code more straightforward, clean and testable.
@@ -9,189 +13,7 @@ at a processor level? If you do know that - just skip the first section of this 
 
 ## Gentle introduction to how computers work
 
-What happens when we run a program on our PC? There is a little bit of magic which must happen first. You run a program
-(most of the time) from an operating system. And this operating system needs to perform some actions
-before it can send your program's commands straight to a processor - reserve some memory, make scheduling...
-And since most operating systems are meant to be multi-tasked (allow multiple programs to run simultaneously),
-OS can not allow your program to just send all of its commands to a processor, one by one - if your program is faulty then
-any other program might have never been executed again, even the OS itself! That's why operating system decides
-when to send the next command to a processor to execute it. This also allows for optimizations on multi-core
-and multi-processor systems - when two operations could be executed simultaneously, whithout overwriting memory used
-by another one - it can be run on a different core or processor to speed up the execution.
-
-That's why our program will not contain programmer-defined commands only. Let's have a look at the
-standard Windows executable file (PE32) structure:
-
-<img data-src="{{ '/images/functional-programming-in-a-real-world/pe32-diagram.jpg' | prepend: site.baseurl }}" alt="">
-
-You can see it has lots of *headers*, which describe different aspects of a program and
-two major *sections* - **text** (containing the code itself) and **data** (containing all
-the constant definitions and allocations). Each executable can also contain resources like images,
-sounds and others - if needed.
-
-We all know how to write a program in, say, C. But how a program in C (or any other language) is "understood"
-(and thus, executed) by a processor? One may have heard of Assembly language. This is a low-level programming
-language (in opposite to C, which is a high-level programming language). *"Low-level"* means that a programmer
-writes instructions for the processor in the order processor will pick them up and execute, one by one, exactly as
-they are set in a program, ommiting syntactic sugar constructions like loops, if-then-else operators and so on.
-Usually in such programming languages programmers operate memory addresses and numbers only.
-On the other hand, *high-level* programs, containing all the syntactic sugar features, are first translated
-to something processor can "understand" and execute - processors commands (instructions). The program is also being
-in terms of removing unused and unreacheable code, replacing expressions which can be pre-calculated into the results
-of pre-calculation (like the expression `x * 2 * 32` could be simply written as `x * 64` or `x << 4`, which most
-of the compilers will do by default because of performance reasons - binary shift operation is way more faster than
-multiplication; but for programmer it might be required to stay explicit in order to highlight some calculations or
-just to stay clear for other programmers).
-
-Let us have a look at how programs are compiled. Consider this program in C:
-
-```
-int product(int a, int b) {
-    return a * b;
-}
-```
-
-It will be compiled into this assembly code:
-
-```
-product(int, int): # @product(int, int)
-  imul edi, esi
-  mov eax, edi
-  ret
-```
-
-Looks simple, huh?
-
-In essence, each line of a program in assembly language looks like this:
-
-```
-label: command operand1, operand2 # comment
-```
-
-Both label, operands and comment are optional with the exception that operands requirements
-depend on command.
-
-Operands could be either numbers, registers (refer to processor registers) or memory addresses.
-
-Registers represent cells in processor memory, those are very limited in number and size, but are directly
-accessed by processor and thus are very, very fast. There are eight general-purpose registers, common for
-majority of processors: AX, BX, CX, DX, SP, BP, SI, DI. There are other registers, but we will cover them later.
-Each command will store its result in one of
-these registers. These registers have size of one word (2 bytes, 16 bits). Each register has "lower byte" and,
-correspondingly, "higher byte" - for AX they are AL (low) and AH (high), representing first and last 8 bits of
-a register. These registers are available for all 16-bit processors. More modern 32-bit processors have extended
-versions of each register, for AX it is EAX, for CX its ECX and so on. They are twice as big as their non-extended
-versions (32 bit, 2 words). Nowadays 64-bit systems have extended versions of extended registers, having 4 words
-and precended with letter R: RAX, RBX and so on. There are also 16 registers worth 128 bit each, XMM0 .. XMM15.
-
-Addressing memory refers to the computer's RAM; in order to operate with RAM processor first copies the
-data from RAM to its registers and then performs operation on data in registers. Processor is unable
-to operate with RAM data directly. You can see clearly such operations require additional actions
-from processor, namely - copy data from RAM to registers before executing operation and copy the data
-back to RAM after the operation execution (usually this step is stated separatedly by a programmer).
-This is time-consuming. And since RAM is not that fast as processor's registers, it makes operations slow.
-Memory is addressed using one of these syntaxes:
-
-```
-[address] ; [0x12345]
-[register] ; [RAX] - takes address, contained in register RAX
-[register + number] ; [RAX + 2]
-[register + register * number] ; [RAX + RBX * 3]
-[register + register * number + number] ; [RBX + EAX * 4 + 3]
-```
-
-You can also do more tricky thing: define a named constant - give a literal name to a number and then refer
-to a value by its name. But first you need to reserve a memory for it:
-
-```
-constant_name: db 0x123 ; define one byte value (0x123) and give it a name "constant_name"
-constant2: dw 'ab' ; define one word (two bytes) of values 0x61 and 0x62, correspondingly
-const3: dd 'abcd' ; define double-word (four bytes)
-const4: dq 0x123456789abcdef0 ; 8-byte wide constant
-const5: dq 1.234567e20 ; double-precision constant
-const6: dt 1.234567e20 ; extended-precision constant
-```
-
-Note I'm constantly mentioning numbers, but never characters or strings. That's because eventually all this
-data is just a number (character code or a pointer to a memory - effectively, an address of a memory). And
-processor can only operate on numbers, nothing else. Compiler will convert all these characters and floating-point
-values to hexadecimal integer values anyway.
-
-You can also reserve a bunch of memory cells using `res` command:
-
-```
-const1: resb 2 ; reserve 2 bytes
-const2: resw 16 ; reserve 16 words
-const3: resq 7 ; reserve seven 8-byte cells
-```
-
-This way each constant will point to the first of the reserved array' cells in RAM.
-
-Let's take a look at our example again:
-
-```
-int product(int a, int b) {
-    return a * b;
-}
-```
-
-Its assembly code is:
-
-```
-product(int, int): # @product(int, int)
-  imul edi, esi
-  mov eax, edi
-  ret
-```
-
-This program has exactly three effective lines:
-
-```
-imul edi, esi ; multiply the data in two registers, EDI and ESI and store the result of multiplication in EAX register
-```
-
-```
-mov eax, edi ; copy the data from EAX to EDI
-```
-
-```
-ret ; restore pointer to the currently running command and the values in registers from stack
-```
-
-See, assembly is still a somewhat high-level language - one command does a little bit of "magic" like
-storing the result somewhere, or restoring the processor state (`ret`) or storing its state and moving to the
-different command or sub-routing or function (`call`). Each processor has its own set of commands, which might
-be more optimized for this particular processor. That's why it is really hard to get each program run best
-on all possible computers when distributing it. But the "basic set" of commands is quite common for majority
-of processors and you can be quite confident about them.
-
-So after the program is written in Assembly (which is the lowest reasonable language we can more or less easily
-write code in) it is compiled into... something... *Binary code* is what you might have been thinking of.
-And you are totally correct - programs are essentially just a set of ones and zeros. But more interesting question
-is how a computer executes them?
-
-If we compile our function into binary file - we will get each Assembly command translated into a long
-hexadecimal (or binary - if you split a long list of ones and zeros into chunks of 16 digits - you will be able to
-write them down as one character, which is much more compach, right?) value, describing the opcode of a command
-and its arguments. Each Assembly command has its own code, just like character in a string. And each register has
-its own code too. Combine them - and you will get a long number. Convert it to binary - and you will get a line of
-machine codes.
-
-Processor then reads the operation code and acts exactly as it says - if it would be `imul RAX, RBX` - processor
-will do just exactly as it says - multiply the value in register `RAX` by the value in register `RBX` and then
-save the result in register `RAX`. To explain how processor actually multiplies values from registers and stores
-them - we need to go one level lower - and get familiar with how processor does that on the electonics level.
-But we won't do that. Instead, we will just scratch the surface by describing how *fast* those operations could be.
-
-You might have heard about *processor's frequency* or *clock rate*. This is a number, showing how frequently an
-electronic impulse is sent over all the processor's schematic to enforce its state update. Effectively, what it means is each processor operation like multiplication, addition, subtraction, moving the data around and others, need to change the state of different electronic components, mainly - triggers and transistors. When talking about addition of two registers, for example, processor will need to calculate the sum of each bit pair in registers given, handling overflows, different register lengths and clearing the state of the resutl register beforehand. Some processors are designed to do that in one cycle, but mainly addition will be done in several *clocks*. Hence a processor with a clock rate of 1 GHz **will not** make 1 billion additions, subtractions, multiplications or other operations per second. For a reference, here is a diagram, showing how many clocks does each operation takes in average
-
-Remember I have mentioned optimization a while ago? Here's a sample table of how many clocks do some processor
-instructions take (in average):
-
-<img data-src="{{ '/images/functional-programming-in-a-real-world/cpu-operations-cost.png' | prepend: site.baseurl }}" alt="">
-
-With this knowledge we can start talking about more high-level things.
+<!--more-->
 
 ## Preamble
 
@@ -313,6 +135,2527 @@ sum(int*, int): # @sum(int*, int)
   ret
 ```
 
+
+As you can see, written imperatively, they are compiled into relatively simple Assembly programs (given that `std::vector` has its own safety checks and is iterated over in a slightly different manner).
+
+Now, what will happen if we were about to write the exactly same programs in a more functional-ish style?
+
+Consider this example in C:
+
+```
+int reduce(int *a, int n, int init, int (*reducer)(int, int)) {
+    int result = init;
+
+    for (int i = 0; i < n; ++i) {
+        result = reducer(a[i], result);
+    }
+
+    return result;
+}
+```
+
+and in C++:
+
+```
+#include <vector>
+#include <functional>
+
+int reduce(std::vector<int> a, int init, std::function<int(int, int)> &reducer) {
+    int result = init;
+
+    for (auto i : a) {
+        result = reducer(i, result);
+    }
+
+    return result;
+}
+```
+
+the first one produces this result:
+
+```
+reduce(int*, int, int, int (*)(int, int)): # @reduce(int*, int, int, int (*)(int, int))
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov dword ptr [rbp - 12], esi
+  mov dword ptr [rbp - 16], edx
+  mov qword ptr [rbp - 24], rcx
+  mov edx, dword ptr [rbp - 16]
+  mov dword ptr [rbp - 28], edx
+  mov dword ptr [rbp - 32], 0
+.LBB0_1: # =>This Inner Loop Header: Depth=1
+  mov eax, dword ptr [rbp - 32]
+  cmp eax, dword ptr [rbp - 12]
+  jge .LBB0_4
+  mov rax, qword ptr [rbp - 24]
+  mov rcx, qword ptr [rbp - 8]
+  movsxd rdx, dword ptr [rbp - 32]
+  mov edi, dword ptr [rcx + 4*rdx]
+  mov esi, dword ptr [rbp - 28]
+  call rax
+  mov dword ptr [rbp - 28], eax
+  mov eax, dword ptr [rbp - 32]
+  add eax, 1
+  mov dword ptr [rbp - 32], eax
+  jmp .LBB0_1
+.LBB0_4:
+  mov eax, dword ptr [rbp - 28]
+  add rsp, 32
+  pop rbp
+  ret
+```
+
+Still pretty short. Now the C++ one gives a lot of mess due to the use of `std::function` and `std::vector`:
+
+```
+reduce(std::vector<int, std::allocator<int> >, int, std::function<int (int, int)>&): # @reduce(std::vector<int, std::allocator<int> >, int, std::function<int (int, int)>&)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 64
+  mov dword ptr [rbp - 4], esi
+  mov qword ptr [rbp - 16], rdx
+  mov esi, dword ptr [rbp - 4]
+  mov dword ptr [rbp - 20], esi
+  mov qword ptr [rbp - 32], rdi
+  mov rdi, qword ptr [rbp - 32]
+  call std::vector<int, std::allocator<int> >::begin()
+  mov qword ptr [rbp - 40], rax
+  mov rdi, qword ptr [rbp - 32]
+  call std::vector<int, std::allocator<int> >::end()
+  mov qword ptr [rbp - 48], rax
+.LBB0_1: # =>This Inner Loop Header: Depth=1
+  lea rdi, [rbp - 40]
+  lea rsi, [rbp - 48]
+  call bool __gnu_cxx::operator!=<int*, std::vector<int, std::allocator<int> > >(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > const&, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > const&)
+  test al, 1
+  jne .LBB0_2
+  jmp .LBB0_4
+.LBB0_2: # in Loop: Header=BB0_1 Depth=1
+  lea rdi, [rbp - 40]
+  call __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::operator*() const
+  mov ecx, dword ptr [rax]
+  mov dword ptr [rbp - 52], ecx
+  mov rdi, qword ptr [rbp - 16]
+  mov esi, dword ptr [rbp - 52]
+  mov edx, dword ptr [rbp - 20]
+  call std::function<int (int, int)>::operator()(int, int) const
+  mov dword ptr [rbp - 20], eax
+  lea rdi, [rbp - 40]
+  call __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::operator++()
+  mov qword ptr [rbp - 64], rax # 8-byte Spill
+  jmp .LBB0_1
+.LBB0_4:
+  mov eax, dword ptr [rbp - 20]
+  add rsp, 64
+  pop rbp
+  ret
+std::vector<int, std::allocator<int> >::begin(): # @std::vector<int, std::allocator<int> >::begin()
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  lea rax, [rbp - 8]
+  mov qword ptr [rbp - 16], rdi
+  mov rdi, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 24], rdi # 8-byte Spill
+  mov rdi, rax
+  mov rsi, qword ptr [rbp - 24] # 8-byte Reload
+  call __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::__normal_iterator(int* const&)
+  mov rax, qword ptr [rbp - 8]
+  add rsp, 32
+  pop rbp
+  ret
+std::vector<int, std::allocator<int> >::end(): # @std::vector<int, std::allocator<int> >::end()
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  lea rax, [rbp - 8]
+  mov qword ptr [rbp - 16], rdi
+  mov rdi, qword ptr [rbp - 16]
+  add rdi, 8
+  mov qword ptr [rbp - 24], rdi # 8-byte Spill
+  mov rdi, rax
+  mov rsi, qword ptr [rbp - 24] # 8-byte Reload
+  call __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::__normal_iterator(int* const&)
+  mov rax, qword ptr [rbp - 8]
+  add rsp, 32
+  pop rbp
+  ret
+bool __gnu_cxx::operator!=<int*, std::vector<int, std::allocator<int> > >(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > const&, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > const&): # @bool __gnu_cxx::operator!=<int*, std::vector<int, std::allocator<int> > >(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > const&, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > const&)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov rdi, qword ptr [rbp - 8]
+  call __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::base() const
+  mov rax, qword ptr [rax]
+  mov rdi, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 24], rax # 8-byte Spill
+  call __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::base() const
+  mov rsi, qword ptr [rbp - 24] # 8-byte Reload
+  cmp rsi, qword ptr [rax]
+  setne cl
+  and cl, 1
+  movzx eax, cl
+  add rsp, 32
+  pop rbp
+  ret
+__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::operator*() const: # @__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::operator*() const
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  mov rax, qword ptr [rdi]
+  pop rbp
+  ret
+std::function<int (int, int)>::operator()(int, int) const: # @std::function<int (int, int)>::operator()(int, int) const
+  push rbp
+  mov rbp, rsp
+  sub rsp, 48
+  mov qword ptr [rbp - 8], rdi
+  mov dword ptr [rbp - 12], esi
+  mov dword ptr [rbp - 16], edx
+  mov rdi, qword ptr [rbp - 8]
+  mov rax, rdi
+  mov qword ptr [rbp - 24], rdi # 8-byte Spill
+  mov rdi, rax
+  call std::_Function_base::_M_empty() const
+  test al, 1
+  jne .LBB5_1
+  jmp .LBB5_2
+.LBB5_1:
+  call std::__throw_bad_function_call()
+.LBB5_2:
+  lea rdi, [rbp - 12]
+  mov rax, qword ptr [rbp - 24] # 8-byte Reload
+  mov rcx, qword ptr [rax + 24]
+  mov qword ptr [rbp - 32], rcx # 8-byte Spill
+  mov qword ptr [rbp - 40], rax # 8-byte Spill
+  call int&& std::forward<int>(std::remove_reference<int>::type&)
+  lea rdi, [rbp - 16]
+  mov qword ptr [rbp - 48], rax # 8-byte Spill
+  call int&& std::forward<int>(std::remove_reference<int>::type&)
+  mov rdi, qword ptr [rbp - 40] # 8-byte Reload
+  mov rsi, qword ptr [rbp - 48] # 8-byte Reload
+  mov rdx, rax
+  mov rax, qword ptr [rbp - 32] # 8-byte Reload
+  call rax
+  add rsp, 48
+  pop rbp
+  ret
+__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::operator++(): # @__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::operator++()
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  mov rax, qword ptr [rdi]
+  add rax, 4
+  mov qword ptr [rdi], rax
+  mov rax, rdi
+  pop rbp
+  ret
+__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::__normal_iterator(int* const&): # @__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::__normal_iterator(int* const&)
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov rsi, qword ptr [rbp - 8]
+  mov rdi, qword ptr [rbp - 16]
+  mov rdi, qword ptr [rdi]
+  mov qword ptr [rsi], rdi
+  pop rbp
+  ret
+__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::base() const: # @__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::base() const
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rax, qword ptr [rbp - 8]
+  pop rbp
+  ret
+std::_Function_base::_M_empty() const: # @std::_Function_base::_M_empty() const
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  cmp qword ptr [rdi + 16], 0
+  setne al
+  xor al, -1
+  and al, 1
+  movzx eax, al
+  pop rbp
+  ret
+int&& std::forward<int>(std::remove_reference<int>::type&): # @int&& std::forward<int>(std::remove_reference<int>::type&)
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rax, qword ptr [rbp - 8]
+  pop rbp
+  ret
+```
+
+But in the essence it is still 41 LOC:
+
+```
+reduce(std::vector<int, std::allocator<int> >, int, std::function<int (int, int)>&): # @reduce(std::vector<int, std::allocator<int> >, int, std::function<int (int, int)>&)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 64
+  mov dword ptr [rbp - 4], esi
+  mov qword ptr [rbp - 16], rdx
+  mov esi, dword ptr [rbp - 4]
+  mov dword ptr [rbp - 20], esi
+  mov qword ptr [rbp - 32], rdi
+  mov rdi, qword ptr [rbp - 32]
+  call std::vector<int, std::allocator<int> >::begin()
+  mov qword ptr [rbp - 40], rax
+  mov rdi, qword ptr [rbp - 32]
+  call std::vector<int, std::allocator<int> >::end()
+  mov qword ptr [rbp - 48], rax
+.LBB0_1: # =>This Inner Loop Header: Depth=1
+  lea rdi, [rbp - 40]
+  lea rsi, [rbp - 48]
+  call bool __gnu_cxx::operator!=<int*, std::vector<int, std::allocator<int> > >(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > const&, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > const&)
+  test al, 1
+  jne .LBB0_2
+  jmp .LBB0_4
+.LBB0_2: # in Loop: Header=BB0_1 Depth=1
+  lea rdi, [rbp - 40]
+  call __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::operator*() const
+  mov ecx, dword ptr [rax]
+  mov dword ptr [rbp - 52], ecx
+  mov rdi, qword ptr [rbp - 16]
+  mov esi, dword ptr [rbp - 52]
+  mov edx, dword ptr [rbp - 20]
+  call std::function<int (int, int)>::operator()(int, int) const
+  mov dword ptr [rbp - 20], eax
+  lea rdi, [rbp - 40]
+  call __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::operator++()
+  mov qword ptr [rbp - 64], rax # 8-byte Spill
+  jmp .LBB0_1
+.LBB0_4:
+  mov eax, dword ptr [rbp - 20]
+  add rsp, 64
+  pop rbp
+  ret
+```
+
+Let us try *calling* the `reduce` function. For C:
+
+```
+int reduce(int *a, int n, int init, int (*reducer)(int, int)) {
+    int result = init;
+
+    for (int i = 0; i < n; ++i) {
+        result = reducer(a[i], result);
+    }
+
+    return result;
+}
+
+int add(int acc, int elt) {
+    return acc + elt;
+}
+
+int main() {
+    int a[] = { 1, 2, 3 };
+    reduce(a, 0, 3, &add);
+}
+```
+
+and for C++:
+
+```
+#include <vector>
+#include <functional>
+
+int reduce(std::vector<int> a, int init, std::function<int(int, int)> reducer) {
+    int result = init;
+
+    for (auto i : a) {
+        result = reducer(i, result);
+    }
+
+    return result;
+}
+
+int main() {
+    std::vector<int> a;
+    a.push_back(1);
+    a.push_back(2);
+    a.push_back(3);
+    reduce(a, 0, [](int a, int b) -> int { return a + b; });
+}
+```
+
+Which compile into these two Assemblies:
+
+```
+reduce: # @reduce
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov dword ptr [rbp - 12], esi
+  mov dword ptr [rbp - 16], edx
+  mov qword ptr [rbp - 24], rcx
+  mov edx, dword ptr [rbp - 16]
+  mov dword ptr [rbp - 28], edx
+  mov dword ptr [rbp - 32], 0
+.LBB0_1: # =>This Inner Loop Header: Depth=1
+  mov eax, dword ptr [rbp - 32]
+  cmp eax, dword ptr [rbp - 12]
+  jge .LBB0_4
+  mov rax, qword ptr [rbp - 24]
+  mov rcx, qword ptr [rbp - 8]
+  movsxd rdx, dword ptr [rbp - 32]
+  mov edi, dword ptr [rcx + 4*rdx]
+  mov esi, dword ptr [rbp - 28]
+  call rax
+  mov dword ptr [rbp - 28], eax
+  mov eax, dword ptr [rbp - 32]
+  add eax, 1
+  mov dword ptr [rbp - 32], eax
+  jmp .LBB0_1
+.LBB0_4:
+  mov eax, dword ptr [rbp - 28]
+  add rsp, 32
+  pop rbp
+  ret
+add: # @add
+  push rbp
+  mov rbp, rsp
+  mov dword ptr [rbp - 4], edi
+  mov dword ptr [rbp - 8], esi
+  mov esi, dword ptr [rbp - 4]
+  add esi, dword ptr [rbp - 8]
+  mov eax, esi
+  pop rbp
+  ret
+main: # @main
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  xor esi, esi
+  mov edx, 3
+  movabs rcx, add
+  lea rdi, [rbp - 12]
+  mov rax, qword ptr [.Lmain.a]
+  mov qword ptr [rbp - 12], rax
+  mov r8d, dword ptr [.Lmain.a+8]
+  mov dword ptr [rbp - 4], r8d
+  call reduce
+  xor edx, edx
+  mov dword ptr [rbp - 16], eax # 4-byte Spill
+  mov eax, edx
+  add rsp, 16
+  pop rbp
+  ret
+.Lmain.a:
+  .long 1 # 0x1
+  .long 2 # 0x2
+  .long 3 # 0x3
+```
+
+and 
+
+```
+reduce(std::vector<int, std::allocator<int> >, int, std::function<int (int, int)>): # @reduce(std::vector<int, std::allocator<int> >, int, std::function<int (int, int)>)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 64
+  mov dword ptr [rbp - 4], esi
+  mov esi, dword ptr [rbp - 4]
+  mov dword ptr [rbp - 8], esi
+  mov qword ptr [rbp - 16], rdi
+  mov rdi, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 48], rdx # 8-byte Spill
+  call std::vector<int, std::allocator<int> >::begin()
+  mov qword ptr [rbp - 24], rax
+  mov rdi, qword ptr [rbp - 16]
+  call std::vector<int, std::allocator<int> >::end()
+  mov qword ptr [rbp - 32], rax
+.LBB0_1: # =>This Inner Loop Header: Depth=1
+  lea rdi, [rbp - 24]
+  lea rsi, [rbp - 32]
+  call bool __gnu_cxx::operator!=<int*, std::vector<int, std::allocator<int> > >(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > const&, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > const&)
+  test al, 1
+  jne .LBB0_2
+  jmp .LBB0_4
+.LBB0_2: # in Loop: Header=BB0_1 Depth=1
+  lea rdi, [rbp - 24]
+  call __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::operator*() const
+  mov ecx, dword ptr [rax]
+  mov dword ptr [rbp - 36], ecx
+  mov esi, dword ptr [rbp - 36]
+  mov edx, dword ptr [rbp - 8]
+  mov rdi, qword ptr [rbp - 48] # 8-byte Reload
+  call std::function<int (int, int)>::operator()(int, int) const
+  mov dword ptr [rbp - 8], eax
+  lea rdi, [rbp - 24]
+  call __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::operator++()
+  mov qword ptr [rbp - 56], rax # 8-byte Spill
+  jmp .LBB0_1
+.LBB0_4:
+  mov eax, dword ptr [rbp - 8]
+  add rsp, 64
+  pop rbp
+  ret
+std::vector<int, std::allocator<int> >::begin(): # @std::vector<int, std::allocator<int> >::begin()
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  lea rax, [rbp - 8]
+  mov qword ptr [rbp - 16], rdi
+  mov rdi, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 24], rdi # 8-byte Spill
+  mov rdi, rax
+  mov rsi, qword ptr [rbp - 24] # 8-byte Reload
+  call __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::__normal_iterator(int* const&)
+  mov rax, qword ptr [rbp - 8]
+  add rsp, 32
+  pop rbp
+  ret
+std::vector<int, std::allocator<int> >::end(): # @std::vector<int, std::allocator<int> >::end()
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  lea rax, [rbp - 8]
+  mov qword ptr [rbp - 16], rdi
+  mov rdi, qword ptr [rbp - 16]
+  add rdi, 8
+  mov qword ptr [rbp - 24], rdi # 8-byte Spill
+  mov rdi, rax
+  mov rsi, qword ptr [rbp - 24] # 8-byte Reload
+  call __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::__normal_iterator(int* const&)
+  mov rax, qword ptr [rbp - 8]
+  add rsp, 32
+  pop rbp
+  ret
+bool __gnu_cxx::operator!=<int*, std::vector<int, std::allocator<int> > >(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > const&, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > const&): # @bool __gnu_cxx::operator!=<int*, std::vector<int, std::allocator<int> > >(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > const&, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > const&)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov rdi, qword ptr [rbp - 8]
+  call __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::base() const
+  mov rax, qword ptr [rax]
+  mov rdi, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 24], rax # 8-byte Spill
+  call __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::base() const
+  mov rsi, qword ptr [rbp - 24] # 8-byte Reload
+  cmp rsi, qword ptr [rax]
+  setne cl
+  and cl, 1
+  movzx eax, cl
+  add rsp, 32
+  pop rbp
+  ret
+__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::operator*() const: # @__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::operator*() const
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  mov rax, qword ptr [rdi]
+  pop rbp
+  ret
+std::function<int (int, int)>::operator()(int, int) const: # @std::function<int (int, int)>::operator()(int, int) const
+  push rbp
+  mov rbp, rsp
+  sub rsp, 48
+  mov qword ptr [rbp - 8], rdi
+  mov dword ptr [rbp - 12], esi
+  mov dword ptr [rbp - 16], edx
+  mov rdi, qword ptr [rbp - 8]
+  mov rax, rdi
+  mov qword ptr [rbp - 24], rdi # 8-byte Spill
+  mov rdi, rax
+  call std::_Function_base::_M_empty() const
+  test al, 1
+  jne .LBB5_1
+  jmp .LBB5_2
+.LBB5_1:
+  call std::__throw_bad_function_call()
+.LBB5_2:
+  lea rdi, [rbp - 12]
+  mov rax, qword ptr [rbp - 24] # 8-byte Reload
+  mov rcx, qword ptr [rax + 24]
+  mov qword ptr [rbp - 32], rcx # 8-byte Spill
+  mov qword ptr [rbp - 40], rax # 8-byte Spill
+  call int&& std::forward<int>(std::remove_reference<int>::type&)
+  lea rdi, [rbp - 16]
+  mov qword ptr [rbp - 48], rax # 8-byte Spill
+  call int&& std::forward<int>(std::remove_reference<int>::type&)
+  mov rdi, qword ptr [rbp - 40] # 8-byte Reload
+  mov rsi, qword ptr [rbp - 48] # 8-byte Reload
+  mov rdx, rax
+  mov rax, qword ptr [rbp - 32] # 8-byte Reload
+  call rax
+  add rsp, 48
+  pop rbp
+  ret
+__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::operator++(): # @__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::operator++()
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  mov rax, qword ptr [rdi]
+  add rax, 4
+  mov qword ptr [rdi], rax
+  mov rax, rdi
+  pop rbp
+  ret
+main: # @main
+  push rbp
+  mov rbp, rsp
+  sub rsp, 144
+  lea rax, [rbp - 24]
+  mov rdi, rax
+  mov qword ptr [rbp - 128], rax # 8-byte Spill
+  call std::vector<int, std::allocator<int> >::vector()
+  mov dword ptr [rbp - 28], 1
+  lea rsi, [rbp - 28]
+  mov rdi, qword ptr [rbp - 128] # 8-byte Reload
+  call std::vector<int, std::allocator<int> >::push_back(int&&)
+  jmp .LBB7_1
+.LBB7_1:
+  mov dword ptr [rbp - 48], 2
+  lea rdi, [rbp - 24]
+  lea rsi, [rbp - 48]
+  call std::vector<int, std::allocator<int> >::push_back(int&&)
+  jmp .LBB7_2
+.LBB7_2:
+  mov dword ptr [rbp - 52], 3
+  lea rdi, [rbp - 24]
+  lea rsi, [rbp - 52]
+  call std::vector<int, std::allocator<int> >::push_back(int&&)
+  jmp .LBB7_3
+.LBB7_3:
+  lea rdi, [rbp - 80]
+  lea rsi, [rbp - 24]
+  call std::vector<int, std::allocator<int> >::vector(std::vector<int, std::allocator<int> > const&)
+  jmp .LBB7_4
+.LBB7_4:
+  lea rdi, [rbp - 112]
+  call std::function<int (int, int)>::function<main::$_0, void, void>(main::$_0)
+  jmp .LBB7_5
+.LBB7_5:
+  lea rdi, [rbp - 80]
+  xor esi, esi
+  lea rdx, [rbp - 112]
+  call reduce(std::vector<int, std::allocator<int> >, int, std::function<int (int, int)>)
+  mov dword ptr [rbp - 132], eax # 4-byte Spill
+  jmp .LBB7_6
+.LBB7_6:
+  lea rdi, [rbp - 112]
+  call std::function<int (int, int)>::~function()
+  lea rdi, [rbp - 80]
+  call std::vector<int, std::allocator<int> >::~vector()
+  lea rdi, [rbp - 24]
+  call std::vector<int, std::allocator<int> >::~vector()
+  xor eax, eax
+  add rsp, 144
+  pop rbp
+  ret
+  mov ecx, edx
+  mov qword ptr [rbp - 40], rax
+  mov dword ptr [rbp - 44], ecx
+  jmp .LBB7_11
+  mov ecx, edx
+  mov qword ptr [rbp - 40], rax
+  mov dword ptr [rbp - 44], ecx
+  jmp .LBB7_10
+  lea rdi, [rbp - 112]
+  mov ecx, edx
+  mov qword ptr [rbp - 40], rax
+  mov dword ptr [rbp - 44], ecx
+  call std::function<int (int, int)>::~function()
+.LBB7_10:
+  lea rdi, [rbp - 80]
+  call std::vector<int, std::allocator<int> >::~vector()
+.LBB7_11:
+  lea rdi, [rbp - 24]
+  call std::vector<int, std::allocator<int> >::~vector()
+  mov rdi, qword ptr [rbp - 40]
+  call _Unwind_Resume
+std::vector<int, std::allocator<int> >::vector(): # @std::vector<int, std::allocator<int> >::vector()
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  call std::_Vector_base<int, std::allocator<int> >::_Vector_base()
+  jmp .LBB8_1
+.LBB8_1:
+  add rsp, 16
+  pop rbp
+  ret
+  mov ecx, edx
+  mov rdi, rax
+  mov dword ptr [rbp - 12], ecx # 4-byte Spill
+  call __clang_call_terminate
+std::vector<int, std::allocator<int> >::push_back(int&&): # @std::vector<int, std::allocator<int> >::push_back(int&&)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov rdi, qword ptr [rbp - 8]
+  mov rsi, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 24], rdi # 8-byte Spill
+  mov rdi, rsi
+  call std::remove_reference<int&>::type&& std::move<int&>(int&)
+  mov rdi, qword ptr [rbp - 24] # 8-byte Reload
+  mov rsi, rax
+  call int& std::vector<int, std::allocator<int> >::emplace_back<int>(int&&)
+  mov qword ptr [rbp - 32], rax # 8-byte Spill
+  add rsp, 32
+  pop rbp
+  ret
+std::vector<int, std::allocator<int> >::vector(std::vector<int, std::allocator<int> > const&): # @std::vector<int, std::allocator<int> >::vector(std::vector<int, std::allocator<int> > const&)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 96
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov rsi, qword ptr [rbp - 8]
+  mov rdi, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 64], rsi # 8-byte Spill
+  call std::vector<int, std::allocator<int> >::size() const
+  mov rdi, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 72], rax # 8-byte Spill
+  call std::_Vector_base<int, std::allocator<int> >::_M_get_Tp_allocator() const
+  lea rsi, [rbp - 24]
+  mov rdi, rsi
+  mov qword ptr [rbp - 80], rsi # 8-byte Spill
+  mov rsi, rax
+  call __gnu_cxx::__alloc_traits<std::allocator<int> >::_S_select_on_copy(std::allocator<int> const&)
+  mov rdi, qword ptr [rbp - 64] # 8-byte Reload
+  mov rsi, qword ptr [rbp - 72] # 8-byte Reload
+  mov rdx, qword ptr [rbp - 80] # 8-byte Reload
+  call std::_Vector_base<int, std::allocator<int> >::_Vector_base(unsigned long, std::allocator<int> const&)
+  jmp .LBB10_1
+.LBB10_1:
+  lea rdi, [rbp - 24]
+  call std::allocator<int>::~allocator()
+  mov rdi, qword ptr [rbp - 16]
+  call std::vector<int, std::allocator<int> >::begin() const
+  mov qword ptr [rbp - 48], rax
+  mov rdi, qword ptr [rbp - 16]
+  call std::vector<int, std::allocator<int> >::end() const
+  mov qword ptr [rbp - 56], rax
+  mov rax, qword ptr [rbp - 64] # 8-byte Reload
+  mov rdx, qword ptr [rax]
+  mov rdi, rax
+  mov qword ptr [rbp - 88], rdx # 8-byte Spill
+  call std::_Vector_base<int, std::allocator<int> >::_M_get_Tp_allocator()
+  mov rdi, qword ptr [rbp - 48]
+  mov rsi, qword ptr [rbp - 56]
+  mov rdx, qword ptr [rbp - 88] # 8-byte Reload
+  mov rcx, rax
+  call int* std::__uninitialized_copy_a<__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*, int>(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*, std::allocator<int>&)
+  mov qword ptr [rbp - 96], rax # 8-byte Spill
+  jmp .LBB10_2
+.LBB10_2:
+  mov rax, qword ptr [rbp - 64] # 8-byte Reload
+  mov rcx, qword ptr [rbp - 96] # 8-byte Reload
+  mov qword ptr [rax + 8], rcx
+  add rsp, 96
+  pop rbp
+  ret
+  lea rdi, [rbp - 24]
+  mov ecx, edx
+  mov qword ptr [rbp - 32], rax
+  mov dword ptr [rbp - 36], ecx
+  call std::allocator<int>::~allocator()
+  jmp .LBB10_5
+  mov ecx, edx
+  mov qword ptr [rbp - 32], rax
+  mov dword ptr [rbp - 36], ecx
+  mov rax, qword ptr [rbp - 64] # 8-byte Reload
+  mov rdi, rax
+  call std::_Vector_base<int, std::allocator<int> >::~_Vector_base()
+.LBB10_5:
+  mov rdi, qword ptr [rbp - 32]
+  call _Unwind_Resume
+std::function<int (int, int)>::function<main::$_0, void, void>(main::$_0): # @"std::function<int (int, int)>::function<main::$_0, void, void>(main::$_0)"
+  push rbp
+  mov rbp, rsp
+  sub rsp, 48
+  mov qword ptr [rbp - 16], rdi
+  mov rdi, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 40], rdi # 8-byte Spill
+  call std::_Function_base::_Function_base()
+  lea rdi, [rbp - 8]
+  call bool std::_Function_base::_Base_manager<main::$_0>::_M_not_empty_function<main::$_0>(main::$_0 const&)
+  mov byte ptr [rbp - 41], al # 1-byte Spill
+  jmp .LBB11_1
+.LBB11_1:
+  mov al, byte ptr [rbp - 41] # 1-byte Reload
+  test al, 1
+  jne .LBB11_2
+  jmp .LBB11_5
+.LBB11_2:
+  lea rdi, [rbp - 8]
+  call std::remove_reference<main::$_0&>::type&& std::move<main::$_0&>(main::$_0&)
+  mov rdi, qword ptr [rbp - 40] # 8-byte Reload
+  mov rsi, rax
+  call std::_Function_base::_Base_manager<main::$_0>::_M_init_functor(std::_Any_data&, main::$_0&&)
+  jmp .LBB11_3
+.LBB11_3:
+  movabs rax, std::_Function_base::_Base_manager<main::$_0>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation)
+  movabs rcx, std::_Function_handler<int (int, int), main::$_0>::_M_invoke(std::_Any_data const&, int&&, int&&)
+  mov rdx, qword ptr [rbp - 40] # 8-byte Reload
+  mov qword ptr [rdx + 24], rcx
+  mov qword ptr [rdx + 16], rax
+  jmp .LBB11_5
+  mov ecx, edx
+  mov qword ptr [rbp - 24], rax
+  mov dword ptr [rbp - 28], ecx
+  mov rax, qword ptr [rbp - 40] # 8-byte Reload
+  mov rdi, rax
+  call std::_Function_base::~_Function_base()
+  jmp .LBB11_6
+.LBB11_5:
+  add rsp, 48
+  pop rbp
+  ret
+.LBB11_6:
+  mov rdi, qword ptr [rbp - 24]
+  call _Unwind_Resume
+std::function<int (int, int)>::~function(): # @std::function<int (int, int)>::~function()
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  call std::_Function_base::~_Function_base()
+  add rsp, 16
+  pop rbp
+  ret
+std::vector<int, std::allocator<int> >::~vector(): # @std::vector<int, std::allocator<int> >::~vector()
+  push rbp
+  mov rbp, rsp
+  sub rsp, 48
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  mov rax, qword ptr [rdi]
+  mov rsi, qword ptr [rdi + 8]
+  mov qword ptr [rbp - 32], rdi # 8-byte Spill
+  mov qword ptr [rbp - 40], rsi # 8-byte Spill
+  mov qword ptr [rbp - 48], rax # 8-byte Spill
+  call std::_Vector_base<int, std::allocator<int> >::_M_get_Tp_allocator()
+  mov rdi, qword ptr [rbp - 48] # 8-byte Reload
+  mov rsi, qword ptr [rbp - 40] # 8-byte Reload
+  mov rdx, rax
+  call void std::_Destroy<int*, int>(int*, int*, std::allocator<int>&)
+  jmp .LBB13_1
+.LBB13_1:
+  mov rax, qword ptr [rbp - 32] # 8-byte Reload
+  mov rdi, rax
+  call std::_Vector_base<int, std::allocator<int> >::~_Vector_base()
+  add rsp, 48
+  pop rbp
+  ret
+  mov ecx, edx
+  mov qword ptr [rbp - 16], rax
+  mov dword ptr [rbp - 20], ecx
+  mov rax, qword ptr [rbp - 32] # 8-byte Reload
+  mov rdi, rax
+  call std::_Vector_base<int, std::allocator<int> >::~_Vector_base()
+  mov rdi, qword ptr [rbp - 16]
+  call __clang_call_terminate
+std::_Function_base::~_Function_base(): # @std::_Function_base::~_Function_base()
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  cmp qword ptr [rdi + 16], 0
+  mov qword ptr [rbp - 16], rdi # 8-byte Spill
+  je .LBB14_3
+  mov rax, qword ptr [rbp - 16] # 8-byte Reload
+  mov rcx, qword ptr [rax + 16]
+  mov edx, 3
+  mov rdi, rax
+  mov rsi, rax
+  call rcx
+  mov byte ptr [rbp - 17], al # 1-byte Spill
+  jmp .LBB14_2
+.LBB14_2:
+  jmp .LBB14_3
+.LBB14_3:
+  add rsp, 32
+  pop rbp
+  ret
+  mov ecx, edx
+  mov rdi, rax
+  mov dword ptr [rbp - 24], ecx # 4-byte Spill
+  call __clang_call_terminate
+__clang_call_terminate: # @__clang_call_terminate
+  push rax
+  call __cxa_begin_catch
+  mov qword ptr [rsp], rax # 8-byte Spill
+  call std::terminate()
+__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::__normal_iterator(int* const&): # @__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::__normal_iterator(int* const&)
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov rsi, qword ptr [rbp - 8]
+  mov rdi, qword ptr [rbp - 16]
+  mov rdi, qword ptr [rdi]
+  mov qword ptr [rsi], rdi
+  pop rbp
+  ret
+__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::base() const: # @__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::base() const
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rax, qword ptr [rbp - 8]
+  pop rbp
+  ret
+std::_Function_base::_M_empty() const: # @std::_Function_base::_M_empty() const
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  cmp qword ptr [rdi + 16], 0
+  setne al
+  xor al, -1
+  and al, 1
+  movzx eax, al
+  pop rbp
+  ret
+int&& std::forward<int>(std::remove_reference<int>::type&): # @int&& std::forward<int>(std::remove_reference<int>::type&)
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rax, qword ptr [rbp - 8]
+  pop rbp
+  ret
+std::_Vector_base<int, std::allocator<int> >::_Vector_base(): # @std::_Vector_base<int, std::allocator<int> >::_Vector_base()
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  call std::_Vector_base<int, std::allocator<int> >::_Vector_impl::_Vector_impl()
+  add rsp, 16
+  pop rbp
+  ret
+std::_Vector_base<int, std::allocator<int> >::_Vector_impl::_Vector_impl(): # @std::_Vector_base<int, std::allocator<int> >::_Vector_impl::_Vector_impl()
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  mov rax, rdi
+  mov qword ptr [rbp - 16], rdi # 8-byte Spill
+  mov rdi, rax
+  call std::allocator<int>::allocator()
+  mov rax, qword ptr [rbp - 16] # 8-byte Reload
+  mov qword ptr [rax], 0
+  mov qword ptr [rax + 8], 0
+  mov qword ptr [rax + 16], 0
+  add rsp, 16
+  pop rbp
+  ret
+std::allocator<int>::allocator(): # @std::allocator<int>::allocator()
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  call __gnu_cxx::new_allocator<int>::new_allocator()
+  add rsp, 16
+  pop rbp
+  ret
+__gnu_cxx::new_allocator<int>::new_allocator(): # @__gnu_cxx::new_allocator<int>::new_allocator()
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  pop rbp
+  ret
+void std::_Destroy<int*, int>(int*, int*, std::allocator<int>&): # @void std::_Destroy<int*, int>(int*, int*, std::allocator<int>&)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov rdi, qword ptr [rbp - 8]
+  mov rsi, qword ptr [rbp - 16]
+  call void std::_Destroy<int*>(int*, int*)
+  add rsp, 32
+  pop rbp
+  ret
+std::_Vector_base<int, std::allocator<int> >::_M_get_Tp_allocator(): # @std::_Vector_base<int, std::allocator<int> >::_M_get_Tp_allocator()
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  mov rax, rdi
+  pop rbp
+  ret
+std::_Vector_base<int, std::allocator<int> >::~_Vector_base(): # @std::_Vector_base<int, std::allocator<int> >::~_Vector_base()
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  mov rax, qword ptr [rdi]
+  mov rcx, qword ptr [rdi + 16]
+  sub rcx, rax
+  sar rcx, 2
+  mov qword ptr [rbp - 32], rdi # 8-byte Spill
+  mov rsi, rax
+  mov rdx, rcx
+  call std::_Vector_base<int, std::allocator<int> >::_M_deallocate(int*, unsigned long)
+  jmp .LBB26_1
+.LBB26_1:
+  mov rdi, qword ptr [rbp - 32] # 8-byte Reload
+  call std::_Vector_base<int, std::allocator<int> >::_Vector_impl::~_Vector_impl()
+  add rsp, 32
+  pop rbp
+  ret
+  mov ecx, edx
+  mov qword ptr [rbp - 16], rax
+  mov dword ptr [rbp - 20], ecx
+  mov rdi, qword ptr [rbp - 32] # 8-byte Reload
+  call std::_Vector_base<int, std::allocator<int> >::_Vector_impl::~_Vector_impl()
+  mov rdi, qword ptr [rbp - 16]
+  call __clang_call_terminate
+void std::_Destroy<int*>(int*, int*): # @void std::_Destroy<int*>(int*, int*)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov rdi, qword ptr [rbp - 8]
+  mov rsi, qword ptr [rbp - 16]
+  call void std::_Destroy_aux<true>::__destroy<int*>(int*, int*)
+  add rsp, 16
+  pop rbp
+  ret
+void std::_Destroy_aux<true>::__destroy<int*>(int*, int*): # @void std::_Destroy_aux<true>::__destroy<int*>(int*, int*)
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  pop rbp
+  ret
+std::_Vector_base<int, std::allocator<int> >::_M_deallocate(int*, unsigned long): # @std::_Vector_base<int, std::allocator<int> >::_M_deallocate(int*, unsigned long)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov rdx, qword ptr [rbp - 8]
+  cmp qword ptr [rbp - 16], 0
+  mov qword ptr [rbp - 32], rdx # 8-byte Spill
+  je .LBB29_2
+  mov rax, qword ptr [rbp - 32] # 8-byte Reload
+  mov rsi, qword ptr [rbp - 16]
+  mov rdx, qword ptr [rbp - 24]
+  mov rdi, rax
+  call std::allocator_traits<std::allocator<int> >::deallocate(std::allocator<int>&, int*, unsigned long)
+.LBB29_2:
+  add rsp, 32
+  pop rbp
+  ret
+std::_Vector_base<int, std::allocator<int> >::_Vector_impl::~_Vector_impl(): # @std::_Vector_base<int, std::allocator<int> >::_Vector_impl::~_Vector_impl()
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  call std::allocator<int>::~allocator()
+  add rsp, 16
+  pop rbp
+  ret
+std::allocator_traits<std::allocator<int> >::deallocate(std::allocator<int>&, int*, unsigned long): # @std::allocator_traits<std::allocator<int> >::deallocate(std::allocator<int>&, int*, unsigned long)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov rdx, qword ptr [rbp - 8]
+  mov rsi, qword ptr [rbp - 16]
+  mov rdi, qword ptr [rbp - 24]
+  mov qword ptr [rbp - 32], rdi # 8-byte Spill
+  mov rdi, rdx
+  mov rdx, qword ptr [rbp - 32] # 8-byte Reload
+  call __gnu_cxx::new_allocator<int>::deallocate(int*, unsigned long)
+  add rsp, 32
+  pop rbp
+  ret
+__gnu_cxx::new_allocator<int>::deallocate(int*, unsigned long): # @__gnu_cxx::new_allocator<int>::deallocate(int*, unsigned long)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov rdx, qword ptr [rbp - 16]
+  mov rdi, rdx
+  call operator delete(void*)
+  add rsp, 32
+  pop rbp
+  ret
+__gnu_cxx::new_allocator<int>::~new_allocator(): # @__gnu_cxx::new_allocator<int>::~new_allocator()
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  pop rbp
+  ret
+int& std::vector<int, std::allocator<int> >::emplace_back<int>(int&&): # @int& std::vector<int, std::allocator<int> >::emplace_back<int>(int&&)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 48
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov rsi, qword ptr [rbp - 8]
+  mov rdi, qword ptr [rsi + 8]
+  cmp rdi, qword ptr [rsi + 16]
+  mov qword ptr [rbp - 32], rsi # 8-byte Spill
+  je .LBB34_2
+  mov rax, qword ptr [rbp - 32] # 8-byte Reload
+  mov rcx, qword ptr [rbp - 32] # 8-byte Reload
+  mov rsi, qword ptr [rcx + 8]
+  mov rdi, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 40], rax # 8-byte Spill
+  mov qword ptr [rbp - 48], rsi # 8-byte Spill
+  call int&& std::forward<int>(std::remove_reference<int>::type&)
+  mov rdi, qword ptr [rbp - 40] # 8-byte Reload
+  mov rsi, qword ptr [rbp - 48] # 8-byte Reload
+  mov rdx, rax
+  call void std::allocator_traits<std::allocator<int> >::construct<int, int>(std::allocator<int>&, int*, int&&)
+  mov rax, qword ptr [rbp - 32] # 8-byte Reload
+  mov rcx, qword ptr [rax + 8]
+  add rcx, 4
+  mov qword ptr [rax + 8], rcx
+  jmp .LBB34_3
+.LBB34_2:
+  mov rdi, qword ptr [rbp - 32] # 8-byte Reload
+  call std::vector<int, std::allocator<int> >::end()
+  mov qword ptr [rbp - 24], rax
+  mov rdi, qword ptr [rbp - 16]
+  call int&& std::forward<int>(std::remove_reference<int>::type&)
+  mov rsi, qword ptr [rbp - 24]
+  mov rdi, qword ptr [rbp - 32] # 8-byte Reload
+  mov rdx, rax
+  call void std::vector<int, std::allocator<int> >::_M_realloc_insert<int>(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int&&)
+.LBB34_3:
+  mov rdi, qword ptr [rbp - 32] # 8-byte Reload
+  call std::vector<int, std::allocator<int> >::back()
+  add rsp, 48
+  pop rbp
+  ret
+std::remove_reference<int&>::type&& std::move<int&>(int&): # @std::remove_reference<int&>::type&& std::move<int&>(int&)
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rax, qword ptr [rbp - 8]
+  pop rbp
+  ret
+void std::allocator_traits<std::allocator<int> >::construct<int, int>(std::allocator<int>&, int*, int&&): # @void std::allocator_traits<std::allocator<int> >::construct<int, int>(std::allocator<int>&, int*, int&&)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 48
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov rdx, qword ptr [rbp - 8]
+  mov rsi, qword ptr [rbp - 16]
+  mov rdi, qword ptr [rbp - 24]
+  mov qword ptr [rbp - 32], rdx # 8-byte Spill
+  mov qword ptr [rbp - 40], rsi # 8-byte Spill
+  call int&& std::forward<int>(std::remove_reference<int>::type&)
+  mov rdi, qword ptr [rbp - 32] # 8-byte Reload
+  mov rsi, qword ptr [rbp - 40] # 8-byte Reload
+  mov rdx, rax
+  call void __gnu_cxx::new_allocator<int>::construct<int, int>(int*, int&&)
+  add rsp, 48
+  pop rbp
+  ret
+void std::vector<int, std::allocator<int> >::_M_realloc_insert<int>(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int&&): # @void std::vector<int, std::allocator<int> >::_M_realloc_insert<int>(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, int&&)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 240
+  mov qword ptr [rbp - 8], rsi
+  mov qword ptr [rbp - 16], rdi
+  mov qword ptr [rbp - 24], rdx
+  mov rdx, qword ptr [rbp - 16]
+  mov eax, .L.str
+  mov esi, eax
+  mov eax, 1
+  mov edi, eax
+  mov qword ptr [rbp - 88], rdi # 8-byte Spill
+  mov rdi, rdx
+  mov rcx, qword ptr [rbp - 88] # 8-byte Reload
+  mov qword ptr [rbp - 96], rsi # 8-byte Spill
+  mov rsi, rcx
+  mov r8, qword ptr [rbp - 96] # 8-byte Reload
+  mov qword ptr [rbp - 104], rdx # 8-byte Spill
+  mov rdx, r8
+  call std::vector<int, std::allocator<int> >::_M_check_len(unsigned long, char const*) const
+  mov qword ptr [rbp - 32], rax
+  mov rdi, qword ptr [rbp - 104] # 8-byte Reload
+  call std::vector<int, std::allocator<int> >::begin()
+  mov qword ptr [rbp - 48], rax
+  lea rdi, [rbp - 8]
+  lea rsi, [rbp - 48]
+  call __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::difference_type __gnu_cxx::operator-<int*, std::vector<int, std::allocator<int> > >(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > const&, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > const&)
+  mov qword ptr [rbp - 40], rax
+  mov rsi, qword ptr [rbp - 32]
+  mov rdi, qword ptr [rbp - 104] # 8-byte Reload
+  call std::_Vector_base<int, std::allocator<int> >::_M_allocate(unsigned long)
+  mov qword ptr [rbp - 56], rax
+  mov rax, qword ptr [rbp - 56]
+  mov qword ptr [rbp - 64], rax
+  mov rcx, qword ptr [rbp - 40]
+  lea rsi, [rax + 4*rcx]
+  mov rdi, qword ptr [rbp - 24]
+  mov qword ptr [rbp - 112], rsi # 8-byte Spill
+  call int&& std::forward<int>(std::remove_reference<int>::type&)
+  mov rdi, qword ptr [rbp - 104] # 8-byte Reload
+  mov rsi, qword ptr [rbp - 112] # 8-byte Reload
+  mov rdx, rax
+  call void std::allocator_traits<std::allocator<int> >::construct<int, int>(std::allocator<int>&, int*, int&&)
+  jmp .LBB37_1
+.LBB37_1:
+  mov qword ptr [rbp - 64], 0
+  mov rax, qword ptr [rbp - 104] # 8-byte Reload
+  mov rdi, qword ptr [rax]
+  lea rcx, [rbp - 8]
+  mov qword ptr [rbp - 120], rdi # 8-byte Spill
+  mov rdi, rcx
+  call __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::base() const
+  mov rsi, qword ptr [rax]
+  mov rdx, qword ptr [rbp - 56]
+  mov rdi, qword ptr [rbp - 104] # 8-byte Reload
+  mov qword ptr [rbp - 128], rsi # 8-byte Spill
+  mov qword ptr [rbp - 136], rdx # 8-byte Spill
+  call std::_Vector_base<int, std::allocator<int> >::_M_get_Tp_allocator()
+  mov rdi, qword ptr [rbp - 120] # 8-byte Reload
+  mov rsi, qword ptr [rbp - 128] # 8-byte Reload
+  mov rdx, qword ptr [rbp - 136] # 8-byte Reload
+  mov rcx, rax
+  call int* std::__uninitialized_move_if_noexcept_a<int*, int*, std::allocator<int> >(int*, int*, int*, std::allocator<int>&)
+  mov qword ptr [rbp - 144], rax # 8-byte Spill
+  jmp .LBB37_2
+.LBB37_2:
+  mov rax, qword ptr [rbp - 144] # 8-byte Reload
+  mov qword ptr [rbp - 64], rax
+  mov rcx, qword ptr [rbp - 64]
+  add rcx, 4
+  mov qword ptr [rbp - 64], rcx
+  lea rdi, [rbp - 8]
+  call __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::base() const
+  mov rdi, qword ptr [rax]
+  mov rax, qword ptr [rbp - 104] # 8-byte Reload
+  mov rsi, qword ptr [rax + 8]
+  mov rdx, qword ptr [rbp - 64]
+  mov qword ptr [rbp - 152], rdi # 8-byte Spill
+  mov rdi, rax
+  mov qword ptr [rbp - 160], rdx # 8-byte Spill
+  mov qword ptr [rbp - 168], rsi # 8-byte Spill
+  call std::_Vector_base<int, std::allocator<int> >::_M_get_Tp_allocator()
+  mov rdi, qword ptr [rbp - 152] # 8-byte Reload
+  mov rsi, qword ptr [rbp - 168] # 8-byte Reload
+  mov rdx, qword ptr [rbp - 160] # 8-byte Reload
+  mov rcx, rax
+  call int* std::__uninitialized_move_if_noexcept_a<int*, int*, std::allocator<int> >(int*, int*, int*, std::allocator<int>&)
+  mov qword ptr [rbp - 176], rax # 8-byte Spill
+  jmp .LBB37_3
+.LBB37_3:
+  mov rax, qword ptr [rbp - 176] # 8-byte Reload
+  mov qword ptr [rbp - 64], rax
+  jmp .LBB37_14
+  mov ecx, edx
+  mov qword ptr [rbp - 72], rax
+  mov dword ptr [rbp - 76], ecx
+  mov rdi, qword ptr [rbp - 72]
+  call __cxa_begin_catch
+  cmp qword ptr [rbp - 64], 0
+  mov qword ptr [rbp - 184], rax # 8-byte Spill
+  jne .LBB37_9
+  mov rax, qword ptr [rbp - 56]
+  mov rcx, qword ptr [rbp - 40]
+  lea rsi, [rax + 4*rcx]
+  mov rdi, qword ptr [rbp - 104] # 8-byte Reload
+  call void std::allocator_traits<std::allocator<int> >::destroy<int>(std::allocator<int>&, int*)
+  jmp .LBB37_7
+.LBB37_7:
+  jmp .LBB37_11
+  mov ecx, edx
+  mov qword ptr [rbp - 72], rax
+  mov dword ptr [rbp - 76], ecx
+  call __cxa_end_catch
+  jmp .LBB37_13
+.LBB37_9:
+  mov rdi, qword ptr [rbp - 56]
+  mov rsi, qword ptr [rbp - 64]
+  mov rax, qword ptr [rbp - 104] # 8-byte Reload
+  mov qword ptr [rbp - 192], rdi # 8-byte Spill
+  mov rdi, rax
+  mov qword ptr [rbp - 200], rsi # 8-byte Spill
+  call std::_Vector_base<int, std::allocator<int> >::_M_get_Tp_allocator()
+  mov rdi, qword ptr [rbp - 192] # 8-byte Reload
+  mov rsi, qword ptr [rbp - 200] # 8-byte Reload
+  mov rdx, rax
+  call void std::_Destroy<int*, int>(int*, int*, std::allocator<int>&)
+  jmp .LBB37_10
+.LBB37_10:
+  jmp .LBB37_11
+.LBB37_11:
+  mov rsi, qword ptr [rbp - 56]
+  mov rdx, qword ptr [rbp - 32]
+  mov rdi, qword ptr [rbp - 104] # 8-byte Reload
+  call std::_Vector_base<int, std::allocator<int> >::_M_deallocate(int*, unsigned long)
+  jmp .LBB37_12
+.LBB37_12:
+  call __cxa_rethrow
+  jmp .LBB37_17
+.LBB37_13:
+  jmp .LBB37_15
+.LBB37_14:
+  mov rax, qword ptr [rbp - 104] # 8-byte Reload
+  mov rdi, qword ptr [rax]
+  mov rsi, qword ptr [rax + 8]
+  mov qword ptr [rbp - 208], rdi # 8-byte Spill
+  mov rdi, rax
+  mov qword ptr [rbp - 216], rsi # 8-byte Spill
+  call std::_Vector_base<int, std::allocator<int> >::_M_get_Tp_allocator()
+  mov rdi, qword ptr [rbp - 208] # 8-byte Reload
+  mov rsi, qword ptr [rbp - 216] # 8-byte Reload
+  mov rdx, rax
+  call void std::_Destroy<int*, int>(int*, int*, std::allocator<int>&)
+  mov rax, qword ptr [rbp - 104] # 8-byte Reload
+  mov rdx, qword ptr [rbp - 104] # 8-byte Reload
+  mov rsi, qword ptr [rdx]
+  mov rdi, qword ptr [rdx + 16]
+  mov rcx, qword ptr [rdx]
+  sub rdi, rcx
+  sar rdi, 2
+  mov qword ptr [rbp - 224], rdi # 8-byte Spill
+  mov rdi, rax
+  mov rdx, qword ptr [rbp - 224] # 8-byte Reload
+  call std::_Vector_base<int, std::allocator<int> >::_M_deallocate(int*, unsigned long)
+  mov rax, qword ptr [rbp - 56]
+  mov rcx, qword ptr [rbp - 104] # 8-byte Reload
+  mov qword ptr [rcx], rax
+  mov rax, qword ptr [rbp - 64]
+  mov qword ptr [rcx + 8], rax
+  mov rax, qword ptr [rbp - 56]
+  mov rdx, qword ptr [rbp - 32]
+  shl rdx, 2
+  add rax, rdx
+  mov qword ptr [rcx + 16], rax
+  add rsp, 240
+  pop rbp
+  ret
+.LBB37_15:
+  mov rdi, qword ptr [rbp - 72]
+  call _Unwind_Resume
+  mov ecx, edx
+  mov rdi, rax
+  mov dword ptr [rbp - 228], ecx # 4-byte Spill
+  call __clang_call_terminate
+.LBB37_17:
+std::vector<int, std::allocator<int> >::back(): # @std::vector<int, std::allocator<int> >::back()
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  call std::vector<int, std::allocator<int> >::end()
+  lea rdi, [rbp - 16]
+  mov ecx, 1
+  mov esi, ecx
+  mov qword ptr [rbp - 16], rax
+  call __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::operator-(long) const
+  lea rdi, [rbp - 24]
+  mov qword ptr [rbp - 24], rax
+  call __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::operator*() const
+  add rsp, 32
+  pop rbp
+  ret
+void __gnu_cxx::new_allocator<int>::construct<int, int>(int*, int&&): # @void __gnu_cxx::new_allocator<int>::construct<int, int>(int*, int&&)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov rdx, qword ptr [rbp - 16]
+  mov rdi, qword ptr [rbp - 24]
+  mov qword ptr [rbp - 32], rdx # 8-byte Spill
+  call int&& std::forward<int>(std::remove_reference<int>::type&)
+  mov ecx, dword ptr [rax]
+  mov rax, qword ptr [rbp - 32] # 8-byte Reload
+  mov dword ptr [rax], ecx
+  add rsp, 32
+  pop rbp
+  ret
+std::vector<int, std::allocator<int> >::_M_check_len(unsigned long, char const*) const: # @std::vector<int, std::allocator<int> >::_M_check_len(unsigned long, char const*) const
+  push rbp
+  mov rbp, rsp
+  sub rsp, 96
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov rdx, qword ptr [rbp - 8]
+  mov rdi, rdx
+  mov qword ptr [rbp - 48], rdx # 8-byte Spill
+  call std::vector<int, std::allocator<int> >::max_size() const
+  mov rdi, qword ptr [rbp - 48] # 8-byte Reload
+  mov qword ptr [rbp - 56], rax # 8-byte Spill
+  call std::vector<int, std::allocator<int> >::size() const
+  mov rdx, qword ptr [rbp - 56] # 8-byte Reload
+  sub rdx, rax
+  cmp rdx, qword ptr [rbp - 16]
+  jae .LBB40_2
+  mov rdi, qword ptr [rbp - 24]
+  call std::__throw_length_error(char const*)
+.LBB40_2:
+  mov rdi, qword ptr [rbp - 48] # 8-byte Reload
+  call std::vector<int, std::allocator<int> >::size() const
+  mov rdi, qword ptr [rbp - 48] # 8-byte Reload
+  mov qword ptr [rbp - 64], rax # 8-byte Spill
+  call std::vector<int, std::allocator<int> >::size() const
+  lea rdi, [rbp - 40]
+  lea rsi, [rbp - 16]
+  mov qword ptr [rbp - 40], rax
+  call unsigned long const& std::max<unsigned long>(unsigned long const&, unsigned long const&)
+  mov rsi, qword ptr [rbp - 64] # 8-byte Reload
+  add rsi, qword ptr [rax]
+  mov qword ptr [rbp - 32], rsi
+  mov rax, qword ptr [rbp - 32]
+  mov rdi, qword ptr [rbp - 48] # 8-byte Reload
+  mov qword ptr [rbp - 72], rax # 8-byte Spill
+  call std::vector<int, std::allocator<int> >::size() const
+  mov rsi, qword ptr [rbp - 72] # 8-byte Reload
+  cmp rsi, rax
+  jb .LBB40_4
+  mov rax, qword ptr [rbp - 32]
+  mov rdi, qword ptr [rbp - 48] # 8-byte Reload
+  mov qword ptr [rbp - 80], rax # 8-byte Spill
+  call std::vector<int, std::allocator<int> >::max_size() const
+  mov rdi, qword ptr [rbp - 80] # 8-byte Reload
+  cmp rdi, rax
+  jbe .LBB40_5
+.LBB40_4:
+  mov rdi, qword ptr [rbp - 48] # 8-byte Reload
+  call std::vector<int, std::allocator<int> >::max_size() const
+  mov qword ptr [rbp - 88], rax # 8-byte Spill
+  jmp .LBB40_6
+.LBB40_5:
+  mov rax, qword ptr [rbp - 32]
+  mov qword ptr [rbp - 88], rax # 8-byte Spill
+.LBB40_6:
+  mov rax, qword ptr [rbp - 88] # 8-byte Reload
+  add rsp, 96
+  pop rbp
+  ret
+__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::difference_type __gnu_cxx::operator-<int*, std::vector<int, std::allocator<int> > >(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > const&, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > const&): # @__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::difference_type __gnu_cxx::operator-<int*, std::vector<int, std::allocator<int> > >(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > const&, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > const&)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov rdi, qword ptr [rbp - 8]
+  call __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::base() const
+  mov rax, qword ptr [rax]
+  mov rdi, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 24], rax # 8-byte Spill
+  call __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::base() const
+  mov rax, qword ptr [rax]
+  mov rsi, qword ptr [rbp - 24] # 8-byte Reload
+  sub rsi, rax
+  sar rsi, 2
+  mov rax, rsi
+  add rsp, 32
+  pop rbp
+  ret
+std::_Vector_base<int, std::allocator<int> >::_M_allocate(unsigned long): # @std::_Vector_base<int, std::allocator<int> >::_M_allocate(unsigned long)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov rsi, qword ptr [rbp - 8]
+  cmp qword ptr [rbp - 16], 0
+  mov qword ptr [rbp - 24], rsi # 8-byte Spill
+  je .LBB42_2
+  mov rax, qword ptr [rbp - 24] # 8-byte Reload
+  mov rsi, qword ptr [rbp - 16]
+  mov rdi, rax
+  call std::allocator_traits<std::allocator<int> >::allocate(std::allocator<int>&, unsigned long)
+  mov qword ptr [rbp - 32], rax # 8-byte Spill
+  jmp .LBB42_3
+.LBB42_2:
+  xor eax, eax
+  mov ecx, eax
+  mov qword ptr [rbp - 32], rcx # 8-byte Spill
+  jmp .LBB42_3
+.LBB42_3:
+  mov rax, qword ptr [rbp - 32] # 8-byte Reload
+  add rsp, 32
+  pop rbp
+  ret
+int* std::__uninitialized_move_if_noexcept_a<int*, int*, std::allocator<int> >(int*, int*, int*, std::allocator<int>&): # @int* std::__uninitialized_move_if_noexcept_a<int*, int*, std::allocator<int> >(int*, int*, int*, std::allocator<int>&)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 48
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov qword ptr [rbp - 32], rcx
+  mov rdi, qword ptr [rbp - 8]
+  call std::move_iterator<int*> std::__make_move_if_noexcept_iterator<int, std::move_iterator<int*> >(int*)
+  mov qword ptr [rbp - 40], rax
+  mov rdi, qword ptr [rbp - 16]
+  call std::move_iterator<int*> std::__make_move_if_noexcept_iterator<int, std::move_iterator<int*> >(int*)
+  mov qword ptr [rbp - 48], rax
+  mov rdx, qword ptr [rbp - 24]
+  mov rcx, qword ptr [rbp - 32]
+  mov rdi, qword ptr [rbp - 40]
+  mov rsi, qword ptr [rbp - 48]
+  call int* std::__uninitialized_copy_a<std::move_iterator<int*>, int*, int>(std::move_iterator<int*>, std::move_iterator<int*>, int*, std::allocator<int>&)
+  add rsp, 48
+  pop rbp
+  ret
+void std::allocator_traits<std::allocator<int> >::destroy<int>(std::allocator<int>&, int*): # @void std::allocator_traits<std::allocator<int> >::destroy<int>(std::allocator<int>&, int*)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov rsi, qword ptr [rbp - 8]
+  mov rdi, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 24], rdi # 8-byte Spill
+  mov rdi, rsi
+  mov rsi, qword ptr [rbp - 24] # 8-byte Reload
+  call void __gnu_cxx::new_allocator<int>::destroy<int>(int*)
+  add rsp, 32
+  pop rbp
+  ret
+std::vector<int, std::allocator<int> >::max_size() const: # @std::vector<int, std::allocator<int> >::max_size() const
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  call std::_Vector_base<int, std::allocator<int> >::_M_get_Tp_allocator() const
+  mov rdi, rax
+  call std::allocator_traits<std::allocator<int> >::max_size(std::allocator<int> const&)
+  add rsp, 16
+  pop rbp
+  ret
+std::vector<int, std::allocator<int> >::size() const: # @std::vector<int, std::allocator<int> >::size() const
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  mov rax, qword ptr [rdi + 8]
+  mov rdi, qword ptr [rdi]
+  sub rax, rdi
+  sar rax, 2
+  pop rbp
+  ret
+unsigned long const& std::max<unsigned long>(unsigned long const&, unsigned long const&): # @unsigned long const& std::max<unsigned long>(unsigned long const&, unsigned long const&)
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 16], rdi
+  mov qword ptr [rbp - 24], rsi
+  mov rsi, qword ptr [rbp - 16]
+  mov rsi, qword ptr [rsi]
+  mov rdi, qword ptr [rbp - 24]
+  cmp rsi, qword ptr [rdi]
+  jae .LBB47_2
+  mov rax, qword ptr [rbp - 24]
+  mov qword ptr [rbp - 8], rax
+  jmp .LBB47_3
+.LBB47_2:
+  mov rax, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 8], rax
+.LBB47_3:
+  mov rax, qword ptr [rbp - 8]
+  pop rbp
+  ret
+std::allocator_traits<std::allocator<int> >::max_size(std::allocator<int> const&): # @std::allocator_traits<std::allocator<int> >::max_size(std::allocator<int> const&)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  call __gnu_cxx::new_allocator<int>::max_size() const
+  add rsp, 16
+  pop rbp
+  ret
+std::_Vector_base<int, std::allocator<int> >::_M_get_Tp_allocator() const: # @std::_Vector_base<int, std::allocator<int> >::_M_get_Tp_allocator() const
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  mov rax, rdi
+  pop rbp
+  ret
+__gnu_cxx::new_allocator<int>::max_size() const: # @__gnu_cxx::new_allocator<int>::max_size() const
+  push rbp
+  mov rbp, rsp
+  movabs rax, 4611686018427387903
+  mov qword ptr [rbp - 8], rdi
+  pop rbp
+  ret
+std::allocator_traits<std::allocator<int> >::allocate(std::allocator<int>&, unsigned long): # @std::allocator_traits<std::allocator<int> >::allocate(std::allocator<int>&, unsigned long)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  xor eax, eax
+  mov edx, eax
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov rsi, qword ptr [rbp - 8]
+  mov rdi, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 24], rdi # 8-byte Spill
+  mov rdi, rsi
+  mov rsi, qword ptr [rbp - 24] # 8-byte Reload
+  call __gnu_cxx::new_allocator<int>::allocate(unsigned long, void const*)
+  add rsp, 32
+  pop rbp
+  ret
+__gnu_cxx::new_allocator<int>::allocate(unsigned long, void const*): # @__gnu_cxx::new_allocator<int>::allocate(unsigned long, void const*)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov rdi, qword ptr [rbp - 8]
+  mov rdx, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 32], rdx # 8-byte Spill
+  call __gnu_cxx::new_allocator<int>::max_size() const
+  mov rdx, qword ptr [rbp - 32] # 8-byte Reload
+  cmp rdx, rax
+  jbe .LBB52_2
+  call std::__throw_bad_alloc()
+.LBB52_2:
+  mov rax, qword ptr [rbp - 16]
+  shl rax, 2
+  mov rdi, rax
+  call operator new(unsigned long)
+  add rsp, 32
+  pop rbp
+  ret
+int* std::__uninitialized_copy_a<std::move_iterator<int*>, int*, int>(std::move_iterator<int*>, std::move_iterator<int*>, int*, std::allocator<int>&): # @int* std::__uninitialized_copy_a<std::move_iterator<int*>, int*, int>(std::move_iterator<int*>, std::move_iterator<int*>, int*, std::allocator<int>&)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 48
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov qword ptr [rbp - 32], rcx
+  mov rcx, qword ptr [rbp - 8]
+  mov qword ptr [rbp - 40], rcx
+  mov rcx, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 48], rcx
+  mov rdx, qword ptr [rbp - 24]
+  mov rdi, qword ptr [rbp - 40]
+  mov rsi, qword ptr [rbp - 48]
+  call int* std::uninitialized_copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*)
+  add rsp, 48
+  pop rbp
+  ret
+std::move_iterator<int*> std::__make_move_if_noexcept_iterator<int, std::move_iterator<int*> >(int*): # @std::move_iterator<int*> std::__make_move_if_noexcept_iterator<int, std::move_iterator<int*> >(int*)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  lea rax, [rbp - 8]
+  mov qword ptr [rbp - 16], rdi
+  mov rsi, qword ptr [rbp - 16]
+  mov rdi, rax
+  call std::move_iterator<int*>::move_iterator(int*)
+  mov rax, qword ptr [rbp - 8]
+  add rsp, 16
+  pop rbp
+  ret
+int* std::uninitialized_copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*): # @int* std::uninitialized_copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 48
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov byte ptr [rbp - 25], 1
+  mov rdx, qword ptr [rbp - 8]
+  mov qword ptr [rbp - 40], rdx
+  mov rdx, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 48], rdx
+  mov rdx, qword ptr [rbp - 24]
+  mov rdi, qword ptr [rbp - 40]
+  mov rsi, qword ptr [rbp - 48]
+  call int* std::__uninitialized_copy<true>::__uninit_copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*)
+  add rsp, 48
+  pop rbp
+  ret
+int* std::__uninitialized_copy<true>::__uninit_copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*): # @int* std::__uninitialized_copy<true>::__uninit_copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 48
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov rdx, qword ptr [rbp - 8]
+  mov qword ptr [rbp - 32], rdx
+  mov rdx, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 40], rdx
+  mov rdx, qword ptr [rbp - 24]
+  mov rdi, qword ptr [rbp - 32]
+  mov rsi, qword ptr [rbp - 40]
+  call int* std::copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*)
+  add rsp, 48
+  pop rbp
+  ret
+int* std::copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*): # @int* std::copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 48
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov rdx, qword ptr [rbp - 8]
+  mov qword ptr [rbp - 32], rdx
+  mov rdi, qword ptr [rbp - 32]
+  call decltype (__miter_base(({parm#1}.base)())) std::__miter_base<int*>(std::move_iterator<int*>)
+  mov rdx, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 40], rdx
+  mov rdi, qword ptr [rbp - 40]
+  mov qword ptr [rbp - 48], rax # 8-byte Spill
+  call decltype (__miter_base(({parm#1}.base)())) std::__miter_base<int*>(std::move_iterator<int*>)
+  mov rdx, qword ptr [rbp - 24]
+  mov rdi, qword ptr [rbp - 48] # 8-byte Reload
+  mov rsi, rax
+  call int* std::__copy_move_a2<true, int*, int*>(int*, int*, int*)
+  add rsp, 48
+  pop rbp
+  ret
+int* std::__copy_move_a2<true, int*, int*>(int*, int*, int*): # @int* std::__copy_move_a2<true, int*, int*>(int*, int*, int*)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 48
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov rdi, qword ptr [rbp - 8]
+  call int* std::__niter_base<int*>(int*)
+  mov rdi, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 32], rax # 8-byte Spill
+  call int* std::__niter_base<int*>(int*)
+  mov rdi, qword ptr [rbp - 24]
+  mov qword ptr [rbp - 40], rax # 8-byte Spill
+  call int* std::__niter_base<int*>(int*)
+  mov rdi, qword ptr [rbp - 32] # 8-byte Reload
+  mov rsi, qword ptr [rbp - 40] # 8-byte Reload
+  mov rdx, rax
+  call int* std::__copy_move_a<true, int*, int*>(int*, int*, int*)
+  add rsp, 48
+  pop rbp
+  ret
+decltype (__miter_base(({parm#1}.base)())) std::__miter_base<int*>(std::move_iterator<int*>): # @decltype (__miter_base(({parm#1}.base)())) std::__miter_base<int*>(std::move_iterator<int*>)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  lea rax, [rbp - 8]
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, rax
+  call std::move_iterator<int*>::base() const
+  mov rdi, rax
+  call int* std::__miter_base<int*>(int*)
+  add rsp, 16
+  pop rbp
+  ret
+int* std::__copy_move_a<true, int*, int*>(int*, int*, int*): # @int* std::__copy_move_a<true, int*, int*>(int*, int*, int*)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov byte ptr [rbp - 25], 1
+  mov rdi, qword ptr [rbp - 8]
+  mov rsi, qword ptr [rbp - 16]
+  mov rdx, qword ptr [rbp - 24]
+  call int* std::__copy_move<true, true, std::random_access_iterator_tag>::__copy_m<int>(int const*, int const*, int*)
+  add rsp, 32
+  pop rbp
+  ret
+int* std::__niter_base<int*>(int*): # @int* std::__niter_base<int*>(int*)
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rax, qword ptr [rbp - 8]
+  pop rbp
+  ret
+int* std::__copy_move<true, true, std::random_access_iterator_tag>::__copy_m<int>(int const*, int const*, int*): # @int* std::__copy_move<true, true, std::random_access_iterator_tag>::__copy_m<int>(int const*, int const*, int*)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 48
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov rdx, qword ptr [rbp - 16]
+  mov rsi, qword ptr [rbp - 8]
+  sub rdx, rsi
+  sar rdx, 2
+  mov qword ptr [rbp - 32], rdx
+  cmp qword ptr [rbp - 32], 0
+  je .LBB62_2
+  mov rax, qword ptr [rbp - 24]
+  mov rcx, qword ptr [rbp - 8]
+  mov rdx, qword ptr [rbp - 32]
+  shl rdx, 2
+  mov rdi, rax
+  mov rsi, rcx
+  call memmove
+  mov qword ptr [rbp - 40], rax # 8-byte Spill
+.LBB62_2:
+  mov rax, qword ptr [rbp - 24]
+  mov rcx, qword ptr [rbp - 32]
+  shl rcx, 2
+  add rax, rcx
+  add rsp, 48
+  pop rbp
+  ret
+int* std::__miter_base<int*>(int*): # @int* std::__miter_base<int*>(int*)
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rax, qword ptr [rbp - 8]
+  pop rbp
+  ret
+std::move_iterator<int*>::base() const: # @std::move_iterator<int*>::base() const
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  mov rax, qword ptr [rdi]
+  pop rbp
+  ret
+std::move_iterator<int*>::move_iterator(int*): # @std::move_iterator<int*>::move_iterator(int*)
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov rsi, qword ptr [rbp - 8]
+  mov rdi, qword ptr [rbp - 16]
+  mov qword ptr [rsi], rdi
+  pop rbp
+  ret
+void __gnu_cxx::new_allocator<int>::destroy<int>(int*): # @void __gnu_cxx::new_allocator<int>::destroy<int>(int*)
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  pop rbp
+  ret
+__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::operator-(long) const: # @__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::operator-(long) const
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  lea rax, [rbp - 8]
+  lea rcx, [rbp - 32]
+  xor edx, edx
+  mov r8d, edx
+  mov qword ptr [rbp - 16], rdi
+  mov qword ptr [rbp - 24], rsi
+  mov rsi, qword ptr [rbp - 16]
+  mov rsi, qword ptr [rsi]
+  sub r8, qword ptr [rbp - 24]
+  shl r8, 2
+  add rsi, r8
+  mov qword ptr [rbp - 32], rsi
+  mov rdi, rax
+  mov rsi, rcx
+  call __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::__normal_iterator(int* const&)
+  mov rax, qword ptr [rbp - 8]
+  add rsp, 32
+  pop rbp
+  ret
+__gnu_cxx::__alloc_traits<std::allocator<int> >::_S_select_on_copy(std::allocator<int> const&): # @__gnu_cxx::__alloc_traits<std::allocator<int> >::_S_select_on_copy(std::allocator<int> const&)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  mov rax, rdi
+  mov qword ptr [rbp - 8], rsi
+  mov rsi, qword ptr [rbp - 8]
+  mov qword ptr [rbp - 16], rax # 8-byte Spill
+  call std::allocator_traits<std::allocator<int> >::select_on_container_copy_construction(std::allocator<int> const&)
+  mov rax, qword ptr [rbp - 16] # 8-byte Reload
+  add rsp, 16
+  pop rbp
+  ret
+std::_Vector_base<int, std::allocator<int> >::_Vector_base(unsigned long, std::allocator<int> const&): # @std::_Vector_base<int, std::allocator<int> >::_Vector_base(unsigned long, std::allocator<int> const&)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 48
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov rdx, qword ptr [rbp - 8]
+  mov rsi, qword ptr [rbp - 24]
+  mov rdi, rdx
+  mov qword ptr [rbp - 48], rdx # 8-byte Spill
+  call std::_Vector_base<int, std::allocator<int> >::_Vector_impl::_Vector_impl(std::allocator<int> const&)
+  mov rsi, qword ptr [rbp - 16]
+  mov rdi, qword ptr [rbp - 48] # 8-byte Reload
+  call std::_Vector_base<int, std::allocator<int> >::_M_create_storage(unsigned long)
+  jmp .LBB69_1
+.LBB69_1:
+  add rsp, 48
+  pop rbp
+  ret
+  mov ecx, edx
+  mov qword ptr [rbp - 32], rax
+  mov dword ptr [rbp - 36], ecx
+  mov rdi, qword ptr [rbp - 48] # 8-byte Reload
+  call std::_Vector_base<int, std::allocator<int> >::_Vector_impl::~_Vector_impl()
+  mov rdi, qword ptr [rbp - 32]
+  call _Unwind_Resume
+std::allocator<int>::~allocator(): # @std::allocator<int>::~allocator()
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  call __gnu_cxx::new_allocator<int>::~new_allocator()
+  add rsp, 16
+  pop rbp
+  ret
+int* std::__uninitialized_copy_a<__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*, int>(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*, std::allocator<int>&): # @int* std::__uninitialized_copy_a<__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*, int>(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*, std::allocator<int>&)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 48
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov qword ptr [rbp - 32], rcx
+  mov rcx, qword ptr [rbp - 8]
+  mov qword ptr [rbp - 40], rcx
+  mov rcx, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 48], rcx
+  mov rdx, qword ptr [rbp - 24]
+  mov rdi, qword ptr [rbp - 40]
+  mov rsi, qword ptr [rbp - 48]
+  call int* std::uninitialized_copy<__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*>(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*)
+  add rsp, 48
+  pop rbp
+  ret
+std::vector<int, std::allocator<int> >::begin() const: # @std::vector<int, std::allocator<int> >::begin() const
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  lea rax, [rbp - 8]
+  lea rsi, [rbp - 24]
+  mov qword ptr [rbp - 16], rdi
+  mov rdi, qword ptr [rbp - 16]
+  mov rdi, qword ptr [rdi]
+  mov qword ptr [rbp - 24], rdi
+  mov rdi, rax
+  call __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >::__normal_iterator(int const* const&)
+  mov rax, qword ptr [rbp - 8]
+  add rsp, 32
+  pop rbp
+  ret
+std::vector<int, std::allocator<int> >::end() const: # @std::vector<int, std::allocator<int> >::end() const
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  lea rax, [rbp - 8]
+  lea rsi, [rbp - 24]
+  mov qword ptr [rbp - 16], rdi
+  mov rdi, qword ptr [rbp - 16]
+  mov rdi, qword ptr [rdi + 8]
+  mov qword ptr [rbp - 24], rdi
+  mov rdi, rax
+  call __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >::__normal_iterator(int const* const&)
+  mov rax, qword ptr [rbp - 8]
+  add rsp, 32
+  pop rbp
+  ret
+std::allocator_traits<std::allocator<int> >::select_on_container_copy_construction(std::allocator<int> const&): # @std::allocator_traits<std::allocator<int> >::select_on_container_copy_construction(std::allocator<int> const&)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  mov rax, rdi
+  mov qword ptr [rbp - 8], rsi
+  mov rsi, qword ptr [rbp - 8]
+  mov qword ptr [rbp - 16], rax # 8-byte Spill
+  call std::allocator<int>::allocator(std::allocator<int> const&)
+  mov rax, qword ptr [rbp - 16] # 8-byte Reload
+  add rsp, 16
+  pop rbp
+  ret
+std::allocator<int>::allocator(std::allocator<int> const&): # @std::allocator<int>::allocator(std::allocator<int> const&)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov rsi, qword ptr [rbp - 8]
+  mov rdi, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 24], rdi # 8-byte Spill
+  mov rdi, rsi
+  mov rsi, qword ptr [rbp - 24] # 8-byte Reload
+  call __gnu_cxx::new_allocator<int>::new_allocator(__gnu_cxx::new_allocator<int> const&)
+  add rsp, 32
+  pop rbp
+  ret
+__gnu_cxx::new_allocator<int>::new_allocator(__gnu_cxx::new_allocator<int> const&): # @__gnu_cxx::new_allocator<int>::new_allocator(__gnu_cxx::new_allocator<int> const&)
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  pop rbp
+  ret
+std::_Vector_base<int, std::allocator<int> >::_Vector_impl::_Vector_impl(std::allocator<int> const&): # @std::_Vector_base<int, std::allocator<int> >::_Vector_impl::_Vector_impl(std::allocator<int> const&)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov rsi, qword ptr [rbp - 8]
+  mov rdi, rsi
+  mov rax, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 24], rsi # 8-byte Spill
+  mov rsi, rax
+  call std::allocator<int>::allocator(std::allocator<int> const&)
+  mov rax, qword ptr [rbp - 24] # 8-byte Reload
+  mov qword ptr [rax], 0
+  mov qword ptr [rax + 8], 0
+  mov qword ptr [rax + 16], 0
+  add rsp, 32
+  pop rbp
+  ret
+std::_Vector_base<int, std::allocator<int> >::_M_create_storage(unsigned long): # @std::_Vector_base<int, std::allocator<int> >::_M_create_storage(unsigned long)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov rsi, qword ptr [rbp - 8]
+  mov rdi, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 24], rdi # 8-byte Spill
+  mov rdi, rsi
+  mov rax, qword ptr [rbp - 24] # 8-byte Reload
+  mov qword ptr [rbp - 32], rsi # 8-byte Spill
+  mov rsi, rax
+  call std::_Vector_base<int, std::allocator<int> >::_M_allocate(unsigned long)
+  mov rsi, qword ptr [rbp - 32] # 8-byte Reload
+  mov qword ptr [rsi], rax
+  mov rax, qword ptr [rsi]
+  mov qword ptr [rsi + 8], rax
+  mov rax, qword ptr [rsi]
+  mov rdi, qword ptr [rbp - 16]
+  shl rdi, 2
+  add rax, rdi
+  mov qword ptr [rsi + 16], rax
+  add rsp, 32
+  pop rbp
+  ret
+int* std::uninitialized_copy<__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*>(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*): # @int* std::uninitialized_copy<__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*>(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 48
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov byte ptr [rbp - 25], 1
+  mov rdx, qword ptr [rbp - 8]
+  mov qword ptr [rbp - 40], rdx
+  mov rdx, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 48], rdx
+  mov rdx, qword ptr [rbp - 24]
+  mov rdi, qword ptr [rbp - 40]
+  mov rsi, qword ptr [rbp - 48]
+  call int* std::__uninitialized_copy<true>::__uninit_copy<__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*>(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*)
+  add rsp, 48
+  pop rbp
+  ret
+int* std::__uninitialized_copy<true>::__uninit_copy<__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*>(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*): # @int* std::__uninitialized_copy<true>::__uninit_copy<__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*>(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 48
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov rdx, qword ptr [rbp - 8]
+  mov qword ptr [rbp - 32], rdx
+  mov rdx, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 40], rdx
+  mov rdx, qword ptr [rbp - 24]
+  mov rdi, qword ptr [rbp - 32]
+  mov rsi, qword ptr [rbp - 40]
+  call int* std::copy<__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*>(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*)
+  add rsp, 48
+  pop rbp
+  ret
+int* std::copy<__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*>(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*): # @int* std::copy<__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*>(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 64
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov rdx, qword ptr [rbp - 8]
+  mov qword ptr [rbp - 40], rdx
+  mov rdi, qword ptr [rbp - 40]
+  call __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > > std::__miter_base<__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > > >(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >)
+  mov qword ptr [rbp - 32], rax
+  mov rax, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 56], rax
+  mov rdi, qword ptr [rbp - 56]
+  call __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > > std::__miter_base<__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > > >(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >)
+  mov qword ptr [rbp - 48], rax
+  mov rdx, qword ptr [rbp - 24]
+  mov rdi, qword ptr [rbp - 32]
+  mov rsi, qword ptr [rbp - 48]
+  call int* std::__copy_move_a2<false, __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*>(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*)
+  add rsp, 64
+  pop rbp
+  ret
+int* std::__copy_move_a2<false, __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*>(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*): # @int* std::__copy_move_a2<false, __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*>(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >, int*)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 64
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov rdx, qword ptr [rbp - 8]
+  mov qword ptr [rbp - 32], rdx
+  mov rdi, qword ptr [rbp - 32]
+  call int const* std::__niter_base<int const*, std::vector<int, std::allocator<int> > >(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >)
+  mov rdx, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 40], rdx
+  mov rdi, qword ptr [rbp - 40]
+  mov qword ptr [rbp - 48], rax # 8-byte Spill
+  call int const* std::__niter_base<int const*, std::vector<int, std::allocator<int> > >(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >)
+  mov rdi, qword ptr [rbp - 24]
+  mov qword ptr [rbp - 56], rax # 8-byte Spill
+  call int* std::__niter_base<int*>(int*)
+  mov rdi, qword ptr [rbp - 48] # 8-byte Reload
+  mov rsi, qword ptr [rbp - 56] # 8-byte Reload
+  mov rdx, rax
+  call int* std::__copy_move_a<false, int const*, int*>(int const*, int const*, int*)
+  add rsp, 64
+  pop rbp
+  ret
+__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > > std::__miter_base<__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > > >(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >): # @__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > > std::__miter_base<__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > > >(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >)
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 16], rdi
+  mov rdi, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 8], rdi
+  mov rax, qword ptr [rbp - 8]
+  pop rbp
+  ret
+int* std::__copy_move_a<false, int const*, int*>(int const*, int const*, int*): # @int* std::__copy_move_a<false, int const*, int*>(int const*, int const*, int*)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov byte ptr [rbp - 25], 1
+  mov rdi, qword ptr [rbp - 8]
+  mov rsi, qword ptr [rbp - 16]
+  mov rdx, qword ptr [rbp - 24]
+  call int* std::__copy_move<false, true, std::random_access_iterator_tag>::__copy_m<int>(int const*, int const*, int*)
+  add rsp, 32
+  pop rbp
+  ret
+int const* std::__niter_base<int const*, std::vector<int, std::allocator<int> > >(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >): # @int const* std::__niter_base<int const*, std::vector<int, std::allocator<int> > >(__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  lea rax, [rbp - 8]
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, rax
+  call __gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >::base() const
+  mov rax, qword ptr [rax]
+  add rsp, 16
+  pop rbp
+  ret
+int* std::__copy_move<false, true, std::random_access_iterator_tag>::__copy_m<int>(int const*, int const*, int*): # @int* std::__copy_move<false, true, std::random_access_iterator_tag>::__copy_m<int>(int const*, int const*, int*)
+  push rbp
+  mov rbp, rsp
+  sub rsp, 48
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov rdx, qword ptr [rbp - 16]
+  mov rsi, qword ptr [rbp - 8]
+  sub rdx, rsi
+  sar rdx, 2
+  mov qword ptr [rbp - 32], rdx
+  cmp qword ptr [rbp - 32], 0
+  je .LBB86_2
+  mov rax, qword ptr [rbp - 24]
+  mov rcx, qword ptr [rbp - 8]
+  mov rdx, qword ptr [rbp - 32]
+  shl rdx, 2
+  mov rdi, rax
+  mov rsi, rcx
+  call memmove
+  mov qword ptr [rbp - 40], rax # 8-byte Spill
+.LBB86_2:
+  mov rax, qword ptr [rbp - 24]
+  mov rcx, qword ptr [rbp - 32]
+  shl rcx, 2
+  add rax, rcx
+  add rsp, 48
+  pop rbp
+  ret
+__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >::base() const: # @__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >::base() const
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rax, qword ptr [rbp - 8]
+  pop rbp
+  ret
+__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >::__normal_iterator(int const* const&): # @__gnu_cxx::__normal_iterator<int const*, std::vector<int, std::allocator<int> > >::__normal_iterator(int const* const&)
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov rsi, qword ptr [rbp - 8]
+  mov rdi, qword ptr [rbp - 16]
+  mov rdi, qword ptr [rdi]
+  mov qword ptr [rsi], rdi
+  pop rbp
+  ret
+std::_Function_base::_Function_base(): # @std::_Function_base::_Function_base()
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  mov qword ptr [rdi + 16], 0
+  pop rbp
+  ret
+bool std::_Function_base::_Base_manager<main::$_0>::_M_not_empty_function<main::$_0>(main::$_0 const&): # @"bool std::_Function_base::_Base_manager<main::$_0>::_M_not_empty_function<main::$_0>(main::$_0 const&)"
+  push rbp
+  mov rbp, rsp
+  mov al, 1
+  mov qword ptr [rbp - 8], rdi
+  and al, 1
+  movzx eax, al
+  pop rbp
+  ret
+std::_Function_base::_Base_manager<main::$_0>::_M_init_functor(std::_Any_data&, main::$_0&&): # @"std::_Function_base::_Base_manager<main::$_0>::_M_init_functor(std::_Any_data&, main::$_0&&)"
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov rdi, qword ptr [rbp - 8]
+  mov rsi, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 32], rdi # 8-byte Spill
+  mov rdi, rsi
+  call std::remove_reference<main::$_0&>::type&& std::move<main::$_0&>(main::$_0&)
+  mov rdi, qword ptr [rbp - 32] # 8-byte Reload
+  mov rsi, rax
+  call std::_Function_base::_Base_manager<main::$_0>::_M_init_functor(std::_Any_data&, main::$_0&&, std::integral_constant<bool, true>)
+  add rsp, 32
+  pop rbp
+  ret
+std::remove_reference<main::$_0&>::type&& std::move<main::$_0&>(main::$_0&): # @"std::remove_reference<main::$_0&>::type&& std::move<main::$_0&>(main::$_0&)"
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rax, qword ptr [rbp - 8]
+  pop rbp
+  ret
+std::_Function_handler<int (int, int), main::$_0>::_M_invoke(std::_Any_data const&, int&&, int&&): # @"std::_Function_handler<int (int, int), main::$_0>::_M_invoke(std::_Any_data const&, int&&, int&&)"
+  push rbp
+  mov rbp, rsp
+  sub rsp, 48
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov qword ptr [rbp - 24], rdx
+  mov rdi, qword ptr [rbp - 8]
+  call std::_Function_base::_Base_manager<main::$_0>::_M_get_pointer(std::_Any_data const&)
+  mov rdi, qword ptr [rbp - 16]
+  mov qword ptr [rbp - 32], rax # 8-byte Spill
+  call int&& std::forward<int>(std::remove_reference<int>::type&)
+  mov esi, dword ptr [rax]
+  mov rdi, qword ptr [rbp - 24]
+  mov dword ptr [rbp - 36], esi # 4-byte Spill
+  call int&& std::forward<int>(std::remove_reference<int>::type&)
+  mov edx, dword ptr [rax]
+  mov rdi, qword ptr [rbp - 32] # 8-byte Reload
+  mov esi, dword ptr [rbp - 36] # 4-byte Reload
+  call main::$_0::operator()(int, int) const
+  add rsp, 48
+  pop rbp
+  ret
+std::_Function_base::_Base_manager<main::$_0>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation): # @"std::_Function_base::_Base_manager<main::$_0>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation)"
+  push rbp
+  mov rbp, rsp
+  sub rsp, 64
+  mov qword ptr [rbp - 8], rdi
+  mov qword ptr [rbp - 16], rsi
+  mov dword ptr [rbp - 20], edx
+  mov edx, dword ptr [rbp - 20]
+  mov esi, edx
+  mov rdi, rsi
+  sub rdi, 3
+  mov qword ptr [rbp - 40], rsi # 8-byte Spill
+  mov qword ptr [rbp - 48], rdi # 8-byte Spill
+  ja .LBB94_5
+  mov rax, qword ptr [rbp - 40] # 8-byte Reload
+  mov rcx, qword ptr [8*rax + .LJTI94_0]
+  jmp rcx
+.LBB94_1:
+  mov rdi, qword ptr [rbp - 8]
+  call std::type_info const*& std::_Any_data::_M_access<std::type_info const*>()
+  movabs rdi, typeinfo for main::$_0
+  mov qword ptr [rax], rdi
+  jmp .LBB94_5
+.LBB94_2:
+  mov rdi, qword ptr [rbp - 16]
+  call std::_Function_base::_Base_manager<main::$_0>::_M_get_pointer(std::_Any_data const&)
+  mov rdi, qword ptr [rbp - 8]
+  mov qword ptr [rbp - 56], rax # 8-byte Spill
+  call main::$_0*& std::_Any_data::_M_access<main::$_0*>()
+  mov rdi, qword ptr [rbp - 56] # 8-byte Reload
+  mov qword ptr [rax], rdi
+  jmp .LBB94_5
+.LBB94_3:
+  mov rdi, qword ptr [rbp - 8]
+  mov rsi, qword ptr [rbp - 16]
+  call std::_Function_base::_Base_manager<main::$_0>::_M_clone(std::_Any_data&, std::_Any_data const&, std::integral_constant<bool, true>)
+  jmp .LBB94_5
+.LBB94_4:
+  mov rdi, qword ptr [rbp - 8]
+  call std::_Function_base::_Base_manager<main::$_0>::_M_destroy(std::_Any_data&, std::integral_constant<bool, true>)
+.LBB94_5:
+  xor eax, eax
+  mov cl, al
+  and cl, 1
+  movzx eax, cl
+  add rsp, 64
+  pop rbp
+  ret
+.LJTI94_0:
+  .quad .LBB94_1
+  .quad .LBB94_2
+  .quad .LBB94_3
+  .quad .LBB94_4
+std::_Function_base::_Base_manager<main::$_0>::_M_init_functor(std::_Any_data&, main::$_0&&, std::integral_constant<bool, true>): # @"std::_Function_base::_Base_manager<main::$_0>::_M_init_functor(std::_Any_data&, main::$_0&&, std::integral_constant<bool, true>)"
+  push rbp
+  mov rbp, rsp
+  sub rsp, 48
+  mov qword ptr [rbp - 16], rdi
+  mov qword ptr [rbp - 24], rsi
+  mov rdi, qword ptr [rbp - 16]
+  call std::_Any_data::_M_access()
+  mov rdi, qword ptr [rbp - 24]
+  mov qword ptr [rbp - 32], rax # 8-byte Spill
+  call std::remove_reference<main::$_0&>::type&& std::move<main::$_0&>(main::$_0&)
+  mov qword ptr [rbp - 40], rax # 8-byte Spill
+  add rsp, 48
+  pop rbp
+  ret
+std::_Any_data::_M_access(): # @std::_Any_data::_M_access()
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  mov rax, rdi
+  pop rbp
+  ret
+std::_Function_base::_Base_manager<main::$_0>::_M_get_pointer(std::_Any_data const&): # @"std::_Function_base::_Base_manager<main::$_0>::_M_get_pointer(std::_Any_data const&)"
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  call main::$_0 const& std::_Any_data::_M_access<main::$_0>() const
+  mov rdi, rax
+  call main::$_0 const* std::__addressof<main::$_0 const>(main::$_0 const&)
+  mov qword ptr [rbp - 16], rax
+  mov rax, qword ptr [rbp - 16]
+  add rsp, 16
+  pop rbp
+  ret
+main::$_0::operator()(int, int) const: # @"main::$_0::operator()(int, int) const"
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov dword ptr [rbp - 12], esi
+  mov dword ptr [rbp - 16], edx
+  mov edx, dword ptr [rbp - 12]
+  add edx, dword ptr [rbp - 16]
+  mov eax, edx
+  pop rbp
+  ret
+main::$_0 const* std::__addressof<main::$_0 const>(main::$_0 const&): # @"main::$_0 const* std::__addressof<main::$_0 const>(main::$_0 const&)"
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rax, qword ptr [rbp - 8]
+  pop rbp
+  ret
+main::$_0 const& std::_Any_data::_M_access<main::$_0>() const: # @"main::$_0 const& std::_Any_data::_M_access<main::$_0>() const"
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  call std::_Any_data::_M_access() const
+  add rsp, 16
+  pop rbp
+  ret
+std::_Any_data::_M_access() const: # @std::_Any_data::_M_access() const
+  push rbp
+  mov rbp, rsp
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  mov rax, rdi
+  pop rbp
+  ret
+std::type_info const*& std::_Any_data::_M_access<std::type_info const*>(): # @std::type_info const*& std::_Any_data::_M_access<std::type_info const*>()
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  call std::_Any_data::_M_access()
+  add rsp, 16
+  pop rbp
+  ret
+main::$_0*& std::_Any_data::_M_access<main::$_0*>(): # @"main::$_0*& std::_Any_data::_M_access<main::$_0*>()"
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  call std::_Any_data::_M_access()
+  add rsp, 16
+  pop rbp
+  ret
+std::_Function_base::_Base_manager<main::$_0>::_M_clone(std::_Any_data&, std::_Any_data const&, std::integral_constant<bool, true>): # @"std::_Function_base::_Base_manager<main::$_0>::_M_clone(std::_Any_data&, std::_Any_data const&, std::integral_constant<bool, true>)"
+  push rbp
+  mov rbp, rsp
+  sub rsp, 48
+  mov qword ptr [rbp - 16], rdi
+  mov qword ptr [rbp - 24], rsi
+  mov rdi, qword ptr [rbp - 16]
+  call std::_Any_data::_M_access()
+  mov rdi, qword ptr [rbp - 24]
+  mov qword ptr [rbp - 32], rax # 8-byte Spill
+  call main::$_0 const& std::_Any_data::_M_access<main::$_0>() const
+  mov qword ptr [rbp - 40], rax # 8-byte Spill
+  add rsp, 48
+  pop rbp
+  ret
+std::_Function_base::_Base_manager<main::$_0>::_M_destroy(std::_Any_data&, std::integral_constant<bool, true>): # @"std::_Function_base::_Base_manager<main::$_0>::_M_destroy(std::_Any_data&, std::integral_constant<bool, true>)"
+  push rbp
+  mov rbp, rsp
+  sub rsp, 32
+  mov qword ptr [rbp - 16], rdi
+  mov rdi, qword ptr [rbp - 16]
+  call main::$_0& std::_Any_data::_M_access<main::$_0>()
+  mov qword ptr [rbp - 24], rax # 8-byte Spill
+  add rsp, 32
+  pop rbp
+  ret
+main::$_0& std::_Any_data::_M_access<main::$_0>(): # @"main::$_0& std::_Any_data::_M_access<main::$_0>()"
+  push rbp
+  mov rbp, rsp
+  sub rsp, 16
+  mov qword ptr [rbp - 8], rdi
+  mov rdi, qword ptr [rbp - 8]
+  call std::_Any_data::_M_access()
+  add rsp, 16
+  pop rbp
+  ret
+.L.str:
+  .asciz "vector::_M_realloc_insert"
+
+typeinfo name for main::$_0:
+  .asciz "Z4mainE3$_0"
+
+typeinfo for main::$_0:
+  .quad vtable for __cxxabiv1::__class_type_info+16
+  .quad typeinfo name for main::$_0
+```
+
+When all the standard library code is removed, this gives raw of 60 LOC for C program and 41 + 72 (= 113) LOC for C++ program.
+
+Now, what will happen if we will re-write the same thing but in different languages?
+
+Remember functional programming was introduced in Java 8?
+
+```
+import java.util.*;
+import java.lang.*;
+import java.io.*;
+import java.util.function.*;
+
+public class Sample {
+        public static void main (String[] args) throws java.lang.Exception {
+                Function<Integer, Integer> f1 = n -> n * 2;
+                Function<Integer, Integer> f2 = n -> n * n;
+                Function<Integer, Integer> composition = f1.andThen(f2);
+
+                System.out.printf("(2 * n * n)(3) = %d\n", composition.apply(3));
+        }
+}
+```
+
+is compiled into something like this:
+
+```
+public class Sample {
+  public Sample();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+       4: return
+
+  public static void main(java.lang.String[]) throws java.lang.Exception;
+    Code:
+       0: invokedynamic #2,  0              // InvokeDynamic #0:apply:()Ljava/util/function/Function;
+       5: astore_1
+       6: invokedynamic #3,  0              // InvokeDynamic #1:apply:()Ljava/util/function/Function;
+      11: astore_2
+      12: aload_1
+      13: aload_2
+      14: invokeinterface #4,  2            // InterfaceMethod java/util/function/Function.andThen:(Ljava/util/function/Function;)Ljava/util/function/Function;
+      19: astore_3
+      20: getstatic     #5                  // Field java/lang/System.out:Ljava/io/PrintStream;
+      23: ldc           #6                  // String (2 * n * n)(3) = %d\n
+      25: iconst_1
+      26: anewarray     #7                  // class java/lang/Object
+      29: dup
+      30: iconst_0
+      31: aload_3
+      32: iconst_3
+      33: invokestatic  #8                  // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      36: invokeinterface #9,  2            // InterfaceMethod java/util/function/Function.apply:(Ljava/lang/Object;)Ljava/lang/Object;
+      41: aastore
+      42: invokevirtual #10                 // Method java/io/PrintStream.printf:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/io/PrintStream;
+      45: pop
+      46: return
+}
+```
 
 
 ```
@@ -1056,7 +3399,12 @@ JSON = {
 }
 ```
 
+```
+import Html exposing (text)
+import Json.Decode exposing (decodeString, dict, string)
 
+decodeString (dict dict) "{ \"alice\": { \"hello\": \"something\" }, \"bob\": { \"world\": \"something else\" } }"
+```
 
 
 
