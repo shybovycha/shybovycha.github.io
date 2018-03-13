@@ -3,6 +3,68 @@ layout: default
 comments: true
 ---
 
+<script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "BlogPosting",
+    
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://google.com/article"
+    },  
+    
+    "headline": "{{ page.title }}",
+    
+    {% if page.image %}
+    "image": [
+        "{{ page.image | prepend: site.url}}"
+    ],
+    {% else %}
+    "image": [
+        "{{ '/images/photo-large-compressed.jpg' | prepend: site.url}}"
+    ],
+    {% endif %}
+    
+    {% if page.excerpt %}
+    "description": "{{ page.excerpt | strip_html }}",
+    {% else %}
+    "description": "{{ page.content | strip_html }}",
+    {% endif %}
+
+    "datePublished": "{{ page.date }}",
+
+    {% if page.updated %}
+    "dateModified": "{{ page.updated }}",
+    {% else %}
+    "dateModified": "{{ page.date }}",
+    {% endif %}
+
+    "publisher": {
+        "@type": "Person",
+        "name": "Artem Shubovych",
+        "url": "{{ site.url }}",
+        "sameAs": [
+            "https://github.com/shybovycha",
+            "https://www.linkedin.com/in/shybovycha/",
+            "https://twitter.com/shybovycha",
+            "https://stackoverflow.com/users/330471/shybovycha"
+        ]
+    },
+
+    "author": {
+        "@type": "Person",
+        "name": "Artem Shubovych",
+        "url": "{{ site.url }}",
+        "sameAs": [
+            "https://github.com/shybovycha",
+            "https://www.linkedin.com/in/shybovycha/",
+            "https://twitter.com/shybovycha",
+            "https://stackoverflow.com/users/330471/shybovycha"
+        ]
+    }
+}
+</script>
+
 <div class="post">
   <header class="title">
     <h2 class="post-title">{{ page.title }}</h2>
