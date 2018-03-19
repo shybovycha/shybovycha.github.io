@@ -2,13 +2,15 @@
   {% for post in paginator.posts %}
     <div class="post">
       <div class="title">
-        {% unless post.tags contains 'quote' %}
-          <h2 class="post-title">{{ post.title }}</h2>
-        {% endunless %}
-
         <span class="timestamp">
           {{ post.date | date: "%b %-d, %Y" }}
         </span>
+        
+        {% unless post.tags contains 'quote' %}
+          <a href="{{ post.url | prepend: site.baseurl }}">
+            <h2 class="post-title">{{ post.title }}</h2>
+          </a>
+        {% endunless %}
       </div>
 
       {% if post.tags contains 'quote' %}

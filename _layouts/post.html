@@ -40,7 +40,8 @@ comments: true
     {% endif %}
 
     "publisher": {
-        "@type": "Person",
+        "@type": "Organization",
+        "logo": "{{ '/images/photo-large-compressed.jpg' | prepend: site.url }}",
         "name": "Artem Shubovych",
         "url": "{{ site.url }}",
         "sameAs": [
