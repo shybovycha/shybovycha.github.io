@@ -23,6 +23,20 @@
       }
     }
 
+    .row {
+      display: flex;
+    }
+
+    .col {
+      display: flex;
+      flex-direction: column;
+      margin: 0.5em;
+    }
+
+    img {
+      box-shadow: 0 0 7px 1px #bebebe;
+    }
+
     pre, kbd, code {
       font-family: Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
     }
