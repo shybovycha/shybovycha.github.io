@@ -1,6 +1,7 @@
 ---
 layout: post
-title: One-night games
+title: One-night games: Tetris
+date: '2018-06-01T16:00:00+10:00'
 ---
 
 Did you ever think of how old games like tetris or snake _(hail the Nokia fans!)_ work?
@@ -28,7 +29,7 @@ As I wanted to accomplish my goal as soon as possible, I've decided to not pick 
     </div>
 </div>
 
-Under the cut you can find the interesting algorithmic solutions I've mentioned.
+In this post I'll talk about Tetris. Under the cut you'll find the interesting algorithmic solutions I've used for it.
 
 <!--more-->
 
@@ -192,7 +193,3 @@ collision occuring:
 ```
 
 The check is trivial: if both field cell at the checked position and any of the piece data at the piece position plus one row shift down are non-zero - then we have detected a collision and we should not move the piece down, but just render it and generate the next piece.
-
-## Snake
-
-[source code](https://github.com/shybovycha/moo-snake)
