@@ -1,9 +1,7 @@
 ---
 layout: post
-title: One-night games: Snake
+title: One-night games
 ---
-
-## Snake
 
 [source code](https://github.com/shybovycha/moo-snake)
 
@@ -15,15 +13,128 @@ title: One-night games: Snake
     <div class="col">
         <img src="" alt="" data-src="{{'/images/one-night-games/tetris-screenshot.png'|prepend:site.baseurl}}">
     </div>
-
-    <div class="col">
-        <img src="" alt="" data-src="{{'/images/one-night-games/python-shooter-screenshot.png'|prepend:site.baseurl}}">
-    </div>
 </div>
 
 Under the cut you can find the interesting algorithmic solutions I've mentioned.
 
 <!--more-->
+
+## Snake
+
+[Source code](https://github.com/shybovycha/moo-snake)
+
+Snake is a very simple game to implement. The core is the field, which is a binary matrix of whether there is something to draw in a specific position or there is nothing. The game is tightly bound to the timer, since it is almost a turn-based game and the movement speed should increase as the snake grows. The only things which might be interesting are: snake movement _(in other words, how do we update the game matrix on each timer tick)_, snake growth _(or what happens when a snake collides with the food)_ and the collision test _(or how to determine what the snake collided with)_.
+
+The snake movement is quite simple - try thinking of a snake as of a stack of `Vector2` objects, having just the coordinates of each body part of a snake:
+
+```js
+class Point {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    equals(other) {
+        return ((this.x === other.x) && (this.y === other.y));
+    }
+}
+
+class Snake {
+    constructor(points, direction, maxX, maxY) {
+        this.points = points;
+        this.direction = direction;
+        this.maxX = maxX;
+        this.maxY = maxY;
+    }
+
+    advance() {
+        this.points.shift();
+        this.points.push(this.nextPoint());
+    }
+
+    nextPoint() {
+        let { x, y } = this.points.last();
+
+        if (this.direction === 'up') {
+            y--;
+        } else if (this.direction === 'right') {
+            x++;
+        } else if (this.direction === 'down') {
+            y++;
+        } else if (this.direction === 'left') {
+            x--;
+        }
+
+        if (x < 0) {
+            x = this.maxX;
+        } else if (x > this.maxX) {
+            x = 0;
+        }
+
+        if (y < 0) {
+            y = this.maxY;
+        } else if (y > this.maxY) {
+            y = 0;
+        }
+
+        return new Point(x, y);
+    }
+}
+```
+
+On every timer tick we should "advance" the snake in the direction of movement by simply adding a new element to the top of a stack and remove the last one, representing snake's tail. When a player hits any of the arrow keys, we simply set the movement direction for a snake, which will be considered on a next timer tick:
+
+```js
+class Game {
+    constructor(rows, cols) {
+        this.rows = rows;
+        this.cols = cols;
+        this.score = 0;
+        this.snake = this._createSnake();
+        this.food = this._generateFood();
+    }
+
+    updateState() {
+        const nextSnakePoint = this.snake.nextPoint();
+
+        if (this.food.equals(nextSnakePoint)) {
+            this.score++;
+            this.snake.points.push(nextSnakePoint);
+            this.food = this._generateFood();
+        }
+
+        this.snake.advance();
+    }
+}
+```
+
+There is a need for one more bounds check: when a snake is about to cross the boundaries of a game field, we need to change the next point a snake is about to advance to the opposite "wall" _(if we want such a feature)_.
+
+The game ends when a snake hits one of its body parts. The check for that is really simple: we just need to check whether the next point is contained in the stack of a snake:
+
+```js
+isGameOver() {
+    const p = this.snake.nextPoint();
+    return this.snake.points.find(e => e.equals(p));
+}
+```
+
+To render a field, we need to render the food and each of snake's body parts:
+
+```js
+class Renderer {
+    _render() {
+        this._clearCanvas();
+
+        for (let i = 0; i < this.game.snake.points.length; i++) {
+            const { x, y } = this.game.snake.points[i];
+            this._drawRectangle(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
+        }
+
+        this._drawRectangle(this.game.food.x * this.cellSize, this.game.food.y * this.cellSize, this.cellSize, this.cellSize);
+    }
+}
+```
 
 ## Tetris
 
@@ -185,7 +296,3 @@ collision occuring:
 ```
 
 The check is trivial: if both field cell at the checked position and any of the piece data at the piece position plus one row shift down are non-zero - then we have detected a collision and we should not move the piece down, but just render it and generate the next piece.
-
-## Snake
-
-[source code](https://github.com/shybovycha/moo-snake)
