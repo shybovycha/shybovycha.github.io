@@ -1,6 +1,6 @@
 ---
 layout: post
-title: One-night games: Tetris
+title: 'One-night games: Tetris'
 date: '2018-06-01T16:00:00+10:00'
 ---
 
@@ -15,19 +15,7 @@ And recently I've came to the point when I really wanted to create something int
 
 As I wanted to accomplish my goal as soon as possible, I've decided to not pick up any libraries and just implement everything with HTML5 Canvas API. And this is what I ended up with:
 
-<div class="row">
-    <div class="col">
-            <img src="" alt="" data-src="{{'/images/one-night-games/snake-screenshot.png'|prepend:site.baseurl}}">
-    </div>
-
-    <div class="col">
-        <img src="" alt="" data-src="{{'/images/one-night-games/tetris-screenshot.png'|prepend:site.baseurl}}">
-    </div>
-
-    <div class="col">
-        <img src="" alt="" data-src="{{'/images/one-night-games/python-shooter-screenshot.png'|prepend:site.baseurl}}">
-    </div>
-</div>
+<img src="" alt="" data-src="{{'/images/one-night-games/snake-screenshot.png'|prepend:site.baseurl}}" class="medium">
 
 In this post I'll talk about Tetris. Under the cut you'll find the interesting algorithmic solutions I've used for it.
 

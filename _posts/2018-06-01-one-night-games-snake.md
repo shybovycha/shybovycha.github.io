@@ -1,19 +1,11 @@
 ---
 layout: post
-title: One-night games
+title: 'One-night games: snake'
 ---
 
 [source code](https://github.com/shybovycha/moo-snake)
 
-<div class="row">
-    <div class="col">
-            <img src="" alt="" data-src="{{'/images/one-night-games/snake-screenshot.png'|prepend:site.baseurl}}">
-    </div>
-
-    <div class="col">
-        <img src="" alt="" data-src="{{'/images/one-night-games/tetris-screenshot.png'|prepend:site.baseurl}}">
-    </div>
-</div>
+<img src="" alt="" data-src="{{'/images/one-night-games/snake-screenshot.png'|prepend:site.baseurl}}" class="medium">
 
 Under the cut you can find the interesting algorithmic solutions I've mentioned.
 

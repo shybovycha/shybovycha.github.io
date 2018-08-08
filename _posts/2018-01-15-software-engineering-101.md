@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Software Engineering 101: how computer works'
-date: '2018-01-14T18:01:00+01:00'
+date: '2018-08-08T20:20:00+10:00'
 ---
 
 There is some bit of information about computers which I was never told in neither school, nor at the university.
@@ -25,7 +25,15 @@ It has only three registers, ALU and data/address buses. I will explain all the 
 
 ## Workflow
 
-<!-- how a program is transferred to a processor -->
+Processor works **discretely**, meaning it executes commands at certain points in time _(as opposed to **continuous** work, where something works all the time)_. Those points in time are marked by **clock signals** _(or simply, clocks)_. Processor is connected _(or has an internal one)_ clock signal generator, which basically forces processor to do some work every *N* microseconds.
+
+So how does processor knows what to do next? On the first clock in some point in time, CPU loads the command with the help of instruction decoder. On the next clock tick processor starts executing an instruction _(or a command, I assume those terms are interchangeable)_ - it either copies data to / from registers or RAM, or involves ALU. On the next clock, processor increases the command counter by one and hence proceeds to the next instruction from the pool.
+
+In reality, this mechanism is somewhat more complex and involves more steps to just even read the command from the pool. And the pool itself is a unit on a processor chip as well and acts as yet another register. But in order to explain the overall operation, I've simplified that.
+
+_Read more to where I explain how a program in Assembly language is transformed to ones and zeroes and show a sample processor instruction set and how a program in C could be compiled to that instruction set_
+
+<!--more-->
 
 ## Assembly language
 
@@ -88,7 +96,7 @@ Assembly language is not invented separatedly from processor design, so assume a
 
 Now let us describe the process of a program execution. The program will calculate the sum of some memory cells and store the result in a memory address:
 
-{% highlight c %}
+```c
 int sum(int *a, int n) {
     int i = 0;
     int result = 0;
@@ -100,7 +108,7 @@ int sum(int *a, int n) {
 
     return result;
 }
-{% endhighlight %}
+```
 
 We now will represent this program in our simple Assembly language dialect. But first we need to design a few conventions, function call conventions. Our processor has a very limited number of registers, but is capable of operating a very big amount of RAM memory. This amount is actually determined by three factors:
 
@@ -455,4 +463,6 @@ instructions take (in average):
 
 <img data-src="{{ '/images/functional-programming-in-a-real-world/cpu-operations-cost.png' | prepend: site.baseurl }}" alt="">
 
-With this knowledge we can start talking about more high-level things.
+With this knowledge we can easily talk about more high-level things.
+
+_Based on [How stuff works](https://computer.howstuffworks.com/microprocessor2.htm)_

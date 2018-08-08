@@ -2,6 +2,10 @@
 
 .container {
   .post {
+    img.medium {
+      max-width: 50%;
+    }
+
     code {
       padding: .2rem .4rem;
       color: #bd4147;

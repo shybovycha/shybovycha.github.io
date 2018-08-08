@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Legends Of Andor: first impressions
+title: 'Legends Of Andor: first impressions'
 date: '2018-05-30T10:00:00+10:00'
 tags:
 - boardgames
