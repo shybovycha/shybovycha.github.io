@@ -1,3 +1,25 @@
+@media screen and (max-width: 768px) {
+    body {
+        background: #EC7845 !important;
+    }
+
+    .photo-container {
+        flex-direction: column;
+
+        img {
+            max-width: 100%;
+        }
+    }
+
+    .carousel-item {
+        width: 100%;
+
+        img {
+            max-height: fit-content !important;
+        }
+    }
+}
+
 .carousel-item {
     img {
         cursor: pointer;

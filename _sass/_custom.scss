@@ -3,6 +3,7 @@
 @media (max-width: map-get($grid-breakpoints, md)) {
   body {
     background: $background-color;
+    padding-bottom: 14rem;
   }
 }
 
