@@ -4,62 +4,54 @@ title: Finishing the first scene
 date: '2015-12-16T18:00:00+01:00'
 ---
 
-<div class="row">
-    <div class="col-md-6 col-xs-12">
-        {% include /references/irrlicht-newton-tutorials.html %}
-    </div>
-</div>
-
 If you remember, we ended our coding excercises at place, where we almost created our first
 Newtonian body, but we did not actually have enough models.
 
 We discussed collision shapes a bit. So let's create one for our brand new model!
-
-<!--more-->
 
 We have a nice ramp to work with. But how we can reconstruct the same shape in the
 terms of Newton? Newton offers a set of collision shapes for us:
 
 * Sphere
 
-    <img src="{{ site.baseurl }}/images/irrlicht-newton-tutorials/collision_shapes/sphere.jpg" alt="Sphere" class="img-responsive">
+    <img src="{{ site.baseurl }}/images/collision_shapes/sphere.jpg" alt="Sphere" class="img-responsive">
 
 * Box
 
-    <img src="{{ site.baseurl }}/images/irrlicht-newton-tutorials/collision_shapes/box.jpg" alt="Box" class="img-responsive">
+    <img src="{{ site.baseurl }}/images/collision_shapes/box.jpg" alt="Box" class="img-responsive">
 
 * Cone
 
-    <img src="{{ site.baseurl }}/images/irrlicht-newton-tutorials/collision_shapes/cone.jpg" alt="Cone" class="img-responsive">
+    <img src="{{ site.baseurl }}/images/collision_shapes/cone.jpg" alt="Cone" class="img-responsive">
 
 * Capsule
 
-    <img src="{{ site.baseurl }}/images/irrlicht-newton-tutorials/collision_shapes/capsule.jpg" alt="Capsule" class="img-responsive">
+    <img src="{{ site.baseurl }}/images/collision_shapes/capsule.jpg" alt="Capsule" class="img-responsive">
 
 * Cylinder
 
-    <img src="{{ site.baseurl }}/images/irrlicht-newton-tutorials/collision_shapes/cylinder.jpg" alt="Cylinder" class="img-responsive">
+    <img src="{{ site.baseurl }}/images/collision_shapes/cylinder.jpg" alt="Cylinder" class="img-responsive">
 
 * Chamfer Cylinder
 
-    <img src="{{ site.baseurl }}/images/irrlicht-newton-tutorials/collision_shapes/chamfer_cylinder.jpg" alt="Chamfer Cylinder" class="img-responsive">
+    <img src="{{ site.baseurl }}/images/collision_shapes/chamfer_cylinder.jpg" alt="Chamfer Cylinder" class="img-responsive">
 
 * Convex Hull
 
-    <img src="{{ site.baseurl }}/images/irrlicht-newton-tutorials/collision_shapes/convex_hull.jpg" alt="Convex Hull" class="img-responsive">
+    <img src="{{ site.baseurl }}/images/collision_shapes/convex_hull.jpg" alt="Convex Hull" class="img-responsive">
 
 * Trimesh
 
-    <img src="{{ site.baseurl }}/images/irrlicht-newton-tutorials/collision_shapes/trimesh.jpg" alt="Trimesh" class="img-responsive">
+    <img src="{{ site.baseurl }}/images/collision_shapes/trimesh.jpg" alt="Trimesh" class="img-responsive">
 
 Obviously, not sphere, cone, capsule, nor cylinder make sense for us.
 We could use box shape, but then we simply ignore our inner faces (inside walls):
 
-<img src="{{ site.baseurl }}/images/irrlicht-newton-tutorials/collision_shapes/ramp_box.png" alt="Box collision shape for our ramp" class="img-responsive">
+<img src="{{ site.baseurl }}/images/collision_shapes/ramp_box.png" alt="Box collision shape for our ramp" class="img-responsive">
 
 A bit better, but still the same situation with convex hull shape:
 
-<img src="{{ site.baseurl }}/images/irrlicht-newton-tutorials/collision_shapes/ramp_convex.png" alt="Convex hull collision shape for our ramp" class="img-responsive">
+<img src="{{ site.baseurl }}/images/collision_shapes/ramp_convex.png" alt="Convex hull collision shape for our ramp" class="img-responsive">
 
 Generally, the way we create our Newtonian body is:
 
@@ -305,6 +297,6 @@ void createSphereBody(const std::string name, float radius, float mass) {
 Have no fear about code duplication - we will remove it later. When you are done, you should
 get picture like this one:
 
-<img src="{{ site.baseurl }}/images/irrlicht-newton-tutorials/collision_shapes/ramp_with_ball.png" alt="First completed dynamic scene" class="img-responsive">
+<img src="{{ site.baseurl }}/images/collision_shapes/ramp_with_ball.png" alt="First completed dynamic scene" class="img-responsive">
 
 Congrats! That's our first completed dynamic scene!
