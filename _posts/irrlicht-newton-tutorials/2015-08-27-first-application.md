@@ -19,10 +19,10 @@ Install these dependencies with your system' package manager:
 
 Unzip Irrlicht, go to the directory you unpacked with the terminal and run the following:
 
-```bash
+{% highlight bash %}
 cd source/Irrlicht
 make
-```
+{% endhighlight %}
 
 Belive it or not, but that's all!
 
@@ -31,12 +31,12 @@ Belive it or not, but that's all!
 Unzip Irrlicht, go to the directory you unpacked and open the VisualStudio project _(depending on
 VisualStudio version, you might want to open a bit different file)_ in `source/Irrlicht`:
 
-```
+{% highlight txt %}
 Irrlicht10.0.sln
 Irrlicht11.0.sln
 Irrlicht8.0.sln
 Irrlicht9.0.sln
-```
+{% endhighlight %}
 
 Build it with VisualStudio - and you are done!
 
@@ -48,35 +48,35 @@ website.
 
 * First of all, you need to install a bunch of dependencies _(I use `brew` for this purpose)_:
 
-    ```bash
+    {% highlight bash %}
     brew install tinyxml enet lua cmake
-    ```
+    {% endhighlight %}
 
 * Get a list of all compilers available for your OSX version:
 
-  ```bash
+  {% highlight bash %}
   xcodebuild -showBuildSettings | grep DEFAULT_COMPILER
-  ```
+  {% endhighlight %}
 
   I got something like this:
 
-  ```bash
+  {% highlight bash %}
   $ xcodebuild -showBuildSettings | grep DEFAULT_COMPILER
     DEFAULT_COMPILER = com.apple.compilers.llvm.clang.1_0
-  ```
+  {% endhighlight %}
 
 * Now the build process:
 
-  ```bash
+  {% highlight bash %}
   cd source/Irrlicht/MacOSX
   xcodebuild -project MacOSX.xcodeproj GCC_VERSION=com.apple.compilers.llvm.clang.1_0
-  ```
+  {% endhighlight %}
 
 * And the final step - copy the library to the `lib/MacOSX` directory:
 
-  ```bash
+  {% highlight bash %}
   cp build/Release/libIrrlicht.a ../../../lib/MacOSX
-  ```
+  {% endhighlight %}
 
 Phew! That's a damn bunch of commands, don't you think?
 
@@ -85,10 +85,12 @@ Phew! That's a damn bunch of commands, don't you think?
 By performing those steps, described above, you will end up with the compiled Irrlicht library file
 within the `lib/` directory, depending on your platform:
 
-    Linux/libIrrlicht.a
-    MacOSX/libIrrlicht.a
-    Win32-visualstudio/Irrlicht.lib
-    Win64-visualStudio/Irrlicht.lib
+{% highlight txt %}
+Linux/libIrrlicht.a
+MacOSX/libIrrlicht.a
+Win32-visualstudio/Irrlicht.lib
+Win64-visualStudio/Irrlicht.lib
+{% endhighlight %}
 
 Now, create a blank project in your favorite IDE and proceed...
 
@@ -98,12 +100,12 @@ Our first application will show you Irrlicht basic features we will use later. T
 
 * **mesh handling** - loading, rendering, animating, etc.
 * **user input handling** - reacting to keyboard and mouse events
-* **user interface (UI)* - displaying some information within the application window
+* **user interface (UI)** - displaying some information within the application window
 
 The good start for that is standard example from Irrlicht pack, the **04 - Movement** one.
 Let's take a look over its code:
 
-```cpp
+{% highlight cpp %}
 /** Example 004 Movement
 
 This Tutorial shows how to move and animate SceneNodes. The
@@ -354,7 +356,7 @@ int main()
 /*
 That's it. Compile and play around with the program.
 **/
-```
+{% endhighlight %}
 
 ## Building the project
 
@@ -362,7 +364,7 @@ Paste the code from above to your blank project in your IDE, in the `source/main
 This may differ, but is not critical. Now, add the `CMakeLists.txt` file to your project
 and fill it with these commands:
 
-```cmake
+{% highlight cmake %}
 cmake_minimum_required(VERSION 3.1)
 project(irrlicht_newton_game1)
 
@@ -394,12 +396,12 @@ target_link_libraries(${EXECUTABLE_NAME}
         ${OPENGL_LIBRARIES}
         ${ZLIB_LIBRARIES}
         ${X11_Xxf86vm_LIB})
-```
+{% endhighlight %}
 
 **Note:** for those of you, guys, running MacOS X I prepared a bit more complicated
 `CMakeLists.txt` file - just to make our application run everywhere:
 
-```cmake
+{% highlight cmake %}
 cmake_minimum_required(VERSION 3.1)
 project(irrlicht_newton_game1)
 
@@ -413,8 +415,7 @@ set(NEWTONGD_PATH source/newton-dynamics-master)
 set(NEWTONGD_INCLUDE_DIRS
         ${NEWTONGD_PATH}/packages/dCustomJoints
         ${NEWTONGD_PATH}/packages/dContainers
-        ${NEWTONGD_PATH}/packages/dMath
-        )
+        ${NEWTONGD_PATH}/packages/dMath)
 
 set(NEWTON_LIBRARIES Newton dMath)
 
@@ -484,24 +485,24 @@ endif()
 
 target_link_libraries(${EXECUTABLE_NAME}
         ${LIBRARIES})
-```
+{% endhighlight %}
 
 ## CMake file
 
 But what happens in all that code? First two lines of our `CMakeLists.txt` file define the project:
 
-```cmake
+{% highlight cmake %}
 cmake_minimum_required(VERSION 3.1)
 project(irrlicht_newton_game1)
-```
+{% endhighlight %}
 
 Then we modify the variable `CMAKE_CXX_FLAGS`, which will be used to set compiler flags.
 This is how we add items to lists or modify string variables with CMake: we set it the new
 value, consisting of the old one and the new elements / parts:
 
-```cmake
+{% highlight cmake %}
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-```
+{% endhighlight %}
 
 Then we tell CMake not to build *Newton demo sandbox* subproject and set a few path variables -
 we will use them to point compiler to the header and library files of our third-party libraries
@@ -509,49 +510,48 @@ we will use them to point compiler to the header and library files of our third-
 
 **Remember:** these are only plain variables, they have no effect on compiler themselves.
 
-```cmake
+{% highlight cmake %}
 set(LUACPPINTERFACE_PATH source/luacppinterface-master)
 set(CPPFORMAT_PATH source/cppformat-master)
 set(NEWTONGD_PATH source/newton-dynamics-master)
 set(NEWTONGD_INCLUDE_DIRS
         ${NEWTONGD_PATH}/packages/dCustomJoints
         ${NEWTONGD_PATH}/packages/dContainers
-        ${NEWTONGD_PATH}/packages/dMath
-        )
+        ${NEWTONGD_PATH}/packages/dMath)
 
 set(NEWTON_LIBRARIES Newton dMath)
-```
+{% endhighlight %}
 
 Next, we point CMake to our sub-projects, which are by the fact our third-party libraries:
 
-```cmake
+{% highlight cmake %}
 add_subdirectory(${LUACPPINTERFACE_PATH})
 add_subdirectory(${CPPFORMAT_PATH})
 add_subdirectory(${NEWTONGD_PATH})
-```
+{% endhighlight %}
 
 These tell CMake to build sub-projects before building our application. Because our sub-projects
 are nothing but libraries, we can then look for the built libraries, required by our project
 in the sub-projects' output directories like this:
 
-```cmake
+{% highlight cmake %}
 find_package(Lua)
-```
+{% endhighlight %}
 
 Same way we look for system libraries:
 
-```cmake
+{% highlight cmake %}
 find_package(X11)
 find_package(OpenGL)
 find_package(ZLIB)
-```
+{% endhighlight %}
 
 These commands set compile-ready variables like `X11_LIBRARIES`.
 
 Some sub-projects may set CMake variables too, providing us with paths to include files or
 library files. If Irrlicht did not do this, we try to find its paths with CMake:
 
-```cmake
+{% highlight cmake %}
 if (NOT IRRLICHT_LIBRARY_PATH)
     if (UNIX)
         set(IRRLICHT_PATH_SUFFIX Linux)
@@ -578,7 +578,7 @@ if (NOT IRRLICHT_LIBRARY_PATH)
 
     message(STATUS "Found Irrlicht: ${IRRLICHT_LIBRARY_PATH}")
 endif()
-```
+{% endhighlight %}
 
 Note the environment variables CMake provides us with: `UNIX`, `APPLE`, `WIN32`, `MSVC`
 and many others. They describe which operating system CMake was ran under and which
@@ -586,7 +586,7 @@ compiler it was told to use.
 
 And the most important part of our `CMakeLists.txt` file:
 
-```cmake
+{% highlight cmake %}
 include_directories(${IRRLICHT_PATH}/include
         ${LUA_INCLUDE_DIR}
         ${LUACPPINTERFACE_PATH}/include
@@ -597,7 +597,7 @@ set(SOURCE_FILES source/main.cpp)
 set(EXECUTABLE_NAME irrlicht_newton_game1)
 
 add_executable(${EXECUTABLE_NAME} ${SOURCE_FILES})
-```
+{% endhighlight %}
 
 This actually runs the **compiler** with the include directories, source files and
 output file specified.
@@ -605,18 +605,18 @@ output file specified.
 After that, we may run **linker** to link the intermediate object files, provided by
 compiler, and end up with the application executable:
 
-```cmake
+{% highlight cmake %}
 target_link_libraries(${EXECUTABLE_NAME}
         ${LIBRARIES})
-```
+{% endhighlight %}
 
 For OSX users there is a small hack, needed to build the application:
 
-```cmake
+{% highlight cmake %}
 if (APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -framework Foundation -framework OpenGL -framework Cocoa -framework Carbon -framework AppKit -framework IOKit")
 endif()
-```
+{% endhighlight %}
 
 **Note the order the commands are specified in:** having include path variables definitions
 placed before sub-projects commands may be no harmful, but more *"effective"* commands,
@@ -628,12 +628,12 @@ be sure to keep the order sane and clean.
 Now that you are ready, run the following commands from your project directory
 **(you will need `cmake` to be installed in your system)**:
 
-```bash
+{% highlight bash %}
 mkdir build
 cd build
 cmake -DIRRLICHT_PATH=path_to_directory_where_you_unpacked_irrlicht ..
 make
-```
+{% endhighlight %}
 
 **Warning:** do not forget to replace `path_to_directory_where_you_unpacked_irrlicht` with
 the actual path to the directory, where your Irrlicht files lay!
@@ -644,7 +644,7 @@ but you will see the power of CMake in our later sessions.
 Before you run the application, copy the whole `media` directory from the Irrlicht
 dir to the parent dir of your project. You should end up with directory structure like this:
 
-```
+{% highlight txt %}
 .
 └── irrlicht_newton_tutorials
     ├── irrlicht_newton_game1
@@ -653,7 +653,7 @@ dir to the parent dir of your project. You should end up with directory structur
     │   └── source
     │       └── main.cpp
     └── media
-```
+{% endhighlight %}
 
 **Note:** If you now just run the `irrlicht_newton_game1` binary on OSX, you will see
 your application does not react to keyboard events. This is tricky, but you need
@@ -661,12 +661,12 @@ to pack your application as OSX application. This is easy, though: just create
 a directory tree `mkdir -p irrlicht_newton_game1.app/Contents/MacOS/` and move
 your binary file there:
 
-```
+{% highlight txt %}
 ├── irrlicht_newton_game1.app
 │   └── Contents
 │       └── MacOS
 │           └── irrlicht_newton_game1
-```
+{% endhighlight %}
 
 Open **Finder** and run the application from there. On other operating systems run
 the executable file in your `build` directory.
@@ -676,23 +676,23 @@ application build process. So we need to create a usual binary file, when we are
 running Linux or Windows or create a directory structure with binary on its deepest
 level, when running OSX. CMake allows to do it in a really easy way:
 
-```cmake
+{% highlight cmake %}
 if (APPLE)
     add_executable(${EXECUTABLE_NAME} MACOSX_BUNDLE ${SOURCE_FILES})
 else()
     add_executable(${EXECUTABLE_NAME} ${SOURCE_FILES})
 endif()
-```
+{% endhighlight %}
 
 You should see something like this:
 
-![_screenshot #1_]({{ site.baseurl }}/images/04_movement_untouched.png)
+<img data-src="{{ site.baseurl }}/images/04_movement_untouched.png">
 
 To end the process you may consider switching to a terminal and running
 
-```bash
+{% highlight bash %}
 pkill irrlicht_newton_game1
-```
+{% endhighlight %}
 
 ## Understanding the code
 
@@ -701,67 +701,67 @@ Here are few simple things we could extract from application' code and understan
 * Each 3D model is a _scene node_
 * Primitive scene nodes (such as _cube_ or _sphere_) could be easily created with built-in functions:
 
-  ```cpp
+  {% highlight cpp %}
   scene::ISceneNode* node = smgr->addSphereSceneNode();
   scene::ISceneNode* node = smgr->addCubeSceneNode();
-  ```
+  {% endhighlight %}
 
 * Animated 3D models (such as _character models_) could be loaded from file:
 
-  ```cpp
+  {% highlight cpp %}
   scene::IAnimatedMeshSceneNode* node = smgr->addAnimatedMeshSceneNode(smgr->getMesh("../../media/ninja.b3d"));
-  ```
+  {% endhighlight %}
 
   **Hint:** if mesh is animated, animation could be started with:
 
-  ```cpp
+  {% highlight cpp %}
     node->setFrameLoop(0, 13);
     node->setAnimationSpeed(15);
-  ```
+  {% endhighlight %}
 
   **Hint:** animation could be stopped with setting its speed to zero:
 
-  ```cpp
+  {% highlight cpp %}
   node->setAnimationSpeed(0);
-  ```
+  {% endhighlight %}
 
 * Node could be described not only by its vertices and indices _(forming a set of triangles which are drawn
 in 3D forming a model, called **mesh**)_ but by its **position**, **rotation** and **scale**
 
   Those could be set with:
 
-  ```cpp
+  {% highlight cpp %}
   node->setPosition(core::vector3df(x, y, z));
   node->setRotation(core::vector3df(x_angle, y_angle, z_angle));
   node->setScale(core::vector3df(width_factor, height_factor, depth_factor));
-  ```
+  {% endhighlight %}
 
   **Hint:** rotation is a set of angles relatively to the corresponding axes, the node will be rotated
     around. E. g., `vector3df(45, 90, 0)` sets the rotation by `45 deg` around `X axis`, `90 deg` around `Y axis`
     and no rotation aroung `Z axis`. All those axes are relative to the node itself.
 
-  ![_euler angles_]({{ site.baseurl }}/images/euler_angles.jpg)
+  <img data-src="{{ site.baseurl }}/images/irrlicht-newton-tutorials/euler_angles.jpg">
 
 * Graphics User Interface' _(GUI)_ widgets for information output are labels; they are created with
 **GUI Manager**:
 
-    ```cpp
+    {% highlight cpp %}
     gui::IGUIStaticText* label = device->getGUIEnvironment()->addStaticText(L"", core::rect<s32>(10, 10, 400, 20));
-    ```
+    {% endhighlight %}
 
   **Hint:** its text could be set with:
 
-    ```cpp
+    {% highlight cpp %}
     label->setText((const wchar_t*) "some text");
-    ```
+    {% endhighlight %}
 
 * User input is handled by an external `IEventReceiver` class object.
 
   Its method,
 
-    ```cpp
+    {% highlight cpp %}
     virtual bool OnEvent(const SEvent& event)
-    ```
+    {% endhighlight %}
 
   defines the logic of handling events like _mouse events_, _keyboard events_, _joystick events_,
     _GUI events_, etc.
@@ -771,13 +771,13 @@ in 3D forming a model, called **mesh**)_ but by its **position**, **rotation** a
 
   For example:
 
-  ```cpp
+  {% highlight cpp %}
   if (event.type == EET_MOUSE_INPUT_EVENT) {
       if (event.MouseInput.isLeftPressed()) {
           printf("%d, %d is cursor position\n", event.MouseInput.X, event.mouseInput.Y);
       }
   }
-  ```
+  {% endhighlight %}
 
   **Hint:** `EventReceiver` object has nothing in common with our main game loop. So we should create
     some interface, some architecture trick to link those two. Because they are strongly related!
@@ -787,7 +787,7 @@ calls.
 
   The simplest main loop could look like this:
 
-    ```cpp
+    {% highlight cpp %}
     while (device->run()) {
         driver->beginScene(true, true, video::SColor(255, 113, 113, 133));
 
@@ -796,7 +796,7 @@ calls.
 
         driver->endScene();
     }
-    ```
+    {% endhighlight %}
 
 * There is no simple _(or at least, built-in)_ way to get the delta time between two rendered frames.
   **This is an important variable!** We'll need that later, when we inject physics engine. And Newton GD
@@ -804,7 +804,7 @@ calls.
 
   But that could be easily done with this workaround:
 
-    ```cpp
+    {% highlight cpp %}
     // before main loop
     u32 then = device->getTimer()->getTime();
 
@@ -814,7 +814,7 @@ calls.
     const u32 now = device->getTimer()->getTime();
     const f32 frameDeltaTime = (f32)(now - then) / 1000.f; // delta time in seconds
     then = now;
-    ```
+    {% endhighlight %}
 
 That was some short introduction to the Irrlicht engine. And that's basically everything we will use
 for the next few sections.

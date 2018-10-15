@@ -19,10 +19,12 @@ Newton GD files. And unpack it... right to the `source` directory of our project
 I'm not insane and I'm aware you are going to put **a lot** of files in your project. But have no
 fear - you may always add them to `.gitignore` and skip them from being tracked in your Git repo:
 
-    source/newton-dynamics-master/applications
-    source/newton-dynamics-master/packages/projects
-    source/newton-dynamics-master/packages/thirdParty
-    source/newton-dynamics-master/coreLibrary_300/projects
+{% highlight txt %}
+source/newton-dynamics-master/applications
+source/newton-dynamics-master/packages/projects
+source/newton-dynamics-master/packages/thirdParty
+source/newton-dynamics-master/coreLibrary_300/projects
+{% endhighlight %}
 
 You are using Git, right?.. Now, you place the Newton GD sources in your project directory and change
 your `CMakeLists.txt` file to look like this:
