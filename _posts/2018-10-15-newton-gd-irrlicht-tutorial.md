@@ -19,7 +19,7 @@ So far, these are the changes to the tutorial in comparison to what it used to b
 The things which are already done (just not published yet), in progress and the future plans for this tutorial include:
 
 * comparison of different build systems for C++ (including [CMake](https://cmake.org/), [Bazel](https://bazel.build/) and [Buck](https://buckbuild.com/))
-* a better approach to application architecture (plus the comparison of different scripting languages like [AngelScript](https://www.angelcode.com/angelscript/), [Squirrel](http://www.squirrel-lang.org/), [Lua](https://www.lua.org/) and [ChaiScript](http://chaiscript.com/))
+* a better approach to application architecture (plus the comparison of different scripting languages - [AngelScript](https://www.angelcode.com/angelscript/), [Squirrel](http://www.squirrel-lang.org/), [Lua](https://www.lua.org/), [ChaiScript](http://chaiscript.com/) and [Python](https://www.python.org))
 * a sane 3D modelling in blender lessons (preserving texturing and adding advanced materials, possibly even animation!)
 * advanced topics in Newton Game Dynamics featuring character controller and joints
 

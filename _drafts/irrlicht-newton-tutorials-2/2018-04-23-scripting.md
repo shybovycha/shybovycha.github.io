@@ -48,6 +48,91 @@ So we'd better use the non-intrusive way of describing logic. Scripting language
 
 ### Scripting languages
 
+#### Syntax flavours
+
+Just to let you compare the flavours of different languages and thus pick the one which you like the most of them all:
+
+**Python**
+
+```python
+def multiply(a, b):
+    print "Will compute", a, "times", b
+    c = 0
+
+    for i in range(0, a):
+        c = c + b
+
+    return c
+```
+
+**Lua**
+
+```lua
+function multiply(a, b)
+  local c = 0
+
+  print(helloWorld('user'))
+  print('Will compute ', a, ' times ', b)
+
+  for i = 0, a do
+    c = c + i
+  end
+
+  return c
+end
+```
+
+**AngelScript**
+
+```cpp
+int multiply(int a, int b) {
+    print(helloWorld("user"));
+    print("Will compute " + a + " times " + b);
+
+    int c = 0;
+
+    for (int i = 0; i < b; i++) {
+        c = c + a;
+    }
+
+    return c;
+}
+```
+
+**ChaiScript**
+
+```csharp
+def multiply(a, b) {
+    puts(helloWorld("user"));
+    puts("Will compute " + to_string(a) + " times " + to_string(b));
+
+    var c = 0;
+
+    for (var i = 0; i < a; i++) {
+        c = c + b;
+    }
+
+    return c;
+}
+```
+
+**Squirrel**
+
+```js
+function multiply(a, b) {
+    print(helloWorld("user"));
+    print("Will compute %d times %d", a, b);
+
+    local c = 0;
+
+    for (local i = 0; i < a; a++) {
+        c += b;
+    }
+
+    return c;
+}
+```
+
 #### Python
 
 Python is a powerfull language, but with great power comes great responsibility. And in terms of a scripting language for a C++ application, Python comes with a huge virtual machine and a very steep integration curve.
@@ -333,5 +418,164 @@ int main() {
     return 0;
 }
 ```
+
+#### Squirrel
+
+*Sample Squirrel script:* ([How does it look like?](http://www.squirrel-lang.org/#look), [Embedding Squirrel](http://www.squirrel-lang.org/squirreldoc/reference/embedding_squirrel.html))
+
+```js
+function multiply(a, b) {
+    ::print(helloWorld("squirrel") + "\n")
+    ::print("will compute " + a + " times " + b + "\n")
+
+    local c = 0
+
+    for (local i = 0; i < b; i += 1) {
+        c += a
+    }
+
+    return c
+}
+```
+
+*Squirrel integration*
+
+```c
+#include <squirrel.h>
+#include <sqstdaux.h>
+
+#include <sqstdio.h>
+#include <sqstdmath.h>
+#include <sqstdsystem.h>
+#include <sqstdstring.h>
+
+#include <cstdio>
+#include <cstdarg>
+#include <fstream>
+#include <string>
+
+void compileerrorfunc(HSQUIRRELVM v, const char* description, const char* source, long long line, long long column) {
+    std::printf("Error compiling at script %s@%d:%d : %s\n", source, line, column, description);
+}
+
+void errorfunc(HSQUIRRELVM v, const char *format, ...) {
+    va_list varargs;
+    va_start(varargs, format);
+    std::printf("Error in a script:");
+    std::vfprintf(stdout, format, varargs);
+    va_end(varargs);
+}
+
+void printfunc(HSQUIRRELVM v, const char *format, ...) {
+    va_list varargs;
+    va_start(varargs, format);
+    std::vfprintf(stdout, format, varargs);
+    std::printf("\n");
+    va_end(varargs);
+}
+
+SQInteger helloWorld(HSQUIRRELVM v) {
+    char* name = new SQChar[255];
+
+    sq_getstring(v, 2, (const char**) &name);
+
+    std::string s = "Hello, " + std::string(name) + "!";
+
+    sq_pushstring(v, s.c_str(), s.size());
+
+    return 1; // no return value; 1 otherwise; possible SQ_ERROR if an error happened
+}
+
+int main() {
+    HSQUIRRELVM v = sq_open(1024); //creates a VM with initial stack size 1024
+
+    sq_pushroottable(v);
+
+    sqstd_register_iolib(v);
+    sqstd_register_stringlib(v);
+    sqstd_register_mathlib(v);
+    sqstd_register_systemlib(v);
+
+    sq_pop(v, 1);
+
+    sqstd_seterrorhandlers(v);
+    sq_setcompilererrorhandler(v, compileerrorfunc);
+    sq_setprintfunc(v, printfunc, errorfunc);
+
+    // register helloWorld function
+    sq_pushroottable(v);
+    sq_pushstring(v, "helloWorld", -1);
+    sq_newclosure(v, helloWorld, 0); //create a new function
+    sq_newslot(v, -3, false);
+    sq_pop(v, 1); //pops the root table
+
+    std::ifstream ifs("module.nut");
+    std::string script(
+        (std::istreambuf_iterator<char>(ifs)),
+        (std::istreambuf_iterator<char>())
+    );
+
+    SQRESULT res;
+
+    res = sq_compilebuffer(v, script.c_str(), script.size(), "module.nut", true);
+
+    if (!SQ_SUCCEEDED(res)) {
+        std::printf("Error compiling script\n");
+        return 1;
+    }
+
+    sq_pushroottable(v);
+
+    res = sq_call(v, 1, 0, 1); // execute script
+
+    if (!SQ_SUCCEEDED(res)) {
+        std::printf("Can not run script: %d\n", res);
+        return 1;
+    }
+
+    sq_pop(v, 1);
+
+    SQInteger a = 3;
+    SQInteger b = 4;
+    SQInteger result = 0;
+
+    sq_pushroottable(v);
+    sq_pushstring(v, "multiply", -1);
+
+    res = sq_get(v, -2);
+
+    if (!SQ_SUCCEEDED(res)) { // get the function from the root table
+        std::printf("Error getting the multiply function from a script\n");
+        return 1;
+    }
+
+    sq_pushroottable(v); //'this' (function environment object)
+    sq_pushinteger(v, a);
+    sq_pushinteger(v, b);
+
+    res = sq_call(v, 3, true, true); // call a function with a return value and with rising an error
+
+    if (!SQ_SUCCEEDED(res)) {
+        std::printf("Error running multiply function\n");
+        return 1;
+    }
+
+    res = sq_getinteger(v, 3, &result);
+
+    if (!SQ_SUCCEEDED(res)) {
+        std::printf("Error getting multiply result\n");
+        return 1;
+    }
+
+    sq_pop(v, 3);
+
+    printf("%d * %d = %d\n", a, b, result);
+
+    sq_close(v);
+
+    return 0;
+}
+```
+
 
 <a href="{{ site.baseurl }}{% post_url 2018-04-24-modelling-with-blender %}" class="btn btn-success">Next chapter</a>
