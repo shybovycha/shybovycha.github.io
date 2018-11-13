@@ -6,5 +6,3 @@ order: 60
 ---
 
 ***TODO***
-
-<a href="{{ site.baseurl }}{% post_url 2018-04-26-introduction-to-physics %}" class="btn btn-success">Next chapter</a>

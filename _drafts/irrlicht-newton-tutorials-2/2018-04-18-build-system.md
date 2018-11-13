@@ -58,5 +58,3 @@ Feel the difference
 ### Bazel
 
 *TODO*
-
-<a href="{{ site.baseurl }}{% post_url 2018-04-19-getting-started-with-irrlicht %}" class="btn btn-success">Next chapter</a>

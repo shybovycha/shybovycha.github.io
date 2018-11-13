@@ -576,6 +576,3 @@ int main() {
     return 0;
 }
 ```
-
-
-<a href="{{ site.baseurl }}{% post_url 2018-04-24-modelling-with-blender %}" class="btn btn-success">Next chapter</a>

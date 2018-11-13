@@ -668,5 +668,3 @@ get picture like this one:
 <img src="{{ site.baseurl }}/images/collision_shapes/ramp_with_ball.png" alt="First completed dynamic scene" class="img-responsive">
 
 Congrats! That's our first completed dynamic scene!
-
-<a href="{{ site.baseurl }}{% post_url 2018-04-27-joints %}" class="btn btn-success">Next chapter</a>

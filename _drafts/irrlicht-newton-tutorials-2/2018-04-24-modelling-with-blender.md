@@ -406,5 +406,3 @@ save the modified image with the **Image -> Save** menu at the bottom of **UV/Im
 <img src="{{ site.baseurl }}/images/blender/89.png" alt="Saving image from UV/Image Editor" class="img-responsive">
 
 Now we have everything we need for our Newtonian sample!
-
-<a href="{{ site.baseurl }}{% post_url 2018-04-25-artificial-intelligence %}" class="btn btn-success">Next chapter</a>

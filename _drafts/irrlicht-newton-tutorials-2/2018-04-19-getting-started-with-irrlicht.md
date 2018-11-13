@@ -753,5 +753,3 @@ calls.
 
 That was some short introduction to the Irrlicht engine. And that's basically everything we will use
 for the next few sections.
-
-<a href="{{ site.baseurl }}{% post_url 2018-04-20-user-input %}" class="btn btn-success">Next chapter</a>
