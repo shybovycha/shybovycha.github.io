@@ -14,8 +14,26 @@ Some time ago there was a game popular over there, called Entanglement:
 
 There are a few implementations of this game under Android:
 
-<img data-src="{{ '/images/entanglement/android-screen1.jpg' | prepend: site.baseurl }}" alt="">
-<img data-src="{{ '/images/entanglement/android-screen2.jpg' | prepend: site.baseurl }}" alt="">
+<style>
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .row .col {
+    max-width: 48%;
+    margin: 0 1%;
+  }
+</style>
+
+<div class="row">
+    <div class="col">
+        <img data-src="{{ '/images/entanglement/android-screen1.jpg' | prepend: site.baseurl }}" alt="">
+    </div>
+    <div class="col">
+        <img data-src="{{ '/images/entanglement/android-screen2.jpg' | prepend: site.baseurl }}" alt="">
+    </div>
+</div>
 
 But there was no such game for iOS. And as I pursued my second M. Sc. degree, I have had a course
 "iOS development", where we were learning to use Swift and iOS platform.
@@ -88,7 +106,7 @@ coordinates:
 Now, there's a tricky thing regarding this coordinate system: how should we know, where to render
 the actual tile image on a screen? E. g. how can we convert coordinates in this system back to Cartesian?
 
-After short math on a piece of paper, I've implemented a function, which does that:
+After doing some math on a piece of paper, I came up with this function:
 
 {% highlight swift %}
 func uv2xy(_ uv: (Int, Int)) -> (Int, Int) {
@@ -105,6 +123,12 @@ func uv2xy(_ uv: (Int, Int)) -> (Int, Int) {
 }
 {% endhighlight %}
 
+What happens here is: since every tile is a regular hexagon, we can simply calculate the distance between the sides
+of neighbour tiles and, based on how the tiles are layed out relative to each other, multiply that by either taking
+one and a half of every coordinate system unit or `sqrt(3) / 2` of one unit. The `sqrt(3) / 2` comes from the length
+of a unit regular hexagon's height _(a line, perpendicular to any side of a hexagon, starting at its center)_. Every
+unit scales with the tile' size.
+
 As you can see, it depends on tile side length. This is the major tile parameter. Since I render tiles
 based on that parameter.
 
@@ -116,7 +140,8 @@ side of a tile, as shown below:
 <img data-src="{{ '/images/entanglement/tile-connections-1.png' | prepend: site.baseurl }}" alt="">
 
 Then, by generating six random pairs of integer numbers from the range `[1, 12]`, we can obtain actual
-connections inside a single tile. Then a tile might look like this:
+connections inside a single tile. Note that none of the numbers should be used more than once and
+that none of the pairs should have a duplicate. Then a tile might look like this:
 
 <img data-src="{{ '/images/entanglement/tile-sample.png' | prepend: site.baseurl }}" alt="">
 
@@ -409,10 +434,10 @@ the given tile.
 
 And for the example above, the call `t.input(from: 0)` will give us `7`. And here's an image to show why:
 
-<img data-src="{{ '/images/entanglement/entanglement-tile-neighbors.png' | prepend: site.baseurl }}" alt="">
+<img data-src="{{ '/images/entanglement/entanglement-tile-neighbours.png' | prepend: site.baseurl }}" alt="">
 
-Since there is only one way of correctly placing each next tile, this behavior is constant for any of
-two successive tiles.
+Given we have a portion of a path layed out on a game plane already, there is only one way of correctly placing
+each next tile _(the path which is already present on a plane never changes and always comes to the same connection point)_.
 
 And now it's finally the time to explain the rotation of the tiles!
 
@@ -536,14 +561,8 @@ to score. This could be expressed as a sum of a finite arithmetic sequence with 
 
 <img data-src="{{ '/images/entanglement/score_equation.gif' | prepend: site.baseurl }}" alt="">
 
-# UI, AppStore, and others
+# The end result
 
-The end result of this coding exercise looks like at the very top of this post:
+The end result of this coding exercise looks like exactly as the one at the very top of this post:
 
 <img data-src="{{ '/images/entanglement/ios-screen1.png' | prepend: site.baseurl }}" alt="">
-
-During the course at the university, I was made to add a database, networking and a couple more views
-to the game _(to show that I did learn something during the course)_. But for the end-user, those are
-not necessary. I've added Facebook login, the local database of high scores and views for those. But at its core,
-the game does need some refactoring, which is what happening right now _(the code in this post does not strictly correspond to the one on a GitHub, but rather has major enhancements)_. Unless it is done - the game probably won't appear in
-the AppStore. But hopefully it will come to your phone once!
