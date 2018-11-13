@@ -1,5 +1,11 @@
 @import "grid", "variables", "buttons";
 
+@media (max-width: map-get($grid-breakpoints, md)) {
+  body {
+    background: $background-color;
+  }
+}
+
 .container {
   .post {
     img.medium {
