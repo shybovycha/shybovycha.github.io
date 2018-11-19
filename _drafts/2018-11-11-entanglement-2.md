@@ -544,3 +544,100 @@ const ctx = canvas.getContext('2d');
 
 drawTile(ctx, 50, 80, 80, generateTile());
 ```
+
+To convert the coordinates of each tile in isometric coordinate system to the cartesian one, used to display the tiles,
+we need to do some maths. Consider these cases:
+
+```latex
+(0, 0) \rightarrow (0, 0)\\
+
+(0, 1) \rightarrow (-\frac{a\sqrt{3}}{2}, \frac{3a}{2})\\
+(0, 2) \rightarrow (-2 \frac{a\sqrt{3}}{2}, 2\frac{3a}{2})\\
+
+(1, 0) \rightarrow (2\frac{a\sqrt{3}}{2}, 0)\\
+(1, 1) \rightarrow (\frac{a\sqrt{3}}{2}, \frac{3a}{2})\\
+(1, 2) \rightarrow (0, 2\frac{3a}{2})\\
+
+(2, 0) \rightarrow (4\frac{a\sqrt{3}}{2}, 0)\\
+(2, 1) \rightarrow (3\frac{a\sqrt{3}}{2}, \frac{3a}{2})\\
+(2, 2) \rightarrow (2\frac{a\sqrt{3}}{2}, 2\frac{3a}{2})\\
+```
+
+First, let us extract common parts - that's easy:
+
+```latex
+(u, v) -> (k_x \frac{a\sqrt{3}}{2}, k_y \frac{3a}{2})
+```
+
+Now look at the equations closely and try to calculate `k_x` and `k_y`.
+`k_y` is easier - it is just `v`. `k_x` is somewhat more tricky: `2u - v`.
+
+The overall conversion function looks like this:
+
+```js
+function uv2xy([ u, v ], tileSize) {
+    const kx = (2 * u) - v;
+    const ky = v;
+
+    return [
+        (kx * tileSize * (Math.sqrt(3) / 2)),
+        (ky * tileSize * 1.5)
+    ];
+}
+```
+
+To render a field of tiles shaped like a hexagon, one can use two nested `for` loops:
+
+```js
+function drawField(ctx) {
+  const TILE_SIZE = 25;
+
+  for (let u = -4; u < 5; ++u) {
+    for (let v = -4; v < 5; ++v) {
+      const connections = [];
+
+      if ((u == 0 && v == 0) || u == -4 || u == 4 || v == -4 || v == 4) {
+          drawBorderTile(ctx, TILE_SIZE, [ u, v ]);
+      } else {
+          drawTile(ctx, TILE_SIZE, [u, v], connections);
+      }
+    }
+  }
+}
+```
+
+But will end up having something like this:
+
+[image here]
+
+Not a desired result, right?
+
+To check what's wrong, let's add a debugging information to each tile - its `u, v` coordinates:
+
+```js
+{
+    ctx.fillStyle = '#000';
+    ctx.fillText(`(${u}, ${v})`, cx-16, cy);
+}
+```
+
+The coordinates shown will be something similar to these:
+
+[image here]
+
+The tiles with coordinates of `3, -2`, `2, -3`, `3, -3` and their opposite neighbours seem to be wrong.
+The easiest solution for this would be to cut off the tiles, whose `u - v` and `v - u` values exceed the value of `4` and draw a border tile when the value is exactly `4`:
+
+```js
+if ((u - v) > 4 || (v - u) > 4) { continue; }
+
+if ((u == 0 && v == 0) || u == -4 || u == 4 || v == -4 || v == 4 || (u - v) == 4 || (v - u) == 4) {
+  drawBorderTile(ctx, TILE_SIZE, [ u, v ]);
+} else {
+  drawTile(ctx, TILE_SIZE, [u, v], connections);
+}
+```
+
+You should end up with the desired shape of a hexagon:
+
+[image here]
