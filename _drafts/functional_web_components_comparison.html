@@ -1,34 +1,34 @@
-{% highlight js %}
+```js
 function sum(arr) {
   if (arr.length == 0)
     return 0;
 
   return arr[0] + sum(arr.slice(1));
 }
-{% endhighlight %}
+```
 
-{% highlight haskell %}
+```haskell
 [head | tail] :: [ 0, 1, 2, 3 ] => [ 0 | [ 1, 2, 3 ]] :: 0 + sum([1,2,3]) = 1 + sum([2,3]) = 2 + sum([3])
 > (head = 3, tail = [])
-{% endhighlight %}
+```
 
-{% highlight kotlin %}
+```kotlin
 fun sum([ head | tail ]) {
   if (tail.length == 0)
     return head;
 
   return head + sum(tail);
 }
-{% endhighlight %}
+```
 
-{% highlight haskell %}
+```haskell
 [head = 0, tail = [1,2,3], call sum(tail), return head + sum(tail)]
 [head = 1, tail = [2,3], call sum(tail), return head + sum(tail)]
 [head = 2, tail = [3], call sum(tail), return head + sum(tail)]
 [head = 3, tail = [], return head]
-{% endhighlight %}
+```
 
-{% highlight kotlin %}
+```kotlin
 fun sum2([ head | tail ], s = 0) {
   if (tail.length == 0)
     return head + s;
@@ -40,4 +40,4 @@ fun sum2([ head | tail ], s = 0) {
 // [head = 1, tail = [2,3], s = 0, call sum(tail, head + s == 1)]
 // [head = 2, tail = [3], s = 1, call sum(tail, head + s == 3)]
 // [head = 3, tail = [], s = 3, return head + s == 6]
-{% endhighlight %}
+```

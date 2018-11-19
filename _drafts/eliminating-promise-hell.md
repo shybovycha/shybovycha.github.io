@@ -9,7 +9,7 @@ published: True
 
 What I had:
 
-{% highlight js %}
+```js
 var mongoose = require('mongoose');
 
 mongoose.connect('mongodb://localhost/lunch-ordering');
@@ -105,34 +105,34 @@ UserSchema.method('todayOrder', function () {
 });
 
 var User = mongoose.model('User', UserSchema);
-{% endhighlight %}
+```
 
 It's still better than callbacks, but with all those promises returning promises... Uggghhh...
 
 So what I did is used ES7 `async/await` feature! Yeah, that requires a bit of configuration:
 
-{% highlight bash %}
+```bash
 npm install --save-dev babel-cli babel-preset-es2015 babel-preset-stage-0 bluebird
-{% endhighlight %}
+```
 
 `.babelrc` file:
 
-{% highlight json %}
+```json
 {
   "presets": [ "es2015", "stage-0" ],
   "plugins": [ "syntax-async-functions" ]
 }
-{% endhighlight %}
+```
 
 and running with:
 
-{% highlight bash %}
+```bash
 ./node_modules/.bin/babel-node app.js
-{% endhighlight %}
+```
 
 The new code looks like this:
 
-{% highlight js %}
+```js
 var Promise = require('bluebird');
 
 mongoose.Promise = Promise;
@@ -176,4 +176,4 @@ UserSchema.method('todayOrder', async function () {
 
     return order;
 });
-{% endhighlight %}
+```

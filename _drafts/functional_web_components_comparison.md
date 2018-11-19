@@ -1,4 +1,4 @@
-{% highlight haskell %}
+```haskell
 import Html exposing (Html, button, div, text)
 import Html.Events exposing (onClick)
 
@@ -21,10 +21,10 @@ view model =
     , div [] [ text (toString model) ]
     , button [ onClick Increment ] [ text "+" ]
     ]
-{% endhighlight %}
+```
 
 
-{% highlight ocaml %}
+```ocaml
 # ocamlc -dsource -ppx ../node_modules/reason/_build/src/reactjs_jsx_ppx.native -pp ../node_modules/reason/_build/src/refmt_impl.native -impl Test.re 2>&1 | sed '$ d' | sed '$ d' > Test.rsx && ../node_modules/reason/_build/src/refmt_impl.native -parse ml -print re -is-interface-pp false Test.rsx > TestOut.re
 
 /* main =
@@ -47,10 +47,10 @@ let view = fun (model) => {
     , button [ onClick Increment ] [ text "+" ]
     ]
 };
-{% endhighlight %}
+```
 
 
-{% highlight mustache %}
+```mustache
 {% raw %}
 <table>
   <thead>
@@ -91,4 +91,4 @@ let view = fun (model) => {
   };
 </script>
 {% endraw %}
-{% endhighlight %}
+```

@@ -24,7 +24,7 @@ tumblr_url: http://shybovycha.tumblr.com/post/109996204061/abstract-classes-vs-i
 
 <p>Take a look:</p>
 
-{% highlight java %}
+```java
 public interface INumber {
     public INumber add(INumber other);
 }
@@ -42,11 +42,11 @@ public class HexadecimalNumber implements INumber {
         // convert other to HexadecimalNumber and add...
     }
 }
-{% endhighlight %}
+```
 
 <p>&hellip;and compare it to this:</p>
 
-{% highlight java %}
+```java
 public abstract class Number {
     public abstract Integer toDecimal();
     public abstract Number fromDecimal(Integer);
@@ -75,7 +75,7 @@ public class HexadecimalNumber extends Number {
         // convert `n` to HexadecimalNumber
     }
 }
-{% endhighlight %}
+```
 
 <p>This is how we can create an abstraction: we can add or perform any other arithmetic operations regardless on which numeric system we use!</p>
 
@@ -88,10 +88,10 @@ public class HexadecimalNumber extends Number {
 
 <p>Check it out:</p>
 
-{% highlight java %} public interface IVector { public void Vector(); // something like a default constructror } public class
-Vector2d implements IVector { // THIS IS NOT A CONSTRUCTOR! @Override public void Vector() { } } {% endhighlight %}
+```java public interface IVector { public void Vector(); // something like a default constructror } public class
+Vector2d implements IVector { // THIS IS NOT A CONSTRUCTOR! @Override public void Vector() { } } ```
 
 <p>and compare it to this:</p>
 
-{% highlight java %} public abstract class BaseVector { public abstract BaseVector() { } } public class Vector2d extends
-BaseVector { public Vector2d() { // now it DOES HAVE a default constructor super(); } } {% endhighlight %}
+```java public abstract class BaseVector { public abstract BaseVector() { } } public class Vector2d extends
+BaseVector { public Vector2d() { // now it DOES HAVE a default constructor super(); } } ```

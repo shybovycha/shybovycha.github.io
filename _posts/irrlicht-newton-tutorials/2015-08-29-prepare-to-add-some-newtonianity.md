@@ -19,17 +19,17 @@ Newton GD files. And unpack it... right to the `source` directory of our project
 I'm not insane and I'm aware you are going to put **a lot** of files in your project. But have no
 fear - you may always add them to `.gitignore` and skip them from being tracked in your Git repo:
 
-{% highlight txt %}
+```txt
 source/newton-dynamics-master/applications
 source/newton-dynamics-master/packages/projects
 source/newton-dynamics-master/packages/thirdParty
 source/newton-dynamics-master/coreLibrary_300/projects
-{% endhighlight %}
+```
 
 You are using Git, right?.. Now, you place the Newton GD sources in your project directory and change
 your `CMakeLists.txt` file to look like this:
 
-{% highlight cmake %}
+```cmake
 cmake_minimum_required(VERSION 3.1)
 project(irrlicht_newton_game1)
 
@@ -75,7 +75,7 @@ target_link_libraries(${EXECUTABLE_NAME}
         ${OPENGL_LIBRARIES}
         ${ZLIB_LIBRARIES}
         ${X11_Xxf86vm_LIB})
-{% endhighlight %}
+```
 
 Try to compile your project - it should be just fine. And observe the power of CMake!
 
@@ -83,12 +83,12 @@ Try to compile your project - it should be just fine. And observe the power of C
 
 Let's start modifying our Irrlicht sample application. First of all, we will add some Newton headers:
 
-{% highlight cpp %}
+```cpp
 #include "newton-dynamics-master/coreLibrary_300/source/newton/Newton.h"
 #include "newton-dynamics-master/packages/dMath/dVector.h"
 #include "newton-dynamics-master/packages/dMath/dMatrix.h"
 #include "newton-dynamics-master/packages/dMath/dQuaternion.h"
-{% endhighlight %}
+```
 
 The basic thing in the whole Newton GD library is `NewtonWorld`. That is what it means - the world, where
 all the physics happen. It is something different from where we place our 3D models. And that should be
@@ -100,7 +100,7 @@ we need to have that variable close to our other objects - in the `ScriptManager
 
 There are two functions we need to bind to our `NewtonBody`:
 
-{% highlight cpp %}
+```cpp
 static void transformCallback(const NewtonBody* body, const dFloat* matrix, int threadIndex) {
     // update ISceneNode so that it is in the same position and rotation as the NewtonBody
 }
@@ -115,7 +115,7 @@ static void applyForceAndTorqueCallback(const NewtonBody* body, dFloat timestep,
     dVector gravityForce(0.0f, mass * -9.8f, 0.0f, 1.0f);
     NewtonBodySetForce(body, &gravityForce[0]);
 }
-{% endhighlight %}
+```
 
 The first one, `transformCallback`, is called whenever body changes its transform -
 e. g. either position or rotation. This is a good place to synchronize our Irrlicht meshes'
@@ -131,7 +131,7 @@ last update. This function call has one great candidate to be placed into: `hand
 But we need to modify that method to receive the time since the last frame been rendered
 and we will use this time to update `NewtonWorld` too.
 
-{% highlight cpp %}
+```cpp
 private:
     void updatePhysics(float dt) {
          NewtonUpdate(newtonWorld, dt);
@@ -146,7 +146,7 @@ public:
 
         handler.Invoke();
     }
-{% endhighlight %}
+```
 
 Remember about architecture: everything, what needs to be exposed to our scripts should be
 declared as `public` in our `ScriptManager`. Everything else - as `protected` or `private`.
@@ -154,7 +154,7 @@ This is the basic principle of *encapsulation*, so let's keep it in our applicat
 
 And update the main application loop:
 
-{% highlight cpp %}
+```cpp
 while (device->run()) {
     // Work out a frame delta time.
     const u32 now = device->getTimer()->getTime();
@@ -167,7 +167,7 @@ while (device->run()) {
 
     // ...
 }
-{% endhighlight %}
+```
 
 **Hint:** to make simulation slower and so watch ball falling in detail, make the
 `NewtonUpdate` argument even smaller. Thousand times, say.
@@ -175,22 +175,22 @@ while (device->run()) {
 Since we have initialization for our Newton stuff, we need to clean it up at the exit
 to prevent memory leaks. Let's declare a method for that:
 
-{% highlight cpp %}
+```cpp
 private:
     void stopPhysics() {
         NewtonDestroyAllBodies(newtonWorld);
         NewtonDestroy(newtonWorld);
     }
-{% endhighlight %}
+```
 
 And call it right before the program's end:
 
-{% highlight cpp %}
+```cpp
 device->drop();
 
 scriptMgr->handleExit();
 delete scriptMgr;
-{% endhighlight %}
+```
 
 And now is the right moment to add key codes' definitions and exit function to our
 `ScriptManager` so that we could write more clear code and close our application
@@ -201,7 +201,7 @@ achieved by simply closing the `IrrlichtDevice` with `device->closeDevice()`. Bu
 do not have an access to the device from the `ScriptManager`. So let's add it as a
 constructor argument:
 
-{% highlight cpp %}
+```cpp
 private:
     irr::IrrlichtDevice *device;
 
@@ -213,29 +213,29 @@ public:
 
         initPhysics();
     }
-{% endhighlight %}
+```
 
 So now we can create a function, exposed to our scripts, which will stop our application:
 
-{% highlight cpp %}
+```cpp
 void exit() {
     device->closeDevice();
 }
-{% endhighlight %}
+```
 
 And bind it to the Lua function:
 
-{% highlight cpp %}
+```cpp
 auto exitFn = luaState.CreateFunction<void(void)>(
                 [&]() -> void { exit(); });
 
 global.Set("exit", exitFn);
-{% endhighlight %}
+```
 
 Now we can use our `exit` function in the Lua scripts. But we will need to use hexadecimal
 key codes and that's... ugly. So we need to define some symbolic names for those codes:
 
-{% highlight cpp %}
+```cpp
 void setGlobalVariables() {
     setKeyStates();
     setKeyCodeConstants();
@@ -402,18 +402,18 @@ void setKeyCodeConstants() {
         luaState.GetGlobalEnvironment().Set(it->first, it->second);
     }
 }
-{% endhighlight %}
+```
 
 Now we can create a <kbd>Esc</kbd> key handler in our script:
 
-{% highlight lua %}
+```lua
 function handleFrame()
     -- Esc
     if KEY_STATE[KEY_ESCAPE] == true then
         exit()
     end
 end
-{% endhighlight %}
+```
 
 Now we are ready to create our first Newton bodies. Bodies are some invisible objects,
 which define how our Irrlicht meshes will behave (e. g. where they will be placed,

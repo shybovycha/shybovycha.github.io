@@ -33,13 +33,13 @@ scratch and the problem gone. *I did no research deeper, but if I will, I'll wri
 
 Generating project from an `app` template is done really easily:
 
-{% highlight bash %}
+```bash
 lein new app your-app-name
-{% endhighlight %}
+```
 
 The process will be finished in seconds. Then you'll need to add a few dependencies in your `project.clj`:
 
-{% highlight clojure %}
+```clojure
 (defproject your-app-name
     ; ...
     :dependencies [[org.clojure/clojure "1.6.0"]
@@ -47,7 +47,7 @@ The process will be finished in seconds. Then you'll need to add a few dependenc
                  [org.clojure/data.json "0.2.6"]]
     ; ...
 )
-{% endhighlight %}
+```
 
 To install dependencies for your project, simply run `lein deps`.
 
@@ -55,7 +55,7 @@ To install dependencies for your project, simply run `lein deps`.
 
 To use timbre in your project all you need is to require it:
 
-{% highlight clojure %}
+```clojure
 (ns timbre-test1.core
   (:require [taoensso.timbre :as timbre :refer (log info warn debug error)]
             [clojure.data.json :as json]))
@@ -65,7 +65,7 @@ To use timbre in your project all you need is to require it:
   (info {:some-complicated-hash {:inner-hash {:more-inner ["value1" "value2"]}}})
   (info "Hello, World!")
   (error "SOMETHING WENT WELL"))
-{% endhighlight %}
+```
 
 This example shows one very important feature of timbre: **it can log objects, other than strings and
 exceptions**. This is really handy! Doing so, timbre is able to log a JSON object simply, almost
@@ -93,7 +93,7 @@ we will get no output at all. And we have not researched which ones we need to s
 At first, we wrote a simple config, forcing logging to be printed onto a screen with some JSON
 formatting:
 
-{% highlight clojure %}
+```clojure
 (ns timbre-test1.core
   (:require [taoensso.timbre :as timbre :refer (log info warn debug error)]
             [clojure.data.json :as json]))
@@ -119,7 +119,7 @@ formatting:
                  }}})
   (info {:moo -3.14} {:foo :bar})
 )
-{% endhighlight %}
+```
 
 Note the appender id: `println`. This code overrides `output-fn` for `println` appender *(e. g. the
 default one)*. The parameter for `output-fn` is a function, receiving a map with different keys. The
@@ -141,7 +141,7 @@ But the `timestamp_` one is really helpful. Always.
 
 Then we overrided the default file appender, extending it with our `json-output-fn`:
 
-{% highlight clojure %}
+```clojure
 (ns timbre-test1.core
   (:require [taoensso.timbre :as timbre :refer (log info warn debug error)]
             [taoensso.timbre.appenders.core :as appenders]
@@ -167,12 +167,12 @@ Then we overrided the default file appender, extending it with our `json-output-
                  }})
   (info {:moo -3.14} {:foo :bar})
 )
-{% endhighlight %}
+```
 
 Nothing new here, except of the appender used - now the application will log to both file and screen.
 To prevent logging to `stdout`, we disabled the `println` appender:
 
-{% highlight clojure %}
+```clojure
 (defn -main [& args]
   (timbre/merge-config!
     {:appenders {
@@ -181,7 +181,7 @@ To prevent logging to `stdout`, we disabled the `println` appender:
                  }})
   (info {:moo -3.14} {:foo :bar})
 )
-{% endhighlight %}
+```
 
 Here I should mention that we were not made to call our JSON appender `spit` - it was used for convention
 reasons only.

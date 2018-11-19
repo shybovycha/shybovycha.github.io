@@ -10,13 +10,13 @@ published: True
 
 Initialize Maven project:
 
-{% highlight bash %}
+```bash
 mvn archetype:generate -DgroupId=com.mycompany.app -DartifactId=my-app -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
-{% endhighlight %}
+```
 
 Add Spring Boot to `pom.xml`:
 
-{% highlight xml %}
+```xml
 <build>
     <plugins>
         <plugin>
@@ -38,7 +38,7 @@ Add Spring Boot to `pom.xml`:
         <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
 </dependencies>
-{% endhighlight %}
+```
 
 Development run: `mvn spring-boot:run`
 Build project: `mvn clean install package`

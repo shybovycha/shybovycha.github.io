@@ -36,7 +36,7 @@ Both methods will take an object, containing user account details - `email`,
 You might've guessed already: the `get(account)` method will log the user in and
 `create(account)` will register a new account for the user.
 
-{% highlight js %}
+```js
 ourStatsControllers.factory('Session', [
     () => {
         var testAccount = {
@@ -62,13 +62,13 @@ ourStatsControllers.factory('Session', [
         }
     }
 ]);
-{% endhighlight %}
+```
 
 When you inject it into your controller, you may use it via
 
-{% highlight js %}
+```js
 Session.get({ email: '', password: '' });
-{% endhighlight %}
+```
 
 The thing here is that we want to keep user data somewhere to simulate a
 database work. So when user *"signs up"*, he will have his data saved in the memory
@@ -85,31 +85,31 @@ module clean from unnecessary code *(in terms of the whole application)*.
 To store user account data we'll use cookies. And there is a plugin for this
 already! It is called `ngCookies`. And we'll install it right now:
 
-{% highlight bash %}
+```bash
 bower install --save angular-cookies
-{% endhighlight %}
+```
 
 This one's configuration is a bit more complicated. But just a bit: it needs
 to be added to application dependency list:
 
-{% highlight js %}
+```js
 var ourStatsApp = angular.module('ourStatsApp', [ 'ngRoute', 'ngCookies', 'ourStatsControllers' ]);
-{% endhighlight %}
+```
 
 But since we use cookies directly in controllers only, we may move the `ngCookies` dependency to
 the `ourStatsControllers` module:
 
-{% highlight js %}
+```js
 var ourStatsControllers = angular.module('ourStatsControllers', [ 'ngCookies' ]);
 
 // ...
 
 var ourStatsApp = angular.module('ourStatsApp', [ 'ngRoute', 'ourStatsControllers' ]);
-{% endhighlight %}
+```
 
 Now we need to define our `AccountData` service. It'll also require a `ngCookies` dependency:
 
-{% highlight js %}
+```js
 ourStatsControllers.factory('AccountData', [ '$cookies',
     ($cookies) => {
         return {
@@ -125,11 +125,11 @@ ourStatsControllers.factory('AccountData', [ '$cookies',
         }
     }
 ]);
-{% endhighlight %}
+```
 
 And we need to modify our `Session` service a bit:
 
-{% highlight js %}
+```js
 ourStatsControllers.factory('Session', [ '$http', 'AccountData',
     ($http, AccountData) => {
         var testAccount = {
@@ -159,11 +159,11 @@ ourStatsControllers.factory('Session', [ '$http', 'AccountData',
         }
     }
 ]);
-{% endhighlight %}
+```
 
 And now we can implement the controller to pick up the newly added service:
 
-{% highlight js %}
+```js
 ourStatsControllers.controller('NewSessionCtrl', [ '$scope', 'Session', 'AccountData',
     ($scope, Session) => {
         $scope.newAccount = {};
@@ -182,13 +182,13 @@ ourStatsControllers.controller('NewSessionCtrl', [ '$scope', 'Session', 'Account
         };
     }
 ]);
-{% endhighlight %}
+```
 
 But here's just one small detail: we need both `Session` and `AccountData` services to perform
 similar actions - managing session. We can refactor our code to keep all the session management
 tasks in one place - `Session` service:
 
-{% highlight js %}
+```js
 ourStatsControllers.factory('Session', [ '$http', 'AccountData',
     ($http, AccountData) => {
         var testAccount = {
@@ -222,11 +222,11 @@ ourStatsControllers.factory('Session', [ '$http', 'AccountData',
         }
     }
 ]);
-{% endhighlight %}
+```
 
 Now our `NewSessionCtrl` could be refactored too:
 
-{% highlight js %}
+```js
 ourStatsControllers.controller('NewSessionCtrl', [ '$scope', 'Session',
     ($scope, Session) => {
         $scope.newAccount = {};
@@ -245,7 +245,7 @@ ourStatsControllers.controller('NewSessionCtrl', [ '$scope', 'Session',
         };
     }
 ]);
-{% endhighlight %}
+```
 
 Looks better, huh?
 
@@ -254,7 +254,7 @@ but we'll be changing that later. It is not bound to the **ViewModel**, because 
 of our `$scope.newAccount` and `$scope.existingAccount` are constant and don't depend on
 the template. To change this, we need to modify our `new_session.jade` template:
 
-{% highlight jade %}
+```jade
 .row
     .col-xs-12.col-md-4.col-md-offset-1.well
         h3 Sign up
@@ -281,7 +281,7 @@ the template. To change this, we need to modify our `new_session.jade` template:
                 input.form-control(type="password" placeholder="Password" ng-model="existingAccount.password")
             fieldset.form-group.text-center
                 button.btn.btn-success(type="submit") Sign in
-{% endhighlight %}
+```
 
 Note the `ng-model` directive: it performs two-way data binding. It means, when user changes the
 value of our, say, `name` input, the corresponding value inside controller, namely `$scope.newAccount.name`,
@@ -299,7 +299,7 @@ when he signed in or up successfully. This is the job for `$location` service. I
 in Angular core module, `ng`, so we don't need to add any new module-wise dependencies.
 Just use it in our `NewSessionCtrl`:
 
-{% highlight js %}
+```js
 ourStatsControllers.controller('NewSessionCtrl', [ '$scope', '$location', 'Session',
     ($scope, $location, Session) => {
         $scope.newAccount = {};
@@ -321,7 +321,7 @@ ourStatsControllers.controller('NewSessionCtrl', [ '$scope', '$location', 'Sessi
         };
     }
 ]);
-{% endhighlight %}
+```
 
 Here comes new refactoring-able piece of code: we now have our routes declared in both
 `ourStatsApp` module and `ourStatsControllers`. So if we decide to change, let's say,
@@ -332,7 +332,7 @@ available in the `ourStatsApp` thanks to dependency injection. And since our URL
 always be the same *(except, maybe, the parametrised ones)*, we may define a constant
 instead of factory:
 
-{% highlight js %}
+```js
 ourStatsControllers.constant('Url', {
         landing: '/',
         newSession: '/new-session',
@@ -354,7 +354,7 @@ ourStatsControllers.constant('Url', {
             return `/applications/${id}/edit`;
         }
     })
-{% endhighlight %}
+```
 
 ## Application startup phases
 
@@ -373,7 +373,7 @@ Whilst `run` blocks can only handle **instances** *(for example, `$scope`)* and 
 Since we have our routes defined at the `config` stage, we need to use **constant** to name our
 routes. And then use them like this:
 
-{% highlight js %}
+```js
 ourStatsApp
     .config(['$routeProvider', 'Url',
         ($routeProvider, Url) => {
@@ -434,7 +434,7 @@ ourStatsControllers
             };
         }
     ])
-{% endhighlight %}
+```
 
 To show the difference in practice, let's add the authentication verification. We now have our
 stubbed account and session management service, so why not? Angular provides us with two options:
@@ -447,7 +447,7 @@ to use services. And that is the problem, because we've got our `Session` servic
 tasks we need. And one more drawback of this method: one should set it for each route, which requires
 verification:
 
-{% highlight js %}
+```js
 var verifyAuthentication = () => {
     // ...
 };
@@ -493,13 +493,13 @@ ourStatsApp
                     redirectTo: Url.landing
                 });
             }]);
-{% endhighlight %}
+```
 
 Handling `$routeChangeStart` event suits us, and what's more interesting: it shows the use of `run`
 section. But as a drawback to this, we'll need the list of routes, which need to be checked. So
 I modified the definition of `Url` constant like this:
 
-{% highlight js %}
+```js
 ourStatsApp
     .constant('Url', (() => {
         var urls = {
@@ -534,11 +534,11 @@ ourStatsApp
 
         return urls;
     })());
-{% endhighlight %}
+```
 
 A bit tricky, does not it? And here's the handler for the `$routeChangeStart` event:
 
-{% highlight js %}
+```js
 ourStatsApp
     .run(['$rootScope', '$location', 'Session', 'AccountData', 'Url',
         ($rootScope, $location, Session, AccountData, Url) => {
@@ -550,7 +550,7 @@ ourStatsApp
                     $location.path(Url.newSession);
             });
         }]);
-{% endhighlight %}
+```
 
 ## Rocking on
 
@@ -558,7 +558,7 @@ Other services and controllers are much like those we already have, so I'll just
 in the end of the page. The interesting thing here is the `MockData` service that I've used to keep
 data, used while we have no server side.
 
-{% highlight js %}
+```js
 ourStatsApp
     .constant('MockData', {
         account: {
@@ -629,7 +629,7 @@ ourStatsApp
             }
         };
     }]);
-{% endhighlight %}
+```
 
 And here's the demo of what we've done up until now:
 

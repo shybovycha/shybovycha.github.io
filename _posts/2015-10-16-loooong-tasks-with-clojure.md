@@ -41,7 +41,7 @@ When our pretty class was created and working *(for some cases)*, we decided to 
 Java-correct and created two more classes, implementing a single interface, doing the same thing
 but differently each. And decided to skip writing `context.xml` and going deeper with Spring =)
 
-{% highlight java %}
+```java
 import java.util.*;
 import java.util.stream.*;
 
@@ -176,7 +176,7 @@ class Main {
         gen1.get(6).stream().forEach(System.out::println);
     }
 }
-{% endhighlight %}
+```
 
 The solution was made. It worked reaaaally loooooong for words with six letters. I decided to start
 working on Clojure implementation of this idea. I started writing a function, generating a list of
@@ -184,12 +184,12 @@ words. *Word* in this code was represented by a list of numbers from 0 to 25, as
 corresponding letters of latin alphabet. That allowed me not to bore myself with generating a
 list of chars and use a built-in Clojure' `range` function.
 
-{% highlight clojure %}
+```clojure
 (defn gen-words [len cs]
     (if (= 0 len)
         cs
         (map #(gen-words (dec len) (conj cs %)) (range 26))))
-{% endhighlight %}
+```
 
 But ended up with the same results as for Java on six letters. Moreover, my implementation
 gave me strangely-nested list, which caused writing special flattening functions; Clojure's
@@ -201,12 +201,12 @@ I tried using `pmap` instead of `map` to parallelize the list generation process
 did not helped. I also tried generating a list of `future` objects, so each list element will be
 calculated only when needed:
 
-{% highlight clojure %}
+```clojure
 (defn gen-words [len cs]
     (if (= 0 len)
         cs
         (map #(future (gen-words (dec len) (conj cs %))) (range 26))))
-{% endhighlight %}
+```
 
 But that caused my futures never to be finished. And then my collegue reminded me I can create
 a function, which will only rely on a previously generated word and will return the next one,
@@ -214,7 +214,7 @@ not a list of words. *"That might save me lot of memory!"*, I thought and starte
 
 And finished with this pretty implementation:
 
-{% highlight clojure %}
+```clojure
 (defn next-word [prev-word]
     (let [
             l (drop-while (partial = 25) prev-word)
@@ -224,7 +224,7 @@ And finished with this pretty implementation:
             new-tail (rest l)
         ]
         (concat zeroes [new-head] new-tail)))
-{% endhighlight %}
+```
 
 See, in this implementation no word is being saved nowhere except the return value or an
 input argument *(well, actually the output from a function is then being used as an input
@@ -232,13 +232,13 @@ for itself)*.
 
 I converted all the word representations into words with this over-complicated function:
 
-{% highlight clojure %}
+```clojure
 (defn word-to-str [w] (clojure.string/join (map #(char (+ (int \a) (int %))) w)))
-{% endhighlight %}
+```
 
 And then I created a function, generating a list of those words.
 
-{% highlight clojure %}
+```clojure
 (defn words
     ([n] (words n (repeat n 0)))
     ([n w]
@@ -246,7 +246,7 @@ And then I created a function, generating a list of those words.
             (if (every? (partial = 25) w)
                 [str-w]
                 (lazy-seq (cons str-w (words n (next-word w))))))))
-{% endhighlight %}
+```
 
 Yeah, again! But not a plain list or vector, as previously, nooo. I generated a lazy-sequence!
 This is where Clojure meets ES6 generators =) See, lazy sequence in Clojure is a *(possibly)* endless
@@ -264,21 +264,21 @@ However, idle REPL eats much memory too:
 
 <img class="img-responsive" style="max-height: 150px" src="{{ '/images/looong-tasks-with-clojure/idle-repl-memory.png' | prepend: site.baseurl }}" />
 
-{% highlight clojure %}
+```clojure
 (defn seq-contains? [coll target]
     (some #(= target %) coll))
 
 (defn decode-1 [n]
     (let [ ws (filter #(seq-contains? input-hashes (encode %)) (words n)) ]
         (pmap (fn [w] [w (encode w)]) ws)))
-{% endhighlight %}
+```
 
 Then I enhanced this implementation eliminating the `lazy-seq` completely. So, there was no
 collection creation at all! All the results were printed onto screen right away when found.
 This could be replaced with any other storage - file, database, anything! Printing results
 on the screen is a habit from my student years...
 
-{% highlight clojure %}
+```clojure
 (defn decode-2
     ([n] (decode-2 n (repeat n 0)))
     ([n prev-word]
@@ -291,7 +291,7 @@ on the screen is a habit from my student years...
             (if (every? (partial = 25) prev-word)
                 nil
                 (recur n (next-word prev-word))))))
-{% endhighlight %}
+```
 
 The memory consumption got minimal:
 
@@ -299,24 +299,24 @@ The memory consumption got minimal:
 
 And the time consumption was not **that** good, though...
 
-{% highlight clojure %}
+```clojure
 task1.core=> (time (decode-2 5))
 4adbc43d3e1b432aea5e657cd57016de rampa
 bba60169d41b2dce7d0b37b2f9d637e0 kolej
 7914da949837cbdecf35cbf5951ad518 argon
 "Elapsed time: 92879.138203 msecs"
 nil
-{% endhighlight %}
+```
 
 Running it from non-REPL environment helped a bit:
 
-{% highlight bash %}
+```bash
 ╰─$ lein run
 4adbc43d3e1b432aea5e657cd57016de rampa
 bba60169d41b2dce7d0b37b2f9d637e0 kolej
 7914da949837cbdecf35cbf5951ad518 argon
 "Elapsed time: 73796.575567 msecs"
-{% endhighlight %}
+```
 
 ## Profit?
 
