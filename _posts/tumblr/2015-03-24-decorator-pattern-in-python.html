@@ -16,7 +16,7 @@ tumblr_url: http://shybovycha.tumblr.com/post/114483612351/decorator-pattern-in-
 
 <p>Thus, Decorator pattern is a way of wrapping some method’s or class’ behaviour. In Python it may be done with <strong>Context Managers:</strong></p>
 
-```python
+{% highlight python %}
 from contextlib import contextmanager
 
 @contextmanager
@@ -32,20 +32,20 @@ print
 
 with tag("div"):
     print "foo",
-```
+{% endhighlight %}
 
 <p>This code will end up wrapping <code>print "foo"</code> and <code>print "moo"</code> methods with printing some HTML tags around &lsquo;em:</p>
 
-```html
+{% highlight html %}
 <h1>moo</h1>
 <div>foo</div>
-```
+{% endhighlight %}
 
 <p>That is interesting as it implements Decorator design pattern in a bit hard-coded way, but using language features, not OOP ones.</p>
 
 <p>Compare it to the <em>"standard"</em> OOP implementation in Python:</p>
 
-```python
+{% highlight python %}
 # -*-coding:utf-8 -*-
 class SimpleText(object):
     def __init__(self, text):
@@ -70,7 +70,7 @@ print('SimpleText: %s' % a)
 
 b = TagDecorator('moo', 'h1')
 print('TagDecorator (h1): %s' % b)
-```
+{% endhighlight %}
 
 <p>This one looks a bit&hellip; ugly&hellip; right? And though Python does not really care of which type are <code>a</code> and <code>b</code>, we may not need all this class hierarchy.</p>
 

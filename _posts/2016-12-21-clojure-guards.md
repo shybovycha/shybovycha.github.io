@@ -15,7 +15,7 @@ alternatives I've found in the Internet.
 
 ## Using `guard` macro
 
-```clojure
+{% highlight clojure %}
 (defn generateGuardBody
     "Generates the function body required to support the guard macro"
     [args]
@@ -64,11 +64,11 @@ alternatives I've found in the Internet.
 
 (println (map fib (range 0 10)))
 (println (testFn-2 3)) ; "Something else!"
-```
+{% endhighlight %}
 
 ## Using multimethods
 
-```clojure
+{% highlight clojure %}
 ;; Implementing factorial using multimethods Note that factorial-like function
 ;; is best implemented using `recur` which enables tail-call optimization to avoid
 ;; a stack overflow error. This is a only a demonstration of clojure's multimethod
@@ -84,11 +84,11 @@ alternatives I've found in the Internet.
 (factorial 1) ; => 1
 (factorial 3) ; => 6
 (factorial 7) ; => 5040
-```
+{% endhighlight %}
 
 ## Using `core.match`
 
-```clojure
+{% highlight clojure %}
 (defn div3? [x] (zero? (rem x 3)))
 (let [y [2 3 4 5]]
   (match [y]
@@ -112,4 +112,4 @@ alternatives I've found in the Internet.
     [[[3 1]]] :a0
     [[([1 a] :as b)]] [:a1 a b]))
 ;=> [:a1 2 [1 2]]
-```
+{% endhighlight %}

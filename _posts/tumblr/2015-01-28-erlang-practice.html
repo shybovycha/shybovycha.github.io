@@ -69,7 +69,7 @@ tumblr_url: http://shybovycha.tumblr.com/post/109392787226/erlang-practice
 
 <p>To show some code, I wrote this short module:</p>
 
-```erlang
+{% highlight erlang %}
 -module(test).
 -export([ start/0 ]).
 
@@ -83,23 +83,23 @@ start() -&gt;
             io:format("&lt; finish received &gt;~n"),
             ok
     end.
-```
+{% endhighlight %}
 
 <p>Now, let&rsquo;s start that!</p>
 
 <p>First, I registered that process with some name on the <code>foo</code> node:</p>
 
-```erlang
+{% highlight erlang %}
 c(test1).
 register(foo_pid, spawn(test1, start, [])).
-```
+{% endhighlight %}
 
 <p>And then, the only thing I needed to do - is just send messages from node <code>moo</code>!</p>
 
-```erlang
+{% highlight erlang %}
 { foo_pid, foo@foonode } ! { msg, "Obey!" }.
 flush().
-```
+{% endhighlight %}
 
 <p><img src="https://31.media.tumblr.com/2e65bfca4e6815d4eced646bee021e5f/tumblr_inline_niw5l8tH3Y1qh5oee.png" alt="moonode"/></p>
 

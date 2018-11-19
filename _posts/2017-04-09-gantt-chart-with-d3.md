@@ -29,7 +29,7 @@ The full implementation code is under the cut.
 
 <!--more-->
 
-```js
+{% highlight js %}
 var createGanttChart = function (placeholder, data, {
   itemHeight,
   svgOptions
@@ -271,11 +271,11 @@ var createGanttChart = function (placeholder, data, {
     .append('title')
     .text(d => d.tooltip);
 };
-```
+{% endhighlight %}
 
 And here's the usage example:
 
-```js
+{% highlight js %}
 var data = [{
   startDate: '2017-02-27',
   endDate: '2017-03-04',
@@ -316,4 +316,4 @@ createGanttChart(document.querySelector('body'), data, {
     fontSize: 12
   }
 });
-```
+{% endhighlight %}

@@ -1,4 +1,4 @@
-```js
+{% highlight js %}
 function ClassA (name) {
     return {
         name: name,
@@ -47,4 +47,4 @@ class ClassB extends ClassA {
         return this.age;
     }
 }
-```
+{% endhighlight %}

@@ -36,25 +36,25 @@ a sample project.
 
 Before we start, we need to initialize an NPM project:
 
-```bash
+{% highlight bash %}
 npm init
-```
+{% endhighlight %}
 
 We barely want to manage Selenium versions by ourselves. When it comes to
 continuous integration, that is not an option. So we'd better find a way of
 downloading the needed Selenium version automatically. And writing a short
 script is somehow a bad idea - there is an NPM module for that task already:
 
-```bash
+{% highlight bash %}
 npm install --save selenium-standalone
-```
+{% endhighlight%}
 
 After installing that module, you may manage and run your Selenium with
 
-```bash
+{% highlight bash %}
 ./node_modules/selenium-standalone/bin/selenium-standalone install
 ./node_modules/selenium-standalone/bin/selenium-standalone start
-```
+{% endhighlight %}
 
 Now, in all our tests we will be using using *Jasmine*, since it allows to
 create a beautiful code, which is easy to support (if you need the maximum
@@ -62,15 +62,15 @@ help from your customer - consider using *Cucumber* and BDD approach - I will
 cover this topic in one of my future posts). So we need to add Jasmine
 dependency to our project:
 
-```bash
+{% highlight bash %}
 npm install --save jasmine
-```
+{% endhighlight %}
 
 To initialize bare Jasmine-ready project you may use Jasmine itself:
 
-```bash
+{% highlight bash %}
 ./node_modules/jasmine/bin/jasmine.js init
-```
+{% endhighlight %}
 
 This will create this directory structure for you:
 
@@ -91,7 +91,7 @@ look for in the `spec/support/jasmine.json` file, using the option `spec_files`.
 For example, you can make it look for both `*_spec` and `*Spec` (underscore and
 camel case file naming) postfixes:
 
-```json
+{% highlight json %}
 {
     "spec_dir": "spec",
     "spec_files": [
@@ -100,7 +100,7 @@ camel case file naming) postfixes:
         "**/*_Spec.js"
     ]
 }
-```
+{% endhighlight %}
 
 The `spec_dir` option specifies the directory, where the test files are located.
 And the `spec_files` option is what we are mostly interested in: it tells Jasmine
@@ -112,9 +112,9 @@ file, containing a test definition.
 
 The last, but not least, we need the *webdriverio* itself:
 
-```bash
+{% highlight bash %}
 npm install --save webdriverio
-```
+{% endhighlight %}
 
 And now we are ready to make some code!
 
@@ -136,7 +136,7 @@ can put all the code, initializing Selenium client in a helper script and make J
 before all (again, **not each, but all** - I'll explain why this is essential in a moment) tests.
 Let's define this in the `spec/helpers/settings.js` file:
 
-```js
+{% highlight js %}
 var webdriverio = require('webdriverio');
 
 var timeout = 10 * 1000;
@@ -167,7 +167,7 @@ exports.webdriverio = webdriverio;
 exports.config = config;
 exports.timeout = timeout;
 exports.baseUrl = config.baseUrl;
-```
+{% endhighlight %}
 
 This code does three simple, but really important things:
 
@@ -206,7 +206,7 @@ his billing details and waits for his brand-new iPhone to come.
 
 In terms of BDD it could be described in a scenario like this:
 
-```gherkin
+{% highlight gherkin %}
 Feature: Placing an order
     Scenario: Ordering a single product
         Given a webshop page
@@ -216,7 +216,7 @@ Feature: Placing an order
             And fills out the billing details correctly
             And clicks the "Submit" button
         Then the "Billing successfull" page is shown
-```
+{% endhighlight %}
 
 This scenario is great for the customer. And it's awesome if the customer
 is able to provide developer(-s) with a number of such scenarios.
@@ -224,7 +224,7 @@ But our test will be more kind of "developer-friendly".
 
 Let's create a `specs/ordering_a_single_product_spec.js` file:
 
-```js
+{% highlight js %}
 var settings = require('../helpers/settings.js');
 
 describe('buying iPhone', function () {
@@ -243,7 +243,7 @@ describe('buying iPhone', function () {
         });
     });
 });
-```
+{% endhighlight %}
 
 Let's run our test: first, start your webserver to handle the webshop; then run a
 Selenium instance and at last, start `./node_modules/jasmine/bin/jasmine.js`.
@@ -272,7 +272,7 @@ Given that, we will not add additional checks or `waitForExist()`s to get to the
 
 The next step is filling out billing details:
 
-```js
+{% highlight js %}
 describe('when user provides his billing details', function () {
     it('he gets redirected to the order-summary page', function (done) {
         var billing = {
@@ -301,7 +301,7 @@ describe('when user provides his billing details', function () {
             .call(done);
     });
 });
-```
+{% endhighlight %}
 
 The new thing here is how we fill out input fields with *webdriverio* - using the `setValue()` method.
 
@@ -313,7 +313,7 @@ different rows with the same value. How do we check if we are looking at the cor
 
 We will use *XPath* to get to the correct element:
 
-```js
+{% highlight js %}
 describe('order summary page', function () {
     it('contains correct order total', function (done) {
         this.client
@@ -328,7 +328,7 @@ describe('order summary page', function () {
             .call(done);
     });
 });
-```
+{% endhighlight %}
 
 Seems complicated, doesn't it?.. But it's not that hard. We used XPath instead of usual selectors
 to find the element needed. And here's how one could read it:

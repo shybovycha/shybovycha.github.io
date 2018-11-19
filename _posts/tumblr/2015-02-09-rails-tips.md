@@ -15,7 +15,7 @@ tumblr_url: http://shybovycha.tumblr.com/post/110527446781/rails-tips
 
 <p>Let us have class:</p>
 
-```ruby
+{% highlight ruby %}
 class Moo
   private
 
@@ -23,34 +23,34 @@ class Moo
     puts 'foo'
   end
 end
-```
+{% endhighlight %}
 
 <p>Here, class method <code>foo</code> is not private:</p>
 
-```ruby
+{% highlight ruby %}
 Foo.foo
 => 'foo'
-```
+{% endhighlight %}
 
 <h2>Instance with params</h2>
 
 <p>Oftenly there is a need to create a class instance and set it some params (or, maybe, call some methods on it). It's done usually like this:</p>
 
-```ruby
+{% highlight ruby %}
 moo = Moo.new
 moo.foo = 'foo'
 moo.bar
-```
+{% endhighlight %}
 
 <p>This can be shortened with the use of `tap` method:</p>
 
-```ruby
+{% highlight ruby %}
 moo = Moo.new.tap { |a| a.foo = 'foo'; a.bar }
-```
+{% endhighlight %}
 
 <p>Yet, it is more ruby-convenient and ruby-style to do it with the initialization block:</p>
 
-```ruby
+{% highlight ruby %}
 class Moo
   attr_accessor :foo
 
@@ -69,11 +69,11 @@ moo = Moo.new do |a|
 end
 
 puts moo.foo
-```
+{% endhighlight %}
 
 <p>Or even like this:</p>
 
-```ruby
+{% highlight ruby %}
 class Moo
   def initialize(&block)
     instance_eval &block if block_given?
@@ -95,13 +95,13 @@ a = Moo.new do
 end
 
 puts a.moo
-```
+{% endhighlight %}
 
 <h2>Code-dependent migrations</h2>
 
 <p>When you have your migrations using your code, for example, like this:</p>
 
-```ruby
+{% highlight ruby %}
 class CreateDataVolumes < ActiveRecord::Migration
   def up
     Data::VOLUMES.times do |volume|
@@ -111,13 +111,13 @@ class CreateDataVolumes < ActiveRecord::Migration
     end
   end
 end
-```
+{% endhighlight %}
 
 <p>you then have a problem when updating your code. In our example, if you remove the constant <code>Data::VOLUMES</code>, you will have to either manually search for all the usages of this constant, or have a really <em>intelliJent</em> IDE ;)</p>
 
 <p>Rather than using your existing code, stub it and copy-and-paste all migration-dependent code to the stubbing class:</p>
 
-```ruby
+{% highlight ruby %}
 class CreateDataVolumes < ActiveRecord::Migration
   class Data < AR::Base
     VOLUMES
@@ -129,6 +129,6 @@ class CreateDataVolumes < ActiveRecord::Migration
     end
   end
 end
-```
+{% endhighlight %}
 
 <p>Example with constant is rather stupid, whilst you may have some more critical code.</p>

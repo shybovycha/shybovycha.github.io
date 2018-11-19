@@ -20,7 +20,7 @@ Big O notation is the most widely used method which describes algorithm complexi
 
 Here we don't want to discuss big O mathematically. Basically, when analyzing the time complexity of an algorithm, big O notation is used to describe the rough estimate of the number of "steps" to complete the algorithm. Let's take the following example:
 
-```c
+{% highlight c %}
 void fun(int n) {
     // partl
     doSomething();
@@ -40,7 +40,7 @@ void fun(int n) {
     // part4
     return;
 }
-```
+{% endhighlight %}
 
 Here lets assume that `doSomething()` takes `C` steps to complete. The whole `fun(n)` method has 4 parts. What is the time complexity of each part for different parameters `n`?
 
@@ -54,9 +54,9 @@ For part 4, it takes exactly `1` step to return. So the time complexity is `O(1)
 
 Then what is the total time complexity of the whole `fun(n)`? It is easy, we just need to add up the time complexity of all the 4 parts:
 
-```txt
+{% highlight txt %}
 O(1) + O(n) + O(n^2) + O(1)
-```
+{% endhighlight %}
 
 Now let's assume `n` becomes very-very large. Parts 1 and 4 will still take constant number of steps, `C + 1`, to complete, so the total time of running part 1 and part 4 could be ignored when calculating the execution time for part 2 and part 3, as now both part 2 and part 3 take much more time than part 1 and part 4.
 
@@ -74,19 +74,19 @@ So here is another rule: when we add up big O notation, the notation with slower
 
 From the above examples, we could summarize the following rule: for multiplying two O notations, `O(A)` and `O(B)`, the result is `O(A*B)`. For example:
 
-```txt
+{% highlight txt %}
 O(1) x O(n) = O(n).
 O(n) x O(n) = O(n^2).
 O(1) + O(n) = O(n).
 O(n) + O(n^2) = O(n^2).
 O(1) + O(n) + O(n^2) = O(n^2).
-```
+{% endhighlight %}
 
 Here is the comparison of the increase speed of different O notations:
 
-```txt
+{% highlight txt %}
 O(1) < O(log(n)) < O(n) < O(n * log(n)) < O(n^2)
-```
+{% endhighlight %}
 
 ## How to use big O notation to compare algorithm complexity and why
 
@@ -98,8 +98,8 @@ For example, there are two algorithms `f1(n)` and `f2(n)`. `f(1)` takes `100` st
 
 It is easier to understand using big O to estimate space complexity as it is more concrete. For example, in an algorithm, we need to create an array of size `n` to store the temporary results before getting the final result. If we assume that the size of the element in the array is a constant `C` which is independent of `n`, the space complexity of using the array is `C*n` which is
 
-```txt
+{% highlight txt %}
 O(n) x O(C) = O(n) x O(1) = O(n)
-```
+{% endhighlight %}
 
 When comparing different algorithms, we often compare how much "extra" space complexity is needed to solve the problem. For example, as an algorithm that needs an extra array of size `n` is not as good as the one which only needs two variables, `O(1)` space complexity is more efficient than `O(n)`.

@@ -16,7 +16,7 @@ tumblr_url: http://shybovycha.tumblr.com/post/105514079521/setting-up-rails-webs
 
 <h2>Abstract Rails application setup</h2>
 
-```bash
+{% highlight bash %}
 $ git clone .../project_name.git
 $ cd project_name
 $ [sudo] bundle install
@@ -25,7 +25,7 @@ $ # create database and/or change config/database.yml settings
 $ rake db:migrate RAILS_ENV=production
 $ rake db:seed RAILS_ENV=production # don't worry if one fails
 $ # start the server of your choice
-```
+{% endhighlight %}
 
 <h2>Puma webserver</h2>
 
@@ -41,7 +41,7 @@ line to the <code>Gemfile</code>:</p>
 
 <p>When you are done, you should be able to create a Puma config file at <code>$PROJECT_DIR/config/puma.rb</code>:</p>
 
-```ruby
+{% highlight ruby %}
 def home_dir
     '/home/user/$PROJECT_DIR/'
 end
@@ -59,7 +59,7 @@ stdout_redirect path('log/puma.log'), path('log/error.puma.log'), true
 threads 0, 1
 bind 'tcp://0.0.0.0:5100'
 activate_control_app
-```
+{% endhighlight %}
 
 <p>More details here: <a href="https://github.com/puma/puma/blob/master/examples/config.rb">https://github.com/puma/puma/blob/master/examples/config.rb</a></p>
 
@@ -76,7 +76,7 @@ activate_control_app
 
 <p>First of all, create <code>/etc/init/puma.conf</code> file and fill it with this:</p>
 
-```bash
+{% highlight bash %}
 # /etc/init/puma.conf - Puma config
 
 # This example config should work with Ubuntu 12.04+.  It
@@ -141,11 +141,11 @@ exec /bin/bash &lt;&lt;'EOT'
   exec bundle exec puma -C config/puma.rb
 EOT
 end script
-```
+{% endhighlight %}
 
 <p>Now, create <code>/etc/init/puma-manager.conf</code> and fill it with this:</p>
 
-```bash
+{% highlight bash %}
 # /etc/init/puma-manager.conf - manage a set of Pumas
 
 # This example config should work with Ubuntu 12.04+.  It
@@ -177,7 +177,7 @@ pre-start script
     start puma app=$app
   done
 end script
-```
+{% endhighlight %}
 
 <p>And create a blank <code>/etc/puma.conf</code> file. This will be filled for each application separately.</p>
 

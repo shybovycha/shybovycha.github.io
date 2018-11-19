@@ -3,7 +3,7 @@ layout: post
 title: NodeJS promises + DB
 ---
 
-```js
+{% highlight js %}
 class ResultSet {
     operation() {
         console.log('ResultSet operation');
@@ -60,4 +60,4 @@ DBClient.connect().then(function (connection) {
 }).then(function (connection) {
     connection.close(); // now it works
 });
-```
+{% endhighlight %}

@@ -10,7 +10,7 @@ tumblr_url: http://shybovycha.tumblr.com/post/107622125006/microsoft-error-messa
 ---
 <p>I have a T-SQL trigger creation script, which runs OK:</p>
 
-```sql
+{% highlight sql %}
 CREATE TRIGGER data_modified ON Northwind.dbo.Customers FOR INSERT, UPDATE, DELETE
 AS
 
@@ -38,18 +38,18 @@ else
 begin
     print 'deleted ' + @rows + ' rows';
 end
-```
+{% endhighlight %}
 
 <p>Yet, when I run some <code>INSERT</code> query, I got an error saying:</p>
 
-```sql
+{% highlight sql %}
 Msg 245, Level 16, State 1, Procedure data_modified, Line 21
 Conversion failed when converting the varchar value 'inserted ' to data type int.
-```
+{% endhighlight %}
 
 <p>Let&rsquo;s look onto the source of that trigger, at line 18:</p>
 
-```sql
+{% highlight sql %}
 USE [Northwind]
 GO
 /****** Object:  Trigger [dbo].[data_modified]    Script Date: 09.01.2015 18:18:14 ******/
@@ -84,31 +84,31 @@ GO
     begin
         print 'deleted ' + @rows + ' rows';
     end
-```
+{% endhighlight %}
 
 <p>Here&rsquo;s the error:</p>
 
-```sql
+{% highlight sql %}
 if exists(select * from inserted)
-```
+{% endhighlight %}
 
 <p>But wait, that can&rsquo;t be true!</p>
 
 <p>The problem is a bit deeper, with the <code>@rows</code> variable:</p>
 
-```sql
+{% highlight sql %}
 print 'updated ' + @rows + ' rows';
-```
+{% endhighlight %}
 
 <p>while being declared as:</p>
 
-```sql
+{% highlight sql %}
 declare @rows as int;
-```
+{% endhighlight %}
 
 <p>It can not be printed right away, so it needs to be cast:</p>
 
-```sql
+{% highlight sql %}
 CREATE TRIGGER data_modified ON Northwind.dbo.Customers FOR INSERT, UPDATE, DELETE
 AS
 
@@ -138,6 +138,6 @@ else
 begin
     print 'deleted ' + @rows_s + ' rows';
 end
-```
+{% endhighlight %}
 
 <p>Try to guess where&rsquo;s your mistake, using that error message! ;)</p>

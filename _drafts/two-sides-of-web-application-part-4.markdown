@@ -99,10 +99,10 @@ create an API. It's really small framework, but enough to make everything we nee
 
 Let's check it out! First, create a new project with a typical Ruby application structure:
 
-```bash
+{% highlight bash %}
 .
 ├── Gemfile
 └── application.rb
-```
+{% endhighlight %}
 
 

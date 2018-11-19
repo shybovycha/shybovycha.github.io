@@ -103,7 +103,7 @@ And here's where SCSS is just a revelation: its great power is in its *selectors
 
 *Selectors* allow you to describe selector' nesting just as you'd be writing C code:
 
-```scss
+{% highlight scss %}
 .header {
     // header styles
 
@@ -119,7 +119,7 @@ And here's where SCSS is just a revelation: its great power is in its *selectors
         }
     }
 }
-```
+{% endhighlight %}
 
 *Variables* allow you to get rid of all those magic values. So if you use one color many times across your styles,
 you just extract it into a named constant and use the pretty named value everywhere!
@@ -128,7 +128,7 @@ you just extract it into a named constant and use the pretty named value everywh
 
 Relating on all those, you may re-write your user widget as follows:
 
-```scss
+{% highlight scss %}
 $header-avatar-size: 50px;
 $sidebar-avatar-size: 150px;
 
@@ -148,20 +148,20 @@ $sidebar-avatar-size: 150px;
         @include avatar($sidebar-avatar-size);
     }
 }
-```
+{% endhighlight %}
 
 I found Gulp to be super-easy for tasks like compiling stylesheets, views and javascripts. But before
 we continue with Gulp, lets initialize an NPM project with `npm init` and install the plugins required:
 
-```bash
+{% highlight bash %}
 npm install -g gulp
-```
+{% endhighlight %}
 
 And Gulp plugins:
 
-```bash
+{% highlight bash %}
 npm install --save-dev gulp gulp-babel gulp-scss gulp-jade
-```
+{% endhighlight %}
 
 I will describe how Gulp works and how we can use it in our project in a minute. For now, lets
 just install the front-end dependencies. Let's make them use fixed versions, so when we update our project,
@@ -169,11 +169,11 @@ nothing gets broken. To make our development quick, we'll be using *Twitter Boot
 fron-end dependencies with *Bower*. Bower will fill out the `bower.json`, a file, telling Bower
 which libraries to use, automatically:
 
-```bash
+{% highlight bash %}
 npm install -g bower
 bower init
 bower install --save bootstrap angular
-```
+{% endhighlight %}
 
 These commands create a directory `bower_components`, containing all the dependencies installed, each in its own sub-directory. With that in mind, we will be referencing our front-end dependencies, relatively to their catalogs within the `bower_components` directory.
 
@@ -187,7 +187,7 @@ to store its results, `gulp.dest()` may point to a directory or a single file, w
 
 Below is our first Gulp task. Write this code in the `gulpfile.js`:
 
-```js
+{% highlight js %}
 var gulp = require('gulp'),
     sass = require('gulp-scss'),
     babel = require('gulp-babel'),
@@ -206,14 +206,14 @@ gulp.task('build', function () {
         .pipe(sass({ style: 'expanded' }))
         .pipe(gulp.dest('public/stylesheets'));
 });
-```
+{% endhighlight %}
 
 This tells Gulp to define `build` task, which compiles all the Jade, SCSS and ES6+ files into HTML, CSS
 and JS files, correspondingly. Compiled files are placed within the `public/` directory, so we may
 easily render them with almost any web-server. But first things first, we need to prepare directory structure
 like this for our task:
 
-```bash
+{% highlight bash %}
 .
 |____bower.json
 |____gulpfile.js
@@ -223,14 +223,14 @@ like this for our task:
 | |____javascripts
 | |____stylesheets
 | |____views
-```
+{% endhighlight %}
 
 This may seem odd to the paragraph, dedicated to build tools, but lets check how our tasks work.
 To do this, we need to write some test files to check our `build` task. So lets create one of each kind:
 
 *`src/views/index.jade`:*
 
-```jade
+{% highlight jade %}
 html(lang="en")
 head
     meta(charset="UTF-8")
@@ -239,20 +239,20 @@ head
     script(type="text/javascript", src="/javascripts/main.js")
 body
     h1 Hello, world!
-```
+{% endhighlight %}
 
 *`src/stylesheets/main.scss`:*
 
-```scss
+{% highlight scss %}
 h1 {
     padding: 0 10px;
     border-bottom: 1px solid #dedede;
 }
-```
+{% endhighlight %}
 
 *`src/javascripts/main.js`:*
 
-```js
+{% highlight js %}
 function timeout(ms) {
   return new Promise((res) => setTimeout(res, ms));
 }
@@ -266,13 +266,13 @@ async function f() {
 }
 
 f()
-```
+{% endhighlight %}
 
 And to actually check our task, we need to run it with
 
-```bash
+{% highlight bash %}
 gulp build
-```
+{% endhighlight %}
 
 Now, you may open the HTML generated from Jade in a browser, but it will look ugly, because your
 browser will doubtly find stylesheets and javascripts that simply. To make the magic happen, we
@@ -284,7 +284,7 @@ I've chosen that server plugin because it comes with one handy feature: it autom
 the opened pages in your web-browser if any of the files you are browsing has changed. Here's
 the code of our serving task:
 
-```js
+{% highlight js %}
 gulp.task('serve', function () {
     gulp.src('public/')
         .pipe(server({
@@ -293,18 +293,18 @@ gulp.task('serve', function () {
             open: true
         }));
 });
-```
+{% endhighlight %}
 
 But if you remember, we are compiling our sources from SCSS/Jade into the `public/` directory.
 So how the server would know if anything changed in our `*.scss` or `*.jade` files? We need to
 reload the page in web-browser if anything changes in those files. To do that, we will write one
 more task, which will re-build our source files if anything changes:
 
-```js
+{% highlight js %}
 gulp.task('watch', function () {
     gulp.watch('src/**/*', [ 'build' ])
 });
-```
+{% endhighlight %}
 
 Here we used two new features of Gulp: *watching for file changes* and *running existin tasks from another task*.
 Simple? Yeah, **that** simple! So we just tell Gulp: *keep an eye on those files - if anything happens - run
@@ -313,7 +313,7 @@ those tasks immediately!* - and the magic happens.
 But why shoud we run two tasks? Let's merge them into one so we just run `gulp serve` and get both live reload
 and live re-compilation:
 
-```js
+{% highlight js %}
 gulp.task('serve', function () {
     gulp.watch('src/**/*', [ 'build' ])
 
@@ -325,7 +325,7 @@ gulp.task('serve', function () {
             open: true
         }));
 });
-```
+{% endhighlight %}
 
 This task first defines a watcher for our sources and then starts server, which will react to any changes
 in the `public/` directory. To check how this awesomeness works, start `gulp serve`, open the
@@ -352,7 +352,7 @@ Six pages, huh? Let's do it quick:
 
 *`src/views/layouts/default.jade`:*
 
-```jade
+{% highlight jade %}
 doctype html
 html(lang="en")
     head
@@ -364,11 +364,11 @@ html(lang="en")
 
     body
         block body
-```
+{% endhighlight %}
 
 *`src/views/index.jade`:*
 
-```jade
+{% highlight jade %}
 extends layouts/default.jade
 
 block content
@@ -384,11 +384,11 @@ block content
 
                 .col-xs-12.col-md-1
                     a.btn.btn-success.btn-lg(href="#", role="button") Sign up
-```
+{% endhighlight %}
 
 *`src/views/new_session.jade`:*
 
-```jade
+{% highlight jade %}
 extends layouts/default.jade
 
 block content
@@ -418,11 +418,11 @@ block content
                     input.form-control(type="password", placeholder="Password")
                 fieldset.form-group.text-center
                     button.btn.btn-success(type="submit") Sign in
-```
+{% endhighlight %}
 
 *`src/views/edit_account.jade`:*
 
-```jade
+{% highlight jade %}
 extends layouts/default.jade
 
 block content
@@ -438,11 +438,11 @@ block content
                     input.form-control(type="password", placeholder="Password confirmation")
                 fieldset.form-group.text-center
                     button.btn.btn-success(type="submit") Save
-```
+{% endhighlight %}
 
 *`src/views/application_list.jade`:*
 
-```jade
+{% highlight jade %}
 extends layouts/default.jade
 
 block content
@@ -469,11 +469,11 @@ block content
             h4 New users:
             .progress
                 progress.progress-bar.progress-bar-success(role="progress" style="width:30%")
-```
+{% endhighlight %}
 
 *`src/views/application_details.jade`:*
 
-```jade
+{% highlight jade %}
 extends layouts/default.jade
 
 block content
@@ -524,11 +524,11 @@ block content
                     tr
                         td Spain
                         td 2
-```
+{% endhighlight %}
 
 *`src/views/edit_application.jade`:*
 
-```jade
+{% highlight jade %}
 extends layouts/default.jade
 
 block content
@@ -542,11 +542,11 @@ block content
                     .btn.btn-danger Reset stats
                 fieldset.form-group.text-center
                     button.btn.btn-success(type="submit") Save
-```
+{% endhighlight %}
 
 *`src/views/new_application.jade`:*
 
-```jade
+{% highlight jade %}
 extends layouts/default.jade
 
 block content
@@ -558,12 +558,12 @@ block content
                     input.form-control(type="text" placeholder="Name")
                 fieldset.form-group.text-center
                     button.btn.btn-success(type="submit") Create
-```
+{% endhighlight %}
 
 And to make Bower-managed libraries available in our views, we need to add one more path to
 the server configuration:
 
-```js
+{% highlight js %}
 gulp.src(['public/', 'bower_components/'])
     .pipe(server({
         port: 3000,
@@ -571,7 +571,7 @@ gulp.src(['public/', 'bower_components/'])
         directoryListing: false,
         open: true
     }));
-```
+{% endhighlight %}
 
 As you can see, we used Jade's block extending and split our templates into one layout and many partials, so
 our file tree is clean and changing any of the pages will not be a hard task.
@@ -697,7 +697,7 @@ describe how I look for such powerful solution for a server-side.
 
 ## Resourceful services
 
-```js
+{% highlight js %}
 ourStatsApp.factory('session', [ '$http', 'accountData',
     ($http, accountData) => {
         return {
@@ -736,7 +736,7 @@ ourStatsApp.factory('session', [ '$http', 'accountData',
         }
     }
 ]);
-```
+{% endhighlight %}
 
 -----
 
@@ -753,7 +753,7 @@ because it can handle downloading and running webdrivers for selenium out-of-the
 
 ## Promises
 
-```javascript
+{% highlight javascript %}
   this.Then(/^he can (not )?see retina images$/, function (negation, callback) {
        var pattern = (negation ? /^((?!@2x).)*$/ : /@2x/);
 
@@ -770,9 +770,9 @@ because it can handle downloading and running webdrivers for selenium out-of-the
                    });
            });
    });
-```
+{% endhighlight %}
 
-```js
+{% highlight js %}
   this.Then(/^he can (not )?see retina images$/, function (negation, callback) {
         var pattern = (negation ? /^((?!@2x).)*$/ : /@2x/);
 
@@ -809,7 +809,7 @@ because it can handle downloading and running webdrivers for selenium out-of-the
             .then(checkHomepageLogoBackground)
             .then(callback);
     });
-```
+{% endhighlight %}
 
 ## Frank
 

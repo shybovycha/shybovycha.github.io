@@ -82,7 +82,7 @@ base class' properties.
 
 The code, creating trimesh collision shape is quite simple and straightforward:
 
-```cpp
+{% highlight cpp %}
 void createTrimeshShape(irr::scene::IMeshBuffer *meshBuffer, NewtonCollision *treeCollision,
                                      irr::core::vector3df scale = irr::core::vector3df(1, 1, 1)) {
     irr::core::vector3df vArray[3];
@@ -103,7 +103,7 @@ void createTrimeshShape(irr::scene::IMeshBuffer *meshBuffer, NewtonCollision *tr
         NewtonTreeCollisionAddFace(treeCollision, 3, &vArray[0].X, sizeof(irr::core::vector3df), 1);
     }
 }
-```
+{% endhighlight %}
 
 We take the edges _(indices)_, find their vertices, create a triangle - and we're done!
 You may have noticed, we do not actually create the collision shape here - we take it as
@@ -112,7 +112,7 @@ an argument for our function. You will see why this is done that way in a moment
 Now it's body's turn! But we need to extend our `Entity` class with the `NewtonBody`
 field so that we can seamlesly integrate it to our engine:
 
-```cpp
+{% highlight cpp %}
 class Entity {
 private:
     scene::ISceneNode *mNode;
@@ -135,11 +135,11 @@ public:
         mBody = body;
     }
 };
-```
+{% endhighlight %}
 
 And now we are ready to set our `NewtonBody`:
 
-```cpp
+{% highlight cpp %}
 void createMeshBody(const std::string name) {
     Entity *entity = entities[name];
     irr::scene::IMeshSceneNode *node = (irr::scene::IMeshSceneNode *) entity->getSceneNode();
@@ -177,7 +177,7 @@ void createMeshBody(const std::string name) {
 
     entity->setBody(body);
 }
-```
+{% endhighlight %}
 
 There is an interesting piece here, though: we used recursion to create collision shape...
 But if you remember, we did not create collision shape with our `createTrimeshShape` method -
@@ -215,7 +215,7 @@ talk about it later, when we will deal with impulses.
 
 So, the `transformCallback`:
 
-```cpp
+{% highlight cpp %}
 static void transformCallback(const NewtonBody *body, const dFloat *matrix, int threadIndex) {
     Entity *entity = (Entity *) NewtonBodyGetUserData(body);
     scene::ISceneNode *node = entity->getSceneNode();
@@ -229,7 +229,7 @@ static void transformCallback(const NewtonBody *body, const dFloat *matrix, int 
     node->setPosition(transform.getTranslation());
     node->setRotation(transform.getRotationDegrees());
 }
-```
+{% endhighlight %}
 
 Nothing tricky here.
 
@@ -239,7 +239,7 @@ it is much more easy than with trimeshes - you do not need to loop through any i
 vertices - just set shape params like dimensions or radius. And body creation process is
 totally same.
 
-```cpp
+{% highlight cpp %}
 void createSphereNode(const std::string name, const std::string textureFile) {
     scene::ISceneNode *node = smgr->addSphereSceneNode();
 
@@ -292,7 +292,7 @@ void createSphereBody(const std::string name, float radius, float mass) {
 
     entity->setBody(body);
 }
-```
+{% endhighlight %}
 
 Have no fear about code duplication - we will remove it later. When you are done, you should
 get picture like this one:

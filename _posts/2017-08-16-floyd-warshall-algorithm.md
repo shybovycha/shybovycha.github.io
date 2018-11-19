@@ -52,7 +52,7 @@ digraph G {
 <div class="info">
 In <em>GraphViz</em> it would be described as follows:
 
-```dot
+{% highlight dot %}
 digraph G {
     0->2 [label = "1"];
     2->3 [label = "5"];
@@ -60,7 +60,7 @@ digraph G {
     1->2 [label = "6"];
     1->0 [label = "7"];
 }
-```
+{% endhighlight %}
 </div>
 
 We first create a two-dimensional array of size `4` *(since there are exactly `4` vertices in our graph)*.
@@ -68,7 +68,7 @@ We first create a two-dimensional array of size `4` *(since there are exactly `4
 We initialize its main diagonal *(the items, whose indices are equal, for ex. `G[0, 0]`, `G[1, 1]`, etc.)* with zeros, because
 the shortest path from vertex to itself has the length `0` and the other elements with a very large number *(to indicate there is no edge or an infinitely long edge between them)*. The defined elements, corresponding to graph's edges, we fill with edges' lengths:
 
-```csharp
+{% highlight csharp %}
 int N = 4;
 int[,] D = new int[N, N];
 
@@ -87,13 +87,13 @@ D[1, 0] = 7;
 D[1, 2] = 6;
 D[2, 3] = 5;
 D[3, 1] = 2;
-```
+{% endhighlight %}
 
 ## The algorithm itself
 
 Now that we are on a same page with definitions, algorithm can be implemented like this:
 
-```csharp
+{% highlight csharp %}
 // Initialise the routes matrix R
 for (int i = 0; i < N; i++) {
     for (int t = 0; t < N; t++) {
@@ -112,7 +112,7 @@ for (int k = 0; k < N; k++) {
         }
     }
 }
-```
+{% endhighlight %}
 
 After the algorithm run, the matrix `R` will be filled with vertices' indices, describing shortest paths between them.
 
@@ -120,7 +120,7 @@ After the algorithm run, the matrix `R` will be filled with vertices' indices, d
 
 In order to reconstruct the path from vertex `u` to vertex `v`, you need follow the elements of matrix `R`:
 
-```csharp
+{% highlight csharp %}
     List<Int32> Path = new List<Int32>();
 
     while (start != end)
@@ -131,13 +131,13 @@ In order to reconstruct the path from vertex `u` to vertex `v`, you need follow 
     }
 
     Path.Add(end);
-```
+{% endhighlight %}
 
 ## Summary
 
 The whole code could be wrapped in a couple of methods:
 
-```csharp
+{% highlight csharp %}
 using System;
 using System.Collections.Generic;
 
@@ -232,7 +232,7 @@ public class MainClass
         Console.WriteLine("Path: {0}", String.Join(" -> ", pathFinder.FindShortestPath(start, end).ToArray()));
     }
 }
-```
+{% endhighlight %}
 
 You can read 'bout this algorithm on [wikipedia][1] and get some data structures generated automatically [here][2]
 

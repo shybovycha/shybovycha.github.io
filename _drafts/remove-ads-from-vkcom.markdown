@@ -10,12 +10,12 @@ This is the way to remove it on-the-fly:
 * go to the "Console" tab
 * enter this text into the console:
 
-```js
+{% highlight js %}
 setInterval(function () {
     var elts = document.querySelectorAll('#ads_left');
     for (var i = 0; i < elts.length; i++) { elts[i].parentElement.removeChild(elts[i]); }
 }, 5000);
-```
+{% endhighlight %}
 
 * press <kbd>Enter</kbd>
 * perform these steps each time you enter vk.com or reload the page =(

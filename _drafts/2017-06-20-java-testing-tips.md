@@ -4,7 +4,7 @@
 
 ## Running a single test
 
-```java
+{% highlight java %}
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
 import org.junit.runner.Result;
@@ -19,13 +19,13 @@ public class SingleJUnitTestRunner {
         System.exit(result.wasSuccessful() ? 0 : 1);
     }
 }
-```
+{% endhighlight %}
 
 And then run `java -cp path/to/testclasses:path/to/junit-4.8.2.jar SingleJUnitTestRunner com.mycompany.product.MyTestClass#testMethod`
 
 ### Returning different results on mock calls
 
-```java
+{% highlight java %}
 @RunWith(MockitoJUnitRunner.class)
 public class ProjectManagerTest {
     @Mock
@@ -57,13 +57,13 @@ public class ProjectManagerTest {
         when(projectManager.getProject(databaseConnection, invalidProjectId)).thenReturn(right(project));
     }
 }
-```
+{% endhighlight %}
 
 ### Testing REST APIs
 
 **Bad:**
 
-```java
+{% highlight java %}
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 
@@ -235,11 +235,11 @@ public class SomeResourceTest {
         assertThat("The returned response is ok", createResponse.getTitle(), is("title"));
     }
 }
-```
+{% endhighlight %}
 
 **Better:**
 
-```java
+{% highlight java %}
 // using RestAssured
 
 @RunWith(MockitoJUnit4Runner.class)
@@ -254,4 +254,4 @@ public class SomeResourceTest {
             .body("title", equalTo("title"));
     }
 }
-```
+{% endhighlight %}

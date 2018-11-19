@@ -12,7 +12,7 @@ tumblr_url: http://shybovycha.tumblr.com/post/81573029618/jpa-with-sqlite-autoin
 
 <p>My model definition was like this:</p>
 
-```java
+{% highlight java %}
 @Entity
 public class Merchant {
     @Id
@@ -25,11 +25,11 @@ public class Merchant {
     public Merchant(){   }
 
     // ...
-```
+{% endhighlight %}
 
 <p>And the table creation script was the following:</p>
 
-```sql
+{% highlight sql %}
 CREATE TABLE MERCHANT
 (
     ID INTEGER PRIMARY KEY NOT NULL,
@@ -42,7 +42,7 @@ CREATE TABLE MERCHANT
     MINSUM REAL NOT NULL,
     TOTAL REAL NOT NULL
 );
-```
+{% endhighlight %}
 
 <p>I faced some strange exceptions like <em>id could not be null</em>, <em>SQL error or missing database (near &ldquo;values&rdquo;: syntax error)</em>, etc.</p>
 

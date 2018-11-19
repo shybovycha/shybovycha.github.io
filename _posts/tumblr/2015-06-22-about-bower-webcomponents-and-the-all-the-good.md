@@ -39,7 +39,7 @@ or `menu_right` (representing menu' position).
 
 Combining those three you may determine the look of any element and its state:
 
-```css
+{% highlight css %}
 .navigation__menu__position_left {...}
 .navigation__menu__position_right { ... }
 
@@ -54,7 +54,7 @@ Combining those three you may determine the look of any element and its state:
 /* more simple */
 .button__big { ... }
 .button__red { ... }
-```
+{% endhighlight %}
 
 The aim of BEM is great - to make the web page use independent blocks with some structured **CSS class names** and have them all described in a nice way in the CSS files. Whilst it may sound like a Holy Grail for the Web, let's take a look at a real-world example of how BEM is used.
 
@@ -64,7 +64,7 @@ There are, in fact, two approaches of BEM.
 
 Below is an example of vanilla BEM:
 
-```css
+{% highlight css %}
 .bwelcome__message.hidden {
     display: none;
 }
@@ -83,17 +83,17 @@ Below is an example of vanilla BEM:
     display: block;
     width: 100%;
 }
-```
+{% endhighlight %}
 
 And the HTML:
 
-```html
+{% highlight html %}
 <div class="bwelcome">
 <div class="bwelcome__message hiddent">Hello, username!</div>
 <div class="bwelcome__label">Enter your name:</div>
 <div class="bwelcome__input"></div>
 </div>
-```
+{% endhighlight %}
 
 So, here we can see that any styles should not overlap with the defined ones unless they are written in a BEM-way for the same element. Nice idea,implementation not so nice… All these `b#{block}__#{element}` classes are way too long, don’t you think? Writing them everywhere - HTML, CSS and JavaScript - is really painful.
 
@@ -111,7 +111,7 @@ with either BEM, BEMTREE, BEMHTML and BEMJSON. This has two advantages to writin
 
 For instance, here's how your page may look like when being made with BEMHTML:
 
-```js
+{% highlight js %}
 ({
      block: 'page',
      title: 'hello',
@@ -132,11 +132,11 @@ For instance, here's how your page may look like when being made with BEMHTML:
          }
      ]
  })
-```
+{% endhighlight %}
 
 And here's how it may look like when made with BEMJSON:
 
-```js
+{% highlight js %}
 exports.deps = [
     {
         "block": "page",
@@ -162,7 +162,7 @@ exports.deps = [
         "block": "footer"
     }
 ];
-```
+{% endhighlight %}
 
 Those two may work both together, when you define general page structure with BEMJSON and each block you
 define with BEMHTML, or separatedly, when you define all your page in either BEMJSON or BEMHTML.
@@ -183,7 +183,7 @@ are supported since very early CSS versions.
 
 So, welcome the WebComponents' example:
 
-```handlebars
+{% highlight handlebars %}
 {% raw %}
 <template id="welcome-component">
       <style>
@@ -210,7 +210,7 @@ So, welcome the WebComponents' example:
     shadow.appendChild(template.content);
     </script>
 {% endraw %}
-```
+{% endhighlight %}
 
 This code may not look so good, as it might, but it works like a charm!
 
@@ -244,29 +244,29 @@ Then you should end up with all your libraries in the `bower_components` directo
 
 Let’s start cooking our demo with [Polymer](https://www.polymer-project.org/). First, initialize the Bower project and add this section to your fresh `bower.json` file:
 
-```js
+{% highlight js %}
 "dependencies": {
     "polymer": "Polymer/polymer#^1.0.0"
 }
-```
+{% endhighlight %}
 
 Then run `bower install`. This will provide you with all the stuff you need.
 
 Now we will move our pretty `welcome-component` to a new place. Create two files:`welcome-component.html` and `index.html`. Fill the last one with [Emmet](http://docs.emmet.io/):
 
-```jade
+{% highlight jade %}
 html:5
-```
+{% endhighlight %}
 
 *(you need to hit the “Expand” key, formerly Tab, at the end of this single line while editing the`index.html`* *file in an Emmet-powered editor)*. And add just a single line within the HTML’ `<body>` tag:
 
-```html
+{% highlight html %}
 <welcome-component></welcome-component>
-```
+{% endhighlight %}
 
 Now let’s define our new component in `welcome-component.html`:
 
-```handlebars
+{% highlight handlebars %}
 {% raw %}
  <dom-module id="welcome-component">
     <style>
@@ -290,20 +290,20 @@ Now let’s define our new component in `welcome-component.html`:
     </script>
   </dom-module>
 {% endraw %}
-```
+{% endhighlight %}
 
 Now, add our new component importing to the `<head>` tag of the `index.html` file:
 
-```html
+{% highlight html %}
 <link rel="import" href="bower_components/polymer/polymer.html" /> <!-- imports Polymer -->
 <link rel="import" href="welcome-component.html" /> <!-- imports our component -->
-```
+{% endhighlight %}
 
 To run this quickly, you might want to use `http-server` from `npm`:
 
-```bash
+{% highlight bash %}
 http-server -o --cors
-```
+{% endhighlight %}
 
 And voila! We’ve just made a nice web component, which could be used really simply. And the code is totally clean!
 
@@ -317,7 +317,7 @@ Now, the last thing I’d like to show is the attributes for our custom componen
 
 To do this, we shall use two Polymer features. First of all, let’s define our attribute, adding this section to our `Polymer()` call:
 
-```js
+{% highlight js %}
 Polymer({
     ...
     properties: {
@@ -327,11 +327,11 @@ Polymer({
     }
     ...
 });
-```
+{% endhighlight %}
 
 Now that we’ve defined our attribute THAT simply, we should use it somehow. Polymer allows us to define a method, which will be called once the component gets inserted into a webpage:
 
-```js
+{% highlight js %}
 Polymer({
     ...
     ready: function() {
@@ -339,7 +339,7 @@ Polymer({
     }
     ...
 });
-```
+{% endhighlight %}
 
 As long as you're riding <s>IOJS</s> NodeJS 5.0+, you can use the ES6 string interpolation feature, as in the example above =) Here, the `this` variable is bound to the `<welcome-component>` tag. So in order to change the `.message` tag's HTML, we need to find it first. For this purpose I’ve used the HTML5 `querySelector` method.
 

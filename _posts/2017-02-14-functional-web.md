@@ -35,7 +35,7 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
   <div class="col">
     <p><a href="https://facebook.github.io/react/" target="_blank">React</a></p>
 
-    ```js
+    {% highlight js %}
     class App extends React.Component {
       constructor(props) {
         super(props);
@@ -62,7 +62,7 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
     }
 
     ReactDOM.render(<App />, document.body);
-    ```
+    {% endhighlight %}
 
     <p>
       <a href="http://codepen.io/shybovycha/pen/dNErOY" target="_blank" class="btn btn-md">Run this code</a>
@@ -72,7 +72,7 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
   <div class="col">
     <p><a href="https://facebook.github.io/react/" target="_blank">React</a> + <a href="http://redux.js.org/" target="_blank">Redux</a></p>
 
-    ```js
+    {% highlight js %}
     function App(props) {
       var store = props.store;
 
@@ -105,7 +105,7 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
     render();
 
     store.subscribe(render);
-    ```
+    {% endhighlight %}
 
     <p>
       <a href="http://codepen.io/shybovycha/pen/RKmYVy" target="_blank" class="btn btn-md">Code</a>
@@ -115,7 +115,7 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
   <div class="col">
     <p><a href="http://elm-lang.org" target="_blank">Elm</a></p>
 
-    ```haskell
+    {% highlight haskell %}
     import Html exposing (beginnerProgram, div, button, text)
     import Html.Events exposing (onClick)
 
@@ -145,7 +145,7 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
 
     main =
       beginnerProgram { model = initialState, view = view, update = update }
-    ```
+    {% endhighlight %}
 
     <p>
       <a href="http://codepen.io/shybovycha/pen/egaLXv" target="_blank" class="btn btn-md">Compiled code</a>
@@ -155,7 +155,7 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
   <div class="col">
     <p><a href="http://mithril.js.org" target="_blank">Mithril</a></p>
 
-    ```js
+    {% highlight js %}
     var count$ = 0;
 
     var App = {
@@ -169,7 +169,7 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
     };
 
     m.mount(document.body, App);
-    ```
+    {% endhighlight %}
 
     <p>
       <a href="http://codepen.io/shybovycha/pen/WRBgWv" target="_blank" class="btn btn-small">Code</a>
@@ -179,7 +179,7 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
   <div class="col">
     <p><a href="https://cycle.js.org" target="_blank">Cycle</a></p>
 
-    ```js
+    {% highlight js %}
     var xs = xstream.default;
     var { div, p, button, makeDOMDriver } = CycleDOM;
 
@@ -209,7 +209,7 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
     }
 
     Cycle.run(App, { DOM: makeDOMDriver('body') });
-    ```
+    {% endhighlight %}
 
     <p>
       <a href="http://codepen.io/shybovycha/pen/XpOQvx" target="_blank" class="btn btn-small">Code</a>
@@ -219,7 +219,7 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
   <div class="col">
     <p><a href="https://github.com/shybovycha/libc.js" target="_blank">libc</a></p>
 
-    ```js
+    {% highlight js %}
     var initialState = 0;
 
     function update(state, message) {
@@ -243,7 +243,7 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
     var app = createApplication(initialState, update, view);
 
     app.mount(document.body);
-    ```
+    {% endhighlight %}
 
     <p>
       <a href="http://codepen.io/shybovycha/pen/dNEgNa" target="_blank" class="btn btn-md">Code</a>
@@ -259,7 +259,7 @@ Let's start-off by writing a simple "counter" application with the well-known Re
 
 The purpose of Facebook's React is to provide an interface to a virtual DOM, which allows users to track updates to the _application views_ and perform DOM operations to update views **with a minimal operation overhead**. In other words, we do not need to remove all the DOM nodes and create new ones from scratch when we can update a single property in a single DOM node. It might look like this:
 
-```js
+{% highlight js %}
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -284,7 +284,7 @@ class App extends React.Component {
 }
 
 ReactDOM.render(<App />, document.body);
-```
+{% endhighlight %}
 
 <a href="http://codepen.io/shybovycha/pen/dNErOY" target="_blank" class="btn btn-md">Run this code</a>
 
@@ -298,7 +298,7 @@ Redux is an ancestor of Facebook's Flux architecture and library. Flux' main goa
 
 Than comes Redux and says _"hey! we probably can do that with just a single store!"_. And whilst Flux did not forbid state updates to modify the state objects themselves, Redux states clearly: _"you may not change state directly - rather you just calculate a new value for it and I take care of everything else"_.
 
-```js
+{% highlight js %}
 function App(props) {
   var store = props.store;
 
@@ -331,7 +331,7 @@ function render() {
 render();
 
 store.subscribe(render);
-```
+{% endhighlight %}
 
 <a href="http://codepen.io/shybovycha/pen/RKmYVy" target="_blank" class="btn btn-md">Run this code</a>
 
@@ -351,7 +351,7 @@ Elm can be compared to `React + Redux + ML-language` combination.
 
 Let's take a look at our sample application, written in Elm:
 
-```haskell
+{% highlight haskell %}
 import Html exposing (beginnerProgram, div, button, text)
 import Html.Events exposing (onClick)
 
@@ -381,7 +381,7 @@ update msg state =
 
 main =
   beginnerProgram { model = initialState, view = view, update = update }
-```
+{% endhighlight %}
 
 <a href="http://codepen.io/shybovycha/pen/egaLXv" target="_blank" class="btn btn-md">Run compiled version of this code</a>
 
@@ -401,7 +401,7 @@ I found this code to be more clear, than in case with React + Redux, since in ca
 
 Mithril is a tiny JS framework, whose main feature is virtual DOM. Just take a look at a sample application:
 
-```js
+{% highlight js %}
 var count$ = 0;
 
 var App = {
@@ -415,7 +415,7 @@ var App = {
 };
 
 m.mount(document.body, App);
-```
+{% endhighlight %}
 
 <a href="http://codepen.io/shybovycha/pen/WRBgWv" target="_blank" class="btn btn-small">Run this code</a>
 
@@ -425,7 +425,7 @@ This is much less code than in case with React + Redux, isn't it?
 
 Cycle is a reactive framework; kind of React + Rx. This means an application is basically a view function, subscribed to all the events allowed in your application. An example straight from [cycle](https://cycle.js.org/) website:
 
-```js
+{% highlight js %}
 var xs = xstream.default;
 var { div, p, button, makeDOMDriver } = CycleDOM;
 
@@ -455,7 +455,7 @@ function App(sources) {
 }
 
 Cycle.run(App, { DOM: makeDOMDriver('body') });
-```
+{% endhighlight %}
 
 <a href="http://codepen.io/shybovycha/pen/XpOQvx" target="_blank" class="btn btn-small">Run this code</a>
 
@@ -487,7 +487,7 @@ I called it [libc](https://github.com/shybovycha/libc.js).
 
 The same "counter" application, written in libc looks like this:
 
-```js
+{% highlight js %}
 var initialState = 0;
 
 function update(state, message) {
@@ -511,7 +511,7 @@ function view(state, dispatch) {
 var app = createApplication(initialState, update, view);
 
 app.mount(document.body);
-```
+{% endhighlight %}
 
 <a href="http://codepen.io/shybovycha/pen/dNEgNa" target="_blank" class="btn btn-md">Run this code</a>
 

@@ -21,7 +21,7 @@ tumblr_url: http://shybovycha.tumblr.com/post/102644483371/speeding-up-with-ruby
 
 <p>The trouble was in a loop like this:</p>
 
-```ruby
+{% highlight ruby %}
 json_data = JSON.pase(json_file)
 keys = $redis.keys "*:hash_pattern:date:*"
 count, total_count = 0, 0
@@ -36,7 +36,7 @@ keys.each do |hash_key|
         total_count += i_value
     end
 end
-```
+{% endhighlight %}
 
 <p>My first attempt was implemented on a D language. But when I tried to use the compiled code library with Ruby, I failed. That’s why I thought <em>I feel more comfortable with C/C++ than with D</em>. And wrote the same code on C/C++. I took three third-party libraries:</p>
 
@@ -73,7 +73,7 @@ end
 
 <p>Our extension will have a very simple source file with just one non-standard include and two functions defined:</p>
 
-```c
+{% highlight c %}
 #include "ruby.h"
 
 #include <string.h>
@@ -95,7 +95,7 @@ void Init_my_ext() {
   VALUE MyModule = rb_define_module("MyModule");
   rb_define_module_function(MyModule, "moo", reinterpret_cast(moo), 2);
 }
-```
+{% endhighlight %}
 
 <p>Now let’s look at this source. There is only one exported function, <em>Init_my_ext</em>. That’s correct, because all our extension needs to do is to define something. And that is done in that method. The function <strong>Init_my_ext</strong> should have such name format: <strong>Init_$extension_name$</strong>. That’s how Ruby finds out what to call first.</p>
 
@@ -109,7 +109,7 @@ void Init_my_ext() {
 <li><strong>argument count</strong> - when this number is less than zero, than method will receive three arguments - <strong>int argc</strong>, <strong>VALUE* argv</strong> and <strong>VALUE self</strong>, representing variable amount of arguments; if this number is greater than zero - it defines the amount of required method arguments</li>
 </ol><p>Now, lets create a <strong>extconf.rb</strong> file, which will create <strong>Makefile</strong> for final library compilation:</p>
 
-```ruby
+{% highlight ruby %}
 require 'mkmf'
 
 extension_name = 'my_ext'
@@ -141,21 +141,21 @@ end
 
 # Do the work
 create_makefile(extension_name)
-```
+{% endhighlight %}
 
 <p>That’s it, it defines parameters for our future <strong>Makefile</strong>. Note the <strong>get_dir(name)</strong> method - I’ve defined it for you to simplify adding library sub-directories to the <strong>LIBDIR</strong> and <strong>INCLUDEDIR</strong> arrays, just like this:</p>
 
-```ruby
+{% highlight ruby %}
 LIB_DIRS = [ LIBDIR, get_dir('hiredis') ]
-```
+{% endhighlight %}
 
 <p>Also, note the <strong>-fPIC</strong> option - it is needed for most libraries to compile under different architectures. So, you may need to add them to your third-party libraries’ Makefiles to resolve corresponding compiler errors when building the extension.</p>
 
 <p>When you are done, let’s generate Makefile:</p>
 
-```ruby
+{% highlight ruby %}
 ruby extconf.rb
-```
+{% endhighlight %}
 
 <p>Then, you should be able to build your shared object with</p>
 
@@ -202,7 +202,7 @@ require 'my_gemname/my_ext'
 
 <p>Whilst the main difference hides in gemspec file:</p>
 
-```ruby
+{% highlight ruby %}
 Gem::Specification.new do |spec|
   spec.name = 'my_gemname'
   spec.version = '0.1'
@@ -216,16 +216,16 @@ Gem::Specification.new do |spec|
   spec.require_paths = [ 'lib', 'ext' ]
   spec.extensions = Dir['ext/my_gemname/extconf.rb']
 end
-```
+{% endhighlight %}
 
 <p>Here four lines make the magick:</p>
 
-```ruby
+{% highlight ruby %}
   spec.files = Dir['lib/**/*.rb'] + Dir['ext/**/*']
   spec.platform = Gem::Platform::RUBY
   spec.require_paths = [ 'lib', 'ext' ]
   spec.extensions = Dir['ext/my_gemname/extconf.rb']
-```
+{% endhighlight %}
 
 <p>They set, respectively:</p>
 
@@ -274,8 +274,8 @@ repository
 
 <p>This directory now could be used as a RubyGems repository. Just like the <strong>rubygems.org</strong>! Just point your <strong>Gemfile</strong> to this directory:</p>
 
-```ruby
+{% highlight ruby %}
 source File.join('file://', File.dirname(__FILE__), 'lib', 'repository')
-```
+{% endhighlight %}
 
 <p>And an <strong>important note</strong>: keep your <strong>Gemfile</strong> and <strong>Gemfile.lock</strong> up-to date - use only <strong>= latest.version</strong> in the <strong>Gemfile</strong> when running with your native extension gem!</p>

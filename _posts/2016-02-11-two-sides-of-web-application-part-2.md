@@ -73,7 +73,7 @@ Six pages, huh? Let's do it quick:
 
 *`src/views/layouts/default.jade`:*
 
-```jade
+{% highlight jade %}
 doctype html
 html(lang="en")
     head
@@ -85,11 +85,11 @@ html(lang="en")
 
     body
         block body
-```
+{% endhighlight %}
 
 *`src/views/index.jade`:*
 
-```jade
+{% highlight jade %}
 extends layouts/default.jade
 
 block content
@@ -102,11 +102,11 @@ block content
             .row
                 .col-xs-12.text-center
                     a.btn.btn-primary.btn-lg(href="#" role="button") Sign in
-```
+{% endhighlight %}
 
 *`src/views/new-session.jade`:*
 
-```jade
+{% highlight jade %}
 extends layouts/default.jade
 
 block content
@@ -136,11 +136,11 @@ block content
                     input.form-control(type="password" placeholder="Password")
                 fieldset.form-group.text-center
                     button.btn.btn-success(type="submit") Sign in
-```
+{% endhighlight %}
 
 *`src/views/edit_account.jade`:*
 
-```jade
+{% highlight jade %}
 extends layouts/default.jade
 
 block content
@@ -156,11 +156,11 @@ block content
                     input.form-control(type="password" placeholder="Password confirmation")
                 fieldset.form-group.text-center
                     button.btn.btn-success(type="submit") Save
-```
+{% endhighlight %}
 
 *`src/views/application_list.jade`:*
 
-```jade
+{% highlight jade %}
 extends layouts/default.jade
 
 block content
@@ -187,11 +187,11 @@ block content
             h4 New users:
             .progress
                 progress.progress-bar.progress-bar-success(role="progress" style="width:30%")
-```
+{% endhighlight %}
 
 *`src/views/application_details.jade`:*
 
-```jade
+{% highlight jade %}
 extends layouts/default.jade
 
 block content
@@ -242,11 +242,11 @@ block content
                     tr
                         td Spain
                         td 2
-```
+{% endhighlight %}
 
 *`src/views/edit_application.jade`:*
 
-```jade
+{% highlight jade %}
 extends layouts/default.jade
 
 block content
@@ -260,11 +260,11 @@ block content
                     .btn.btn-danger Reset stats
                 fieldset.form-group.text-center
                     button.btn.btn-success(type="submit") Save
-```
+{% endhighlight %}
 
 *`src/views/new_application.jade`:*
 
-```jade
+{% highlight jade %}
 extends layouts/default.jade
 
 block content
@@ -276,12 +276,12 @@ block content
                     input.form-control(type="text" placeholder="Name")
                 fieldset.form-group.text-center
                     button.btn.btn-success(type="submit") Create
-```
+{% endhighlight %}
 
 And to make Bower-managed libraries available in our views, we need to add one more path to
 the server configuration:
 
-```js
+{% highlight js %}
 gulp.src(['public/', 'bower_components/'])
     .pipe(server({
         port: 3000,
@@ -289,7 +289,7 @@ gulp.src(['public/', 'bower_components/'])
         directoryListing: false,
         open: true
     }));
-```
+{% endhighlight %}
 
 As you can see, we used Jade's block extending and split our templates into one layout and many partials, so
 our file tree is clean and changing any of the pages will not be a hard task.
@@ -422,17 +422,17 @@ Let's start and you will see how easy it is!
 
 We'll start, adding Angular to our `bower.json` dependencies:
 
-```bash
+{% highlight bash %}
 bower install --save angular
-```
+{% endhighlight %}
 
 Now when we have Angular inside the `bower_components` directory, let's add its references to
 our layout:
 
-```jade
+{% highlight jade %}
 head
     script(src="angular/angular.js")
-```
+{% endhighlight %}
 
 Now, the only two things we need to start using Angular right away are:
 
@@ -479,18 +479,18 @@ controllers and services very soon. But first, we need our application in Angula
 registered. Create a file `config.js` inside the `src/javascripts/` directory
 with the following content:
 
-```js
+{% highlight js %}
 var ourStatsApp = angular.module('ourStatsApp', [  ]);
-```
+{% endhighlight %}
 
 And point the whole layout to use that application with the `ng-app` directive on `<html>` tag:
 
-```js
+{% highlight js %}
 doctype html
 html(lang="en" ng-app="ourStatsApp")
     head
         block head
-```
+{% endhighlight %}
 
 Now when we have our app accessible by all our pages, let's create our first controller,
 which will handle exactly one page, the landing page. To expose our controllers,
@@ -503,7 +503,7 @@ Controllers are defined in a same way, but the dependency list for them contains
 module definition as the last element as well. Let's define a `LandingPageCtrl` controller
 in a `src/javascripts/controllers.js` file:
 
-```js
+{% highlight js %}
 var ourStatsControllers = angular.module('ourStatsControllers', []);
 
 ourStatsControllers.controller('LandingPageCtrl', [ '$scope',
@@ -511,7 +511,7 @@ ourStatsControllers.controller('LandingPageCtrl', [ '$scope',
         $scope.apps = 142;
     }
 ]);
-```
+{% endhighlight %}
 
 Here we defined a module `ourStatsControllers`, which will contain all the controllers
 and a `LandingPageCtrl` controller, which is a module of the same name, with a single
@@ -529,28 +529,28 @@ items, because most of javascript minifiers shorten your variables' names to jus
 symbols, while keeping strings all the same. So if you are not minifying your javascript files,
 this code will work perfectly:
 
-```js
+{% highlight js%}
 ourStatsControllers.controller('LandingPageCtrl', function ($scope) { ... })
-```
+{% endhighlight %}
 
 Instead, when minified, this controller will be transformed into something like this:
 
-```js
+{% highlight js %}
 a.controller('LandingPageCtrl',function(b){...})
-```
+{% endhighlight %}
 
 And Angular will try to find a controller, factory or a service, named `b`. And will probably fail.
 But if you use *"explicit"* dependency injection, like this:
 
-```js
+{% highlight js%}
 ourStatsControllers.controller('LandingPageCtrl', [ '$scope', function ($scope) { ... } ])
-```
+{% endhighlight %}
 
 then this code will be minified to something like this:
 
-```js
+{% highlight js %}
 a.controller('LandingPageCtrl',['$scope',function(b){...}])
-```
+{% endhighlight %}
 
 And then Angular will try to inject the `$scope` service and will succeed.
 Just keep this small trick in mind, when developing a real-world Angular applications.
@@ -558,9 +558,9 @@ Just keep this small trick in mind, when developing a real-world Angular applica
 Now we need to inject our controllers module into our application. So we just add a
 dependency entry inside our application declaration:
 
-```js
+{% highlight js %}
 var ourStatsApp = angular.module('ourStatsApp', [ 'ourStatsControllers' ]);
-```
+{% endhighlight %}
 
 As we already defined the `ourStatsControllers` module, we don't need to provide
 an implementation for it.
@@ -576,21 +576,21 @@ parse URL from browser and run the corresponding controller.
 Router we'll be using is `ngRoute`. This is a third-party plugin for Angular.
 And in order to use it, we need to add a Bower dependency to our project:
 
-```bash
+{% highlight bash %}
 bower install --save-dev angular-route
-```
+{% endhighlight %}
 
 Now we only need to reference it in our app definition:
 
-```js
+{% highlight js %}
 var ourStatsApp = angular.module('ourStatsApp', [ 'ngRoute', 'ourStatsControllers' ]);
-```
+{% endhighlight %}
 
 The next step is configuring our application routes, making application to
 "understand", which controller and which template it should run. This may
 be done in the same file, as the application definition:
 
-```js
+{% highlight js %}
 ourStatsApp.config([ '$routeProvider',
     function ($routeProvider) {
         $routeProvider.
@@ -603,7 +603,7 @@ ourStatsApp.config([ '$routeProvider',
             });
     }
 ]);
-```
+{% endhighlight %}
 
 This configuration makes our application run `LandingPageCtrl` when the `/home` page is
 entered. And if the URL entered is not known, application will redirect user to the
@@ -616,11 +616,11 @@ But we did not tell the Angular where to render it. To fix that, we'll
 add a `ng-view` directive to the `.container-fluid` element of our `<body>` tag,
 right in our layout:
 
-```jade
+{% highlight jade %}
 body
     block body
         .container-fluid(ng-view)
-```
+{% endhighlight %}
 
 Currently, when the project is built with the Gulp' `build` task,
 we have a `public/home.html` page, but it is not a partial - it is a standalone
@@ -637,20 +637,20 @@ available through `/partials/template_name.html` URLs.
 
 Now the views part of Gulp `build` task should look like this:
 
-```js
+{% highlight js %}
 gulp.src('src/views/**/*.jade')
     .pipe(jade())
     .pipe(gulp.dest('public/'));
-```
+{% endhighlight %}
 
 And let's just extract the content of `index.jade` partial as it is now, all the
 content into a separate Angular partial, `src/views/partials/home.jade`.
 
 And let's add only one small change - add only one line there:
 
-```html
+{% highlight html %}
 <h1>Currently running {{ apps }} apps</h1>
-```
+{% endhighlight %}
 
 Remember, we have the `$scope` parameter for our `LandingPageCtrl` controller?
 And that there we set the `apps` variable? That is it, displaying on our home page.
@@ -673,14 +673,14 @@ its `gulp-concat` plugin.
 
 Let's install it:
 
-```bash
+{% highlight bash %}
 npm install --save gulp-concat
-```
+{% endhighlight %}
 
 Its usage is super-easy: you just redirect the output of our CSS and JS files compiler
 to the `concat(filename)` function, providing it with a resulting filename. Like this:
 
-```js
+{% highlight js %}
 var concat = require('gulp-concat');
 
 gulp.src('src/javascripts/**/*.js')
@@ -692,12 +692,12 @@ gulp.src('src/stylesheets/**/*.scss')
     .pipe(sass({ style: 'expanded' }))
     .pipe(concat('all.css'))
     .pipe(gulp.dest('public/stylesheets'));
-```
+{% endhighlight %}
 
 Now, the controllers. First we need to set the routes.
 The router configuration for our application will look just like this:
 
-```js
+{% highlight js %}
 $routeProvider
     .when('/', {
         templateUrl: 'landing-page.html',
@@ -730,14 +730,14 @@ $routeProvider
     .otherwise({
         redirectTo: '/'
     });
-```
+{% endhighlight %}
 
 And we currently have a lot of pages with broken links. We should fix that,
 providing URLs to our *(empty for now)* controllers. Like this one:
 
-```jade
+{% highlight jade %}
 a.btn.btn-primary.btn-lg(href="#/sign-in" role="button") Sign in
-```
+{% endhighlight %}
 
 Fix those links for all the views by yourself - that is not a complex task.
 All the routes are described both in the app configuration and in a table

@@ -38,7 +38,7 @@ Standard example from a tutorial on D website works like a charm:
 
 `cpp_lib.cpp`:
 
-```cpp
+{% highlight cpp %}
 #include <iostream>
 
 using namespace std;
@@ -80,11 +80,11 @@ void deleteInstance(Derived *&d)
     delete d;
     d = 0;
 }
-```
+{% endhighlight %}
 
 `main.d`:
 
-```d
+{% highlight d %}
 extern(C++)
 {
     interface Base
@@ -124,7 +124,7 @@ void main()
     deleteInstance(d2);
     assert(d2 is null);
 }
-```
+{% endhighlight %}
 
 Compiled this one with `c++ -c cpp_lib.cpp -o cpp_lib.o && dmd cpp_lib.o main.d` and ran - *and it worked*.
 
@@ -134,7 +134,7 @@ Now it's time to add some OpenCV code!
 
 `video_reader.cpp`:
 
-```cpp
+{% highlight cpp %}
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/videoio.hpp"
@@ -175,11 +175,11 @@ public:
         return video;
     }
 };
-```
+{% endhighlight %}
 
 `main.d`:
 
-```d
+{% highlight d %}
 extern(C++)
 {
     class Video
@@ -207,22 +207,22 @@ void main()
         writefln("Video length: %d", video.getFrameCount());
     }
 }
-```
+{% endhighlight %}
 
 Compiling this code should not cause any troubles:
 
-```bash
+{% highlight bash %}
 c++ -c video_reader.cpp -o video_reader.o -I/usr/local/opt/opencv3/include
 dmd video_reader.o main.d -L-lstdc++ -L-lopencv_videoio -L-lopencv_core -L-lopencv_imgproc -L-L/usr/local/opt/opencv3/lib
-```
+{% endhighlight %}
 
 Instead, there were errors from D compiler:
 
-```bash
+{% highlight bash %}
 Error: Internal Compiler Error: unsupported type string
 
 [2]    97638 segmentation fault  dmd video_reader.o main.d -L-lstdc++ -L-lopencv_videoio -L-lopencv_core
-```
+{% endhighlight %}
 
 WTF?! Internal compiler error?! And what's wrong with strings?
 
@@ -237,7 +237,7 @@ should work.
 
 `video_reader.cpp`:
 
-```cpp
+{% highlight cpp %}
 class VideoReader {
 public:
     VideoReader() {}
@@ -257,11 +257,11 @@ public:
         return video;
     }
 };
-```
+{% endhighlight %}
 
 `main.d`:
 
-```d
+{% highlight d %}
 extern(C++)
 {
     class VideoReader
@@ -269,14 +269,14 @@ extern(C++)
         Video readFile(const char* filename);
     }
 }
-```
+{% endhighlight %}
 
 Yes, D supports pointers, but for interaction with C++ only. You **can** use pointers to create
 arrays, but that's not recommended.
 
 Compiling our code with C++ compiler gives no errors, but D is not happy again...
 
-```bash
+{% highlight bash %}
 Undefined symbols for architecture x86_64:
   "VideoReader::readFile(char const*)", referenced from:
       _D4main11VideoReader6__vtblZ in main.o
@@ -285,13 +285,13 @@ Undefined symbols for architecture x86_64:
 ld: symbol(s) not found for architecture x86_64
 clang: error: linker command failed with exit code 1 (use -v to see invocation)
 --- errorlevel 1
-```
+{% endhighlight %}
 
 Wow! That's actually not that interesting, but simple to understand: C++ does not generate
 any bytecode, which is not used by C++ program. So we should explicitly tell C++ compiler,
 which methods we do want to generate code for:
 
-```cpp
+{% highlight cpp %}
 class Video {
 protected:
   unsigned int frameCount;
@@ -327,7 +327,7 @@ Video* VideoReader::readFile(const char* filename) {
 
   return video;
 }
-```
+{% endhighlight %}
 
 The trick here is to first *declare* the whole class. Note: if we extract this declaration to a separate header file - it
 won't be compiled, since headers are not **compile units**. And if we then *define* *(implement)* methods, those implementations
@@ -336,19 +336,19 @@ will become compile units and the code for them will be generated even if they a
 Now we've made something like standard C++ code - with a *header* and *implementation*.
 But D compiler could not link our program again!
 
-```bash
+{% highlight bash %}
 Undefined symbols for architecture x86_64:
   "Video::getFrameCount()", referenced from:
       _D4main5Video6__vtblZ in main.o
 ld: symbol(s) not found for architecture x86_64
 clang: error: linker command failed with exit code 1 (use -v to see invocation)
 --- errorlevel 1
-```
+{% endhighlight %}
 
 What? Why? We've declared that method explicitly! Or maybe not?.. Let's look at our object file using `nm` utility:
 `nm video_reader.o`.
 
-```asm
+{% highlight asm %}
 00000000000001d8 s GCC_except_table1
 0000000000000258 s GCC_except_table10
 0000000000000308 s GCC_except_table12
@@ -390,12 +390,12 @@ What? Why? We've declared that method explicitly! Or maybe not?.. Let's look at 
                  U ___gxx_personality_v0
                  U _memcpy
                  U _strlen
-```
+{% endhighlight %}
 
 No, we've got everything in place... `__ZNK5Video13getFrameCountEv` points to that...
 Okay, that's the mistake in D method signature:
 
-```d
+{% highlight d %}
 extern(C++)
 {
     class Video
@@ -404,7 +404,7 @@ extern(C++)
         uint getFrameCount() const;
     }
 }
-```
+{% endhighlight %}
 
 The `@disable` annotation marks the method *(in our case - constructor of a `Video` class)* to be excluded from
 code generation. So in our case we won't have a default constructor for `Video` class, which D generates for us
@@ -414,14 +414,14 @@ from generating it for us.
 
 Yeah! Our code compiled and linked successfully! Now let's run it:
 
-```bash
+{% highlight bash %}
 [2]    99945 segmentation fault  ./video_reader
-```
+{% endhighlight %}
 
 What? Wrong again?! Okay, that's really strange. And no debugging information provided.
 Adding some debugging info with `writeln()`'s shows it's caused by the `getFrameCount()` method call:
 
-```d
+{% highlight d %}
 void main()
 {
     import std.stdio;
@@ -436,55 +436,55 @@ void main()
         writefln("Video length: %d", video.getFrameCount());
     }
 }
-```
+{% endhighlight %}
 
-```bash
+{% highlight bash %}
 Testing getFrameCount()...
 [2]    523 segmentation fault  ./video_reader
-```
+{% endhighlight %}
 
 Maybe it's because D and C++ have different `unsigned int` type size?
 
-```cpp
+{% highlight cpp %}
 std::cout << "(C++) sizeof(unsitned int) = " << sizeof(unsigned int) << "\n";
-```
+{% endhighlight %}
 
-```d
+{% highlight d %}
 writefln("(D) sizeof(uint) = %d", uint.sizeof);
-```
+{% endhighlight %}
 
 Seems like no:
 
-```bash
+{% highlight bash %}
 (C++) sizeof(unsigned int) = 4
 (D) sizeof(uint) = 4
-```
+{% endhighlight %}
 
 The trick here is that signature for constant method in C++ differs from such in D:
 
 `C++`:
 
-```cpp
+{% highlight cpp %}
 class Video {
 public:
     unsigned int getFrameCount() const;
 };
-```
+{% endhighlight %}
 
 `D`:
 
-```d
+{% highlight d %}
 class Video
 {
     final uint getFrameCount() const;
 }
-```
+{% endhighlight %}
 
 If we build and run our code now, everything works fine:
 
-```bash
+{% highlight bash %}
 Video length: 318
-```
+{% endhighlight %}
 
 <!--
 ## Build tools
@@ -496,7 +496,7 @@ I will use Bazel for this purpose.
 
 First of all, lets organize our project's directory structure:
 
-```tree
+{% highlight tree %}
 .
 ├── WORKSPACE
 ├── lib
@@ -505,16 +505,16 @@ First of all, lets organize our project's directory structure:
 └── main
     ├── BUILD
     └── main.d
-```
+{% endhighlight %}
 
 The `BUILD` files will contain all the build process steps' definitions. And we'll put project settings into
 `WORKSPACE` file.
 
 The first step is to build C++ library. We already have the command which does that:
 
-```bash
+{% highlight bash %}
 c++ -c video_reader.cpp -o video_reader.o -I/usr/local/opt/opencv3/include
-```
+{% endhighlight %}
 
 This command could be split into variables, describing compilation:
 
@@ -528,20 +528,20 @@ Since we are building library, we will use a specific Bazel's task for that:
 
 `lib/BUILD`:
 
-```bazel
+{% highlight bazel %}
 cc_library(
     name = "video_reader_lib",
     srcs = ["video_reader.cpp"],
     visibility = ["//main:__pkg__"],
 )
-```
+{% endhighlight %}
 
 The line `visibility = ["//main:__pkg__"]` indicates that the target `video_reader_lib` will be visible from the
 `main/BUILD` file.
 
 We now need to specify the OpenCV header files location:
 
-```bazel
+{% highlight bazel %}
 cc_library(
     name = "video_reader_lib",
     srcs = ["video_reader.cpp"],
@@ -550,11 +550,11 @@ cc_library(
     ],
     visibility = ["//main:__pkg__"],
 )
-```
+{% endhighlight %}
 
 Turning on the `-c` flag is just an addition to the `copts` array:
 
-```bazel
+{% highlight bazel %}
 cc_library(
     name = "video_reader_lib",
     srcs = ["video_reader.cpp"],
@@ -564,12 +564,12 @@ cc_library(
     ],
     visibility = ["//main:__pkg__"],
 )
-```
+{% endhighlight %}
 
 Now we would like to have our D code compiled. D is not supported out-of-the-box by Bazel. So we will need to
 install a corresponding plugin to enable it. Let's add it to our `WORKSPACE` file:
 
-```bazel
+{% highlight bazel %}
 http_archive(
     name = "io_bazel_rules_d",
     url = "http://bazel-mirror.storage.googleapis.com/github.com/bazelbuild/rules_d/archive/0.0.1.tar.gz",
@@ -580,13 +580,13 @@ http_archive(
 load("@io_bazel_rules_d//d:d.bzl", "d_repositories")
 
 d_repositories()
-```
+{% endhighlight %}
 
 We compiled our D program and linked it with this command:
 
-```bash
+{% highlight bash %}
 dmd video_reader.o main.d -L-lstdc++ -L-lopencv_videoio -L-lopencv_core -L-lopencv_imgproc -L-L/usr/local/opt/opencv3/lib
-```
+{% endhighlight %}
 
 Its parameters are:
 
@@ -595,7 +595,7 @@ Its parameters are:
 
 Only two of them, huh? Alright then... Let's define the build target in the `main/BUILD` file:
 
-```bazel
+{% highlight bazel %}
 load("@io_bazel_rules_d//d/d", "d_source_library")
 
 d_binary(
@@ -610,7 +610,7 @@ d_binary(
         "-L/usr/local/opt/opencv3/lib"
     ],
 )
-```
+{% endhighlight %}
 -->
 
 ## The end?
