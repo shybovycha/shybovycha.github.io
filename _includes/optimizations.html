@@ -60,7 +60,13 @@
 
     setTimeout(function () {
       // load heavy body background
-      document.body.style['background'] = 'url(/images/background2-compressed.jpg) no-repeat top left fixed';
+      var bgSrc = '/images/background2-compressed.jpg';
+
+      if (navigator.userAgent.indexOf("Chrome") !== -1) {
+        bgSrc = '/images/background2-compressed.webp';
+      }
+
+      document.body.style['background'] = 'url(' + bgSrc + ') no-repeat top left fixed';
     }, 0);
   });
 </script>
