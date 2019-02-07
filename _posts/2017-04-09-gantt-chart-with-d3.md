@@ -288,7 +288,8 @@ const createChartSVG = (data, placeholder, { svgWidth, svgHeight, elementHeight,
 
   bars
     .append('text')
-    .style('stroke', 'black')
+    .style('fill', 'black')
+    .style('font-family', 'sans-serif')
     .attr('x', d => d.labelX)
     .attr('y', d => d.labelY)
     .text(d => d.label);
