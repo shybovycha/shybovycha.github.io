@@ -29,141 +29,195 @@ The full implementation code is under the cut.
 
 <!--more-->
 
+I hope the implementation is more or less clear, but here are some details: the algorithm consists of three main parts - initial data pre-processing - (parsing and validating dates, calculating the default values and so on); calculating the graphics params (positions, sizes) and finally, rendering that into SVG.
+
+I've tried using caches whenever possible to optimize the performance and save some calculation time by just creating maps `id -> object`, since the algorithm refers to objects by their IDs a lot (like getting all the children of an element or getting a particular child's data).
+
+The data pre-processing is basically computing the length of each element based on either `startDate` and `endDate` or `startDate` and `duration`. Adding the `endDate` and `duration` option is possible and trivial, but I thought this is a less useful feature.
+
+The transformation of data is the most interesting part - we need to calculate the positions of each element on a "screen", and it heavily relies on data sorting mode - if we need to sort the data by the amount of children - this is somewhat simple. But if we sort data by dates - we need to count for element's index in the overall list of elements.
+
+Then we calculate the parameters of connection lines. They might be redundant for some users, but in my case it was essential to show the dependencies between elements sorted by children count. This is less trivial, since one needs to find the bends of each line. Hence I decided to simplify this problem by putting all the lines *under* the rectangles and assuming every line consists of these sections:
+
+1. the "input" and "output" pins (near the `endDate` end of a parent element and near `startDate` end of children element)
+2. two vertical sections to reach the height of a children element
+3. a connection between the lines from p. 2
+
+The last piece of an algorithm is generating SVG. This is where D3 strikes in and, given all the params generated in the previous section, creates SVG elements in DOM tree and scales them considering `svgOptions` passed to the main function.
+
+The implementation is below and the live demo is [here](https://codepen.io/shybovycha/pen/vxdePv)
+
 {% highlight js %}
-var createGanttChart = function (placeholder, data, {
-  itemHeight,
-  svgOptions
-}) {
-  // prepare data
+const prepareDataElement = ({ id, label, startDate, endDate, duration, dependsOn }) => {
+  if ((!startDate || !endDate) && !duration) {
+    throw new Exception('Wrong element format: should contain either startDate and duration, or endDate and duration or startDate and endDate');
+  }
+
+  if (startDate) startDate = moment(startDate);
+
+  if (endDate) endDate = moment(endDate);
+
+  if (startDate && !endDate && duration) {
+    endDate = moment(startDate);
+    endDate.add(duration[0], duration[1]);
+  }
+
+  if (!startDate && endDate && duration) {
+    startDate = moment(endDate);
+    startDate.subtract(duration[0], duration[1]);
+  }
+
+  if (!dependsOn)
+    dependsOn = [];
+
+  return {
+    id,
+    label,
+    startDate,
+    endDate,
+    duration,
+    dependsOn
+  };
+};
+
+const findDateBoundaries = data => {
   let minStartDate, maxEndDate;
 
-  let margin = (svgOptions && svgOptions.margin) || {
-    top: itemHeight * 2,
-    left: itemHeight * 2
-  };
+  data.forEach(({ startDate, endDate }) => {
+    if (!minStartDate || startDate.isBefore(minStartDate)) minStartDate = moment(startDate);
 
-  let scaleWidth = ((svgOptions && svgOptions.width) || 600);
-  let scaleHeight = Math.max((svgOptions && svgOptions.height) || 200, data.length * itemHeight * 2);
+    if (!minStartDate || endDate.isBefore(minStartDate)) minStartDate = moment(endDate);
 
-  scaleWidth -= margin.left * 2;
-  scaleHeight -= margin.top * 2;
+    if (!maxEndDate || endDate.isAfter(maxEndDate)) maxEndDate = moment(endDate);
 
-  let svgWidth = scaleWidth + (margin.left * 2);
-  let svgHeight = scaleHeight + (margin.top * 2);
-
-  let fontSize = (svgOptions && svgOptions.fontSize) || 12;
-
-  data = data.map(function(e) {
-    if ((!e.startDate || !e.endDate) && !e.duration) {
-      throw new Exception('Wrong element format: should contain either startDate and duration, or endDate and duration or startDate and endDate');
-    }
-
-    if (e.startDate)
-      e.startDate = moment(e.startDate);
-
-    if (e.endDate)
-      e.endDate = moment(e.endDate);
-
-    if (e.startDate && !e.endDate && e.duration) {
-      e.endDate = moment(e.startDate);
-      e.endDate.add(e.duration[0], e.duration[1]);
-    }
-
-    if (!e.startDate && e.endDate && e.duration) {
-      e.startDate = moment(e.endDate);
-      e.startDate.subtract(e.duration[0], e.duration[1]);
-    }
-
-    if (!minStartDate || e.startDate.isBefore(minStartDate)) minStartDate = moment(e.startDate);
-
-    if (!minStartDate || e.endDate.isBefore(minStartDate)) minStartDate = moment(e.endDate);
-
-    if (!maxEndDate || e.endDate.isAfter(maxEndDate)) maxEndDate = moment(e.endDate);
-
-    if (!maxEndDate || e.startDate.isAfter(maxEndDate)) maxEndDate = moment(e.startDate);
-
-    if (!e.dependsOn)
-      e.dependsOn = [];
-
-    return e;
+    if (!maxEndDate || startDate.isAfter(maxEndDate)) maxEndDate = moment(startDate);
   });
 
-  // add some padding to axes
-  minStartDate.subtract(2, 'days');
-  maxEndDate.add(2, 'days');
+  return {
+    minStartDate,
+    maxEndDate
+  };
+};
 
-  let dataCache = data.reduce(function (acc, e) {
-      acc[e.id] = e;
-      return acc;
-  }, {});
+const createDataCacheById = data => data.reduce((cache, elt) => Object.assign(cache, { [elt.id]: elt }), {});
 
-  let fillParents = function (eltId, result) {
-      dataCache[eltId].dependsOn.forEach(function (parentId) {
-          if (!result[parentId])
-            result[parentId] = [];
+const createChildrenCache = data => {
+  const dataCache = createDataCacheById(data);
 
-          if (result[parentId].indexOf(eltId) < 0)
-            result[parentId].push(eltId);
+  const fillDependenciesForElement = (eltId, dependenciesByParent) => {
+    dataCache[eltId].dependsOn.forEach(parentId => {
+      if (!dependenciesByParent[parentId])
+        dependenciesByParent[parentId] = [];
 
-          fillParents(parentId, result);
-      });
+      if (dependenciesByParent[parentId].indexOf(eltId) < 0)
+        dependenciesByParent[parentId].push(eltId);
+
+      fillDependenciesForElement(parentId, dependenciesByParent);
+    });
   };
 
-  let childrenCache = data.reduce(function (acc, e) {
-      if (!acc[e.id])
-        acc[e.id] = [];
+  return data.reduce((cache, elt) => {
+    if (!cache[elt.id])
+      cache[elt.id] = [];
 
-      fillParents(e.id, acc);
-      return acc;
+    fillDependenciesForElement(elt.id, cache);
+
+    return cache;
   }, {});
+}
 
-  data = data.sort(function(e1, e2) {
-    if (childrenCache[e1.id] && childrenCache[e2.id] && childrenCache[e1.id].length > childrenCache[e2.id].length)
-    // if (moment(e1.endDate).isBefore(moment(e2.endDate)))
+const sortElementsByChildrenCount = data => {
+  const childrenByParentId = createChildrenCache(data);
+
+  return data.sort((e1, e2) => {
+    if (childrenByParentId[e1.id] && childrenByParentId[e2.id] && childrenByParentId[e1.id].length > childrenByParentId[e2.id].length)
+      return -1;
+    else
+      return 1;
+  });
+};
+
+const sortElementsByEndDate = data =>
+  data.sort((e1, e2) => {
+    if (moment(e1.endDate).isBefore(moment(e2.endDate)))
       return -1;
     else
       return 1;
   });
 
-  // create container element
-  let svg = d3.select(placeholder).append('svg').attr('width', svgWidth).attr('height', svgHeight);
+const sortElements = (data, sortMode) => {
+  if (sortMode === 'childrenCount') {
+    return sortElementsByChildrenCount(data);
+  } else if (sortMode === 'date') {
+    return sortElementsByEndDate(data);
+  }
+}
 
-  const xScale = d3.scaleTime()
-    .domain([minStartDate.toDate(), maxEndDate.toDate()])
-    .range([0, scaleWidth]);
+const parseUserData = data => data.map(prepareDataElement);
 
-  const xAxis = d3.axisBottom(xScale);
+const createPolylineData = (rectangleData, elementHeight) => {
+  // prepare dependencies polyline data
+  const cachedData = createDataCacheById(rectangleData);
 
-  const g1 = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+  // used to calculate offsets between elements later
+  const storedConnections = rectangleData.reduce((acc, e) => Object.assign(acc, { [e.id]: 0 }), {});
 
-  const linesContainer = g1.append('g').attr('transform', `translate(0,${margin.top})`);
-  const barsContainer = g1.append('g').attr('transform', `translate(0,${margin.top})`);
+  // create data describing connections' lines
+  return rectangleData.flatMap(d =>
+    d.dependsOn
+      .map(parentId => cachedData[parentId])
+      .map(parent => {
+        const color = '#' + (Math.max(0.1, Math.min(0.9, Math.random())) * 0xFFF << 0).toString(16);
 
-  g1.append('g').call(xAxis);
+        // increase the amount rows occupied by both parent and current element (d)
+        storedConnections[parent.id]++;
+        storedConnections[d.id]++;
 
-  let rectangleData = data.map(function (d, i) {
-    let x = xScale(d.startDate.toDate());
-    let xEnd = xScale(d.endDate.toDate());
-    let y = i * itemHeight * 1.5;
-    let width = xEnd - x;
-    let height = itemHeight;
+        const deltaParentConnections = storedConnections[parent.id] * (elementHeight / 4);
+        const deltaChildConnections = storedConnections[d.id] * (elementHeight / 4);
+
+        const points = [
+          d.x, (d.y + (elementHeight / 2)),
+          d.x - deltaChildConnections, (d.y + (elementHeight / 2)),
+          d.x - deltaChildConnections, (d.y - (elementHeight * 0.25)),
+          parent.xEnd + deltaParentConnections, (d.y - (elementHeight * 0.25)),
+          parent.xEnd + deltaParentConnections, (parent.y + (elementHeight / 2)),
+          parent.xEnd, (parent.y + (elementHeight / 2))
+        ];
+
+        return {
+          points: points.join(','),
+          color
+        };
+      })
+  );
+};
+
+const createElementData = (data, elementHeight, xScale, fontSize) =>
+  data.map((d, i) => {
+    const x = xScale(d.startDate.toDate());
+    const xEnd = xScale(d.endDate.toDate());
+    const y = i * elementHeight * 1.5;
+    const width = xEnd - x;
+    const height = elementHeight;
+
+    const charWidth = (width / fontSize);
+    const dependsOn = d.dependsOn;
+    const id = d.id;
+
+    const tooltip = d.label;
+
+    const singleCharWidth = fontSize * 0.5;
+    const singleCharHeight = fontSize * 0.45;
 
     let label = d.label;
-    let charWidth = (width / fontSize);
-    let dependsOn = d.dependsOn;
-    let id = d.id;
-
-    let tooltip = d.label;
-
-    let singleCharWidth = fontSize * 0.5;
-    let singleCharHeight = fontSize * 0.45;
 
     if (label.length > charWidth) {
       label = label.split('').slice(0, charWidth - 3).join('') + '...';
     }
 
-    let labelX = x + ((width / 2) - ((label.length / 2) * singleCharWidth));
-    let labelY = y + ((height / 2) + (singleCharHeight));
+    const labelX = x + ((width / 2) - ((label.length / 2) * singleCharWidth));
+    const labelY = y + ((height / 2) + (singleCharHeight));
 
     return {
       x,
@@ -180,67 +234,39 @@ var createGanttChart = function (placeholder, data, {
     };
   });
 
+const createChartSVG = (data, placeholder, { svgWidth, svgHeight, elementHeight, scaleWidth, scaleHeight, fontSize, minStartDate, maxEndDate, margin }) => {
+  // create container element for the whole chart
+  const svg = d3.select(placeholder).append('svg').attr('width', svgWidth).attr('height', svgHeight);
+
+  const xScale = d3.scaleTime()
+    .domain([minStartDate.toDate(), maxEndDate.toDate()])
+    .range([0, scaleWidth]);
+
+  // prepare data for every data element
+  const rectangleData = createElementData(data, elementHeight, xScale, fontSize);
+
+  // create data describing connections' lines
+  const polylineData = createPolylineData(rectangleData, elementHeight);
+
+  const xAxis = d3.axisBottom(xScale);
+
+  // create container for the data
+  const g1 = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+  const linesContainer = g1.append('g').attr('transform', `translate(0,${margin.top})`);
+  const barsContainer = g1.append('g').attr('transform', `translate(0,${margin.top})`);
+
+  g1.append('g').call(xAxis);
+
   // create axes
-  let bars = barsContainer
+  const bars = barsContainer
     .selectAll('g')
     .data(rectangleData)
     .enter()
     .append('g');
 
-  // prepare dependencies polyline data
-  let cachedData = rectangleData.reduce((acc, e) => {
-    acc[e.id] = e;
-    return acc;
-  }, {});
-
-  let cachedIds = rectangleData.map(e => e.id);
-
-  let storedConnections = rectangleData.reduce((acc, e) => { acc[e.id] = 0; return acc }, {});
-
-  let polylineData = rectangleData.reduce(function(acc, d) {
-    return acc.concat(
-      d.dependsOn
-      .map(parentId => cachedData[parentId])
-      .map(function (parent) {
-        let points = [],
-            color = '#' + (Math.max(0.1, Math.min(0.9, Math.random())) * 0xFFF << 0).toString(16);
-
-        storedConnections[parent.id]++;
-        storedConnections[d.id]++;
-
-        let deltaParentConnections = storedConnections[parent.id] * (itemHeight / 4);
-        let deltaChildConnections = storedConnections[d.id] * (itemHeight / 4);
-
-        if (true) { // cachedIds.indexOf(parent.id) < cachedIds.indexOf(d.id)) {
-          // if parent is right above the current bar - put four points at different heights
-          points = [
-            d.x, (d.y + (itemHeight / 2)),
-            d.x - deltaChildConnections, (d.y + (itemHeight / 2)),
-            d.x - deltaChildConnections, (d.y - (itemHeight * 0.25)),
-            parent.xEnd + deltaParentConnections, (d.y - (itemHeight * 0.25)),
-            parent.xEnd + deltaParentConnections, (parent.y + (itemHeight / 2)),
-            parent.xEnd, (parent.y + (itemHeight / 2))
-          ];
-        } else {
-          // otherwise - use three points
-          points = [
-            d.x, (d.y + (itemHeight / 2)),
-            d.x - deltaChildConnections, (d.y + (itemHeight / 2)),
-            parent.xEnd + deltaParentConnections, (d.y + (itemHeight / 2)),
-            parent.xEnd + deltaParentConnections, (parent.y + (itemHeight / 2)),
-            parent.xEnd, (parent.y + (itemHeight / 2))
-          ];
-        }
-
-        return {
-          points: points.join(','),
-          color: color
-        };
-      })
-    );
-  }, []);
-
-  let lines = linesContainer
+  // add stuff to the SVG
+  linesContainer
     .selectAll('polyline')
     .data(polylineData)
     .enter()
@@ -251,8 +277,8 @@ var createGanttChart = function (placeholder, data, {
 
   bars
     .append('rect')
-    .attr('rx', itemHeight / 2)
-    .attr('ry', itemHeight / 2)
+    .attr('rx', elementHeight / 2)
+    .attr('ry', elementHeight / 2)
     .attr('x', d => d.x)
     .attr('y', d => d.y)
     .attr('width', d => d.width)
@@ -271,9 +297,38 @@ var createGanttChart = function (placeholder, data, {
     .append('title')
     .text(d => d.tooltip);
 };
+
+const createGanttChart = (placeholder, data, { elementHeight, sortMode, svgOptions }) => {
+  // prepare data
+  const margin = (svgOptions && svgOptions.margin) || {
+    top: elementHeight * 2,
+    left: elementHeight * 2
+  };
+
+  const scaleWidth = ((svgOptions && svgOptions.width) || 600) - (margin.left * 2);
+  const scaleHeight = Math.max((svgOptions && svgOptions.height) || 200, data.length * elementHeight * 2) - (margin.top * 2);
+
+  const svgWidth = scaleWidth + (margin.left * 2);
+  const svgHeight = scaleHeight + (margin.top * 2);
+
+  const fontSize = (svgOptions && svgOptions.fontSize) || 12;
+  
+  if (!sortMode) sortMode = 'date';
+
+  data = parseUserData(data); // transform raw user data to valid values
+  data = sortElements(data, sortMode);
+
+  const { minStartDate, maxEndDate } = findDateBoundaries(data);
+
+  // add some padding to axes
+  minStartDate.subtract(2, 'days');
+  maxEndDate.add(2, 'days');
+
+  createChartSVG(data, placeholder, { svgWidth, svgHeight, scaleWidth, elementHeight, scaleHeight, fontSize, minStartDate, maxEndDate, margin });
+};
 {% endhighlight %}
 
-And here's the usage example:
+The data format is like follows
 
 {% highlight js %}
 var data = [{
@@ -285,7 +340,7 @@ var data = [{
 }, {
   startDate: '2017-02-23',
   endDate: '2017-03-01',
-  label: 'milestone 01',
+  label: 'milestone 06',
   id: 'm06',
   dependsOn: ['m01']
 }, {
@@ -307,9 +362,14 @@ var data = [{
   id: 'm04',
   dependsOn: ['m01']
 }];
+{% endhighlight %}
 
+To create a chard on a page, you need to pass the reference to a valid existing DOM element where you want the diagram to appear, the data and the SVG options. These options define the looks of a chart - width, height of an element (rectangle), font size and so on. One more option is 
+
+{% highlight js %}
 createGanttChart(document.querySelector('body'), data, {
-  itemHeight: 20,
+  elementHeight: 20,
+  sortMode: 'date', // alternatively, 'childrenCount'
   svgOptions: {
     width: 1200,
     height: 400,
