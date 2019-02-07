@@ -4,7 +4,7 @@ title: 'Software Engineering 101: how computer works'
 date: '2018-08-08T20:20:00+10:00'
 ---
 
-There is some bit of information about computers which I was never told in neither school, nor at the university.
+There is some bit of information about computers which I was never told in school or at the university.
 This writing is trying to cover these bits in details for those interested out there.
 
 ## Processor's guts
@@ -12,7 +12,7 @@ This writing is trying to cover these bits in details for those interested out t
 In essence, processor consists of these main blocks:
 
 * **instruction decoder**, which decodes the operation code (see below) and tells processor what it should do next
-* **ALU** *(arithmetical-logic unit)* - the device, which performs all the operations a processor is capable of - arithmetic operations (like addition, subtraction, multiplication and so on) and logical operations (running bitwise operations like OR, AND, XOR, NOT, etc; comparing numbers)
+* **ALU** *(arithmetical-logic unit)* - the device, which performs all the operations a processor is capable of - arithmetic *(addition, subtraction, multiplication)* and logical *(bitwise OR, AND, XOR, NOT; comparing numbers)*
 * **registers** are the places, where processor takes the input data for each operation and stores the results of each operations
 * **data bus** - the place, which passes data to or from memory (RAM, peripheral devices and other types of memory)
 * **address bus** passes memory addresses between processor and memory (to be read from or written to)
@@ -25,13 +25,13 @@ It has only three registers, ALU and data/address buses. I will explain all the 
 
 ## Workflow
 
-Processor works **discretely**, meaning it executes commands at certain points in time _(as opposed to **continuous** work, where something works all the time)_. Those points in time are marked by **clock signals** _(or simply, clocks)_. Processor is connected _(or has an internal one)_ clock signal generator, which basically forces processor to do some work every *N* microseconds.
+Processor works **discretely**, meaning it executes commands at certain points in time _(as opposed to **continuous** work, where something works all the time)_. Those points in time are marked by **clock signals** _(or simply, clocks)_. Processor is connected to _(or has an internal one)_ **clock signal generator**, which regularly tells processor to operate. *Operation* is nothing but a change of the internal processor' state.
 
-So how does processor knows what to do next? On the first clock in some point in time, CPU loads the command with the help of instruction decoder. On the next clock tick processor starts executing an instruction _(or a command, I assume those terms are interchangeable)_ - it either copies data to / from registers or RAM, or involves ALU. On the next clock, processor increases the command counter by one and hence proceeds to the next instruction from the pool.
+So how does processor knows what to do next? On the first clock signal, CPU loads the command with the help of instruction decoder. On the next clock tick, processor starts executing an instruction *(or a command)* - it either copies data to / from registers or RAM, or involves ALU. On the next clock, processor increases the command counter by one and hence proceeds to the next instruction from the pool.
 
-In reality, this mechanism is somewhat more complex and involves more steps to just even read the command from the pool. And the pool itself is a unit on a processor chip as well and acts as yet another register. But in order to explain the overall operation, I've simplified that.
+In reality, this mechanism is somewhat more complex and involves more steps to just even read the command from the pool. And the pool itself is a unit on a processor chip as well and acts as another register. But to explain the processor operation, I've simplified that.
 
-_Read more to where I explain how a program in Assembly language is transformed to ones and zeroes and show a sample processor instruction set and how a program in C could be compiled to that instruction set_
+_Read more to where I explain how a program in Assembly language is transformed to ones and zeroes; show a sample processor instruction set and how a program in C could be compiled to that instruction set._
 
 <!--more-->
 
@@ -39,8 +39,8 @@ _Read more to where I explain how a program in Assembly language is transformed 
 
 Each processor instruction is a chain of ones and zeros. Assume we have these commands processor can understand:
 
-* adding the values in registers A and B and storing the sum in register C and the information about possible overflow of the register size in register S (this occurs when we do not have enough memory in register to store the result; say we have only 4 bits in each register; what will the sum of `1111` and `0001` be? `10000`, which takes 5 bits; we then can set the result to `10000 - 1111 == 0001` and proclaim "we have come over the size of register")
-* subtract the values in registers A and B and acting similarly to the addition (in terms of handling overflow - imagine 4-bit-wide registers and subtracting `0001 - 0001`)
+* adding the values in registers A and B and storing the sum in register C and the information about _possible_ register overflow in register S _(this occurs when we do not have enough memory in register to store the result: say we have only 4 bits in each register, then what will the sum of `1111` and `0001`? `10000`, which takes `5` bits - more than we have in a register; we can then set the result to `10000 - 1111 == 0001` and proclaim "we have come over the size of register")_
+* subtract the values in registers A and B and handling overflows the same way as in addition _(imagine subtracting 0001 - 0001 with only 4-bit-wide registers)_
 * multiply registers A and B
 * divide registers A and B (A / B)
 * perform bitwise operations AND, OR, NOT and XOR on registers A and B and store the value in register C
@@ -48,7 +48,7 @@ Each processor instruction is a chain of ones and zeros. Assume we have these co
 * move a value from register C to either register A or register B
 * load data from memory under the address specified to a specific register (A or B)
 * save data from register A or B to a memory under the address specified
-* compare the values in registers A and B and set the corresponding flag in register C (whether the values are equal or A > B or B > A)
+* compare the values in registers A and B and set the corresponding flag in register C _(whether the values are equal or A > B or B > A)_
 * go to a specific instruction of a program
 * go to a specific instruction of a program, based on comparison flags in register C
 
