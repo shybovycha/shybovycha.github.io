@@ -63,6 +63,8 @@ Generally, the way we create our Newtonian body is:
 And then Newton Game Dynamics will take your body into account when processing other objects
 in the `NewtonWorld`.
 
+<!--more-->
+
 ## Tree mesh collision shape
 
 So we gonna use the triangle mesh shape. What we gonna do is loop through all the triangles

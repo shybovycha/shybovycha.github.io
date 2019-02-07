@@ -24,6 +24,8 @@ application - we will simply put the sources of all the libraries we depend on, 
 versions we depend on, right in our project. Given that, you may put Irrlicht there as well -
 you are free to do anything with our project!
 
+<!--more-->
+
 ## Build instructions
 
 To build our project we will need to change our `CMakeLists.txt` file to fetch

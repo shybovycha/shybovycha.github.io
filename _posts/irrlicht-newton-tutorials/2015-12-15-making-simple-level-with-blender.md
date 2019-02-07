@@ -18,6 +18,8 @@ can be done with keyboard!
 
 So let's dive in Blender now!
 
+<!--more-->
+
 ## Welcome to Belnder
 
 When you open Blender, you will see some pretty image, made with Belnder, version information,

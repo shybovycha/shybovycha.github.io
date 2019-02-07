@@ -80,6 +80,8 @@ website.
 
 Phew! That's a damn bunch of commands, don't you think?
 
+<!--more-->
+
 ### Common
 
 By performing those steps, described above, you will end up with the compiled Irrlicht library file

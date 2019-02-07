@@ -79,6 +79,8 @@ target_link_libraries(${EXECUTABLE_NAME}
 
 Try to compile your project - it should be just fine. And observe the power of CMake!
 
+<!--more-->
+
 ## Gravity
 
 Let's start modifying our Irrlicht sample application. First of all, we will add some Newton headers:
