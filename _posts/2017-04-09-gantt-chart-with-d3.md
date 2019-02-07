@@ -234,7 +234,7 @@ const createElementData = (data, elementHeight, xScale, fontSize) =>
     };
   });
 
-const createChartSVG = (data, placeholder, { svgWidth, svgHeight, elementHeight, scaleWidth, scaleHeight, fontSize, minStartDate, maxEndDate, margin }) => {
+const createChartSVG = (data, placeholder, { svgWidth, svgHeight, elementHeight, scaleWidth, scaleHeight, fontSize, minStartDate, maxEndDate, margin, showRelations }) => {
   // create container element for the whole chart
   const svg = d3.select(placeholder).append('svg').attr('width', svgWidth).attr('height', svgHeight);
 
@@ -266,14 +266,16 @@ const createChartSVG = (data, placeholder, { svgWidth, svgHeight, elementHeight,
     .append('g');
 
   // add stuff to the SVG
-  linesContainer
-    .selectAll('polyline')
-    .data(polylineData)
-    .enter()
-    .append('polyline')
-    .style('fill', 'none')
-    .style('stroke', d => d.color)
-    .attr('points', d => d.points);
+  if (showRelations) {
+    linesContainer
+      .selectAll('polyline')
+      .data(polylineData)
+      .enter()
+      .append('polyline')
+      .style('fill', 'none')
+      .style('stroke', d => d.color)
+      .attr('points', d => d.points);
+  }
 
   bars
     .append('rect')
@@ -299,7 +301,7 @@ const createChartSVG = (data, placeholder, { svgWidth, svgHeight, elementHeight,
     .text(d => d.tooltip);
 };
 
-const createGanttChart = (placeholder, data, { elementHeight, sortMode, svgOptions }) => {
+const createGanttChart = (placeholder, data, { elementHeight, sortMode, showRelations, svgOptions }) => {
   // prepare data
   const margin = (svgOptions && svgOptions.margin) || {
     top: elementHeight * 2,
@@ -313,8 +315,10 @@ const createGanttChart = (placeholder, data, { elementHeight, sortMode, svgOptio
   const svgHeight = scaleHeight + (margin.top * 2);
 
   const fontSize = (svgOptions && svgOptions.fontSize) || 12;
-  
+
   if (!sortMode) sortMode = 'date';
+
+  if (typeof(showRelations) === 'undefined') showRelations = true;
 
   data = parseUserData(data); // transform raw user data to valid values
   data = sortElements(data, sortMode);
@@ -325,7 +329,7 @@ const createGanttChart = (placeholder, data, { elementHeight, sortMode, svgOptio
   minStartDate.subtract(2, 'days');
   maxEndDate.add(2, 'days');
 
-  createChartSVG(data, placeholder, { svgWidth, svgHeight, scaleWidth, elementHeight, scaleHeight, fontSize, minStartDate, maxEndDate, margin });
+  createChartSVG(data, placeholder, { svgWidth, svgHeight, scaleWidth, elementHeight, scaleHeight, fontSize, minStartDate, maxEndDate, margin, showRelations });
 };
 {% endhighlight %}
 
@@ -365,7 +369,7 @@ var data = [{
 }];
 {% endhighlight %}
 
-To create a chard on a page, you need to pass the reference to a valid existing DOM element where you want the diagram to appear, the data and the SVG options. These options define the looks of a chart - width, height of an element (rectangle), font size and so on. One more option is 
+To create a chard on a page, you need to pass the reference to a valid existing DOM element where you want the diagram to appear, the data and the SVG options. These options define the looks of a chart - width, height of an element (rectangle), font size and so on. One more option is
 
 {% highlight js %}
 createGanttChart(document.querySelector('body'), data, {
