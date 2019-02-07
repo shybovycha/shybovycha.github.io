@@ -39,16 +39,16 @@ Well, there are number of application architecture' levels:
 </div>
 
 From the highest architecture layer point of view, I can advice a very simple architecture:
-assume our game will have a stable, rarely changed **core**,
-a set of **assets** _(models, textures, sounds - any content, made by artists and used to be presented to the player)_
-and a bunch of **scripts**, defining all the logic of a game - how character looks like, how the menus are shown and how
-they react to player's actions, how objects in the game world behave and how that world looks like and all the stuff.
+
+* a stable, rarely changed **core**
+* a set of **assets** (models, textures, sounds - any content, made by artists and used to be presented to the player)
+* a bunch of **scripts**, defining all the logic of a game (how character looks like, how the menus are shown and how they react to player’s actions)
 
 The main benefits of such an approach are:
 
 1. scripts and assets may be changed at any time
-2. scripts and assets define what we show to the user and how the application behaves so that none of the changes to scripts or assets make us to re-compile the core
-3. we can modify the core and thus change how game works internally (mainly for optimization purposes) without changing the overall application functionality and behaviour
+2. scripts and assets define what we show to the user and how the application behaves, so we can changes them without the need to re-compile the core
+3. we can modify the core (for example - optimize some features) without changing the application behaviour
 
 We can make the core so flexible that we may re-use it in the future projects.
 
