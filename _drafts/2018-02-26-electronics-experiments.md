@@ -30,7 +30,7 @@ A:
 
 I'll explain these by showing couple of examples:
 
-{highlight}
+```
 N = 01001110
 bitIndex = 0
 
@@ -45,9 +45,9 @@ bitIndex = 0
   01001110
 & 11111110
 = 01001110
-{endhighlight}
+```
 
-{highlight}
+```
 N = 01001110
 bitIndex = 2
 
@@ -62,7 +62,7 @@ bitIndex = 2
   01001110
 & 11111011
 = 01001010
-{endhighlight}
+```
 
 Q: How do I distinguish between pins on input interrupt? / Some pins do not trigger interrupt?
 A: use `volatile` variable to store the previous state of your port (-s) on each interrupt and then, in the interrupt handler code,
@@ -70,7 +70,7 @@ compare the current state of a port with the stored value, to determine which pi
 
 Consider this simple code:
 
-{highlight c}
+```c
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
@@ -124,4 +124,4 @@ int main() {
 
     return 0;
 }
-{endhighlight}
+```

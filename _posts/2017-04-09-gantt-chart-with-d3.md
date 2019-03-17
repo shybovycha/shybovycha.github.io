@@ -331,7 +331,7 @@ const createGanttChart = (placeholder, data, { elementHeight, sortMode, showRela
 
   createChartSVG(data, placeholder, { svgWidth, svgHeight, scaleWidth, elementHeight, scaleHeight, fontSize, minStartDate, maxEndDate, margin, showRelations });
 };
-{% endhighlight %}
+```
 
 The data format is like follows
 
@@ -367,7 +367,7 @@ var data = [{
   id: 'm04',
   dependsOn: ['m01']
 }];
-{% endhighlight %}
+```
 
 To create a chard on a page, you need to pass the reference to a valid existing DOM element where you want the diagram to appear, the data and the SVG options. These options define the looks of a chart - width, height of an element (rectangle), font size and so on. One more option is
 
@@ -381,4 +381,4 @@ createGanttChart(document.querySelector('body'), data, {
     fontSize: 12
   }
 });
-{% endhighlight %}
+```
