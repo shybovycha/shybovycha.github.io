@@ -46,7 +46,7 @@ to bind a component to an external `Store` object _(which I'll cover in a minute
 The changes made allowed components to be used in other components. To illustrate that, I
 created a `Tab` component and the corresponding example:
 
-{% highlight js %}
+```js
 let Tabs = (function () {
     let update = (state, message) => {
         if (message.type == 'SELECT_TAB')
@@ -110,11 +110,11 @@ let app = (function () {
 })();
 
 app.init().mount(document.querySelector('#app'));
-{% endhighlight %}
+```
 
 I also use these styles to make tabs look like tabs:
 
-{% highlight css %}
+```css
 .tab-container {
     display: flex;
     flex-direction: column;
@@ -150,7 +150,7 @@ I also use these styles to make tabs look like tabs:
 .tab-content.selected {
     display: block;
 }
-{% endhighlight %}
+```
 
 This example shows how `Tabs` component could be used and, what's more important,
 **as a High-Order Component**, passing tabs along with their headers as a set
@@ -162,7 +162,7 @@ Using component's `render()` method and the `createStore(initialState)` function
 exposed by a library, we can also create and use the store as an external state
 provider for our component:
 
-{% highlight js %}
+```js
 var counterStore = createStore(0);
 
 function update(state, message) {
@@ -192,7 +192,7 @@ var Counter = createComponent(view);
 counterStore.onStateChanged(() => Counter.render());
 
 Counter.init({ store: counterStore }).mount(document.body);
-{% endhighlight %}
+```
 
 Here you can see how to create a store with an initial state. The initial state could be pretty
 much anything - a number, a string, an array, an object...

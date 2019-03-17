@@ -22,13 +22,13 @@ tumblr_url: http://shybovycha.tumblr.com/post/107790765166/deploying-rails-proje
 
 <p>Now, our application needs two gems to be included for the <code>production</code> gems&rsquo; group:</p>
 
-{% highlight ruby %}
+```ruby
 group :production do
     gem 'pg'
     gem 'rails_12factor'
     gem 'puma'
 end
-{% endhighlight %}
+```
 
 <p>The third gem is used as a webserver instead of WebRick, which is default <em>(puma is much, much faster!)</em>. The second one is required by Heroku. And the first one is used for PostgreSQL connectivity. If you do not wish to use database - skip it and a few next paragraphs.</p>
 
@@ -45,13 +45,13 @@ end
 <li>set the environment variable <code>DATABASE_URL</code></li>
 </ol><p>We will cover both cases. For the first one, you will need this section within your <code>database.yml</code> file:</p>
 
-{% highlight yaml %}
+```yaml
 production:
     adapter: postgresql
     encoding: unicode
     pool: 5
     url: URL_GOES_HERE
-{% endhighlight %}
+```
 
 <p>I will show how to get the <code>&lt;URL_GOES_HERE&gt;</code> value in a second. Just keep in mind to replace it with the correct value.</p>
 
@@ -59,15 +59,15 @@ production:
 
 <p>First you take the database URL from Heroku server:</p>
 
-{% highlight bash %}
+```bash
 heroku config | grep HEROKU_POSTGRESQL
-{% endhighlight %}
+```
 
 <p>Then, you copy the value you got <em>(it starts with <code>postgres://</code>)</em> and run the following:</p>
 
-{% highlight bash %}
+```bash
 heroku config:set DATABASE_URL=URL_GOES_HERE
-{% endhighlight %}
+```
 
 <p>Now let&rsquo;s set our application to serve static assets. It is handy, because it is the easiest way to send images, stylesheets and javascripts to clients. Go to the <code>config/environments/production.rb</code> and change both <code>config.serve_static_assets</code> and <code>config.assets.compile</code> to <code>true</code>.</p>
 

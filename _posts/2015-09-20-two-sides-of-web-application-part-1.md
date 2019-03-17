@@ -103,7 +103,7 @@ And here's where SCSS is just a revelation: its great power is in its *selectors
 
 *Selectors* allow you to describe selector' nesting just as you'd be writing C code:
 
-{% highlight scss %}
+```scss
 .header {
     // header styles
 
@@ -119,7 +119,7 @@ And here's where SCSS is just a revelation: its great power is in its *selectors
         }
     }
 }
-{% endhighlight %}
+```
 
 *Variables* allow you to get rid of all those magic values. So if you use one color many times across your styles,
 you just extract it into a named constant and use the pretty named value everywhere!
@@ -128,7 +128,7 @@ you just extract it into a named constant and use the pretty named value everywh
 
 Relating on all of those, you may re-write your user widget as follows:
 
-{% highlight scss %}
+```scss
 $header-avatar-size: 50px;
 $sidebar-avatar-size: 150px;
 
@@ -148,22 +148,22 @@ $sidebar-avatar-size: 150px;
         @include avatar($sidebar-avatar-size);
     }
 }
-{% endhighlight %}
+```
 
 ### Gulp
 
 I found Gulp to be super-easy for tasks like compiling stylesheets, views and javascripts. But before
 we continue with Gulp, let's initialize an NPM project with `npm init` and install the plugins required:
 
-{% highlight bash %}
+```bash
 npm install -g gulp
-{% endhighlight %}
+```
 
 And Gulp plugins:
 
-{% highlight bash %}
+```bash
 npm install --save-dev gulp gulp-babel gulp-scss gulp-jade
-{% endhighlight %}
+```
 
 I will describe how Gulp works and how we can use it in our project in a minute. For now, let's
 just install the frontend dependencies.
@@ -176,11 +176,11 @@ Bower is a tool like `npm`, but used strictly with frontend libraries like *jQue
 
 Bower comes with a command-line tool, `bower`, which we'll use to fill out the `bower.json` file. It is used by Bower to specify which libraries does our application require:
 
-{% highlight bash %}
+```bash
 npm install -g bower
 bower init
 bower install --save bootstrap angular
-{% endhighlight %}
+```
 
 These commands create a directory `bower_components`, containing all the dependencies installed, each in its own sub-directory. With that in mind, we'll be referencing our frontend dependencies, relatively to their catalogs within the `bower_components` directory.
 
@@ -194,7 +194,7 @@ to store its results, `gulp.dest()` may point to a directory or a single file, w
 
 Below is our first Gulp task. Write this code in the `gulpfile.js`:
 
-{% highlight js %}
+```js
 var gulp = require('gulp'),
     sass = require('gulp-scss'),
     babel = require('gulp-babel'),
@@ -213,14 +213,14 @@ gulp.task('build', function () {
         .pipe(sass({ style: 'expanded' }))
         .pipe(gulp.dest('public/stylesheets'));
 });
-{% endhighlight %}
+```
 
 This tells Gulp to define `build` task, which compiles all the Jade, SCSS and ES6+ files into HTML, CSS
 and JS files, correspondingly. Compiled files are placed within the `public/` directory, so we may
 easily render them with almost any web-server. But first things first, we need to prepare directory structure
 like this for our task:
 
-{% highlight bash %}
+```bash
 .
 |____bower.json
 |____gulpfile.js
@@ -230,14 +230,14 @@ like this for our task:
 | |____javascripts
 | |____stylesheets
 | |____views
-{% endhighlight %}
+```
 
 This may seem odd to the paragraph, dedicated to build tools, but let's check how our tasks work.
 To do this, we need to write some test files to check our `build` task. So let's create one of each kind:
 
 *`src/views/index.jade`:*
 
-{% highlight jade %}
+```jade
 html(lang="en")
 head
     meta(charset="UTF-8")
@@ -246,20 +246,20 @@ head
     script(type="text/javascript" src="/javascripts/main.js")
 body
     h1 Hello, world!
-{% endhighlight %}
+```
 
 *`src/stylesheets/main.scss`:*
 
-{% highlight scss %}
+```scss
 h1 {
     padding: 0 10px;
     border-bottom: 1px solid #dedede;
 }
-{% endhighlight %}
+```
 
 *`src/javascripts/main.js`:*
 
-{% highlight js %}
+```js
 function timeout(ms) {
   return new Promise((res) => setTimeout(res, ms));
 }
@@ -273,15 +273,15 @@ async function f() {
 }
 
 f()
-{% endhighlight %}
+```
 
 <a href="https://github.com/shybovycha/two-sides-of-web-application/tree/10f770a5ca64fad1cb6e58bc957e5210bc95bda3" class="btn btn-info">Full code of these steps</a>
 
 And to actually check our task, we need to run it with
 
-{% highlight bash %}
+```bash
 gulp build
-{% endhighlight %}
+```
 
 Now, you may open the HTML generated from Jade in a browser, but it'll look ugly, because your
 browser will doubtfully find stylesheets and javascripts that easily. To make the magic happen, we
@@ -293,7 +293,7 @@ I've chosen that server plugin because it comes with one handy feature: it autom
 the opened pages in your web-browser if any of the files you are browsing has changed. Here's
 the code of our serving task:
 
-{% highlight js %}
+```js
 gulp.task('serve', function () {
     gulp.src('public/')
         .pipe(server({
@@ -302,18 +302,18 @@ gulp.task('serve', function () {
             open: true
         }));
 });
-{% endhighlight %}
+```
 
 But if you remember, we are compiling our sources from SCSS/Jade into the `public/` directory.
 So how the server would know if anything changed in our `*.scss` or `*.jade` files? We need to
 reload the page in web-browser if anything changes in those files. To do that, we'll write one
 more task, which will re-build our source files if anything changes:
 
-{% highlight js %}
+```js
 gulp.task('watch', function () {
     gulp.watch('src/**/*', [ 'build' ])
 });
-{% endhighlight %}
+```
 
 Here we used two new features of Gulp: *watching for file changes* and *running existing tasks from another task*.
 Simple? Yeah, **that** simple! So we just tell Gulp: *keep an eye on those files - if anything happens - run
@@ -322,7 +322,7 @@ those tasks immediately!* - and the magic happens.
 But why should we run two tasks? Let's merge them into one so we just run `gulp serve` and get both live reload
 and live re-compilation:
 
-{% highlight js %}
+```js
 gulp.task('serve', function () {
     gulp.watch('src/**/*', [ 'build' ])
 
@@ -334,7 +334,7 @@ gulp.task('serve', function () {
             open: true
         }));
 });
-{% endhighlight %}
+```
 
 This task first defines a watcher for our sources and then starts server, which will react to any changes
 in the `public/` directory. To check how this awesomeness works, start `gulp serve`, open the

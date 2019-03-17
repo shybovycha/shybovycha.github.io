@@ -108,7 +108,7 @@ the actual tile image on a screen? E. g. how can we convert coordinates in this 
 
 After doing some math on a piece of paper, I came up with this function:
 
-{% highlight swift %}
+```swift
 func uv2xy(_ uv: (Int, Int)) -> (Int, Int) {
     let u = uv.0, v = uv.1
     let kx = Float(u - v) * (3.0 / 2.0)
@@ -121,7 +121,7 @@ func uv2xy(_ uv: (Int, Int)) -> (Int, Int) {
 
     return (cx + x, cy - y)
 }
-{% endhighlight %}
+```
 
 What happens here is: since every tile is a regular hexagon, we can simply calculate the distance between the sides
 of neighbour tiles and, based on how the tiles are layed out relative to each other, multiply that by either taking
@@ -147,17 +147,17 @@ that none of the pairs should have a duplicate. Then a tile might look like this
 
 To display a tile, I've developed a prototype tile in SVG:
 
-{% highlight xml %}
+```xml
 <svg height="232" width="232">
   <polygon points="55.0,5.0 155.0,5.0 205.0,92.0 155.0,178.0 55.0,178.0 5.0,92.0" style="fill:none;stroke:#000;stroke-width:2" />
 </svg>
-{% endhighlight %}
+```
 
 And to make this template re-usable, I've dropped in a _"side length"_ parameter. Pre-calculating
 pins' slots positions and hexagon's vertex positions and making it parametric _(with a side length
 parameter)_, I've got this function, which generates a tile:
 
-{% highlight swift %}
+```swift
 class TileImageGenerator {
     let vertices: [(Int, Int)] = [(50, 0), (150, 0), (200, 87), (150, 173), (50, 173), (0, 87)]
 
@@ -217,12 +217,12 @@ class TileImageGenerator {
         return image!
     }
 }
-{% endhighlight %}
+```
 
 Now, if I want to draw connection lines, I can just spicy that code with pre-calculated pin slots
 connections coordinates and, using some neat line stroke technique, draw tile exactly as shown above:
 
-{% highlight swift %}
+```swift
 class RenderingParams {
     var sideLength: Int
     var stroke: Int = 1
@@ -354,7 +354,7 @@ class TileImageGenerator {
         return image!
     }
 }
-{% endhighlight %}
+```
 
 As you can see, two major things happened here:
 
@@ -380,17 +380,17 @@ rules:
 
 Let's define a class `Tile`:
 
-{% highlight swift %}
+```swift
 class Tile {
     var connections: [(Int, Int)]
 }
-{% endhighlight %}
+```
 
 Simple enough, right? Now let's assume our program will fill out `connections` list automatically and
 all the tiles will be assigned the correct list of connections. Given that, we may define two helper
 methods on a `Tile` class:
 
-{% highlight swift %}
+```swift
 class Tile {
     var connections: [(Int, Int)]
 
@@ -414,17 +414,17 @@ class Tile {
         }
     }
 }
-{% endhighlight %}
+```
 
 The first one, `output(from input: Int)` will return us the output index inside a given tile, where the line
 will come out from, when entering our tile from input with index `from`.
 
 So, for example, given a tile with connections
 
-{% highlight swift %}
+```swift
 let t: Tile = Tile()
 t.connections = [(0, 1), (11, 8), (10, 5), (3, 4), (6, 2), (7, 9)]
-{% endhighlight %}
+```
 
 the call `t.output(from: 11)` will give us `8`, which could be easily found from the list of connections
 by hand.
@@ -445,7 +445,7 @@ After a tile has been assigned a set of connected pins, the rotation should pres
 The rotation operation uses modulo operation, as with calculating neighbor tile's input pin index,
 but on a scale of each connection pair _(a pair of input and output)_:
 
-{% highlight swift %}
+```swift
 class Tile {
     // ...
 
@@ -457,7 +457,7 @@ class Tile {
 
     //...
 }
-{% endhighlight %}
+```
 
 Here, `direction` is either `1` for clockwise rotation or `-1` for counter-clockwise rotation.
 
@@ -475,7 +475,7 @@ continue or not: `ZeroTile` and `BorderTile` represent restricted bounds of a ga
 Now, given the output of a current tile, which the line will use to continue through the tile,
 we can predict where the next tile should be put on a field:
 
-{% highlight swift %}
+```swift
 func findNextPlace(_ path: Path, currentPosition: (Int, Int)) -> (Int, Int) {
     var u: Int, v: Int
     (u, v) = currentPosition
@@ -499,7 +499,7 @@ func findNextPlace(_ path: Path, currentPosition: (Int, Int)) -> (Int, Int) {
         return (u, v)
     }
 }
-{% endhighlight %}
+```
 
 If, however, there is a tile at the next place on the field, we should use its connections to determine
 the next position.
@@ -508,7 +508,7 @@ Otherwise, if the next position is either the border of a field or an empty spac
 
 Search itself is just as simple as that:
 
-{% highlight swift %}
+```swift
 func findFuturePath(_ tile: NonEmptyTile) throws -> (Path, (Int, Int)) {
     if self.isPathFinished() {
         throw GameError.gameOver
@@ -551,7 +551,7 @@ func findFuturePath(_ tile: NonEmptyTile) throws -> (Path, (Int, Int)) {
 
     return (tmpPath, tmpNextPlace)
 }
-{% endhighlight %}
+```
 
 # Counting points
 

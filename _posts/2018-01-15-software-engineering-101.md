@@ -131,7 +131,7 @@ It would also be nice to be able to comment out some code. To comment the line (
 
 Now that we have everything we need to componse a full program we can finally translate our `sum` function in C to our Assembly dialect:
 
-{% highlight asm %}
+```asm
 ; program bootstrap:
 ; these 3 steps are done by the callee (operating system or other function)
 ; - load the number of arguments, 2, to memory[0x0000]
@@ -179,7 +179,7 @@ JMP LOOP             ; GOTO LOOP
 
 RETURN: NOP          ; program shutdown:
                      ; store the `result` value in memory[0x0058] - we operate on `result` through this address already, nothing to do here
-{% endhighlight %}
+```
 
 For processor to run this code it needs to be compiled to opcodes first. For example, the `MOV A, 0x0060` instruction will be converted (according to our convention) as:
 
@@ -265,17 +265,17 @@ We will also need to extract only effective lines from our code and number each 
 
 We have just did the same job a compiler does for us when we write code in a high-level language like C. You can see the code is verbose, what is caused by us and the limitations / conventions we have agreed on. But we can extend either the assembly language by adding new instructions, which will simplify writing programs or by extending the processor architecture by introducing stack and increasing the power of ALU etc. For instance, we could have changed the moving data between memory and registers and thus reduce the amount of both registers needed to do that and the amount of commands needed for the operation:
 
-{% highlight asm %}
+```asm
 MOV A, addr
 MOV B, value
 SAVEB
-{% endhighlight %}
+```
 
 could become
 
-{% highlight asm %}
+```asm
 MOV B, [addr]
-{% endhighlight %}
+```
 
 Or we could have agreed on opcode size and skip the 8 bits of data for instructions without arguments and thus reduce the size of compiled programs.
 
@@ -317,28 +317,28 @@ just to stay clear for other programmers).
 
 Let us have a look at how programs are compiled. Consider this program in C:
 
-{% highlight c %}
+```c
 int product(int a, int b) {
     return a * b;
 }
-{% endhighlight %}
+```
 
 It will be compiled into this assembly code:
 
-{% highlight asm %}
+```asm
 product(int, int): # @product(int, int)
   imul edi, esi
   mov eax, edi
   ret
-{% endhighlight %}
+```
 
 Looks simple, huh?
 
 In essence, each line of a program in assembly language looks like this:
 
-{% highlight asm %}
+```asm
 label: command operand1, operand2 # comment
-{% endhighlight %}
+```
 
 Both label, operands and comment are optional with the exception that operands requirements
 depend on command.
@@ -364,25 +364,25 @@ back to RAM after the operation execution (usually this step is stated separated
 This is time-consuming. And since RAM is not that fast as processor's registers, it makes operations slow.
 Memory is addressed using one of these syntaxes:
 
-{% highlight asm %}
+```asm
 [address] ; [0x12345]
 [register] ; [RAX] - takes address, contained in register RAX
 [register + number] ; [RAX + 2]
 [register + register * number] ; [RAX + RBX * 3]
 [register + register * number + number] ; [RBX + EAX * 4 + 3]
-{% endhighlight %}
+```
 
 You can also do more tricky thing: define a named constant - give a literal name to a number and then refer
 to a value by its name. But first you need to reserve a memory for it:
 
-{% highlight asm %}
+```asm
 constant_name: db 0x123 ; define one byte value (0x123) and give it a name "constant_name"
 constant2: dw 'ab' ; define one word (two bytes) of values 0x61 and 0x62, correspondingly
 const3: dd 'abcd' ; define double-word (four bytes)
 const4: dq 0x123456789abcdef0 ; 8-byte wide constant
 const5: dq 1.234567e20 ; double-precision constant
 const6: dt 1.234567e20 ; extended-precision constant
-{% endhighlight %}
+```
 
 Note I'm constantly mentioning numbers, but never characters or strings. That's because eventually all this
 data is just a number (character code or a pointer to a memory - effectively, an address of a memory). And
@@ -391,44 +391,44 @@ values to hexadecimal integer values anyway.
 
 You can also reserve a bunch of memory cells using `res` command:
 
-{% highlight asm %}
+```asm
 const1: resb 2 ; reserve 2 bytes
 const2: resw 16 ; reserve 16 words
 const3: resq 7 ; reserve seven 8-byte cells
-{% endhighlight %}
+```
 
 This way each constant will point to the first of the reserved array' cells in RAM.
 
 Let's take a look at our example again:
 
-{% highlight c %}
+```c
 int product(int a, int b) {
     return a * b;
 }
-{% endhighlight %}
+```
 
 Its assembly code is:
 
-{% highlight asm %}
+```asm
 product(int, int): # @product(int, int)
   imul edi, esi
   mov eax, edi
   ret
-{% endhighlight %}
+```
 
 This program has exactly three effective lines:
 
-{% highlight asm %}
+```asm
 imul edi, esi ; multiply the data in two registers, EDI and ESI and store the result of multiplication in EAX register
-{% endhighlight %}
+```
 
-{% highlight asm %}
+```asm
 mov eax, edi ; copy the data from EAX to EDI
-{% endhighlight %}
+```
 
-{% highlight asm %}
+```asm
 ret ; restore pointer to the currently running command and the values in registers from stack
-{% endhighlight %}
+```
 
 See, assembly is still a somewhat high-level language - one command does a little bit of "magic" like
 storing the result somewhere, or restoring the processor state (`ret`) or storing its state and moving to the

@@ -14,7 +14,7 @@ This tutorial covers the development of a game from a very beginning. This inclu
 * creating **3d models**
 * and **distributing the application**
 
-And of course, the whole tutorial uses **Irrlicht** and **Newton Game Dynamics** libraries.
+And of course, the whole tutorial is built around **Irrlicht** and **Newton Game Dynamics** libraries.
 
 As for *{{ site.time | date: '%d %b %Y' }}*, the tutorial covers:
 

@@ -23,7 +23,7 @@ Mail::RFC822::Address: regexp-based address validation
 This regular expression will only validate addresses that have had any comments stripped and replaced with whitespace (this is done by the module).
 </blockquote>
 
-{% highlight js %}
+```js
 /(?:(?:\r\n)?[ \t])*(?:(?:(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t]
 )+|\Z|(?=[\["()<>@,;:\\".\[\]]))|"(?:[^\"\r\\]|\\.|(?:(?:\r\n)?[ \t]))*"(?:(?:
 \r\n)?[ \t])*)(?:\.(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(
@@ -106,18 +106,18 @@ r\\]|\\.)*\](?:(?:\r\n)?[ \t])*)(?:\.(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\]
 .(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z
 |(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*))*\>(?:(
 ?:\r\n)?[ \t])*))*)?;\s*)/
-{% endhighlight %}
+```
 
 And below is the most effective solution *(also matches virtual Gmail addresses with `+` sign)*.
 
-{% highlight javascript %}
+```javascript
 /.+@.+\..{2,}/i
-{% endhighlight %}
+```
 
 To match development addresses, you may want to make it even shorter:
 
-{% highlight javascript %}
+```javascript
 /.+@.+/i
-{% endhighlight %}
+```
 
 You won't believe me, but this is it =)

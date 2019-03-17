@@ -79,13 +79,13 @@ incompatible with the code, which uses them.</p>
 
 <p>Here are the lines you will need to add to your <code>bower.json</code> file to proceed:</p>
 
-{% highlight js %}
+```js
   "dependencies": {
     // ...
     "react": "0.13.3",
     "bootstrap": "3.3.5"
   }
-{% endhighlight %}
+```
 
 <p>If you have chosen the CLI way, consider this command:</p>
 
@@ -97,7 +97,7 @@ incompatible with the code, which uses them.</p>
 
 <p>Now you may add React&rsquo;s javascript and Bootstrap&rsquo;s CSS into the layout:</p>
 
-{% highlight html %}
+```html
   <!DOCTYPE html>
   <html>
     <head>
@@ -111,13 +111,13 @@ incompatible with the code, which uses them.</p>
     <body>
     </body>
   </html>
-{% endhighlight %}
+```
 
 <h3>First NPM task</h3>
 
 <p>You may want to add a task to your <code>package.json</code> to install bower dependencies automatically:</p>
 
-{% highlight json %}
+```json
   {
     "dependencies": {
       "bower": "1.4.1"
@@ -126,7 +126,7 @@ incompatible with the code, which uses them.</p>
       "bower": "./node_modules/bower/bin/bower install"
     }
   }
-{% endhighlight %}
+```
 
 <p>This may be useful later, when building a project. Here I used the local version of bower in the script
 to not make another project requirement of globally installed bower.
@@ -143,17 +143,17 @@ code in a DSL-style.</p>
 
 <p><strong>non-DSL way:</strong></p>
 
-{% highlight js %}
+```js
   React.createElement("div", {className: "well clearfix"},
     React.createElement("textarea", {className: "form-control", onChange: this.handleChange}),
     React.createElement("br", null),
     React.createElement("button", {className: "btn btn-primary pull-right"}, "Tweet")
   )
-{% endhighlight %}
+```
 
 <p><strong>DSL way:</strong></p>
 
-{% highlight js %}
+```js
   return (
     <div className="well clearfix">
       <textarea className="form-control" onChange={this.handleChange}></textarea>
@@ -161,7 +161,7 @@ code in a DSL-style.</p>
       <button className="btn btn-primary pull-right">Tweet</button>
     </div>
   );
-{% endhighlight %}
+```
 
 <p>Both of JSX branches are, again, extensions to JavaScript, thus they need to be compiled to ES5 <em>(also known as
  &ldquo;usual javascript&rdquo;)</em> to make the code understood by browser. For this purpose we need a compiler.
@@ -186,7 +186,7 @@ the <code>package.json</code> file:</p>
 method <em>(a method that returns component&rsquo;s HTML)</em>, its initial <strong>state</strong> <em>(something like Angular&rsquo;s <code>$scope</code>)</em> and
 event handlers. Just check it out:</p>
 
-{% highlight js %}
+```js
   var TweetBox = React.createClass({
     render: function() {
       return (
@@ -198,7 +198,7 @@ event handlers. Just check it out:</p>
       );
     }
   });
-{% endhighlight %}
+```
 
 <p>Here you may see a few restricts, done by React:</p>
 
@@ -218,7 +218,7 @@ event handlers. Just check it out:</p>
 <p>Now let&rsquo;s write that component within the <code>javascripts/app.js</code> file and reference it in the layout,
 at the end of <code>&lt;body&gt;</code> tag; to make it loaded when all the document is done loading:</p>
 
-{% highlight html %}
+```html
   <!DOCTYPE html>
   <html>
     <head>
@@ -233,7 +233,7 @@ at the end of <code>&lt;body&gt;</code> tag; to make it loaded when all the docu
       <script src="build/app.js"></script>
     </body>
   </html>
-{% endhighlight %}
+```
 
 <p>To see the page we&rsquo;ve written in action, first compile the sources with <code>npm run build</code> to compile
 the JSX code to javascript and use it in the layout template.</p>
@@ -245,7 +245,7 @@ React adds a method to initialize your component&rsquo;s state, called <code>get
 representing the initial state. State variables may be accessed via <code>this.state.myVar</code> and interpolated
 in template with curly-braces syntax, <code>{this.state.myVar}</code>. So you may do something like this:</p>
 
-{% highlight js %}
+```js
   var TweetBox = React.createClass({
     getInitialState: function() {
       return {
@@ -264,7 +264,7 @@ in template with curly-braces syntax, <code>{this.state.myVar}</code>. So you ma
       );
     }
   });
-{% endhighlight %}
+```
 
 <p>State may be changed with the <code>setState()</code> method, receiving&hellip; object! But this time, the object for <code>setState()</code>
 represents a set of new field values. So, for example, using syntax</p>
@@ -309,7 +309,7 @@ when switching from jQuery, you can make your webpage&rsquo;s code look much bet
 it with a much more pretty code. But the main advantage of Riot is ES6. Yeah, when both of libraries
 use compilation, why reject the future and invent a wheel? Thus Riot makes your code much more clear. Check this out:</p>
 
-{% highlight html %}
+```html
   <tweet-box>
     <div class="well clearfix">
       <textarea class="form-control" onkeyup={ handleChange }></textarea>
@@ -327,7 +327,7 @@ use compilation, why reject the future and invent a wheel? Thus Riot makes your 
       }
     </script>
   </tweet-box>
-{% endhighlight %}
+```
 
 <p>Everything looks great with Riot: its size is much more lower than React&rsquo;s; it has ES6 and nice syntax; it does not
 turn your JS code into substance on the edge of two worlds - <strong>views layer</strong> and <strong>logic layer</strong>; it has even
@@ -351,7 +351,7 @@ provides developers with component architecture - HTML and JS encapsulation, but
 
 <p><strong>tweet-box.ts:</strong></p>
 
-{% highlight csharp %}
+```csharp
   /// <reference path="../typings/angular2/angular2.d.ts" />
   import {Component, View, bootstrap, formDirectives} from 'angular2/angular2';
 
@@ -373,20 +373,20 @@ provides developers with component architecture - HTML and JS encapsulation, but
   }
 
   bootstrap(TweetBox);
-{% endhighlight %}
+```
 
 <p><strong>tweet-box.html:</strong></p>
 
-{% highlight mustache %}
-{% raw %}
+```mustache
+
   <div class="well clearfix">
     <textarea class="form-control" [(ng-model)]="text"></textarea>
     <br/>
     <span>{{ maxLength - text.length }}</span>
     <button class="btn btn-primary pull-right">Tweet</button>
   </div>
-{% endraw %}
-{% endhighlight %}
+
+```
 
 <p>Here, as you can see, data binding is used, so there is no more need in event handling. And you can use
 all the power of TypeScript. But still, the great Angular 2.0 drawbacks are:</p>

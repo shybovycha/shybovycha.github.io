@@ -32,7 +32,7 @@ tumblr_url: 'http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-progra
 
 <p>Our first program will do nothing. It will just contain globally available function, named <code>myfunc</code>.</p>
 
-{% highlight asm %}
+```asm
     BITS 32
 
     section .text
@@ -45,7 +45,7 @@ tumblr_url: 'http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-progra
 
         leave
         ret
-{% endhighlight %}
+```
 
 <p>This is barely a something useful, but that’s how it looks like. A simple function, which does nothing, has no arguments and returns nothing.</p>
 
@@ -62,7 +62,7 @@ tumblr_url: 'http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-progra
 <li>link our object files into a single binary one</li>
 </ol><p>So, we need to interference with assembly from within our C++ code. And declare an external function. Here’s how our dummy program may look like:</p>
 
-{% highlight c %}
+```c
 #include <stdio.h>
 
 extern "C" void myfunc();
@@ -72,7 +72,7 @@ int main() {
 
     return 0;
 }
-{% endhighlight %}
+```
 
 <p>Compiling this contains three steps, as I mentioned above:</p>
 
@@ -113,13 +113,13 @@ nasm -felf32 -g test.asm -o test_asm.o
 
 <p>Now let’s make our function do something for a great good. For example, sum-up two numbers. We will end-up with this function declaration:</p>
 
-{% highlight c %}
+```c
 extern "C" int sum_two_numbers(int a, int b);
-{% endhighlight %}
+```
 
 <p>The values <code>a</code> and <code>b</code> are integer. This means, each of them is <strong>4-byte wide</strong>. You can find sizes of different C types writing a very simple program:</p>
 
-{% highlight c %}
+```c
 #include <stdio.h>
 
 int main() {
@@ -143,7 +143,7 @@ int main() {
 
     return 0;
 }
-{% endhighlight %}
+```
 
 <p>On my laptop this code printed this:</p>
 
@@ -195,7 +195,7 @@ size(long double*) = 4 bytes
 
 <p>To show this difference, we will write a few short functions and look at their assembly code. Here they are:</p>
 
-{% highlight c %}
+```c
 char func1() {
     return 'x';
 }
@@ -270,7 +270,7 @@ int main() {
 
     return 0;
 }
-{% endhighlight %}
+```
 
 <p>Compile it with <code>g++</code> using this command:</p>
 
@@ -291,7 +291,7 @@ g++ -S -m32 -c -masm=intel test1.cpp -o test1.asm
 
 <p>But let’s go back and take a look at, let’s say, <code>func1</code> function assembly:</p>
 
-{% highlight asm %}
+```asm
 _Z5func1v:
 .LFB0:
     .cfi_startproc
@@ -310,17 +310,17 @@ _Z5func1v:
     .size   _Z5func1v, .-_Z5func1v
     .globl  _Z5func2c
     .type   _Z5func2c, @function
-{% endhighlight %}
+```
 
 <p>Yeah, monstrous&hellip; Cleaning it up and using <code>enter</code> and <code>leave</code>, we have only this:</p>
 
-{% highlight asm %}
+```asm
 _Z5func1v:
     enter 0, 0
     mov eax, 120
     leave
     ret
-{% endhighlight %}
+```
 
 <p>See, the return value is stored in a <code>EAX</code> register. That’s how we should return values from our functions. When it comes to a larger data types, we may return values via <code>EDX:EAX</code> registers’ pair. Yeah, strange, but that is a <strong>convention</strong>.</p>
 
@@ -328,40 +328,40 @@ _Z5func1v:
 
 <p><strong>32-bit func7:</strong></p>
 
-{% highlight asm %}
+```asm
 _Z5func7v:
     enter 0, 0
     mov eax, 2147483647
     mov edx, 0
     leave
     ret
-{% endhighlight %}
+```
 
 <p><strong>64-bit func7:</strong></p>
 
-{% highlight asm %}
+```asm
 _Z5func8l:
     enter 0, 0
     mov QWORD PTR [rbp-8], rdi
     mov rax, QWORD PTR [rbp-8]
     leave
     ret
-{% endhighlight %}
+```
 
 <p>See, there are two registers used in a 32-bit mode, <code>EAX = 2147483647</code> and <code>EDX = 0</code>. The second register is used for a sign value. If we’d change the return value for our C++ function to return a negative value:</p>
 
-{% highlight c %}
+```c
 long long func7() {
     return -2147483647;
 }
-{% endhighlight %}
+```
 
 <p>We will end-up with this code in a 32-bit mode:</p>
 
-{% highlight asm %}
+```asm
 mov eax, -2147483647
 mov edx, -1
-{% endhighlight %}
+```
 
 <p>And in 64-bit mode it will have only one operation:</p>
 
@@ -371,7 +371,7 @@ mov edx, -1
 
 <p>Now let’s take a look over the <code>func8</code> function:</p>
 
-{% highlight asm %}
+```asm
 _Z5func8x:
     enter 0, 0
     sub esp, 8
@@ -383,11 +383,11 @@ _Z5func8x:
     mov edx, DWORD PTR [ebp-4]
     leave
     ret
-{% endhighlight %}
+```
 
 <p>We may clean it up removing all those <code>DWORD PTR</code> type hints:</p>
 
-{% highlight asm %}
+```asm
 _Z5func8x:
     enter 0, 0
     sub esp, 8
@@ -399,13 +399,13 @@ _Z5func8x:
     mov edx, [ebp-4]
     leave
     ret
-{% endhighlight %}
+```
 
 <p>All the memory “by the negative side” of <code>EBP</code> is dedicated to local variables. All the memory “by the positive side” of <code>EBP</code> is the one with arguments, passed to our function.</p>
 
 <p>Taking that into account, we may rewrite our assembly function as this:</p>
 
-{% highlight asm %}
+```asm
 _Z5func8x:
     enter 0, 0
 
@@ -424,7 +424,7 @@ _Z5func8x:
 
     leave
     ret
-{% endhighlight %}
+```
 
 <p>Now it became more readable.</p>
 
@@ -446,7 +446,7 @@ _Z5func8x:
 
 <p>Let’s for example calculate a sum of an array elements:</p>
 
-{% highlight c %}
+```c
 #include <stdio.h>
 
 extern "C" int sum(int n, int *a);
@@ -459,11 +459,11 @@ int main() {
 
     return 0;
 }
-{% endhighlight %}
+```
 
 <p>And let’s create the function <code>sum</code> in NASM. To start off, we’ll use a function, receiving two arguments, <code>int</code> and <code>int*</code> and returning a zero.</p>
 
-{% highlight asm %}
+```asm
 BITS 32
 
 section .text
@@ -481,7 +481,7 @@ sum:
 
     leave
     ret
-{% endhighlight %}
+```
 
 <p>Now what we would like to do is to add each element of array to our <code>result</code> variable <em>(oh, we do not have one yet!)</em>. To do this, we will use two registers: <code>ECX</code> to count how many elements we have added and <code>EAX</code> to store the sum. Each element’s address is <code>*a + 4 * i</code> or address of <code>a[0]</code> plus <code>4 bytes</code> times <code>i</code>, our element number.</p>
 
@@ -491,7 +491,7 @@ sum:
 
 <p>Now everything what we need is to add all those hints into a single program:</p>
 
-{% highlight asm %}
+```asm
 BITS 32
 
 section .text
@@ -522,7 +522,7 @@ add_loop:
 
     leave
     ret
-{% endhighlight %}
+```
 
 <p>Note that I subtract four bytes in an element address: <code>[ebx + 4 * ecx - 4]</code>. That’s because our i'th element starts at <code>*a + (i * 4)</code> byte, but we have <code>i = n</code> on the beginning. Thus, first iteration will try to add element, starting at <code>*a + (n * 4)</code> byte, which does not exist in our array <em>(the 5th element)</em>. So, we need to subtract one element’ size from our <code>[ebx + 4 * ecx]</code> address.</p>
 
@@ -532,7 +532,7 @@ add_loop:
 
 <p><strong>manual loop</strong>:</p>
 
-{% highlight asm %}
+```asm
 mov ecx, n
 
 add_loop:
@@ -542,11 +542,11 @@ add_loop:
     dec ecx
     cmp ecx, 0
     jg add_loop
-{% endhighlight %}
+```
 
 <p><strong>with <code>loop</code> instruction</strong>:</p>
 
-{% highlight asm %}
+```asm
 mov ecx, n
 
 add_loop:
@@ -554,7 +554,7 @@ add_loop:
     ; do something
 
     loop add_loop
-{% endhighlight %}
+```
 
 <p>We’ve just saved two lines of code!</p>
 
@@ -576,7 +576,7 @@ add_loop:
 
 <p>We shall write a function of this declaration:</p>
 
-{% highlight c %}
+```c
 #include <stdio.h>
 
 extern "C" long double dot_product(int n, long double *v1, long double *v2);
@@ -591,11 +591,11 @@ int main() {
 
     return 0;
 }
-{% endhighlight %}
+```
 
 <p>This one will calculate a dot product of two <em>n-element</em> vectors.</p>
 
-{% highlight asm %}
+```asm
 BITS 32
 
 section .text
@@ -633,7 +633,7 @@ just_exit:
 
     leave
     ret
-{% endhighlight %}
+```
 
 <p>The algorithm of a code above may be written as follows:</p>
 
@@ -654,7 +654,7 @@ just_exit:
 
 <p><strong>C program</strong>:</p>
 
-{% highlight c %}
+```c
 #include <stdio.h>
 
 extern void surface_and_volume(float a, float b, float c, float *v, float *s);
@@ -668,11 +668,11 @@ int main() {
 
   return 0;
 }
-{% endhighlight %}
+```
 
 <p><strong>NASM program</strong>:</p>
 
-{% highlight asm %}
+```asm
 BITS 32
 
 section .text
@@ -744,7 +744,7 @@ just_exit:
     fstp a
 
     ret
-{% endhighlight %}
+```
 
 <p>Compile it as usual and run with GDB:</p>
 

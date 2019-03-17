@@ -15,7 +15,7 @@ install some educational application for programmers. And here's what I've found
 Big O notation shows, how many steps or memory units will the algorithm use to complete,
 at its maximum. Here's an example:
 
-{% highlight java %}
+```java
 void someAlgorithm(int n) {
   // part 1
   doSomething();
@@ -39,7 +39,7 @@ void someAlgorithm(int n) {
 
   return n;
 }
-{% endhighlight %}
+```
 
 Let's take a look at each of four algorithm parts. Part 1 just calls some function, `doSomething()`.
 Let's assume it takes some constant amount of time to complete, `C`. The time complexity of calling
@@ -80,7 +80,7 @@ Here the same rules apply, except of _"steps to complete"_ we use
 _"memory cells allocated"_. So we will count the amount of allocated memory. This is mostly used
 by lists, not by objects and structures (as they always use the same memory amount). Check this out:
 
-{% highlight c++ %}
+```c++ 
 struct Moo {
   int a, b, c;
   float d;
@@ -91,14 +91,14 @@ public:
   int a, b, c;
   float *d;
 };
-{% endhighlight %}
+```
 
 Both `Moo` and `Foo` will use the same amount of memory initially (since pointers in C++ are just
 integer memory addresses' values and floats use same 4 bytes - just as integers do). But depending on
 how many memory we will allocate for `Foo.d` we will get the different values. Consider the continuation
 of this example below:
 
-{% highlight c++ %}
+```c++ 
 int myAlgorithm(int n) {
   // part 1
   Foo *foo = new Foo();
@@ -118,7 +118,7 @@ int myAlgorithm(int n) {
 
   return 0;
 }
-{% endhighlight %}
+```
 
 Here, in part 1, we have just an instance of `Foo` class, which uses
 `3 * int + float* = 3 * 1 + 1 = 4` memory cells. As in case with time complexity, this amount is constant,

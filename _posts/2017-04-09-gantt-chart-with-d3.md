@@ -47,7 +47,7 @@ The last piece of an algorithm is generating SVG. This is where D3 strikes in an
 
 The implementation is below and the live demo is [here](https://codepen.io/shybovycha/pen/vxdePv)
 
-{% highlight js %}
+```js
 const prepareDataElement = ({ id, label, startDate, endDate, duration, dependsOn }) => {
   if ((!startDate || !endDate) && !duration) {
     throw new Exception('Wrong element format: should contain either startDate and duration, or endDate and duration or startDate and endDate');
@@ -331,11 +331,11 @@ const createGanttChart = (placeholder, data, { elementHeight, sortMode, showRela
 
   createChartSVG(data, placeholder, { svgWidth, svgHeight, scaleWidth, elementHeight, scaleHeight, fontSize, minStartDate, maxEndDate, margin, showRelations });
 };
-{% endhighlight %}
+```
 
 The data format is like follows
 
-{% highlight js %}
+```js
 var data = [{
   startDate: '2017-02-27',
   endDate: '2017-03-04',
@@ -367,11 +367,11 @@ var data = [{
   id: 'm04',
   dependsOn: ['m01']
 }];
-{% endhighlight %}
+```
 
 To create a chard on a page, you need to pass the reference to a valid existing DOM element where you want the diagram to appear, the data and the SVG options. These options define the looks of a chart - width, height of an element (rectangle), font size and so on. One more option is
 
-{% highlight js %}
+```js
 createGanttChart(document.querySelector('body'), data, {
   elementHeight: 20,
   sortMode: 'date', // alternatively, 'childrenCount'
@@ -381,4 +381,4 @@ createGanttChart(document.querySelector('body'), data, {
     fontSize: 12
   }
 });
-{% endhighlight %}
+```

@@ -21,7 +21,7 @@ Recently I was reading through my old posts and found out there is a gap in the 
 
 So, let’s start-off searching a maximum element in the array. Usually, it is nothing just iterating through the array, comparing each element with some starting value. For optimization reason and for the precision’s sake we set the initial value to the first array’s element. Like this:
 
-{% highlight cpp %}
+```cpp
 float max_value(float *a, int n) {
     float res = a[0];
 
@@ -32,13 +32,13 @@ float max_value(float *a, int n) {
 
     return res;
 }
-{% endhighlight %}
+```
 
 ## Index-based search
 
 What we could do firstly is to store not the search element itself, but its index:
 
-{% highlight cpp %}
+```cpp
 float max_index(float *a, int n) {
     int res = 0;
 
@@ -49,14 +49,14 @@ float max_index(float *a, int n) {
 
     return a[res];
 }
-{% endhighlight %}
+```
 
 This naive optimization has its effect _(time in seconds; the value found in braces)_:
 
-{% highlight text %}
+```text
 Value-based: 0.00732200 (0.99999827)
 Index-based: 0.00674200 (0.99999827)
-{% endhighlight %}
+```
 
 ## Vector operations
 
@@ -205,7 +205,7 @@ And like those, there are very similar intrinsics for storing data from vectors 
 
 So, let’s get back to finding the maximum in an array. For this task we will search maximums on each 4 elements of our array, storing them in the `XMMi` register:
 
-{% highlight cpp %}
+```cpp
 float max_sse(float *a, int n) {
     float res;
 
@@ -220,7 +220,7 @@ float max_sse(float *a, int n) {
 
     return res;
 }
-{% endhighlight %}
+```
 
 But if you run this code, you may notice it returns the maximum, not in 100% of cases. This is because we are storing **four maximums** between **each portion of an array**. So, only one of those four is the maximum. But how can we find the maximum among four numbers? Running a loop seems obvious but not effective enough…
 
@@ -236,19 +236,19 @@ Given those definitions, the call `m3 = _mm_shuffle_ps(m1, m2, _MM_SHUFFLE(z, y,
 
 So we want to shift a pack by one element right, like this: `[4, 2, 3, 1] => [2, 3, 1, 4]`. We need to pass the initial pack, `[4, 2, 3, 1]` twice: `_mm_shuffle_ps([4, 2, 3, 1], [4, 2, 3, 1], mask)` and form a mask, which will use elements `[2, 3]` for the higher words of a result and elements `[3, 1]` for the lower words. These elements can be then indexed as follows:
 
-{% highlight text %}
+```text
 +-----------+---------+
 | index     | 3 2 1 0 |
 +-----------+---------+
 | element   | 4 2 3 1 |
 +-----------+---------+
-{% endhighlight %}
+```
 
 So to get the pair `[2, 3]` we need elements with indices `[2, 1]`. And to get the pair `[1, 4]` we need elements with indices `[0, 3]`.
 
 Given that, we can use macro `_MM_SHUFFLE()` to generate the mask: `_MM_SHUFFLE(2, 1, 0, 3)`. And the final formula looks like this: `_mm_shuffle_ps(m1, m2, _MM_SHUFFLE(2, 1, 0, 3))`.
 
-{% highlight text %}
+```text
 +--+---------+
 |  | 3 2 1 0 |
 +------------+
@@ -258,11 +258,11 @@ Given that, we can use macro `_MM_SHUFFLE()` to generate the mask: `_MM_SHUFFLE(
 +------------+
 |m3| 2 3 1 4 |
 +------------+
-{% endhighlight %}
+```
 
 And our `max` function in pseudo-code looks like this:
 
-{% highlight cpp %}
+```cpp
 // given val = [4, 2, 3, 1]
 maxval = val;
 
@@ -270,11 +270,11 @@ for (int i = 0; i < 3; i++) {
     val = _mm_shuffle_ps(val, val, _MM_SHUFFLE(2, 1, 0, 3));
     maxval = _mm_max_ps(maxval, val);
 }
-{% endhighlight %}
+```
 
 Which will be executed like this:
 
-{% highlight groovy %}
+```groovy
 // preparation
 maxval = [ 4, 2, 3, 1]
 
@@ -289,13 +289,13 @@ maxval = _mm_max_ps([4, 3, 3, 4], [3, 1, 4, 2]) // = [4, 3, 4, 4]
 // i = 2
 val = _mm_shuffle_ps(val, val, _MM_SHUFFLE(2, 1, 0, 3)) // = [1, 4, 2, 3]
 maxval = _mm_max_ps([4, 3, 4, 4], [1, 4, 2, 3]) // = [4, 4, 4, 4]
-{% endhighlight %}
+```
 
 The `_MM_SHUFFLE(2, 1, 0, 3)` call could be expanded to `(2 << 6) | (1 << 4) | (0 << 2) | 3`, which equals to `147` or `0x93` in HEX.
 
 And here is the final C++ implementation:
 
-{% highlight cpp %}
+```cpp
 float max_sse(float *a, int n) {
     float res;
 
@@ -314,13 +314,13 @@ float max_sse(float *a, int n) {
 
     return res;
 }
-{% endhighlight %}
+```
 
 **And how about integers?**
 
 The code for finding maximum with SSE among integer array is very, very similar to the previous one - you just need to decorate intrinsics with a different prefix and change store operation:
 
-{% highlight cpp %}
+```cpp
 int max_sse_int(int *a, int n) {
     int res;
 
@@ -339,14 +339,14 @@ int max_sse_int(int *a, int n) {
 
     return res;
 }
-{% endhighlight %}
+```
 
 **Profit?**
 
 If we compare the results of all three methods - usual loop, index-based searching and SSE, we may see something like this _(I ran these tests on my laptop’s i7 processor on one million random float/int values)_:
 
-{% highlight text %}
-{% raw %}
+```text
+
 === Looking for a maximum element in a list of 1000000 floats ===
 * Value-based: 0.00382500 sec; max = 0.99999923
 * Index-based: 0.00282200 sec; max = 0.99999923
@@ -355,8 +355,8 @@ If we compare the results of all three methods - usual loop, index-based searchi
 * Value-based: 0.00384200 sec; max = 99
 * Index-based: 0.00298300 sec; max = 99
 * SSE: 0.00130400 sec; max = 99
-{% endraw %}
-{% endhighlight %}
+
+```
 
 Here you can see that index-based searching gives some speeding-up (around `15%`). But the real speed boost is gained with SSE (almost **`4 times`**!).
 
@@ -364,7 +364,7 @@ Here you can see that index-based searching gives some speeding-up (around `15%`
 
 Now let’s try something harder - calculating a sum of array’s elements. Here we will use the horizontal vector operations. But first, here’s the general algorithm:
 
-{% highlight cpp %}
+```cpp
 float sum(float *a, int n) {
     float res = 0.0;
 
@@ -374,12 +374,12 @@ float sum(float *a, int n) {
 
     return res;
 }
-{% endhighlight %}
+```
 
 
 Simple enough, huh? Now let’s use the SSE’s `_mm_add_ps` intrinsic. Running it on each pack of four elements will give us the summary vector of four floats:
 
-{% highlight cpp %}
+```cpp
 float sum_sse(float *a, int n) {
     float res = 0.0;
 
@@ -394,11 +394,11 @@ float sum_sse(float *a, int n) {
 
     return res;
 }
-{% endhighlight %}
+```
 
 But if we now add the elements of that vector horizontally to themselves, we would then have the two-element vector. Adding it to itself will give us the final single-element vector:
 
-{% highlight cpp %}
+```cpp
 float sum_sse(float *a, int n) {
     float res = 0.0;
 
@@ -416,11 +416,11 @@ float sum_sse(float *a, int n) {
 
     return res;
 }
-{% endhighlight %}
+```
 
 Nice, isn’t it? But wait! Integers are available too! And they need their special intrinsics! Have no fear, nothing that different here, only the prefixes are different:
 
-{% highlight cpp %}
+```cpp
 unsigned long long sum4(int *a, int n) {
     unsigned long long res;
 
@@ -438,16 +438,16 @@ unsigned long long sum4(int *a, int n) {
 
     return res;
 }
-{% endhighlight %}
+```
 
 And, just to approve our assumption of speeding-up, here’s the benchmarking _(on one million of elements)_:
 
-{% highlight bash %}
+```bash
 Value-based: 0.00853100 (500245.28125000)
 SSE: 0.00319800 (500243.50000000)
 Value-based on integers: 0.00773100 (49453512)
 SSE on integers: 0.00274800 (49453512)
-{% endhighlight %}
+```
 
 ## Limitations?
 
