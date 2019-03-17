@@ -688,7 +688,7 @@ endif()
 
 You should see something like this:
 
-<img data-src="{{ site.baseurl }}/images/04_movement_untouched.png">
+<img data-src="//images/04_movement_untouched.png">
 
 To end the process you may consider switching to a terminal and running
 
@@ -742,7 +742,7 @@ in 3D forming a model, called **mesh**)_ but by its **position**, **rotation** a
     around. E. g., `vector3df(45, 90, 0)` sets the rotation by `45 deg` around `X axis`, `90 deg` around `Y axis`
     and no rotation aroung `Z axis`. All those axes are relative to the node itself.
 
-  <img data-src="{{ site.baseurl }}/images/irrlicht-newton-tutorials/euler_angles.jpg">
+  <img data-src="//images/irrlicht-newton-tutorials/euler_angles.jpg">
 
 * Graphics User Interface' _(GUI)_ widgets for information output are labels; they are created with
 **GUI Manager**:
@@ -821,4 +821,4 @@ calls.
 That was some short introduction to the Irrlicht engine. And that's basically everything we will use
 for the next few sections.
 
-<a href="{{ site.baseurl }}{% post_url irrlicht-newton-tutorials/2015-08-28-first-script %}" class="btn btn-success">Next chapter</a>
+<a href="/{% post_url irrlicht-newton-tutorials/2015-08-28-first-script %}" class="btn btn-success">Next chapter</a>

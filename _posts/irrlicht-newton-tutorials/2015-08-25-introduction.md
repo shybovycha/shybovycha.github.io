@@ -48,4 +48,4 @@ asset formats out-of-the-box, user input *(keyboard, mouse and joystick events h
 Newton Game Dynamics is also very easy to use; it is constantly developed; and it is darn powerful!
 
 If you are still interested - please proceed to
-<a href="{{ site.baseurl }}{% post_url irrlicht-newton-tutorials/2015-08-26-application-architecture %}" class="btn btn-success">the first chapter</a>.
+<a href="/{% post_url irrlicht-newton-tutorials/2015-08-26-application-architecture %}" class="btn btn-success">the first chapter</a>.

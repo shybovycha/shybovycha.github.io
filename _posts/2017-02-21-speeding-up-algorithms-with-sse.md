@@ -113,25 +113,25 @@ So, I mentioned **horizontal vector operations**. But let’s do it in a series.
 There are two SSE operation types: **scalar** and **packed**. Scalar operations use only the lowest elements of vectors. Packed operations deal with each element of vectors given. Look at the images below and you shall see the difference:
 
 <div>
-    <img data-src="{{ '/images/sse-optimizations/addss.png' | prepend: site.baseurl }}" alt="">
+    <img data-src="//images/sse-optimizations/addss.png" alt="">
 </div>
 
 <div>
-    <img data-src="{{ '/images/sse-optimizations/addps.png' | prepend: site.baseurl }}" alt="">
+    <img data-src="//images/sse-optimizations/addps.png" alt="">
 </div>
 
 <div>
-    <img data-src="{{ '/images/sse-optimizations/addsd.png' | prepend: site.baseurl }}" alt="">
+    <img data-src="//images/sse-optimizations/addsd.png" alt="">
 </div>
 
 <div>
-    <img data-src="{{ '/images/sse-optimizations/addpd.png' | prepend: site.baseurl }}" alt="">
+    <img data-src="//images/sse-optimizations/addpd.png" alt="">
 </div>
 
 Horizontal operations deal on vectors in a different direction. Instead of operating on elements in the corresponding positions, these operate on elements in adjacent positions:
 
 <div>
-    <img data-src="{{ '/images/sse-optimizations/haddps.png' | prepend: site.baseurl }}" alt="">
+    <img data-src="//images/sse-optimizations/haddps.png" alt="">
 </div>
 
 <!--more-->

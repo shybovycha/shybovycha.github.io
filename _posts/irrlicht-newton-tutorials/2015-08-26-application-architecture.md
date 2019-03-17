@@ -15,7 +15,7 @@ Well, there are number of application architecture' levels:
 
 <div class="row">
     <div class="col">
-        <img data-src="{{ site.baseurl }}/images/irrlicht-newton-tutorials/japan_feudal_system.jpg" />
+        <img data-src="//images/irrlicht-newton-tutorials/japan_feudal_system.jpg" />
     </div>
     <div class="col">
         <p>
@@ -77,4 +77,4 @@ Just try it!
 
 Remember all the three rules for our architecture. And keeping them in mind, let's get to some coding already!
 
-<a href="{{ site.baseurl }}{% post_url irrlicht-newton-tutorials/2015-08-27-first-application %}" class="btn btn-success">Next chapter</a>
+<a href="/{% post_url irrlicht-newton-tutorials/2015-08-27-first-application %}" class="btn btn-success">Next chapter</a>

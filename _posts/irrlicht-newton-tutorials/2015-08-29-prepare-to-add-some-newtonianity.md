@@ -449,4 +449,4 @@ _(there is a Quake-like level, but that is too much for our case)_, we will lear
 to make that simple thing in Blender. The next part is a short break between coding
 sessions.
 
-<a href="{{ site.baseurl }}{% post_url irrlicht-newton-tutorials/2015-12-15-making-simple-level-with-blender %}" class="btn btn-success">Next chapter</a>
+<a href="/{% post_url irrlicht-newton-tutorials/2015-12-15-making-simple-level-with-blender %}" class="btn btn-success">Next chapter</a>
