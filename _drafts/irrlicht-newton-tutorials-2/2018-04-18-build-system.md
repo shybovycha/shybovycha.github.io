@@ -15,7 +15,7 @@ Let me show you a real-world example: many IDEs (like Code::Blocks and VisualStu
 
 Most likely you will want to use a few third-party libraries in your code when developing an application, because - why inventing a wheel? This is a very common and generally good practice, which allows you to reduce the time invested in development and possibly the amount of bugs you could've introduced when creating a solution 100% from scratch. The problem here is that a library your program depends on (hence a "dependency") may rely on other library itself. And the more complex library you use the wider dependency tree is.
 
-<img src="//images/dependency_tree.jpg" alt="Dependency tree">
+<img src="/images/dependency_tree.jpg" alt="Dependency tree">
 
 Long time ago the way we managed those dependencies was a nightmare, given the previous paragraph showing how we've built the code. Imagine building a complex solution with tons of dependencies and configuring your IDE for each of them. Hard? Now think of how hard it was to configure it in order to build everything on a different machine and OS.
 

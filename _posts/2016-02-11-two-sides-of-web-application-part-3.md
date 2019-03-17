@@ -9,7 +9,7 @@ date: '2016-02-11T14:47:39+01:00'
         {% include references/two-sides-of-web-application.html %}
     </div>
     <div class="col-md-6 col-xs-12 text-xs-center text-md-right">
-        <img data-src="//images/two-sides-of-web-application/a305-1-compressed.jpg" class="img-responsive" style="max-height: 150px" alt="Funny image" />
+        <img data-src="/images/two-sides-of-web-application/a305-1-compressed.jpg" class="img-responsive" style="max-height: 150px" alt="Funny image" />
     </div>
 </div>
 
@@ -633,4 +633,4 @@ ourStatsApp
 And here's the demo of what we've done up until now:
 
 <p data-height="494" data-theme-id="0" data-slug-hash="vLMZmd" data-default-tab="result" data-user="shybovycha" class='codepen'>See the Pen <a href='http://codepen.io/shybovycha/pen/vLMZmd/'>Simple web analytics. Communication layer. v2</a> by Artem Shoobovych (<a href='http://codepen.io/shybovycha'>@shybovycha</a>) on <a href='http://codepen.io'>CodePen</a>.</p>
-<script async src="//assets.codepen.io/assets/embed/ei.js"></script>
+<script async src="/assets.codepen.io/assets/embed/ei.js"></script>

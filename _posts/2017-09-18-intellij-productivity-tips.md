@@ -31,22 +31,22 @@ You may disagree with me or find these recommendations useless for yourself, but
         To go back to editor - just hit <kbd>Esc</kbd> <br />
         Project Tree: <br />
         <video preload autoplay loop muted>
-            <source src="//images/intellij-performance-tips/cmd_1_esc.webm" />
-            <source src="//images/intellij-performance-tips/cmd_1_esc.gif" />
+            <source src="/images/intellij-performance-tips/cmd_1_esc.webm" />
+            <source src="/images/intellij-performance-tips/cmd_1_esc.gif" />
         </video>
         <br />
         Search results:
         <br />
         <video preload autoplay loop muted>
-            <source src="//images/intellij-performance-tips/cmd_3_esc.webm" />
-            <source src="//images/intellij-performance-tips/cmd_3_esc.gif" />
+            <source src="/images/intellij-performance-tips/cmd_3_esc.webm" />
+            <source src="/images/intellij-performance-tips/cmd_3_esc.gif" />
         </video>
         <br />
         Version Control:
         <br />
         <video preload autoplay loop muted>
-            <source src="//images/intellij-performance-tips/cmd_9_esc.webm" />
-            <source src="//images/intellij-performance-tips/cmd_9_esc.gif" />
+            <source src="/images/intellij-performance-tips/cmd_9_esc.webm" />
+            <source src="/images/intellij-performance-tips/cmd_9_esc.gif" />
         </video>
     </div>
 </section>
@@ -56,8 +56,8 @@ You may disagree with me or find these recommendations useless for yourself, but
     <div><kbd>Cmd+E</kbd></div>
     <div>
         <video preload autoplay loop muted>
-            <source src="//images/intellij-performance-tips/cmd_e.webm" />
-            <source src="//images/intellij-performance-tips/cmd_e.gif" />
+            <source src="/images/intellij-performance-tips/cmd_e.webm" />
+            <source src="/images/intellij-performance-tips/cmd_e.gif" />
         </video>
     </div>
 </section>
@@ -67,8 +67,8 @@ You may disagree with me or find these recommendations useless for yourself, but
     <div><kbd>Cmd+Alt+&larr;</kbd> and <kbd>Cmd+Alt+&rarr;</kbd></div>
     <div>
         <video preload autoplay loop muted>
-            <source src="//images/intellij-performance-tips/cmd_alt_arrows.webm" />
-            <source src="//images/intellij-performance-tips/cmd_alt_arrows.gif" />
+            <source src="/images/intellij-performance-tips/cmd_alt_arrows.webm" />
+            <source src="/images/intellij-performance-tips/cmd_alt_arrows.gif" />
         </video>
     </div>
 </section>
@@ -78,15 +78,15 @@ You may disagree with me or find these recommendations useless for yourself, but
     <div><kbd>Shift, Shift</kbd></div>
     <div>
         <video preload autoplay loop muted>
-            <source src="//images/intellij-performance-tips/shift_shift.webm" />
-            <source src="//images/intellij-performance-tips/shift_shift.gif" />
+            <source src="/images/intellij-performance-tips/shift_shift.webm" />
+            <source src="/images/intellij-performance-tips/shift_shift.gif" />
         </video>
         <br />
         Use <kbd>Cmd+N</kbd> for class search:
         <br />
         <video preload autoplay loop muted>
-            <source src="//images/intellij-performance-tips/cmd_n.webm" />
-            <source src="//images/intellij-performance-tips/cmd_n.gif" />
+            <source src="/images/intellij-performance-tips/cmd_n.webm" />
+            <source src="/images/intellij-performance-tips/cmd_n.gif" />
         </video>
     </div>
 </section>
@@ -96,8 +96,8 @@ You may disagree with me or find these recommendations useless for yourself, but
     <div><kbd>Cmd+Shift+N</kbd></div>
     <div>
         <video preload autoplay loop muted>
-            <source src="//images/intellij-performance-tips/cmd_shift_n.webm" />
-            <source src="//images/intellij-performance-tips/cmd_shift_n.gif" />
+            <source src="/images/intellij-performance-tips/cmd_shift_n.webm" />
+            <source src="/images/intellij-performance-tips/cmd_shift_n.gif" />
         </video>
     </div>
 </section>
@@ -107,15 +107,15 @@ You may disagree with me or find these recommendations useless for yourself, but
     <div><kbd>Cmd+B</kbd></div>
     <div>
         <video preload autoplay loop muted>
-            <source src="//images/intellij-performance-tips/cmd_b.webm" />
-            <source src="//images/intellij-performance-tips/cmd_b.gif" />
+            <source src="/images/intellij-performance-tips/cmd_b.webm" />
+            <source src="/images/intellij-performance-tips/cmd_b.gif" />
         </video>
         <br />
         To go to implementations/overrides, use <kbd>Cmd+Alt+B</kbd>:
         <br />
         <video preload autoplay loop muted>
-            <source src="//images/intellij-performance-tips/cmd_alt_b.webm" />
-            <source src="//images/intellij-performance-tips/cmd_alt_b.gif" />
+            <source src="/images/intellij-performance-tips/cmd_alt_b.webm" />
+            <source src="/images/intellij-performance-tips/cmd_alt_b.gif" />
         </video>
     </div>
 </section>
@@ -125,8 +125,8 @@ You may disagree with me or find these recommendations useless for yourself, but
     <div><kbd>Cmd+Shift+A</kbd></div>
     <div>
         <video preload autoplay loop muted>
-            <source src="//images/intellij-performance-tips/cmd_shift_a.webm" />
-            <source src="//images/intellij-performance-tips/cmd_shift_a.gif" />
+            <source src="/images/intellij-performance-tips/cmd_shift_a.webm" />
+            <source src="/images/intellij-performance-tips/cmd_shift_a.gif" />
         </video>
     </div>
 </section>
@@ -135,7 +135,7 @@ You may disagree with me or find these recommendations useless for yourself, but
     <div>Disable tabs</div>
     <div><kbd>Cmd+Shift+A</kbd> and search for <em>tabs placement</em></div>
     <div>
-        <img data-src="//images/intellij-performance-tips/intellij-disable-tabs-optimized.png" alt="" />
+        <img data-src="/images/intellij-performance-tips/intellij-disable-tabs-optimized.png" alt="" />
     </div>
 </section>
 
@@ -144,8 +144,8 @@ You may disagree with me or find these recommendations useless for yourself, but
     <div><kbd>Cmd+P</kbd></div>
     <div>
         <video preload autoplay loop muted>
-            <source src="//images/intellij-performance-tips/cmd_p.webm" />
-            <source src="//images/intellij-performance-tips/cmd_p.gif" />
+            <source src="/images/intellij-performance-tips/cmd_p.webm" />
+            <source src="/images/intellij-performance-tips/cmd_p.gif" />
         </video>
     </div>
 </section>
@@ -155,8 +155,8 @@ You may disagree with me or find these recommendations useless for yourself, but
     <div><kbd>Alt+F7</kbd></div>
     <div>
         <video preload autoplay loop muted>
-            <source src="//images/intellij-performance-tips/alt_f7.webm" />
-            <source src="//images/intellij-performance-tips/alt_f7.gif" />
+            <source src="/images/intellij-performance-tips/alt_f7.webm" />
+            <source src="/images/intellij-performance-tips/alt_f7.gif" />
         </video>
     </div>
 </section>

@@ -47,7 +47,7 @@ digraph G {
 ```
 -->
 
-<img data-src="//images/floyd-warshall/floyd-warshall-graph-sample.png" alt="">
+<img data-src="/images/floyd-warshall/floyd-warshall-graph-sample.png" alt="">
 
 <div class="info">
 In <em>GraphViz</em> it would be described as follows:

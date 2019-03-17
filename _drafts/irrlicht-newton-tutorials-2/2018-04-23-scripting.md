@@ -13,7 +13,7 @@ There are different levels of application design:
 
 <div class="row">
     <div class="col">
-        <img src="//images/japan_feudal_system.jpg" />
+        <img src="/images/japan_feudal_system.jpg" />
     </div>
     <div class="col">
         <p>

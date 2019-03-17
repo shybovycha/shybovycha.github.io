@@ -4,13 +4,13 @@ title: Entanglement
 date: '2017-03-13T11:42:24+02:00'
 ---
 
-<img data-src="//images/entanglement/ios-screen1_optimized.png" alt="">
+<img data-src="/images/entanglement/ios-screen1_optimized.png" alt="">
 
 # Entanglement?
 
 Some time ago there was a game popular over there, called Entanglement:
 
-<img data-src="//images/entanglement/web-screen1.jpg" alt="">
+<img data-src="/images/entanglement/web-screen1.jpg" alt="">
 
 There are a few implementations of this game under Android:
 
@@ -28,10 +28,10 @@ There are a few implementations of this game under Android:
 
 <div class="row">
     <div class="col">
-        <img data-src="//images/entanglement/android-screen1.jpg" alt="">
+        <img data-src="/images/entanglement/android-screen1.jpg" alt="">
     </div>
     <div class="col">
-        <img data-src="//images/entanglement/android-screen2.jpg" alt="">
+        <img data-src="/images/entanglement/android-screen2.jpg" alt="">
     </div>
 </div>
 
@@ -95,13 +95,13 @@ The problem was to handle the positions of all the tiles in a handy manner. Thus
 to go from a standard Cartesian coordinate system, which has 90&deg; angle between axes
 and go for a one with 120&deg;:
 
-<img data-src="//images/entanglement/120-deg-coordinate-system.png" alt="">
+<img data-src="/images/entanglement/120-deg-coordinate-system.png" alt="">
 
 Here, `u` and `v` vectors represent coordinate axes and `w` vector is a diagonal. So the tiles
 could now be allocated so their centers are at the points of the coordinate system with integer
 coordinates:
 
-<img data-src="//images/entanglement/tiles-1.png" alt="">
+<img data-src="/images/entanglement/tiles-1.png" alt="">
 
 Now, there's a tricky thing regarding this coordinate system: how should we know, where to render
 the actual tile image on a screen? E. g. how can we convert coordinates in this system back to Cartesian?
@@ -137,13 +137,13 @@ based on that parameter.
 Each tile should have six lines. To do that, I created 12 _"connection slots"_, two on each
 side of a tile, as shown below:
 
-<img data-src="//images/entanglement/tile-connections-1.png" alt="">
+<img data-src="/images/entanglement/tile-connections-1.png" alt="">
 
 Then, by generating six random pairs of integer numbers from the range `[1, 12]`, we can obtain actual
 connections inside a single tile. Note that none of the numbers should be used more than once and
 that none of the pairs should have a duplicate. Then a tile might look like this:
 
-<img data-src="//images/entanglement/tile-sample.png" alt="">
+<img data-src="/images/entanglement/tile-sample.png" alt="">
 
 To display a tile, I've developed a prototype tile in SVG:
 
@@ -434,7 +434,7 @@ the given tile.
 
 And for the example above, the call `t.input(from: 0)` will give us `7`. And here's an image to show why:
 
-<img data-src="//images/entanglement/entanglement-tile-neighbours.png" alt="">
+<img data-src="/images/entanglement/entanglement-tile-neighbours.png" alt="">
 
 Given we have a portion of a path layed out on a game plane already, there is only one way of correctly placing
 each next tile _(the path which is already present on a plane never changes and always comes to the same connection point)_.
@@ -559,10 +559,10 @@ This task is quite simple, compared to the others described above. When a user p
 the length of a predicted path and add numbers from `[1..L]` _(where `L` is the length of the predicted path)_
 to score. This could be expressed as a sum of a finite arithmetic sequence with a step of `1`:
 
-<img data-src="//images/entanglement/score_equation.gif" alt="">
+<img data-src="/images/entanglement/score_equation.gif" alt="">
 
 # The end result
 
 The end result of this coding exercise looks like exactly as the one at the very top of this post:
 
-<img data-src="//images/entanglement/ios-screen1.png" alt="">
+<img data-src="/images/entanglement/ios-screen1.png" alt="">

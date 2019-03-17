@@ -9,7 +9,7 @@ date: '2016-03-10T12:08:39+01:00'
         {% include references/two-sides-of-web-application.html %}
     </div>
     <div class="col-md-6 col-xs-12 text-xs-center text-md-right">
-        <img class="img-responsive" style="max-height: 150px" src="//images/two-sides-of-web-application/tank_back.jpg" />
+        <img class="img-responsive" style="max-height: 150px" src="/images/two-sides-of-web-application/tank_back.jpg" />
     </div>
 </div>
 

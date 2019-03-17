@@ -15,7 +15,7 @@ Well, there are number of application architecture' levels:
 
 <div class="row">
     <div class="col">
-        <img data-src="//images/irrlicht-newton-tutorials/japan_feudal_system.jpg" />
+        <img data-src="/images/irrlicht-newton-tutorials/japan_feudal_system.jpg" />
     </div>
     <div class="col">
         <p>

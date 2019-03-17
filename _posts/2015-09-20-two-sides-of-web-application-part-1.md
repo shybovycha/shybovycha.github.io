@@ -10,7 +10,7 @@ date: '2015-09-20T20:18:39+01:00'
     </div>
 
     <div class="col-md-6 col-xs-12 text-xs-center text-md-right">
-        <img data-src="//images/two-sides-of-web-application/chocolate_tools.jpg" class="img-responsive" style="max-height: 150px" />
+        <img data-src="/images/two-sides-of-web-application/chocolate_tools.jpg" class="img-responsive" style="max-height: 150px" />
     </div>
 </div>
 
@@ -57,7 +57,7 @@ tracking users' location and browser only. And we'll be showing statistics on a 
 We will be developing our application with two layers (or two sides) - front-end and back-end:
 
 <div class="text-center">
-    <img data-src="//images/two-sides-of-web-application/general_architecture.png" class="img-responsive" />
+    <img data-src="/images/two-sides-of-web-application/general_architecture.png" class="img-responsive" />
 </div>
 
 The front-end part is the one the user sees and uses - the web page, mobile or desktop application. The back-end part is the one, which does all the magic - prepares data for the front-end side to display, performs data operations as a reaction on user's actions, etc. Thus we could easily replace either the back-end part or the front-end one or even both and replace them with all brand-new implementation. This architecture allows us to do that really easily.
