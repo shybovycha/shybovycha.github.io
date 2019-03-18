@@ -1,21 +1,33 @@
-window.addEventListener('load', function () {
-    setTimeout(function () {
-        var lightbox = document.querySelector('.lightbox');
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        let lightbox = document.querySelector('.lightbox');
+        let lightboxImg;
 
-        lightbox.addEventListener('click', function () {
+        if (!lightbox) {
+            lightbox = document.createElement('div');
+            lightbox.className = 'lightbox';
+            document.body.appendChild(lightbox);
+
+            lightboxImg = document.createElement('img');
+            lightbox.appendChild(lightboxImg);
+        } else {
+            lightboxImg = lightbox.querySelector('img');
+        }
+
+        lightbox.addEventListener('click', (e) => {
             lightbox.classList.remove('visible');
         });
 
-        var images = [].slice.apply(document.querySelectorAll('.carousel-item > img'));
+        const images = Array.from(document.querySelectorAll('.carousel-item > img'));
 
-        images.forEach(function (image) {
-            var src = image.getAttribute('data-photo-src');
-            var previewSrc = src.replace(/^(.+)(\.\w{3,7})$/, '$1-preview$2');
+        images.forEach((image) => {
+            const src = image.getAttribute('data-photo-src');
+            const previewSrc = src.replace(/^(.+)(\.\w{3,7})$/, '$1-preview$2');
 
             image.setAttribute('src', previewSrc);
 
-            image.addEventListener('click', function () {
-                var lightboxImg = lightbox.querySelector('img');
+            image.addEventListener('click', () => {
+                const lightboxImg = lightbox.querySelector('img');
 
                 lightboxImg.setAttribute('src', src);
 

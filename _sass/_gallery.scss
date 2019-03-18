@@ -2,6 +2,23 @@
   display: inline-block;
 }
 
+.lightbox {
+  &.visible {
+    top: 0px;
+    left: 0px;
+    position: fixed;
+    z-index: 999;
+    width: 100%;
+    height: 100%;
+    display: flex;
+  }
+
+  background: rgba(255, 255, 255, 0.7);
+  align-items: center;
+  justify-content: center;
+  display: none;
+}
+
 .carousel {
   .carousel-inner {
     display: flex;
