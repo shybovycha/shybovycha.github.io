@@ -16,13 +16,15 @@ comments: true
     </article>
   </main>
 
-  <aside>
-    <div class="nav-content">
-      Tags
+  {% if page.tags %}
+      <aside>
+        <div class="nav-content">
+          Tags
 
-      {% for tag in page.tags %}
-        <a href="/{{ tag }}">{{ tag }}</a>
-      {% endfor %}
-    </div>
-  </aside>
+          {% for tag in page.tags %}
+            <a href="/{{ tag }}">{{ tag }}</a>
+          {% endfor %}
+        </div>
+      </aside>
+  {% endif %}
 </div>
