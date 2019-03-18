@@ -2,8 +2,4 @@
 ---
 @charset "utf-8";
 
-// Import partials from `sass_dir` (defaults to `_sass`)
-@import
-  "syntax-highlighting",
-  "post"
-;
+@import "syntax-highlighting";

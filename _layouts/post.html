@@ -3,16 +3,26 @@ layout: default
 comments: true
 ---
 
-<div class="post">
-  <header class="title">
-    <span class="timestamp tag tag-info">
-      {{ page.date | date: "%b %-d, %Y" }}
-    </span>
+<div class="content">
+  <main>
+    <article>
+      <h1>{{ page.title }}</h1>
 
-    <h2 class="post-title">{{ page.title }}</h2>
-  </header>
+      <span class="timestamp">
+        {{ page.date | date: "%b %-d, %Y" }}
+      </span>
 
-  <article class="post-content">
-    {{ content }}
-  </article>
+      {{ content }}
+    </article>
+  </main>
+
+  <aside>
+    <div class="nav-content">
+      Tags
+
+      {% for tag in page.tags %}
+        <a href="/{{ tag }}">{{ tag }}</a>
+      {% endfor %}
+    </div>
+  </aside>
 </div>

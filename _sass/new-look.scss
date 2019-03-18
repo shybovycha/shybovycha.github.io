@@ -1,0 +1,161 @@
+body {
+  padding: 0;
+  margin: 0;
+  color: #373a3c;
+  background: #EB7849;
+  font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 18px;
+}
+
+nav.top a:hover,
+a:hover {
+    color: #4b76f9;
+}
+
+a, a:active {
+    color: #354790;
+}
+
+img {
+    max-width: 100%;
+}
+
+pre {
+    overflow: scroll;
+}
+
+a.btn {
+    display: inline-flex;
+    color: #fff;
+    background: #008a24;
+    padding: 10px;
+    border-radius: 8px;
+
+    &:hover {
+        background: #00b32f;
+    }
+}
+
+footer {
+    background: #fff;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    height: 64px;
+    align-items: center;
+}
+
+nav.top {
+  height: 64px;
+  background-color: #f7f7f9;
+  display: flex;
+  justify-content: center;
+  flex-grow: 1;
+  align-self: stretch;
+  align-items: center;
+  margin-bottom: 1em;
+  // font-size: 18px;
+
+  a {
+    color: #929292;
+
+    &:hover {
+      color: #000;
+    }
+
+    display: flex;
+    margin: 0 1em;
+  }
+}
+
+.align-container {
+  display: flex;
+  flex-direction: row;
+  max-width: 780px + 280px + 18px;
+  min-width: 780px + 280px + 18px;
+  height: 100%;
+  align-items: center;
+}
+
+.content {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  margin-top: 1em;
+
+  main {
+    max-width: 780px;
+    display: flex;
+    flex-direction: column;
+
+    article {
+      margin-bottom: 1em;
+      padding: 1em;
+      background: #f7f7f9;
+      min-width: 780px - (2 * 18px);
+      max-width: 780px - (2 * 18px);
+      border-radius: 5px;
+
+      font-size: 21px;
+    }
+  }
+
+  aside {
+    display: flex;
+    flex-direction: column;
+    margin-left: 1em;
+    min-width: 280px;
+    max-width: 280px;
+    // margin-top: 1em;
+
+    .nav-content {
+      padding: 1em;
+      background: #f7f7f9;
+      display: flex;
+      flex-direction: column;
+      border-radius: 5px;
+    }
+  }
+}
+
+h1 {
+  font-size: 42px;
+}
+
+h2 {
+  font-size: 36px;
+}
+
+h3 {
+  font-size: 24px;
+}
+
+kbd {
+    border-radius: 8px;
+    background: #fff;
+    padding: 10px;
+    box-shadow: 1px 4px #dedede;
+    text-shadow: 1px 3px #dedede;
+    display: inline-flex;
+    margin: 4px 0;
+    border: 1px solid #dedede;
+}
+
+@media screen and (max-width: 1120px) {
+  .align-container {
+    max-width: 780px;
+    min-width: 780px;
+  }
+
+  .content {
+    // justify-content: flex-start;
+    // .posts  {
+    //   min-width: calc(100% - 2em);
+    //   max-width: calc(100% - 2em);
+    // }
+
+    aside {
+      display: none;
+    }
+  }
+}

@@ -1,10 +1,10 @@
 <script async>
-  window.addEventListener('load', function () {
-    var lazyLoadImage = function (imgElt) {
-      var src = imgElt.getAttribute('data-src');
-      var img = new Image();
+  window.addEventListener('load', () => {
+    const lazyLoadImage = (imgElt) => {
+      const src = imgElt.getAttribute('data-src');
+      const img = new Image();
 
-      img.onload = function () {
+      img.onload = () => {
         if (!!imgElt.parent) {
           imgElt.parent.replaceChild(img, imgElt);
         } else {
@@ -15,27 +15,25 @@
       img.src = src;
     };
 
-    var elementInViewport = function (elt) {
-      var rect = elt.getBoundingClientRect();
+    const elementInViewport = (elt) => {
+      const rect = elt.getBoundingClientRect();
+
       return (rect.top >= 0 && rect.left >= 0 && rect.top <= (window.innerHeight * 3 || document.documentElement.clientHeight * 3));
     };
 
     // defer loading images
-    var images = [].slice.apply(document.querySelectorAll('img[data-src]'));
-    var visibleImages = [], invisibleImages = [];
+    const images = Array.from(document.querySelectorAll('img[data-src]'));
+    let visibleImages = [];
+    let invisibleImages = [];
 
-    images.forEach(function (imgElt) {
-      (elementInViewport(imgElt) ? visibleImages : invisibleImages).push(imgElt);
-    });
+    images.forEach(imgElt => (elementInViewport(imgElt) ? visibleImages : invisibleImages).push(imgElt));
 
     // immediately load visible images
-    setTimeout(function () {
-      visibleImages.forEach(lazyLoadImage);
-    }, 0);
+    setTimeout(() => visibleImages.forEach(lazyLoadImage), 0);
 
     // defer invisible images to be lazy-loaded
-    window.addEventListener('scroll', function () {
-      invisibleImages = invisibleImages.filter(function (imgElt) {
+    window.addEventListener('scroll', () => {
+      invisibleImages = invisibleImages.filter((imgElt) => {
         if (elementInViewport(imgElt)) {
           lazyLoadImage(imgElt);
           return false;
@@ -46,11 +44,11 @@
     });
 
     // defer main.css
-    var head = document.querySelector('head');
-    var styles = [ "//css/main.css" ];
+    const head = document.querySelector('head');
+    const styles = [ '/css/main.css' ];
 
-    styles.forEach(function (src) {
-      var elt = document.createElement('link');
+    styles.forEach((src) => {
+      const elt = document.createElement('link');
 
       elt.rel = 'stylesheet';
       elt.href = src;
@@ -58,11 +56,11 @@
       head.appendChild(elt);
     });
 
-    setTimeout(function () {
+    setTimeout(() => {
       // load heavy body background
-      var bgSrc = '/images/background2-compressed.jpg';
+      let bgSrc = '/images/background2-compressed.jpg';
 
-      if (navigator.userAgent.indexOf("Chrome") !== -1) {
+      if (navigator.userAgent.indexOf('Chrome') !== -1 || navigator.userAgent.indexOf('Firefox') !== -1) {
         bgSrc = '/images/background2-compressed.webp';
       }
 

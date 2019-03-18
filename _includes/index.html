@@ -1,31 +1,31 @@
-<div class="posts-wrapper">
-  {% for post in paginator.posts %}
-    <div class="post">
-      <div class="title">
+<div class="content">
+  <main>
+    {% for post in paginator.posts %}
+      <article>
+        <h1><a href="{{ post.url }}">{{ post.title }}</a></h1>
+
         <span class="timestamp">
           {{ post.date | date: "%b %-d, %Y" }}
         </span>
-        
-        {% unless post.tags contains 'quote' %}
-          <a href="{{ post.url | prepend: site.baseurl }}">
-            <h2 class="post-title">{{ post.title }}</h2>
-          </a>
-        {% endunless %}
-      </div>
 
-      {% if post.tags contains 'quote' %}
-        <blockquote class="blockquote blockquote-reverse">
-          {{ post.title }}
-        </blockquote>
-      {% else %}
         {{ post.excerpt }}
 
         {% if post.content != post.excerpt %}
-          <div class="text-right read-more-container">
-            <a class="btn btn-md btn-primary read-more" href="{{ post.url | prepend: site.baseurl }}">Read more</a>
+          <div>
+            <a class="btn btn-md btn-primary read-more" href="{{ post.url }}">Read more</a>
           </div>
         {% endif %}
-      {% endif %}
+      </article>
+    {% endfor %}
+  </main>
+
+  <aside>
+    <div class="nav-content">
+      <img src="" alt="">
+      Tag cloud
+      <a href="">Tag #1</a>
+      <a href="">Tag #2</a>
+      <a href="">Tag #3</a>
     </div>
-  {% endfor %}
+  </aside>
 </div>
