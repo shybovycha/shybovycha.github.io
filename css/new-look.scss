@@ -5,7 +5,7 @@ $article-width: 1024px;
 $aside-width: 280px;
 $header-height: 64px;
 $font-size: 18px;
-$article-font-size: 21px;
+$article-font-size: $font-size;
 
 body {
   padding: 0;
@@ -139,15 +139,15 @@ aside {
 }
 
 h1 {
-  font-size: 42px;
-}
-
-h2 {
   font-size: 36px;
 }
 
-h3 {
+h2 {
   font-size: 24px;
+}
+
+h3 {
+  font-size: 20px;
 }
 
 h1, h2, h3 {
