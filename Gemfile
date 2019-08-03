@@ -6,3 +6,5 @@ source 'https://rubygems.org'
 # gem 'sass'
 gem 'github-pages'
 gem 'jekyll-sitemap'
+
+gem 'jekyll-word-list'

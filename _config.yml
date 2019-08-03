@@ -27,3 +27,8 @@ compress_html:
   blanklines: true
   profile: false
   startings: []
+
+plugins_dir: ./_plugins
+
+plugins:
+  - jekyll-word-list
