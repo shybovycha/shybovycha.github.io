@@ -49,8 +49,8 @@ After an hour of imaging what it may be, I decided to go with web analytics tool
 which will be able to tell how many visitors your web application gained recently.
 
 It shouldn't be too complicated, because, you know, it's just a tutorial... So we'll be
-tracking users' location and browser only. And we'll be showing statistics on a chart
-*(values like total visitors, browser usage)* and in a table *(the same info as on chart)*.
+tracking users' location and browser only. And we'll be displaying those analytics as a chart
+*(values like total visitors, browser usage)* and in a table *(the same info as the chart)*.
 
 ## Architecture preview
 
