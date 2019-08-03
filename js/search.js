@@ -42,36 +42,29 @@ const search = (query, index) => {
   return sortedResults;
 };
 
-const debounce = (element, eventName, timeout, eventHandler) => {
-  element.addEventListener(eventName, (event) => {
-    const now = new Date().getTime();
+const debounce = (func, timeout) => {
+  let timeoutId;
 
-    if (!element.__debounce__) {
-      element.__debounce__ = { [eventName]: { lastOccurrence: now, timeout: null } };
-    } else if (!element.__debounce__[eventName]) {
-      element.__debounce__[eventName] = {
-        timeout: setTimeout(() => eventHandler.call(null, event), timeout),
-        lastOccurrence: now
-      };
-    } else if ((now - element.__debounce__[eventName].lastOccurrence) <= timeout) {
-      clearTimeout(element.__debounce__[eventName].timeout);
-      element.__debounce__[eventName] = {
-        timeout: setTimeout(() => eventHandler.call(null, event), timeout),
-        lastOccurrence: now
-      };
-    }
-  });
+  return (...args) => {
+    clearTimeout(timeoutId);
+
+    timeoutId = setTimeout(() => {
+      func.apply(null, args);
+    }, timeout);
+
+    if (!timeoutId) func.apply(null, args);
+  };
 };
 
 const addSearchHandler = (index) => {
-  debounce(document.querySelector('#search'), 'keydown', 300, (event) => {
+  document.querySelector('#search').addEventListener('keydown', 300, debounce((event) => {
       const query = event.target.text;
 
       const results = search(query, index);
 
       console.log('Searching for:', query);
       console.log('Searc results:', results);
-    });
+    }));
 };
 
 document.addEventListener('DOMContentReady', () => {
