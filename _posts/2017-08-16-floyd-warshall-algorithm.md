@@ -53,6 +53,8 @@ In <em>GraphViz</em> it would be described as follows:
 
 ```dot
 digraph G {
+    layout = "circo";
+
     0->2 [label = "1"];
     2->3 [label = "5"];
     3->1 [label = "2"];
@@ -257,6 +259,20 @@ As you can see, there are lots of invalid paths here - those which either do not
 We could easily reduce the amount of the steps performed by the algorithm by throwing few `if` conditions to check for those cases.
 
 But let's first finish animating this step: there are very few valid paths amongst `N * N === 16` of those we've checked. And only one comparison: for path `1 -> 2` vs `1 -> 0 -> 2` we compare `6` *(direct)* and `7 + 1 = 8` *(`1 -> 0` and then `0 -> 2`)*.
+
+<img data-src="/images/floyd-warshall/floyd-warshall-sample-step-1.png" alt="">
+
+<!--
+digraph G {
+    layout = "circo";
+
+    0->2 [label = "1", color = "blue"];
+    2->3 [label = "5"];
+    3->1 [label = "2"];
+    1->2 [label = "6", color = "green"];
+    1->0 [label = "7", color = "blue"];
+}
+-->
 
 So there are no changes in our matrices.
 
@@ -658,6 +674,21 @@ For path `0 -> 1`:
 
 1. direct path from `0` to `1` does not exist, take it as `inf`
 2. shortest path from `0` to `3` *(whichever it is)* has length `6`; `3 -> 1` has length `2`; the total path has length `8` which is better than infinity
+
+<img data-src="/images/floyd-warshall/floyd-warshall-sample-step-4-1.png" alt="">
+
+<!--
+digraph G {
+    layout = "circo";
+
+    0->2 [label = "1", color = "blue"];
+    2->3 [label = "5", color = "blue"];
+    3->1 [label = "2", color = "blue"];
+    1->2 [label = "6"];
+    1->0 [label = "7"];
+    0->1 [label = "∞", style = "dashed", color = "red"];
+}
+-->
 
 For path `2 -> 0`:
 
