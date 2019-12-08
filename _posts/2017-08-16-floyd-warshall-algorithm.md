@@ -7,7 +7,7 @@ date: '2017-09-04T11:38:24+11:00'
 ## The story behind this post
 
 Recently I've received `+10` karma on StackOverflow. I was curious for what question or answer and clicked to check this. It appeared
-to be a [**seven-year-old** answer](https://stackoverflow.com/a/4526639/330471) about a Floyd-Warshall algorithm. I was surprised both of my bad English back those days and the very small value the answer had. So I've revised it and here it is -- the brand-new version!
+to be a [**seven-year-old** answer](https://stackoverflow.com/a/4526639/330471) about a Floyd-Warshall algorithm. I was surprised with both my bad English (back those days...) and the very small value the answer had. So I've revised it and here it is -- the brand-new version!
 
 ## The definitions
 
