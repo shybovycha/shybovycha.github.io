@@ -49,10 +49,9 @@ digraph G {
 
 <img data-src="/images/floyd-warshall/floyd-warshall-graph-sample.png" alt="">
 
-<div class="info">
 In <em>GraphViz</em> it would be described as follows:
 
-```
+```dot
 digraph G {
     0->2 [label = "1"];
     2->3 [label = "5"];
@@ -61,7 +60,6 @@ digraph G {
     1->0 [label = "7"];
 }
 ```
-</div>
 
 We first create a two-dimensional array of size `4` *(since there are exactly `4` vertices in our graph)*.
 
