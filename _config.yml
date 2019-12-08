@@ -32,3 +32,8 @@ plugins_dir: ./_plugins
 
 plugins:
   - jekyll-word-list
+  - jekyll-paginate
+
+exclude:
+  - _plugins
+  - _data
