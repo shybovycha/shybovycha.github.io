@@ -3,3 +3,42 @@
 @charset "utf-8";
 
 @import "syntax-highlighting";
+
+table {
+  border-collapse: collapse;
+  border: 1px solid black;
+
+  tr, td {
+    border: 1px solid black;
+  }
+
+  td.head {
+    font-weight: bold;
+    background: #dedede;
+    text-align: center;
+  }
+
+  td.change {
+    font-weight: bold;
+    background: #5f76d8;
+    color: #ffff8e;
+  }
+}
+
+.center {
+  text-align: center;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+
+  &.space-between {
+    justify-content: space-around;
+  }
+
+  .col {
+    display: flex;
+    flex-direction: column;
+  }
+}

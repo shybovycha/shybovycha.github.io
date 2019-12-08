@@ -105,30 +105,34 @@ DB = Sequel.sqlite
 DB.create_table :users do
   primary_key :id
 
-  String email, null: false
-  String name, null: false
-  String password_hash, null: false
+  String :email, null: false
+  String :name, null: false
+  String :password_hash, null: false
 end
 
 DB.create_table :applications do
   primary_key :id
 
-  Int user_id, null: false
-  String token, null: false
-  String name, null: false
+  Int :user_id, null: false
+  String :token, null: false
+  String :name, null: false
 end
 
 DB.create_table :usages do
   primary_key :id
 
-  Int application_id, null: false
-  String country
-  String browser
-  DateTime created_at
+  Int :application_id, null: false
+  String :country
+  String :browser
+  DateTime :created_at
 end
 ```
 
 And we've just created a schema for our whole database!
+
+The only trick is: defining a connection to a database also requires you to install the corresponding database adapter gem. In case of `sqlite` it would be `sqlite3` gem. For PostgreSQL you will have to add the `pg` gem.
+
+Good news is: you will only have to add it to your `Gemfile` and specify the connection options as parameters to the `Sequel.<database_name>` call, Sequel will do everything else for you.
 
 Now to use it we will have to get a reference to the table we want to operate with:
 
