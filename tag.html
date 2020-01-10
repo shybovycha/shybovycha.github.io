@@ -5,8 +5,35 @@ permalink: /tag
 ---
 
 <div class="content">
-  <main id="tag_index"></main>
+  <main>
+    <article>
+      <form id="search">
+        <input placeholder="Search for tags..." name="query" />
+        <button type="submit">Search</button>
+      </form>
+    </article>
+
+    <div id="search_results"></div>
+  </main>
 </div>
+
+<style>
+  #search input[name=query] {
+    border: 1px solid #dedede;
+    font-size: 2em;
+    padding: 0.1em 0.25em;
+    border-radius: 6px;
+  }
+
+  #search button[type=submit] {
+    font-size: 2em;
+    border-radius: 6px;
+    border: 0;
+    background: #50b060;
+    color: white;
+    padding: 0.1em 0.25em;
+  }
+</style>
 
 <script>
   const PAGES = [
@@ -25,40 +52,57 @@ permalink: /tag
   ];
 
   const PAGES_BY_TAGS = PAGES.reduce((acc, page) => {
-    page.tags.forEach(tag => {
-      if (!acc[tag]) {
-        acc[tag] = [];
-      }
+    page.tags.filter(tag => !!tag)
+      .forEach(tag => {
+        if (!acc[tag]) {
+          acc[tag] = [];
+        }
 
-      acc[tag].push(page);
+        acc[tag].push(page);
+      });
+
+      return acc;
+    }, {});
+
+  const searchByTags = tags => {
+    let pagesWithTags = [];
+
+    tags.forEach(tag => {
+      pagesWithTags = pagesWithTags.concat(PAGES_BY_TAGS[tag] || []);
     });
 
-    return acc;
-  }, {});
+    return pagesWithTags;
+  };
+
+  const pagesToHtml = pages => (
+    pages.map(page => (
+      `<article><h1><a href="${page.url}">${page.title}</a></h1></article>`
+    )).join('')
+  );
 
   window.addEventListener('DOMContentLoaded', () => {
     const queryParams = window.location.href.replace(/^.*\?(.*)$/, '$1')
       .split('&')
       .map(paramStr => paramStr.split('='))
-      .reduce((acc, [k, v]) => ({...acc, [k]: v}), {});
+      .reduce((acc, [k, v]) => ({...acc, [k]: decodeURIComponent(v)}), {});
 
-    if (!queryParams.tag && !queryParams.tags) {
-      return;
+    let searchResultsHtml = `No pages with these tags`;
+
+    if (queryParams.tag || queryParams.tags) {
+      const tags = (queryParams.tag ? [ queryParams.tag ] : [])
+        .concat(queryParams.tags ? queryParams.tags.split(',') : []);
+
+      searchResultsHtml = pagesToHtml(searchByTags(tags));
+    } else {
+      searchResultsHtml = pagesToHtml(PAGES);
     }
 
-    const tags = (queryParams.tag ? [ queryParams.tag ] : [])
-      .concat(queryParams.tags ? queryParams.tags.split(',') : []);
+    document.querySelector('#search_results').innerHTML = searchResultsHtml;
 
-    let pagesWithTags = [];
-
-    tags.forEach(tag => {
-      pagesWithTags = pagesWithTags.concat(PAGES_BY_TAGS[tag]);
+    document.querySelector('#search').addEventListener('submit', e => {
+      e.preventDefault();
+      const tags = document.querySelector('input[name=query]').value.split(/\s+/).join(',');
+      window.location = `/tag.html?tags=${tags}`;
     });
-
-    const html = pagesWithTags.map(page => (
-      `<article><h1><a href="${page.url}">${page.title}</a></h1></article>`
-    )).join('');
-
-    document.querySelector('#tag_index').innerHTML = html;
   });
 </script>
