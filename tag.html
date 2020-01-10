@@ -1,0 +1,64 @@
+---
+layout: default
+title: Tags
+permalink: /tag
+---
+
+<div class="content">
+  <main id="tag_index"></main>
+</div>
+
+<script>
+  const PAGES = [
+    {% for post in site.posts %}
+      {
+        url: `{{ post.url }}`,
+        title: `{{ post.title }}`,
+        date: '{{ post.date | date: "%b %-d, %Y" }}',
+        tags: [
+          {% for tag in post.tags %}
+            '{{ tag }}',
+          {% endfor %}
+        ],
+      },
+    {% endfor %}
+  ];
+
+  const PAGES_BY_TAGS = PAGES.reduce((acc, page) => {
+    page.tags.forEach(tag => {
+      if (!acc[tag]) {
+        acc[tag] = [];
+      }
+
+      acc[tag].push(page);
+    });
+
+    return acc;
+  }, {});
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const queryParams = window.location.href.replace(/^.*\?(.*)$/, '$1')
+      .split('&')
+      .map(paramStr => paramStr.split('='))
+      .reduce((acc, [k, v]) => ({...acc, [k]: v}), {});
+
+    if (!queryParams.tag && !queryParams.tags) {
+      return;
+    }
+
+    const tags = (queryParams.tag ? [ queryParams.tag ] : [])
+      .concat(queryParams.tags ? queryParams.tags.split(',') : []);
+
+    let pagesWithTags = [];
+
+    tags.forEach(tag => {
+      pagesWithTags = pagesWithTags.concat(PAGES_BY_TAGS[tag]);
+    });
+
+    const html = pagesWithTags.map(page => (
+      `<article><h1><a href="${page.url}">${page.title}</a></h1></article>`
+    )).join('');
+
+    document.querySelector('#tag_index').innerHTML = html;
+  });
+</script>
