@@ -1,0 +1,12 @@
+---
+layout: post
+title: robo created in a cinema 4d two and half years
+date: '2015-01-27T17:09:42+01:00'
+tags:
+- 3d
+tumblr_url: http://shybovycha.tumblr.com/post/109305586966/robo-created-in-a-cinema-4d-two-and-half-years
+---
+
+<img src="/tumblr_files/tumblr_niufk6p7gs1qio88bo1_1280.jpg"/>
+
+Robo. Created in a Cinema 4D two and half years ago.
