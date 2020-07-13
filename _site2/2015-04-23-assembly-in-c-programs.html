@@ -1,0 +1,706 @@
+<meta name="layout" content="post">
+<meta name="title" content="Assembly in C++ programs">
+<meta name="date" content="2015-04-23T13:18:11+02:00">
+<meta name="tags" content="rtfm,assembly,nasm,linux,c++">
+<meta name="tumblr_url" content="http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-programs">
+<h2>Foreword</h2>
+
+<p>Writing code in assembly language in 2015 seems stupid and meaningless. Yet, this subject has a few huge pros:</p>
+
+<ol>
+<li>understanding how computers/compilers/programs work</li>
+<li>optimizations while writing a complex or performance-critical applications</li>
+<li>fun</li>
+</ol>
+
+<p>Well, in real life, I’ve never met conditions of such performance requirements when I should be writing some parts of application in ASM. Except, maybe, <strong>a few</strong> ACM ICPC problems.</p>
+
+<p>So, we got two merely huge pros to write in assembly. Thus, if you are not getting fun of writing applications, you may be not interested in this topic.</p>
+
+<p>This article is academical mostly. People who study something like <em>low-level programming</em> at their universities may be interested.</p>
+
+<!--more-->
+
+<h2>Simplest function in NASM</h2>
+
+<p>And to start off, we will write a very simple program in assembly language. I shall be covering NASM language and compiler under Linux. MASM for Windows is much like that, but you should find your own way of compiling, linking and debugging all this code.</p>
+
+<p>Our first program will do nothing. It will just contain globally available function, named <code>myfunc</code>.</p>
+<span class="n">BITS</span> <span class="mi">32</span>
+
+<span class="kr">section</span> <span class="p">.</span><span class="n">text</span>
+
+    <span class="kr">global</span> <span class="n">myfunc</span>
+
+<span class="n">myfunc</span><span class="o">:</span>
+
+    <span class="k">enter</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+
+    <span class="k">leave</span>
+    <span class="k">ret</span>
+
+<p>This is barely a something useful, but that’s how it looks like. A simple function, which does nothing, has no arguments and returns nothing.</p>
+
+<p>Note these instructions: <code>enter 0, 0</code> and <code>leave</code>. These are dedicated to create a <strong>stack frame</strong>. Stack frame is a part of stack, where we can store variables. This part of stack is isolated, so we barely may hurt system when using stack operations (<code>push</code> and <code>pop</code>).</p>
+
+<p>Actually, you may create the stack frame yourself, pushing <code>ESP</code> and <code>EBP</code> to a stack manually, then shifting <code>ESP</code> and rolling all this back at function’s end. But these instructions are simpler.</p>
+
+<p><strong>NOTE:</strong> never forget the <code>leave</code> operation when using <code>enter</code> one! This may cause a <code>SEGFAULT</code> exceptions and you may spend hours searching for an error <u>(just as I did last night...)</u>.</p>
+
+<p>To use our function in a C++ program, we need to perform three steps:</p>
+
+<ol>
+<li>add en external declaration for our function in C++</li>
+<li>compile our C++ and NASM programs to object files <u>(<code>.o</code> or <code>.obj</code>)</u></li>
+<li>link our object files into a single binary one</li>
+</ol>
+
+<p>So, we need to interference with assembly from within our C++ code. And declare an external function. Here’s how our dummy program may look like:</p>
+<span class="cp">#include &lt;stdio.h&gt;
+</span>
+<span class="k">extern</span> <span class="s">"C"</span> <span class="kt">void</span> <span class="nf">myfunc</span><span class="p">();</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">myfunc</span><span class="p">();</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<p>Compiling this contains three steps, as I mentioned above:</p>
+g++ <span class="nt">-c</span> <span class="nt">-m32</span> <span class="nt">-g</span> test.cpp <span class="nt">-o</span> test_c.o
+nasm <span class="nt">-felf32</span> <span class="nt">-g</span> test.asm <span class="nt">-o</span> test_asm.o
+g++ <span class="nt">-m32</span> <span class="nt">-g</span> test_c.o test_asm.o <span class="nt">-o</span> <span class="nb">test</span>
+
+<p>Let’s take a look over each of these closely.</p>
+g++ <span class="nt">-c</span> <span class="nt">-m32</span> <span class="nt">-g</span> test.cpp <span class="nt">-o</span> test_c.o
+
+<p>This tells compiler a few things:</p>
+
+<ol>
+<li><code>-c</code>: only compile the code, do not link it (do not search for referenced functions)</li>
+<li><code>-m32</code>: compile code in a 32-bit mode</li>
+<li><code>-g</code>: add a debugger information</li>
+<li><code>-o test_c.o</code>: write output to a <code>test_c.o</code> file</li>
+</ol>
+
+<p><u>Why 32-bit mode? Why not 64-bit?</u> - you may ask. Because some conventions of 64-bit mode are harder to understand and should be compared to 32-bit ones.</p>
+
+<p>Now, compiling assembly code command:</p>
+nasm <span class="nt">-felf32</span> <span class="nt">-g</span> test.asm <span class="nt">-o</span> test_asm.o
+
+<p>This provides compiler with these options:</p>
+
+<ol>
+<li><code>-felf32</code>: compile in a 32-bit mode</li>
+<li><code>-g</code>: add a debugginng info</li>
+<li><code>-o test_asm.o</code>: write output to an object file <code>test_asm.o</code></li>
+</ol>
+
+<p>Note the difference between <code>-m32</code> and <code>-felf32</code>. They mean the same, but are spelled differently.</p>
+
+<h2>Passing arguments and returning values</h2>
+
+<p>Now let’s make our function do something for a great good. For example, sum-up two numbers. We will end-up with this function declaration:</p>
+<span class="k">extern</span> <span class="s">"C"</span> <span class="kt">int</span> <span class="nf">sum_two_numbers</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">);</span>
+
+<p>The values <code>a</code> and <code>b</code> are integer. This means, each of them is <strong>4-byte wide</strong>. You can find sizes of different C types writing a very simple program:</p>
+<span class="cp">#include &lt;stdio.h&gt;
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"size(char) = %d bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">));</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"size(short) = %d bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">short</span><span class="p">));</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"size(int) = %d bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"size(long) = %d bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">long</span><span class="p">));</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"size(long long) = %d bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">long</span> <span class="kt">long</span><span class="p">));</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"size(float) = %d bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">float</span><span class="p">));</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"size(double) = %d bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">));</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"size(long double) = %d bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">long</span> <span class="kt">double</span><span class="p">));</span>
+
+    <span class="n">printf</span><span class="p">(</span><span class="s">"size(char*) = %d bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="p">));</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"size(short*) = %d bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">short</span><span class="o">*</span><span class="p">));</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"size(int*) = %d bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="o">*</span><span class="p">));</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"size(long*) = %d bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">long</span><span class="o">*</span><span class="p">));</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"size(long long*) = %d bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">long</span> <span class="kt">long</span><span class="o">*</span><span class="p">));</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"size(float*) = %d bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">float</span><span class="o">*</span><span class="p">));</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"size(double*) = %d bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="o">*</span><span class="p">));</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"size(long double*) = %d bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">long</span> <span class="kt">double</span><span class="o">*</span><span class="p">));</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<p>On my laptop this code printed this:</p>
+size(char) = 1 bytes
+size(short) = 2 bytes
+size(int) = 4 bytes
+size(long) = 8 bytes
+size(long long) = 8 bytes
+size(float) = 4 bytes
+size(double) = 8 bytes
+size(long double) = 16 bytes
+size(char*) = 8 bytes
+size(short*) = 8 bytes
+size(int*) = 8 bytes
+size(long*) = 8 bytes
+size(long long*) = 8 bytes
+size(float*) = 8 bytes
+size(double*) = 8 bytes
+size(long double*) = 8 bytes
+
+<p>But when run in <strong>32-bit</strong> mode, these numbers changed:</p>
+size(char) = 1 bytes
+size(short) = 2 bytes
+size(int) = 4 bytes
+size(long) = 4 bytes
+size(long long) = 8 bytes
+size(float) = 4 bytes
+size(double) = 8 bytes
+size(long double) = 12 bytes
+size(char*) = 4 bytes
+size(short*) = 4 bytes
+size(int*) = 4 bytes
+size(long*) = 4 bytes
+size(long long*) = 4 bytes
+size(float*) = 4 bytes
+size(double*) = 4 bytes
+size(long double*) = 4 bytes
+
+<p>The difference in atomic types is really &quot;ghostly&quot;, namely <code>long</code> and <code>long double</code> are <code>4-byte longer</code> in 64-bit mode. But when it comes to pointer types, we have twice longer variables.</p>
+
+<p>That is the first, may be not so notable, but really important difference between <u>32-bit</u> and <u>64-bit</u> modes. This will be handy when it comes to <strong>arrays</strong>. But that will be covered later.</p>
+
+<p>Now, the more notable difference hides in how arguments are passed to a function and how the function returns its result.</p>
+
+<p>To show this difference, we will write a few short functions and look at their assembly code. Here they are:</p>
+<span class="kt">char</span> <span class="nf">func1</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="sc">'x'</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">char</span> <span class="nf">func2</span><span class="p">(</span><span class="kt">char</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">short</span> <span class="nf">func3</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">short</span> <span class="nf">func4</span><span class="p">(</span><span class="kt">short</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">func5</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mi">2</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">func6</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">long</span> <span class="kt">long</span> <span class="nf">func7</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mi">2147483647</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">long</span> <span class="kt">long</span> <span class="nf">func8</span><span class="p">(</span><span class="kt">long</span> <span class="kt">long</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">float</span> <span class="nf">func9</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mi">3</span><span class="p">.</span><span class="mi">14</span><span class="n">f</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">float</span> <span class="nf">func10</span><span class="p">(</span><span class="kt">float</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">double</span> <span class="nf">func11</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mi">3</span><span class="p">.</span><span class="mi">15</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">double</span> <span class="nf">func12</span><span class="p">(</span><span class="kt">double</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">long</span> <span class="kt">double</span> <span class="nf">func13</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mi">3</span><span class="p">.</span><span class="mi">16</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">long</span> <span class="kt">double</span> <span class="nf">func14</span><span class="p">(</span><span class="kt">long</span> <span class="kt">double</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">func1</span><span class="p">();</span>
+    <span class="n">func2</span><span class="p">(</span><span class="sc">'x'</span><span class="p">);</span>
+    <span class="n">func3</span><span class="p">();</span>
+    <span class="n">func4</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="n">func5</span><span class="p">();</span>
+    <span class="n">func6</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+    <span class="n">func7</span><span class="p">();</span>
+    <span class="n">func8</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+    <span class="n">func9</span><span class="p">();</span>
+    <span class="n">func10</span><span class="p">(</span><span class="mi">3</span><span class="p">.</span><span class="mi">14</span><span class="n">f</span><span class="p">);</span>
+    <span class="n">func11</span><span class="p">();</span>
+    <span class="n">func12</span><span class="p">(</span><span class="mi">3</span><span class="p">.</span><span class="mi">14</span><span class="p">);</span>
+    <span class="n">func13</span><span class="p">();</span>
+    <span class="n">func14</span><span class="p">(</span><span class="mi">3</span><span class="p">.</span><span class="mi">14</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<p>Compile it with <code>g++</code> using this command:</p>
+g++ <span class="nt">-S</span> <span class="nt">-m32</span> <span class="nt">-c</span> <span class="nt">-masm</span><span class="o">=</span>intel test1.cpp <span class="nt">-o</span> test1.asm
+
+<p>I’ll explain this line’s options:</p>
+
+<ol>
+<li><code>-S</code>: generate assembly output</li>
+<li><code>-m32</code>: generate 32-bit code</li>
+<li><code>-c</code>: stop after compiling</li>
+<li><code>-masm=intel</code>: use Intel’ assembly syntax; it is NASM&#39; syntax and thus more readable then GASM&#39; one</li>
+<li><code>-o test1.asm</code>: write output to a <code>test1.asm</code> file</li>
+</ol>
+
+<p>I shall not show the full output of this program, because it’s huge. It takes almost 400 lines of assembly code (370, actually)! Yet, in 64-bit mode it is just a bit more than 300 lines of code (precisely, 318). 60 LOC difference, but still…</p>
+
+<p>These 60 lines of code is caused by a C type sizes. See, in 32-bit mode we have registers of a size <code>32 / 8 = 4</code> bytes. This is enough to store <code>int</code> or <code>float</code> value. Byt when it comes to <code>long double</code> or even just <code>double</code>, we have 4 bytes more. In 64-bit mode we have 8-byte wide registers. So, even a <code>long double</code> variable may be stored in a single register.</p>
+
+<p>But let’s go back and take a look at, let’s say, <code>func1</code> function assembly:</p>
+<span class="n">_Z5func1v</span><span class="o">:</span>
+<span class="p">.</span><span class="n">LFB0</span><span class="o">:</span>
+    <span class="p">.</span><span class="n">cfi_startproc</span>
+    <span class="k">push</span>    <span class="n">ebp</span>
+    <span class="p">.</span><span class="n">cfi_def_cfa_offset</span> <span class="mi">8</span>
+    <span class="p">.</span><span class="n">cfi_offset</span> <span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">8</span>
+    <span class="k">mov</span> <span class="n">ebp</span><span class="p">,</span> <span class="n">esp</span>
+    <span class="p">.</span><span class="n">cfi_def_cfa_register</span> <span class="mi">5</span>
+    <span class="k">mov</span> <span class="n">eax</span><span class="p">,</span> <span class="mi">120</span>
+    <span class="k">pop</span> <span class="n">ebp</span>
+    <span class="p">.</span><span class="n">cfi_restore</span> <span class="mi">5</span>
+    <span class="p">.</span><span class="n">cfi_def_cfa</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span>
+    <span class="k">ret</span>
+    <span class="p">.</span><span class="n">cfi_endproc</span>
+<span class="p">.</span><span class="n">LFE0</span><span class="o">:</span>
+    <span class="p">.</span><span class="n">size</span>   <span class="n">_Z5func1v</span><span class="p">,</span> <span class="p">.</span><span class="o">-</span><span class="n">_Z5func1v</span>
+    <span class="p">.</span><span class="n">globl</span>  <span class="n">_Z5func2c</span>
+    <span class="p">.</span><span class="n">type</span>   <span class="n">_Z5func2c</span><span class="p">,</span> <span class="err">@</span><span class="n">function</span>
+
+<p>Yeah, monstrous... Cleaning it up and using <code>enter</code> and <code>leave</code>, we have only this:</p>
+<span class="n">_Z5func1v</span><span class="o">:</span>
+    <span class="k">enter</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="k">mov</span> <span class="n">eax</span><span class="p">,</span> <span class="mi">120</span>
+    <span class="k">leave</span>
+    <span class="k">ret</span>
+
+<p>See, the return value is stored in a <code>EAX</code> register. That’s how we should return values from our functions. When it comes to a larger data types, we may return values via <code>EDX:EAX</code> registers’ pair. Yeah, strange, but that is a <strong>convention</strong>.</p>
+
+<p>Let’s take a look at the assembly code for a <code>func7</code> function and compare its variations for 32-bit mode vs 64-bit mode:</p>
+
+<p><strong>32-bit func7:</strong></p>
+<span class="n">_Z5func7v</span><span class="o">:</span>
+    <span class="k">enter</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="k">mov</span> <span class="n">eax</span><span class="p">,</span> <span class="mi">2147483647</span>
+    <span class="k">mov</span> <span class="n">edx</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="k">leave</span>
+    <span class="k">ret</span>
+
+<p><strong>64-bit func7:</strong></p>
+<span class="n">_Z5func8l</span><span class="o">:</span>
+    <span class="k">enter</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="k">mov</span> <span class="n">QWORD</span> <span class="n">PTR</span> <span class="err">[</span><span class="n">rbp</span><span class="o">-</span><span class="mi">8</span><span class="err">]</span><span class="p">,</span> <span class="n">rdi</span>
+    <span class="k">mov</span> <span class="n">rax</span><span class="p">,</span> <span class="n">QWORD</span> <span class="n">PTR</span> <span class="err">[</span><span class="n">rbp</span><span class="o">-</span><span class="mi">8</span><span class="err">]</span>
+    <span class="k">leave</span>
+    <span class="k">ret</span>
+
+<p>See, there are two registers used in a 32-bit mode, <code>EAX = 2147483647</code> and <code>EDX = 0</code>. The second register is used for a sign value. If we’d change the return value for our C++ function to return a negative value:</p>
+<span class="kt">long</span> <span class="kt">long</span> <span class="nf">func7</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="o">-</span><span class="mi">2147483647</span><span class="p">;</span>
+<span class="p">}</span>
+
+<p>We will end-up with this code in a 32-bit mode:</p>
+<span class="k">mov</span> <span class="n">eax</span><span class="p">,</span> <span class="o">-</span><span class="mi">2147483647</span>
+<span class="k">mov</span> <span class="n">edx</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+
+<p>And in 64-bit mode it will have only one operation:</p>
+<span class="k">mov</span> <span class="n">rax</span><span class="p">,</span> <span class="o">-</span><span class="mi">2147483647</span>
+
+<p>Now let’s take a look over the <code>func8</code> function:</p>
+<span class="n">_Z5func8x</span><span class="o">:</span>
+    <span class="k">enter</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="k">sub</span> <span class="n">esp</span><span class="p">,</span> <span class="mi">8</span>
+    <span class="k">mov</span> <span class="n">eax</span><span class="p">,</span> <span class="n">DWORD</span> <span class="n">PTR</span> <span class="err">[</span><span class="n">ebp</span><span class="o">+</span><span class="mi">8</span><span class="err">]</span>
+    <span class="k">mov</span> <span class="n">DWORD</span> <span class="n">PTR</span> <span class="err">[</span><span class="n">ebp</span><span class="o">-</span><span class="mi">8</span><span class="err">]</span><span class="p">,</span> <span class="n">eax</span>
+    <span class="k">mov</span> <span class="n">eax</span><span class="p">,</span> <span class="n">DWORD</span> <span class="n">PTR</span> <span class="err">[</span><span class="n">ebp</span><span class="o">+</span><span class="mi">12</span><span class="err">]</span>
+    <span class="k">mov</span> <span class="n">DWORD</span> <span class="n">PTR</span> <span class="err">[</span><span class="n">ebp</span><span class="o">-</span><span class="mi">4</span><span class="err">]</span><span class="p">,</span> <span class="n">eax</span>
+    <span class="k">mov</span> <span class="n">eax</span><span class="p">,</span> <span class="n">DWORD</span> <span class="n">PTR</span> <span class="err">[</span><span class="n">ebp</span><span class="o">-</span><span class="mi">8</span><span class="err">]</span>
+    <span class="k">mov</span> <span class="n">edx</span><span class="p">,</span> <span class="n">DWORD</span> <span class="n">PTR</span> <span class="err">[</span><span class="n">ebp</span><span class="o">-</span><span class="mi">4</span><span class="err">]</span>
+    <span class="k">leave</span>
+    <span class="k">ret</span>
+
+<p>We may clean it up removing all those <code>DWORD PTR</code> type hints:</p>
+<span class="n">_Z5func8x</span><span class="o">:</span>
+    <span class="k">enter</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="k">sub</span> <span class="n">esp</span><span class="p">,</span> <span class="mi">8</span>
+    <span class="k">mov</span> <span class="n">eax</span><span class="p">,</span> <span class="err">[</span><span class="n">ebp</span><span class="o">+</span><span class="mi">8</span><span class="err">]</span>
+    <span class="k">mov</span> <span class="err">[</span><span class="n">ebp</span><span class="o">-</span><span class="mi">8</span><span class="err">]</span><span class="p">,</span> <span class="n">eax</span>
+    <span class="k">mov</span> <span class="n">eax</span><span class="p">,</span> <span class="err">[</span><span class="n">ebp</span><span class="o">+</span><span class="mi">12</span><span class="err">]</span>
+    <span class="k">mov</span> <span class="err">[</span><span class="n">ebp</span><span class="o">-</span><span class="mi">4</span><span class="err">]</span><span class="p">,</span> <span class="n">eax</span>
+    <span class="k">mov</span> <span class="n">eax</span><span class="p">,</span> <span class="err">[</span><span class="n">ebp</span><span class="o">-</span><span class="mi">8</span><span class="err">]</span>
+    <span class="k">mov</span> <span class="n">edx</span><span class="p">,</span> <span class="err">[</span><span class="n">ebp</span><span class="o">-</span><span class="mi">4</span><span class="err">]</span>
+    <span class="k">leave</span>
+    <span class="k">ret</span>
+
+<p>All the memory “by the negative side” of <code>EBP</code> is dedicated to local variables. All the memory “by the positive side” of <code>EBP</code> is the one with arguments, passed to our function.</p>
+
+<p>Taking that into account, we may rewrite our assembly function as this:</p>
+<span class="n">_Z5func8x</span><span class="o">:</span>
+    <span class="k">enter</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+
+    <span class="err">%</span><span class="n">define</span> <span class="n">x1</span> <span class="n">dword</span><span class="err">[</span><span class="n">ebp</span><span class="o">+</span><span class="mi">8</span><span class="err">]</span>
+    <span class="err">%</span><span class="n">define</span> <span class="n">x2</span> <span class="n">dword</span><span class="err">[</span><span class="n">ebp</span><span class="o">+</span><span class="mi">12</span><span class="err">]</span>
+    <span class="err">%</span><span class="n">define</span> <span class="n">tmp1</span> <span class="n">dword</span><span class="err">[</span><span class="n">ebp</span><span class="o">-</span><span class="mi">8</span><span class="err">]</span>
+    <span class="err">%</span><span class="n">define</span> <span class="n">tmp2</span> <span class="n">dword</span><span class="err">[</span><span class="n">ebp</span><span class="o">-</span><span class="mi">4</span><span class="err">]</span>
+
+    <span class="k">sub</span> <span class="n">esp</span><span class="p">,</span> <span class="mi">8</span>
+    <span class="k">mov</span> <span class="n">eax</span><span class="p">,</span> <span class="n">x1</span>
+    <span class="k">mov</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">eax</span>
+    <span class="k">mov</span> <span class="n">eax</span><span class="p">,</span> <span class="n">x2</span>
+    <span class="k">mov</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">eax</span>
+    <span class="k">mov</span> <span class="n">eax</span><span class="p">,</span> <span class="n">tmp1</span>
+    <span class="k">mov</span> <span class="n">edx</span><span class="p">,</span> <span class="n">tmp2</span>
+
+    <span class="k">leave</span>
+    <span class="k">ret</span>
+
+<p>Now it became more readable.</p>
+
+<p>Here we have a few really important things:</p>
+
+<ol>
+<li><code>sub esp, 8</code> - this allocates 8 bytes of stack memory for our local variables</li>
+<li><code>[ebp+8]</code> and <code>[ebp+12]</code> are two parts, each 4-byte long, of our argument of type <code>long long</code></li>
+<li><code>[ebp-8]</code> and <code>[ebp-4]</code> are two parts of our return value; each 4-byte long; of type <code>long long</code></li>
+<li>return value is split into two registers, namely, <code>EAX</code> (high-order bytes) and <code>EDX</code> (low-order bytes)</li>
+</ol>
+
+<p>That is how C passes arguments to a function in 32-bit mode. Arguments here are passed via stack. In 64-bit mode it’s a bit complicated: arguments are passed via registers and if they are not enough - through the stack. Registers are the following (ordered): <code>RDI</code>, RSI<code>, RDX</code>, RCX<code>, R8</code>, <code>R9</code>.</p>
+
+<p>And the return values are stored in registers. Always. In both 32-bit and 64-bit modes.</p>
+
+<h2>Working wit arrays</h2>
+
+<p>I shall not cover working with arrays in NASM itself, but rather working with already allocated memory in C.</p>
+
+<p>Arrays are transfered to a function as pointers in C and C++. Under the hood, pointer is just an address to a memory block. To its beginning, actually. Knowing the <strong>size of each array element</strong> and <strong>elements count</strong>, we may perform any kind of operations simply iterating through a set of memory addresses.</p>
+
+<p>Let’s for example calculate a sum of an array elements:</p>
+<span class="cp">#include &lt;stdio.h&gt;
+</span>
+<span class="k">extern</span> <span class="s">"C"</span> <span class="kt">int</span> <span class="nf">sum</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="kt">int</span> <span class="o">*</span><span class="n">a</span><span class="p">);</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">a</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span> <span class="p">};</span>
+
+    <span class="c1">// 1 + 2 + 7 + 9 - 4 = 15</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"sum(a) = %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">sum</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">a</span><span class="p">));</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<p>And let’s create the function <code>sum</code> in NASM. To start off, we’ll use a function, receiving two arguments, <code>int</code> and <code>int*</code> and returning a zero.</p>
+<span class="n">BITS</span> <span class="mi">32</span>
+
+<span class="kr">section</span> <span class="p">.</span><span class="n">text</span>
+
+<span class="kr">global</span> <span class="n">sum</span>
+
+<span class="n">sum</span><span class="o">:</span>
+
+    <span class="k">enter</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+
+    <span class="err">%</span><span class="n">define</span> <span class="n">n</span> <span class="n">dword</span> <span class="err">[</span><span class="n">ebp</span> <span class="o">+</span> <span class="mi">8</span><span class="err">]</span>
+    <span class="err">%</span><span class="n">define</span> <span class="n">a</span> <span class="n">dword</span> <span class="err">[</span><span class="n">ebp</span> <span class="o">+</span> <span class="mi">12</span><span class="err">]</span>
+
+    <span class="k">mov</span> <span class="n">eax</span><span class="p">,</span> <span class="mi">0</span>
+
+    <span class="k">leave</span>
+    <span class="k">ret</span>
+
+<p>Now what we would like to do is to add each element of array to our <code>result</code> variable <u>(oh, we do not have one yet!)</u>. To do this, we will use two registers: <code>ECX</code> to count how many elements we have added and <code>EAX</code> to store the sum. Each element’s address is <code>*a + 4 * i</code> or address of <code>a[0]</code> plus <code>4 bytes</code> times <code>i</code>, our element number.</p>
+
+<p>The loop we would use is a reverse one: first we assign <code>ECX = n</code> and then decrement our <code>ECX</code> by one each loop iteration. We are decrementing <code>ECX</code> by one because it contains a number of elements at the beginning of our function. We may use even reverse approach (or a straight one in the meanings of C, when we count from the first element to the last): first, we assign <code>ECX = 0</code> and before going to the end of a loop we will compare <code>ECX</code> to <code>n</code> instead of zero.</p>
+
+<p>In NASM we may calculate the address of each array element in the operand itself: <code>[ebx + 4 * ecx]</code>.</p>
+
+<p>Now everything what we need is to add all those hints into a single program:</p>
+<span class="n">BITS</span> <span class="mi">32</span>
+
+<span class="kr">section</span> <span class="p">.</span><span class="n">text</span>
+
+<span class="kr">global</span> <span class="n">sum</span>
+
+<span class="n">sum</span><span class="o">:</span>
+
+    <span class="k">enter</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+
+    <span class="err">%</span><span class="n">define</span> <span class="n">n</span> <span class="n">dword</span> <span class="err">[</span><span class="n">ebp</span> <span class="o">+</span> <span class="mi">8</span><span class="err">]</span>
+    <span class="err">%</span><span class="n">define</span> <span class="n">a</span> <span class="n">dword</span> <span class="err">[</span><span class="n">ebp</span> <span class="o">+</span> <span class="mi">12</span><span class="err">]</span>
+
+    <span class="k">mov</span> <span class="n">eax</span><span class="p">,</span> <span class="mi">0</span> <span class="c">; EAX = sum = 0</span>
+    <span class="k">mov</span> <span class="n">ebx</span><span class="p">,</span> <span class="n">a</span> <span class="c">; EBX = *a</span>
+    <span class="k">mov</span> <span class="n">ecx</span><span class="p">,</span> <span class="n">n</span> <span class="c">; ECX = i = n</span>
+
+<span class="n">add_loop</span><span class="o">:</span>
+
+    <span class="k">add</span> <span class="n">eax</span><span class="p">,</span> <span class="err">[</span><span class="n">ebx</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">ecx</span> <span class="o">-</span> <span class="mi">4</span><span class="err">]</span> <span class="c">; EAX += a[i]</span>
+
+    <span class="k">dec</span> <span class="n">ecx</span> <span class="c">; ECX --</span>
+    <span class="k">cmp</span> <span class="n">ecx</span><span class="p">,</span> <span class="mi">0</span>
+
+    <span class="k">jg</span> <span class="n">add_loop</span> <span class="c">; if ECX &gt; 0 then goto add_loop</span>
+
+    <span class="c">; EAX contains the sum here</span>
+
+    <span class="k">leave</span>
+    <span class="k">ret</span>
+
+<p>Note that I subtract four bytes in an element address: <code>[ebx + 4 * ecx - 4]</code>. That’s because our i&#39;th element starts at <code>*a + (i * 4)</code> byte, but we have <code>i = n</code> on the beginning. Thus, first iteration will try to add element, starting at <code>*a + (n * 4)</code> byte, which does not exist in our array <u>(the 5th element)</u>. So, we need to subtract one element’ size from our <code>[ebx + 4 * ecx]</code> address.</p>
+
+<p>Now, if we would like to shorten our source a bit, we may use the <code>loop</code> operation. What it does, is compares <code>ECX</code> with zero and if it is greater than zero - it jumps to a label specified.</p>
+
+<p>These two codes are completely identical for processor:</p>
+
+<p><strong>manual loop</strong>:</p>
+<span class="k">mov</span> <span class="n">ecx</span><span class="p">,</span> <span class="n">n</span>
+
+<span class="n">add_loop</span><span class="o">:</span>
+
+    <span class="c">; do something</span>
+
+    <span class="k">dec</span> <span class="n">ecx</span>
+    <span class="k">cmp</span> <span class="n">ecx</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="k">jg</span> <span class="n">add_loop</span>
+
+<p><strong>using the <code>loop</code> instruction</strong>:</p>
+<span class="k">mov</span> <span class="n">ecx</span><span class="p">,</span> <span class="n">n</span>
+
+<span class="n">add_loop</span><span class="o">:</span>
+
+    <span class="c">; do something</span>
+
+    <span class="k">loop</span> <span class="n">add_loop</span>
+
+<p>We’ve just saved two lines of code!</p>
+
+<h2>Floating-point operations</h2>
+
+<p>When working with floating-point data, we have <strong>seven</strong> registers, which could be used to perform operations on a floating-point arguments. We may <strong>store</strong> float data in a <strong>memory</strong> <u>(but never in registers!)</u>, but we may not perform operations on a float data contained in a memory. Just as we may not operate on a usual data, stored in a memory - we need to store it in registers first. Same thing here - store data on a <strong>floating-point stack</strong> and perform operations there. Then move results to the memory.</p>
+
+<p>When writing a C++ functions working with floats, arguments are stored on a float stack and results are stored on a top of that stack. Yet, the other six cells of a float stack <strong>should</strong> be cleared when returning a value. Otherwise it may cause hard-to-find errors.</p>
+
+<p>So, the basic operations we may run on a floats are:</p>
+
+<ol>
+<li>pushing to stack (<code>FLD</code>, <code>FLDZ</code>, <code>FLD1</code>, etc.)</li>
+<li>floating-point arithmetics (<code>FADD</code>, <code>FMUL</code>, <code>FDIV</code>, <code>FSUB</code>, etc.)</li>
+<li>arithmetics with popping from a stack into the top stack cell (<code>ST0</code>)</li>
+<li>popping from a stack to a memory (<code>FST</code> operations)</li>
+</ol>
+
+<p>Yeah, these are a hell-yeah mix of both arithmetic operations and stack operations!</p>
+
+<p>Let’s write a very short example, showing how to work with floats. Let it be a two-vector dot product function.</p>
+
+<p>We shall write a function of this declaration:</p>
+<span class="cp">#include &lt;stdio.h&gt;
+</span>
+<span class="k">extern</span> <span class="s">"C"</span> <span class="kt">long</span> <span class="kt">double</span> <span class="nf">dot_product</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="kt">long</span> <span class="kt">double</span> <span class="o">*</span><span class="n">v1</span><span class="p">,</span> <span class="kt">long</span> <span class="kt">double</span> <span class="o">*</span><span class="n">v2</span><span class="p">);</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kt">long</span> <span class="kt">double</span> <span class="n">v1</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span> <span class="p">};</span>
+    <span class="kt">long</span> <span class="kt">double</span> <span class="n">v2</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span> <span class="p">};</span>
+    <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+
+    <span class="c1">// 3*4 + 5*2 = 12 + 10 = 22</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"dot_product(v1, v2) = %0.4f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">dot_product</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">));</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<p>This one will calculate a dot product of two <u>n-element</u> vectors.</p>
+<span class="n">BITS</span> <span class="mi">32</span>
+
+<span class="kr">section</span> <span class="p">.</span><span class="n">text</span>
+
+    <span class="kr">global</span> <span class="n">dot_product</span>
+
+<span class="n">dot_product</span><span class="o">:</span>
+
+    <span class="k">enter</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+
+    <span class="err">%</span><span class="n">define</span> <span class="n">n</span> <span class="n">dword</span><span class="err">[</span><span class="n">ebp</span> <span class="o">+</span> <span class="mi">8</span><span class="err">]</span>
+    <span class="err">%</span><span class="n">define</span> <span class="n">v1</span> <span class="n">dword</span><span class="err">[</span><span class="n">ebp</span> <span class="o">+</span> <span class="mi">12</span><span class="err">]</span>
+    <span class="err">%</span><span class="n">define</span> <span class="n">v2</span> <span class="n">dword</span><span class="err">[</span><span class="n">ebp</span> <span class="o">+</span> <span class="mi">16</span><span class="err">]</span>
+
+    <span class="k">mov</span> <span class="n">ecx</span><span class="p">,</span> <span class="n">n</span>
+    <span class="k">mov</span> <span class="n">edx</span><span class="p">,</span> <span class="n">v1</span>
+    <span class="k">mov</span> <span class="n">ebx</span><span class="p">,</span> <span class="n">v2</span>
+
+    <span class="k">fldz</span> <span class="c">; stack: 0 ( = tail)</span>
+
+<span class="n">add_loop</span><span class="o">:</span>
+
+    <span class="k">fld</span> <span class="n">tword</span> <span class="p">[edx]</span> <span class="c">; stack: v1, tail</span>
+    <span class="k">fld</span> <span class="n">tword</span> <span class="p">[ebx]</span> <span class="c">; stack: v2, v1, tail</span>
+
+    <span class="k">fmulp</span> <span class="n">st1</span><span class="p">,</span> <span class="n">st0</span> <span class="c">; stack: v2 * v1, tail</span>
+    <span class="k">faddp</span> <span class="n">st1</span><span class="p">,</span> <span class="n">st0</span> <span class="c">; stack: v2 * v1 + tail</span>
+
+    <span class="k">add</span> <span class="n">edx</span><span class="p">,</span> <span class="mi">12</span>
+    <span class="k">add</span> <span class="n">ebx</span><span class="p">,</span> <span class="mi">12</span>
+
+    <span class="k">loop</span> <span class="n">add_loop</span>
+
+<span class="n">just_exit</span><span class="o">:</span>
+
+    <span class="k">leave</span>
+    <span class="k">ret</span>
+
+<p>The algorithm of a code above may be written as follows:</p>
+
+<ul>
+<li>load zero to a floating stack <em>(ST: <code>[0 nan nan nan nan nan nan]</code>)</em></li>
+<li><em>in a loop</em> load <em>i_th element of <code>v1</code> to a floating stack _(ST: <code>[3 0 nan nan nan nan nan]</code>)</em></li>
+<li><em>in a loop</em> load <em>i_th element of <code>v2</code> to a floating stack _(ST: <code>[4 3 0 nan nan nan nan]</code>)</em></li>
+<li><em>in a loop</em> multiply first two elements of a floating stack, write the result to <code>ST1</code> and pop stack head <em>(ST: <code>[12 0 nan nan nan nan nan]</code>)</em></li>
+<li><em>in a loop</em> add first two elements of a stack, write the result to <code>ST1</code> and pop stack head <em>(ST: <code>[12 nan nan nan nan nan nan]</code>)</em></li>
+<li><em>in a loop</em> add 12 bytes to our <code>i</code></li>
+<li><em>in a loop</em> add 12 bytes to our <code>t</code></li>
+</ul>
+
+<p>At the end of our loop, precisely, at our <code>just_exit</code> label, we will have floating stack with the only element on its top, the dot product of our vectors <code>v1</code> and <code>v2</code>. This value will be returned to our C++ program.</p>
+
+<h2>A few words on debugging</h2>
+
+<p>As you remember <u>(if not - just look above)</u> we added a <u>debugger info</u> option when compiling our programs. Now let&#39;s use it.</p>
+
+<p>Let&#39;s have some buggy program. For example, the one which calculates a rectangular parallelepiped&#39;s surface area and volume:</p>
+
+<p><strong>C program</strong>:</p>
+<span class="cp">#include &lt;stdio.h&gt;
+</span>
+<span class="k">extern</span> <span class="kt">void</span> <span class="nf">surface_and_volume</span><span class="p">(</span><span class="kt">float</span> <span class="n">a</span><span class="p">,</span> <span class="kt">float</span> <span class="n">b</span><span class="p">,</span> <span class="kt">float</span> <span class="n">c</span><span class="p">,</span> <span class="kt">float</span> <span class="o">*</span><span class="n">v</span><span class="p">,</span> <span class="kt">float</span> <span class="o">*</span><span class="n">s</span><span class="p">);</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kt">float</span> <span class="n">surface</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">volume</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+  <span class="n">surface_and_volume</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">volume</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">surface</span><span class="p">);</span>
+
+  <span class="n">printf</span><span class="p">(</span><span class="s">"volume: %0.3f surface: %0.3f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">volume</span><span class="p">,</span> <span class="n">surface</span><span class="p">);</span>
+
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<p><strong>NASM program</strong>:</p>
+<span class="n">BITS</span> <span class="mi">32</span>
+
+<span class="kr">section</span> <span class="p">.</span><span class="n">text</span>
+
+    <span class="kr">global</span> <span class="n">surface_and_volume</span>
+
+<span class="n">surface_and_volume</span><span class="o">:</span>
+
+    <span class="k">enter</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+
+    <span class="err">%</span><span class="n">define</span> <span class="n">a</span> <span class="n">dword</span><span class="err">[</span><span class="n">ebp</span><span class="o">+</span><span class="mi">8</span><span class="err">]</span>
+    <span class="err">%</span><span class="n">define</span> <span class="n">b</span> <span class="n">dword</span><span class="err">[</span><span class="n">ebp</span><span class="o">+</span><span class="mi">12</span><span class="err">]</span>
+    <span class="err">%</span><span class="n">define</span> <span class="n">c</span> <span class="n">dword</span><span class="err">[</span><span class="n">ebp</span><span class="o">+</span><span class="mi">16</span><span class="err">]</span>
+    <span class="err">%</span><span class="n">define</span> <span class="n">vol_ptr</span> <span class="n">dword</span> <span class="err">[</span><span class="n">ebp</span><span class="o">+</span><span class="mi">20</span><span class="err">]</span> <span class="c">; a*b*c</span>
+    <span class="err">%</span><span class="n">define</span> <span class="n">surf_ptr</span> <span class="n">dword</span> <span class="err">[</span><span class="n">ebp</span><span class="o">+</span><span class="mi">24</span><span class="err">]</span> <span class="c">; a*a*2 + b*b*2 + c*c*2</span>
+
+    <span class="k">mov</span> <span class="n">eax</span><span class="p">,</span> <span class="n">vol_ptr</span>
+    <span class="k">mov</span> <span class="n">ebx</span><span class="p">,</span> <span class="n">surf_ptr</span>
+
+    <span class="k">fldz</span> <span class="c">; st6</span>
+    <span class="k">fldz</span> <span class="c">; st5</span>
+    <span class="k">fldz</span> <span class="c">; st4</span>
+    <span class="k">fld</span> <span class="n">c</span> <span class="c">; st3</span>
+    <span class="k">fld</span> <span class="n">b</span> <span class="c">; st2</span>
+    <span class="k">fld</span> <span class="n">a</span> <span class="c">; st1</span>
+    <span class="k">fldz</span> <span class="c">; st0</span>
+
+    <span class="c">; calculate volume</span>
+    <span class="k">fsub</span> <span class="n">st0</span><span class="p">,</span> <span class="n">st0</span> <span class="c">; st0 = 0</span>
+    <span class="k">fadd</span> <span class="n">st1</span> <span class="c">; st0 = a</span>
+    <span class="k">fmul</span> <span class="n">st2</span> <span class="c">; st0 *= b</span>
+    <span class="k">fmul</span> <span class="n">st3</span> <span class="c">; st0 *= c</span>
+
+    <span class="k">fst</span> <span class="n">dword</span> <span class="p">[eax]</span>
+
+    <span class="c">; calculate surface</span>
+
+    <span class="k">fsub</span> <span class="n">st0</span><span class="p">,</span> <span class="n">st0</span> <span class="c">; st0 = 0</span>
+    <span class="k">fadd</span> <span class="n">st1</span> <span class="c">; st0 = a</span>
+    <span class="k">fmul</span> <span class="n">st2</span> <span class="c">; st0 *= b</span>
+    <span class="k">fadd</span> <span class="n">st4</span><span class="p">,</span> <span class="n">st0</span> <span class="c">; st4 = a*b</span>
+
+    <span class="k">fsub</span> <span class="n">st0</span><span class="p">,</span> <span class="n">st0</span> <span class="c">; st0 = 0</span>
+    <span class="k">fadd</span> <span class="n">st1</span> <span class="c">; st0 = a</span>
+    <span class="k">fmul</span> <span class="n">st3</span> <span class="c">; st0 *= c</span>
+    <span class="k">fadd</span> <span class="n">st5</span><span class="p">,</span> <span class="n">st0</span> <span class="c">; st5 = a*c</span>
+
+    <span class="k">fsub</span> <span class="n">st0</span><span class="p">,</span> <span class="n">st0</span> <span class="c">; st0 = 0</span>
+    <span class="k">fadd</span> <span class="n">st2</span> <span class="c">; st0 = b</span>
+    <span class="k">fmul</span> <span class="n">st3</span>
+    <span class="k">fadd</span> <span class="n">st6</span><span class="p">,</span> <span class="n">st0</span> <span class="c">; st6 = b*c</span>
+
+    <span class="k">fsub</span> <span class="n">st0</span><span class="p">,</span> <span class="n">st0</span> <span class="c">; st0 = 0</span>
+    <span class="k">fadd</span> <span class="n">st4</span>
+    <span class="k">fadd</span> <span class="n">st5</span>
+    <span class="k">fadd</span> <span class="n">st6</span> <span class="c">; st0 = a*b + a*c + b*c</span>
+    <span class="k">fadd</span> <span class="n">st0</span> <span class="c">; st0 = 2*(a*b + a*c + b*c)</span>
+
+<span class="n">just_exit</span><span class="o">:</span>
+
+    <span class="k">fst</span> <span class="n">dword</span> <span class="p">[ebx]</span>
+
+    <span class="c">; free float stack</span>
+    <span class="k">fstp</span> <span class="n">a</span>
+    <span class="k">fstp</span> <span class="n">a</span>
+    <span class="k">fstp</span> <span class="n">a</span>
+    <span class="k">fstp</span> <span class="n">a</span>
+    <span class="k">fstp</span> <span class="n">a</span>
+    <span class="k">fstp</span> <span class="n">a</span>
+
+    <span class="k">ret</span>
+
+<p>Compile it as usual and run with GDB:</p>
+g++ <span class="nt">-c</span> <span class="nt">-m32</span> <span class="nt">-g</span> test3.c <span class="nt">-o</span> test3_c.o
+nasm <span class="nt">-felf32</span> <span class="nt">-g</span> test3.asm <span class="nt">-o</span> test3_asm.o
+g++ <span class="nt">-m32</span> <span class="nt">-g</span> test3_asm.o test3_c.o <span class="nt">-o</span> test3
+gdb test3
+
+<p>Now, when you&#39;re in a debugger&#39; console, you may run debugging commands. Here are a few of them:</p>
+
+<ul>
+<li><code>r</code> or <code>run</code> will run your program, stopping at first breakpoint</li>
+<li><code>b func_name</code> or <code>break func_name</code> will set a breakpoint at the first line of <code>func_name</code></li>
+<li><code>p var</code> or <code>print var</code> will show the <code>var</code> variable contents in decimal format. For registers its <code>$eax</code> and so on</li>
+<li><code>p /x var</code> or <code>print /x var</code> will show the <code>var</code> variable contents in hexadecimal format</li>
+<li><code>x mem_addr</code> will show the contents of memory at <code>mem_addr</code></li>
+<li><code>x/4 mem_addr</code> will show <strong>four</strong> 4-byte pieces of memory at <code>mem_addr</code></li>
+<li><code>disassemble</code> will print out the assembly code for current function</li>
+<li><em>(from breakpoint)</em> <code>c</code> or <code>continue</code> will run program until it hits end or breakpoint</li>
+<li><em>(from breakpoint)</em> <code>ni</code> will step one instruction</li>
+<li><em>(from breakpoint)</em> <code>n</code> or <code>next</code> will step over the next function <em>(in C)</em>; for ASM it&#39;s same as <code>ni</code></li>
+<li><em>(from breakpoint)</em> <code>s</code> or <code>step</code> will step in the next function <em>(in C)</em>; for ASM it&#39;s same as <code>ni</code></li>
+<li><code>info r</code> shows current registers&#39; state</li>
+<li><code>info float</code> shows current co-processor state</li>
+<li><kbd>Ctrl+D</kbd> stands for <code>quit</code></li>
+</ul>
+
+<p>Now, using GDB, try to find out what&#39;s wrong with the program I&#39;ve suggested!</p>
+
+<h2>Afterword</h2>
+
+<p>This is currently most of important things I’ve learnt at the university. This is pretty much for a beginner. And this information is really for those who have fun writing code or those who are made to write some excercises at university.</p>
+
+<p>As for me, now ASM does not look so scary now =) But I like writing more high-level code <u>(in C at least!)</u> because it takes less time to do more.</p>

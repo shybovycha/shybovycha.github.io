@@ -1,0 +1,67 @@
+<meta name="layout" content="post">
+<meta name="title" content="Decorator pattern in Python">
+<meta name="date" content="2015-03-24T10:41:35+01:00">
+<meta name="tags" content="python,rtfm,design-patterns">
+<meta name="tumblr_url" content="http://shybovycha.tumblr.com/post/114483612351/decorator-pattern-in-python">
+<p>Just found some interesting way of implementing Decorator design pattern in Python.</p>
+
+<p>As <strong>Jason Smith</strong> said in his book (<strong>Elemental Design Patterns</strong>),</p>
+
+<blockquote>
+<p>design patterns may be implemened in different ways in different programming languages</p>
+</blockquote>
+
+<p>That’s said, design patterns are not some set of classes which will be implemented in a very similar way in different languages - they are just a way of doing something.</p>
+
+<p>Thus, Decorator pattern is a way of wrapping some method’s or class’ behaviour. In Python it may be done with <strong>Context Managers:</strong></p>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
+
+<span class="o">@</span><span class="n">contextmanager</span>
+<span class="k">def</span> <span class="nf">tag</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s">"&lt;</span><span class="si">%</span><span class="s">s&gt;"</span> <span class="o">%</span> <span class="n">name</span><span class="p">,</span>
+    <span class="k">yield</span>
+    <span class="k">print</span> <span class="s">"&lt;/</span><span class="si">%</span><span class="s">s&gt;"</span> <span class="o">%</span> <span class="n">name</span><span class="p">,</span>
+
+<span class="k">with</span> <span class="n">tag</span><span class="p">(</span><span class="s">"h1"</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s">"moo"</span><span class="p">,</span>
+
+<span class="k">print</span>
+
+<span class="k">with</span> <span class="n">tag</span><span class="p">(</span><span class="s">"div"</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s">"foo"</span><span class="p">,</span>
+
+<p>This code will end up wrapping <code>print &quot;foo&quot;</code> and <code>print &quot;moo&quot;</code> methods with printing some HTML tags around &#39;em:</p>
+<span class="nt">&lt;h1&gt;</span>moo<span class="nt">&lt;/h1&gt;</span>
+<span class="nt">&lt;div&gt;</span>foo<span class="nt">&lt;/div&gt;</span>
+
+<p>That is interesting as it implements Decorator design pattern in a bit hard-coded way, but using language features, not OOP ones.</p>
+
+<p>Compare it to the &quot;conventional&quot; OOP implementation in Python:</p>
+<span class="c1"># -*-coding:utf-8 -*-
+</span><span class="k">class</span> <span class="nc">SimpleText</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">text</span>
+
+    <span class="k">def</span> <span class="nf">content</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">TagDecorator</span><span class="p">(</span><span class="n">SimpleText</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">tag</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TagDecorator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tag</span> <span class="o">=</span> <span class="n">tag</span>
+
+    <span class="k">def</span> <span class="nf">content</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">'&lt;{0}&gt;{1}&lt;/{0}&gt;'</span><span class="o">.</span><span class="nb">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span> <span class="nb">super</span><span class="p">(</span><span class="n">TagDecorator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">content</span><span class="p">())</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">SimpleText</span><span class="p">(</span><span class="s">'moo'</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'SimpleText: </span><span class="si">%</span><span class="s">s'</span> <span class="o">%</span> <span class="n">a</span><span class="p">)</span>
+
+<span class="n">b</span> <span class="o">=</span> <span class="n">TagDecorator</span><span class="p">(</span><span class="s">'moo'</span><span class="p">,</span> <span class="s">'h1'</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'TagDecorator (h1): </span><span class="si">%</span><span class="s">s'</span> <span class="o">%</span> <span class="n">b</span><span class="p">)</span>
+
+<p>This one looks a bit... ugly, right? And though Python does not really care of which type are <code>a</code> and <code>b</code>, we may not need all this class hierarchy.</p>
+
+<p>This is the might of <strong>context managers</strong>!</p>

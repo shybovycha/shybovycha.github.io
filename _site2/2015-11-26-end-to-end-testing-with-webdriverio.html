@@ -1,0 +1,334 @@
+<meta name="layout" content="post">
+<meta name="title" content="End-to-end testing with WebdriverIO">
+<meta name="date" content="2015-11-26T17:03:39+01:00">
+<h2>Small intro</h2>
+
+<p>Have you ever heard about end-to-end testing? Or maybe about testing automation?
+Those of you who had, may now be imaging Selenium. That&#39;s right, in most of cases
+you will need to run <em>Selenium Server</em> and use <em>Selenium Webdriver</em> in your
+tests. Those come handy to run a standalone browser window, with no caches,
+filled-in fields or cookies and perform some operations in it.</p>
+
+<p>In this article I will tell you my story of writing E2E tests for Angular webapp.</p>
+
+<h2>A brief of history</h2>
+
+<p>In my case, we first tried to use <u>Protractor</u> with <u>Chai.js</u>. That time we ended
+up with almost unsupportable bunch of code, succeeding in 100% of runs.</p>
+
+<p>Next time we eliminated <em>Chai</em> and reworked all our tests to use <em>Protractor</em> only.
+So the code became more clear <em>(I did not like the syntax, but it worked...)</em>,
+but after upgrading libraries <em>(including Protractor)</em>, the ratio of successfull
+test runs decreased to just 40%.</p>
+
+<p>We worked for two days, trying to fix those tests. And that&#39;s how <em>webdriverio</em>
+came to our project.</p>
+
+<p>And here&#39;s a short tutorial on how to implement E2E tests with <em>webdriverio</em> in
+a sample project.</p>
+
+<!--more-->
+
+<h2>The requirements</h2>
+
+<p>Before we start, we need to initialize an NPM project:</p>
+npm init
+
+<p>We barely want to manage Selenium versions by ourselves. When it comes to
+continuous integration, that is not an option. So we&#39;d better find a way of
+downloading the needed Selenium version automatically. And writing a short
+script is somehow a bad idea - there is an NPM module for that task already:</p>
+npm <span class="nb">install</span> <span class="nt">--save</span> selenium-standalone
+
+<p>After installing that module, you may manage and run your Selenium with</p>
+./node_modules/selenium-standalone/bin/selenium-standalone <span class="nb">install</span>
+./node_modules/selenium-standalone/bin/selenium-standalone start
+
+<p>Now, in all our tests we will be using using <em>Jasmine</em>, since it allows to
+create a beautiful code, which is easy to support (if you need the maximum
+help from your customer - consider using <em>Cucumber</em> and BDD approach - I will
+cover this topic in one of my future posts). So we need to add Jasmine
+dependency to our project:</p>
+npm <span class="nb">install</span> <span class="nt">--save</span> jasmine
+
+<p>To initialize bare Jasmine-ready project you may use Jasmine itself:</p>
+./node_modules/jasmine/bin/jasmine.js init
+
+<p>This will create this directory structure for you:</p>
+
+<p>.
+    ├── package.json
+    └── spec
+        ├── helpers
+        └── support
+            ├── config.json
+            └── jasmine.json</p>
+
+<p>So now you may place your tests in the <code>spec</code> directory, on any level. Just
+remember to name your test files with the <code>spec</code> postfix
+(for ex. <code>spec/feature1_spec.js</code> or <code>tests/spec/Feature1spec.js</code>).
+To change that lowercase <code>spec</code> postfix, specify which files Jasmine should
+look for in the <code>spec/support/jasmine.json</code> file, using the option <code>spec_files</code>.
+For example, you can make it look for both <code>*_spec</code> and <code>*Spec</code> (underscore and
+camel case file naming) postfixes:</p>
+<span class="p">{</span><span class="w">
+    </span><span class="nl">"spec_dir"</span><span class="p">:</span><span class="w"> </span><span class="s2">"spec"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"spec_files"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="s2">"features/**/*[sS]pec.js"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"**/*_spec.js"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"**/*_Spec.js"</span><span class="w">
+    </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span>
+<p>The <code>spec_dir</code> option specifies the directory, where the test files are located.
+And the <code>spec_files</code> option is what we are mostly interested in: it tells Jasmine
+the pattern, it should use to check if a file (inside the <code>#{spec_dir}</code> directory)
+is a test file or not. For example, the first value, <code>&quot;features/**/*[sS]pec.js&quot;</code>,
+tells that any file, whose path is <code>spec/features/{any directory nesting depth}/*Spec.js</code>
+as well as any file with a path <code>spec/features/{any directory nesting depth}/*spec.js</code> is a
+file, containing a test definition.</p>
+
+<p>The last, but not least, we need the <em>webdriverio</em> itself:</p>
+npm <span class="nb">install</span> <span class="nt">--save</span> webdriverio
+
+<p>And now we are ready to make some code!</p>
+
+<h2>Preparation</h2>
+
+<p>First of all, we need to initialize the Selenium client.
+Generally speaking, it&#39;s a special browser instance, which will be used for
+our tests only and when all the tests are done - it will be closed automatically.
+This browser (or a client) provides a programmable interface, e.g. executes commands
+we ask it to execute. The commands allow, for example, to manipulate the currently opened document
+(just like you used to do with javascript in the developer tools in your browser) -
+find an element, click it, retrieve its computed styles, etc. It also allows to manipulate
+the browser window itself - open a new tab, get and set its properties like width, height, position
+and many others.</p>
+
+<p>So we really need that client for our tests - that&#39;s the core! And we need that to run all our
+tests (we don&#39;t want to run a new browser instance for each separate test case, right?). So we
+can put all the code, initializing Selenium client in a helper script and make Jasmine run it
+before all (again, <strong>not each, but all</strong> - I&#39;ll explain why this is essential in a moment) tests.
+Let&#39;s define this in the <code>spec/helpers/settings.js</code> file:</p>
+<span class="kd">var</span> <span class="nx">webdriverio</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">webdriverio</span><span class="dl">'</span><span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">timeout</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">config</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="dl">"</span><span class="s2">desiredCapabilities</span><span class="dl">"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="dl">"</span><span class="s2">browserName</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">chrome</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">host</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">localhost</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">port</span><span class="dl">"</span><span class="p">:</span> <span class="mi">9876</span>
+  <span class="p">},</span>
+  <span class="dl">"</span><span class="s2">baseUrl</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">http://localhost</span><span class="dl">"</span>
+<span class="p">};</span>
+
+<span class="nx">jasmine</span><span class="p">.</span><span class="nx">DEFAULT_TIMEOUT_INTERVAL</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="nx">timeout</span><span class="p">;</span>
+
+<span class="nx">beforeAll</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">client</span> <span class="o">=</span> <span class="nx">webdriverio</span>
+        <span class="p">.</span><span class="nx">remote</span><span class="p">(</span><span class="nx">config</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">init</span><span class="p">()</span>
+        <span class="p">.</span><span class="nx">url</span><span class="p">(</span><span class="dl">'</span><span class="s1">/</span><span class="dl">'</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">done</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="nx">afterAll</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">client</span><span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="nx">done</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="nx">exports</span><span class="p">.</span><span class="nx">webdriverio</span> <span class="o">=</span> <span class="nx">webdriverio</span><span class="p">;</span>
+<span class="nx">exports</span><span class="p">.</span><span class="nx">config</span> <span class="o">=</span> <span class="nx">config</span><span class="p">;</span>
+<span class="nx">exports</span><span class="p">.</span><span class="nx">timeout</span> <span class="o">=</span> <span class="nx">timeout</span><span class="p">;</span>
+<span class="nx">exports</span><span class="p">.</span><span class="nx">baseUrl</span> <span class="o">=</span> <span class="nx">config</span><span class="p">.</span><span class="nx">baseUrl</span><span class="p">;</span>
+
+<p>This code does three simple, but really important things:</p>
+
+<ol>
+<li>it sets up the <em>webdriverio</em> (which is an enhanced wrapper for Selenium client)
+<strong>for all the tests</strong>, opens browser <em>(configured by the <code>browserName</code> option)</em> window
+and navigates to the page, defined in the <code>baseUrl</code> option</li>
+<li>makes Jasmine wait a bit longer for each assertion in the tests, before marking it as
+<strong>failed on timeout</strong> <em>(when Jasmine has timed out, waiting for an assertion)</em></li>
+<li>makes <em>webdriverio</em> client instance available in any test through the <code>this.client</code> member
+(where <code>this</code> means the test instance)</li>
+</ol>
+
+<p>See, this code is run once, previous to <strong>all</strong> the tests, found by Jasmine. This is defined
+by the <code>beforeAll()</code> call. We could use the <code>beforeEach()</code> function instead, but since opening
+a new browser (Selenium client) instance is a time-consuming task, it&#39;s better to do it once
+and then just operate on an existing instance, opening new tabs when necessary. Thus is why
+we are using <code>beforeAll()</code> for all the tests <em>in the scope</em>.</p>
+
+<p>Here I&#39;ve mentioned another essential thing, <em>the test scope</em>. Test scope is the current set of tests.
+It could be defined by the <code>describe(&quot;description&quot;, function () { /* test code */ })</code> function call.
+But since we have no <code>describe()</code> calls before the <code>beforeAll</code> and <code>afterAll</code> calls, Jasmine
+assumes we want to use those functions for all the known tests. But if you use the <code>beforeAll</code> inside
+the <code>describe()</code> block, then this function (<code>beforeAll()</code>) will be run before all the tests,
+<em>defined inside that <code>describe()</code> block</em>.</p>
+
+<h2>First scenario</h2>
+
+<p>Assume our application is a simple webshop - it has three pages: <code>/#/products</code>, <code>/#/billing-details</code>
+and <code>/#/order-summary</code>. Rather simple webshop:</p>
+
+<p><img data-src="/images/e2e-testing-with-webdriverio/webshop1.png" alt="">
+<img data-src="/images/e2e-testing-with-webdriverio/webshop2.png" alt="">
+<img data-src="/images/e2e-testing-with-webdriverio/webshop3.png" alt=""></p>
+
+<p>And here is our first scenario: user selects the iPhone, clicks <em>&quot;Buy&quot;</em>, fills in
+his billing details and waits for his brand-new iPhone to come.</p>
+
+<p>In terms of BDD it could be described in a scenario like this:</p>
+<span class="kd">Feature</span><span class="p">:</span> Placing an order
+    <span class="kn">Scenario</span><span class="p">:</span> Ordering a single product
+        <span class="nf">Given </span>a webshop page
+            <span class="nf">And </span>a guest user
+        <span class="nf">When </span>the user selects the <span class="s">"iPhone"</span> product
+            <span class="nf">And </span>clicks the <span class="s">"Buy"</span> button
+            <span class="nf">And </span>fills out the billing details correctly
+            <span class="nf">And </span>clicks the <span class="s">"Submit"</span> button
+        <span class="nf">Then </span>the <span class="s">"Billing successfull"</span> page is shown
+
+<p>This scenario is great for the customer. And it&#39;s awesome if the customer
+is able to provide developer(-s) with a number of such scenarios.
+But our test will be more kind of &quot;developer-friendly&quot;.</p>
+
+<p>Let&#39;s create a <code>specs/ordering_a_single_product_spec.js</code> file:</p>
+<span class="kd">var</span> <span class="nx">settings</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">../helpers/settings.js</span><span class="dl">'</span><span class="p">);</span>
+
+<span class="nx">describe</span><span class="p">(</span><span class="dl">'</span><span class="s1">buying iPhone</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="nx">describe</span><span class="p">(</span><span class="dl">'</span><span class="s1">when user selects iPhone</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="nx">it</span><span class="p">(</span><span class="dl">'</span><span class="s1">he gets redirected to the billing-details page</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">client</span>
+                <span class="p">.</span><span class="nx">waitForExist</span><span class="p">(</span><span class="dl">'</span><span class="s1">.title*=iPhone 6 White</span><span class="dl">'</span><span class="p">,</span> <span class="nx">settings</span><span class="p">.</span><span class="nx">timeout</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">element</span><span class="p">(</span><span class="dl">'</span><span class="s1">.title*=iPhone 6 White</span><span class="dl">'</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">element</span><span class="p">(</span><span class="dl">'</span><span class="s1">..</span><span class="dl">'</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">click</span><span class="p">(</span><span class="dl">'</span><span class="s1">button*=Buy</span><span class="dl">'</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">waitForExist</span><span class="p">(</span><span class="dl">'</span><span class="s1">button*=Check out</span><span class="dl">'</span><span class="p">,</span> <span class="nx">settings</span><span class="p">.</span><span class="nx">timeout</span><span class="p">)</span>
+                <span class="p">.</span><span class="nx">url</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">expect</span><span class="p">(</span><span class="nx">res</span><span class="p">.</span><span class="nx">value</span><span class="p">).</span><span class="nx">toMatch</span><span class="p">(</span><span class="sr">/</span><span class="se">\/</span><span class="sr">#</span><span class="se">\/</span><span class="sr">billing-details$/</span><span class="p">);</span>
+                <span class="p">})</span>
+                <span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">done</span><span class="p">);</span>
+        <span class="p">});</span>
+    <span class="p">});</span>
+<span class="p">});</span>
+
+<p>Let&#39;s run our test: first, start your webserver to handle the webshop; then run a
+Selenium instance and at last, start <code>./node_modules/jasmine/bin/jasmine.js</code>.</p>
+
+<p>In this test case we do the following things:</p>
+
+<ol>
+<li>wait untill all the products are loaded (<code>waitForExist(&#39;.title*=iPhone 6 White&#39;, settings.timeout)</code>)</li>
+<li>select parent element for <em>iPhone 6 White</em> product (<code>element(&#39;.title*=iPhone 6 White&#39;).element(&#39;..&#39;)</code>)</li>
+<li>click on the <em>Buy</em> button within that product&#39; container (<code>click(&#39;button*=Buy&#39;)</code>)</li>
+<li>wait until the <em>Create account</em> button is shown, signalizing we have been redirected to the next page</li>
+<li>get page&#39; URL and make an assertion to check if we have been redirected to the correct page</li>
+</ol>
+
+<p>When we have done everything we need in our test case, we call the <code>done</code> callback to notify Jasmine
+we have finished our test. This is how asynchronous tests are made in Jasmine - you define the test
+with <code>it(...)</code>, providing it with a callback. And when you finish all the asynchronous things in your
+test, you just call that callback so Jasmine could switch to the next test.</p>
+
+<p>What&#39;s interesting, Jasmine runs test in the order they are defined. So you may assume that everything
+you did in previous test cases defines your current state. For example, after our test case, namely
+<em>&#39;when user selects iPhone he gets redirected to the billing-details page&#39;</em>, we stay on the page
+we finished shortly.</p>
+
+<p>Given that, we will not add additional checks or <code>waitForExist()</code>s to get to the next steps.</p>
+
+<h2>Dealing with forms</h2>
+
+<p>The next step is filling out billing details:</p>
+<span class="nx">describe</span><span class="p">(</span><span class="dl">'</span><span class="s1">when user provides his billing details</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="nx">it</span><span class="p">(</span><span class="dl">'</span><span class="s1">he gets redirected to the order-summary page</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">billing</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="na">firstName</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Test</span><span class="dl">'</span><span class="p">,</span>
+            <span class="na">lastName</span><span class="p">:</span> <span class="dl">'</span><span class="s1">User</span><span class="dl">'</span><span class="p">,</span>
+            <span class="na">country</span><span class="p">:</span> <span class="dl">'</span><span class="s1">United Kingdom</span><span class="dl">'</span><span class="p">,</span>
+            <span class="na">city</span><span class="p">:</span> <span class="dl">'</span><span class="s1">London</span><span class="dl">'</span><span class="p">,</span>
+            <span class="na">address</span><span class="p">:</span> <span class="dl">'</span><span class="s1">221B, Baker Street</span><span class="dl">'</span><span class="p">,</span>
+            <span class="na">zipCode</span><span class="p">:</span> <span class="dl">'</span><span class="s1">12345</span><span class="dl">'</span><span class="p">,</span>
+            <span class="na">phone</span><span class="p">:</span> <span class="dl">'</span><span class="s1">9998882245</span><span class="dl">'</span>
+        <span class="p">};</span>
+
+        <span class="k">this</span><span class="p">.</span><span class="nx">client</span>
+            <span class="p">.</span><span class="nx">setValue</span><span class="p">(</span><span class="dl">'</span><span class="s1">[name="firstName"]</span><span class="dl">'</span><span class="p">,</span> <span class="nx">billing</span><span class="p">.</span><span class="nx">firstName</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">setValue</span><span class="p">(</span><span class="dl">'</span><span class="s1">[name="lastName"]</span><span class="dl">'</span><span class="p">,</span> <span class="nx">billing</span><span class="p">.</span><span class="nx">lastName</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">setValue</span><span class="p">(</span><span class="dl">'</span><span class="s1">[name="address"]</span><span class="dl">'</span><span class="p">,</span> <span class="nx">billing</span><span class="p">.</span><span class="nx">address</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">setValue</span><span class="p">(</span><span class="dl">'</span><span class="s1">[name="country"]</span><span class="dl">'</span><span class="p">,</span> <span class="nx">billing</span><span class="p">.</span><span class="nx">country</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">setValue</span><span class="p">(</span><span class="dl">'</span><span class="s1">[name="city"]</span><span class="dl">'</span><span class="p">,</span> <span class="nx">billing</span><span class="p">.</span><span class="nx">city</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">setValue</span><span class="p">(</span><span class="dl">'</span><span class="s1">[name="zipCode"]</span><span class="dl">'</span><span class="p">,</span> <span class="nx">billing</span><span class="p">.</span><span class="nx">zipCode</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">setValue</span><span class="p">(</span><span class="dl">'</span><span class="s1">[name="phone"]</span><span class="dl">'</span><span class="p">,</span> <span class="nx">billing</span><span class="p">.</span><span class="nx">phone</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">click</span><span class="p">(</span><span class="dl">'</span><span class="s1">button*=Check out</span><span class="dl">'</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">waitForExist</span><span class="p">(</span><span class="dl">'</span><span class="s1">h2*=Order summary</span><span class="dl">'</span><span class="p">,</span> <span class="nx">settings</span><span class="p">.</span><span class="nx">timeout</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">url</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">url</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">expect</span><span class="p">(</span><span class="nx">url</span><span class="p">.</span><span class="nx">value</span><span class="p">).</span><span class="nx">toMatch</span><span class="p">(</span><span class="sr">/</span><span class="se">\/</span><span class="sr">#</span><span class="se">\/</span><span class="sr">order-summary$/</span><span class="p">);</span>
+            <span class="p">})</span>
+            <span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">done</span><span class="p">);</span>
+    <span class="p">});</span>
+<span class="p">});</span>
+
+<p>The new thing here is how we fill out input fields with <em>webdriverio</em> - using the <code>setValue()</code> method.</p>
+
+<h2>Advanced element lookup</h2>
+
+<p>The last page we need to check is <code>order-summary</code>. Here we want to check if the order total
+is exactly the same, as our iPhone&#39; price. But this is where things got tricky: we have two
+different rows with the same value. How do we check if we are looking at the correct one?</p>
+
+<p>We will use <em>XPath</em> to get to the correct element:</p>
+<span class="nx">describe</span><span class="p">(</span><span class="dl">'</span><span class="s1">order summary page</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="nx">it</span><span class="p">(</span><span class="dl">'</span><span class="s1">contains correct order total</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">client</span>
+            <span class="p">.</span><span class="nx">isVisible</span><span class="p">(</span><span class="dl">'</span><span class="s1">//div[contains(@class, "row") and contains(., "iPhone 6 White") and contains(., "$450.00") and ancestor-or-self::div[@ng-repeat]]</span><span class="dl">'</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">visibility</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">expect</span><span class="p">(</span><span class="nx">visibility</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+            <span class="p">})</span>
+            <span class="p">.</span><span class="nx">isVisible</span><span class="p">(</span><span class="dl">'</span><span class="s1">//div[contains(@class, "row") and descendant::div[contains(., "Total:")] and contains(., "$300.00") and not(contains(@class, "ng-scope"))]</span><span class="dl">'</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">visibility</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">expect</span><span class="p">(</span><span class="nx">visibility</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+            <span class="p">})</span>
+            <span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">done</span><span class="p">);</span>
+    <span class="p">});</span>
+<span class="p">});</span>
+
+<p>Seems complicated, doesn&#39;t it?.. But it&#39;s not that hard. We used XPath instead of usual selectors
+to find the element needed. And here&#39;s how one could read it:</p>
+
+<p>say, we have this XPath: <code>//div[contains(@class, &quot;row&quot;) and contains(., &quot;iPhone 6 White&quot;) and contains(., &quot;$450.00&quot;) and ancestor-or-self::div[@ng-repeat]]</code>.</p>
+
+<p>This could be split into three parts:</p>
+
+<ol>
+<li>path to the element, <code>//</code> - it tells browser&#39;s engine to look for this element everywhere,
+independently on its parent</li>
+<li>element tag, <code>div</code>; it could be <em>&quot;any&quot;</em> selector, <code>*</code>, but we precised our search</li>
+<li>element attributes&#39; matchers, or everything in square brackets</li>
+</ol>
+
+<p>Let&#39;s take a closer look on those - they are really interesting ones:</p>
+
+<ol>
+<li>first we have <code>contains(@class, &quot;row&quot;)</code>; it tells engine to look for an element, whose <code>class</code>
+attribute contains <em>(or &quot;partially matches&quot; if you wish)</em> <code>row</code> string</li>
+<li>now we have <code>contains(., &quot;iPhone 6 White&quot;)</code>; it looks for text content inside tag; including its
+children</li>
+<li>speaking of children, we&#39;ve also got a parent matcher, <code>ancestor-or-self::div[@ng-repeat]</code>, which
+looks for <code>&lt;div&gt;</code> element with <code>ng-repeat</code> attribute in the current element or any of its parents</li>
+<li>you may noticed a concatenation of all those matchers with <code>and</code> keyword</li>
+</ol>
+
+<h2>Wrapping up</h2>
+
+<p>So that was a really short example on how to use Jasmine, webdriverio and how to create end-to-end tests.
+As promised, I will cover the BDD testing and Cucumber in some of my future posts.</p>
+
+<h2>References</h2>
+
+<p>Try reading more on XPath on <a href="http://www.w3schools.com/xsl/xpath_intro.asp">w3schools</a>.</p>
+
+<p>Webdriverio API you may find <a href="http://webdriver.io/api.html">on its docs page</a>.</p>
+
+<p>Webshop application, used in this article is <a href="https://github.com/shybovycha/e2e-webshop">available on GitHub</a>.</p>

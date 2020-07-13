@@ -1,0 +1,300 @@
+<meta name="layout" content="post">
+<meta name="title" content="Two sides of web application. Part 1: the tools">
+<meta name="date" content="2015-09-20T20:18:39+01:00">
+<div class="row">
+    <div class="col-md-6 col-xs-12">
+        Liquid error: internal
+    </div>
+
+    <div class="col-md-6 col-xs-12 text-xs-center text-md-right">
+        <img data-src="/images/two-sides-of-web-application/chocolate_tools.jpg" class="img-responsive" style="max-height: 150px" />
+    </div>
+</div>
+
+<h2>Prologue</h2>
+
+<p>How do we usually create a web application? We run a bootstrapping script, which provides us with a skeleton of our application and then we just extend it with the features we need.</p>
+
+<p>That&#39;s exactly what we did at the last hackathon we were attending - we started with <code>rails new twf</code> and spent half of the day integrating our blank app with Angular, Paperclip, creating API methods and so on. But the effort we needed to accomplish our goal (quite a simple web app) was really huge.</p>
+
+<p>So I decided to find the best combination of backend and frontend technologies that would cause less pain.</p>
+
+<p>At the project I was recently introduced to, the line between frontend and backend is distinguished very clearly: we have an API, written in Clojure and thin frontend application, made with Angular that works on a generated set of static assets - HTMLs, CSS and JS files <em>(but under the hood we are using HAML and SCSS)</em>.</p>
+
+<p>The application I will be implementing throughout the whole article has the same architecture: it has RESTful API and MVVM on the frontend, made with Angular. I welcome you to the journey of research and new technologies!</p>
+
+<!--more-->
+
+<h2>Why not go with Rails?</h2>
+
+<p>Because Rails is often overused. Especially if you install all of frontend libraries
+<em>(like Angular, Bootstrap, some Angular plugins, etc.)</em> as RubyGems. Frontend should stay
+on the front end of the application; you should not lock your application at some precise
+version of the JS script, provided by a gem and rely on author&#39;s way to integrate it with
+Rails.</p>
+
+<p>In our case, Rails is too heavy - when all you need is database + routing + a couple of
+lightweight controllers, all Rails&#39; features will become a ballast to our app, which
+must be small, by design.</p>
+
+<h2>The goal</h2>
+
+<p>Before we start, let&#39;s think of what we&#39;ll be creating. Will it be a web shop? Or a blog?
+No, we need something outstanding! Something we&#39;ve done never before...</p>
+
+<p>After an hour of imaging what it may be, I decided to go with web analytics tool. A prototype,
+which will be able to tell how many visitors your web application gained recently.</p>
+
+<p>It shouldn&#39;t be too complicated, because, you know, it&#39;s just a tutorial... So we&#39;ll be
+tracking users&#39; location and browser only. And we&#39;ll be displaying those analytics as a chart
+<em>(values like total visitors, browser usage)</em> and in a table <em>(the same info as the chart)</em>.</p>
+
+<h2>Architecture preview</h2>
+
+<p>We will be developing our application with two layers (or two sides) - front-end and back-end:</p>
+
+<div class="text-center">
+    <img data-src="/images/two-sides-of-web-application/general_architecture.png" class="img-responsive" />
+</div>
+
+<p>The front-end part is the one the user sees and uses - the web page, mobile or desktop application. The back-end part is the one, which does all the magic - prepares data for the front-end side to display, performs data operations as a reaction on user&#39;s actions, etc. Thus we could easily replace either the back-end part or the front-end one or even both and replace them with all brand-new implementation. This architecture allows us to do that really easily.</p>
+
+<h2>Build with the right tools!</h2>
+
+<p>Now, since we separated our frontend part of application from the backend part, we may use different preprocessing
+languages to write stylesheets and views. And even controllers! So let&#39;s take the most from 2015 and use the newest
+tool set: <em>Jade</em>, <em>ES6+</em> and <em>SCSS</em>. And put them all together with <em>Bower</em> and <em>Gulp</em>.</p>
+
+<p>All those Jade, SCSS and ES6 are not supported by a browser out-of-the box. They must be compiled to HTML, CSS and JS in order to be recognized by the browser. But they are here to help you writing code quickly. I listed some of their key features below.</p>
+
+<h3>Jade</h3>
+
+<p>Jade is a template rendering engine with its own markup language. It is somewhat similar to Haml and Slim - it
+nests XHTML nodes with indentation, closes tags automatically... But it is especially good at writing complex web
+pages, consisting of <em>layouts</em> and <em>partials</em>.</p>
+
+<p><em>Layouts</em> are big templates, containing placeholders, where
+concrete partials will be placed. So, for example, you may create a separate layout for your webshop&#39; landing
+page, account page and shopping cart. They will be different. And all of them will use different sets of partials.
+But, for example, a footer and a quick shopping cart preview or user account widget (the one with a link to user&#39;s
+account page) will be the same. To prevent duplicating those widgets&#39; code on each of the layouts, we extract them
+to separate files, called <em>partials</em> and then just make a reference (a placeholder) in our layouts, saying
+<em>&quot;place that partial&#39;s content here&quot;</em>.</p>
+
+<p>In case of Jade, we may override or extend existing partials in a layout, without touching partial&#39;s file itself.
+So, for example, if we want to make user&#39;s avatar to be shown in a user account widget only on a product page, we just override user widget partial on a product page, removing the part with the avatar.</p>
+
+<h3>SCSS</h3>
+
+<p>SCSS is a way to simplify writing CSS. It is so simple, yet so powerful, that you will fall in love with it
+after the first few stylesheets! See, in CSS when you write a long selector, specifying many parents, you may
+find your stylesheets ugly and huge, when describing different children of one, deeply nested parent.</p>
+
+<p>So, let&#39;s say you are having a user widget. And it may be placed both on page&#39;s header, footer and sidebar. But
+the avatar image will look differently on each of those - it must be smaller in header and footer. So you
+start writing selectors like <code>.sidebar .user-widget .avatar img</code> and <code>.header .user-widget .avatar img</code>.
+That&#39;s painful, but not that much, if you have just a couple of those. However, as your website grows, you
+start getting really, really upset about that.</p>
+
+<p>And here&#39;s where SCSS is just a revelation: its great power is in its <em>selectors</em>, <em>variables</em> and <em>mixins</em>.</p>
+
+<p><em>Selectors</em> allow you to describe selector&#39; nesting just as you&#39;d be writing C code:</p>
+<span class="nc">.header</span> <span class="p">{</span>
+    <span class="c1">// header styles</span>
+
+    <span class="nc">.user-widget</span> <span class="p">{</span>
+        <span class="c1">// header user-widget styles</span>
+
+        <span class="nc">.avatar</span> <span class="p">{</span>
+            <span class="c1">// maybe something differs in avatar itself?</span>
+
+            <span class="nt">img</span> <span class="p">{</span>
+                <span class="c1">// ah! here's it!</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<p><em>Variables</em> allow you to get rid of all those magic values. So if you use one color many times across your styles,
+you just extract it into a named constant and use the pretty named value everywhere!</p>
+
+<p><em>Mixins</em> allow even more: you may extract the parts of the styles into a named and even <strong>parametrized</strong> function!</p>
+
+<p>Relating on all of those, you may re-write your user widget as follows:</p>
+<span class="nv">$header-avatar-size</span><span class="p">:</span> <span class="m">50px</span><span class="p">;</span>
+<span class="nv">$sidebar-avatar-size</span><span class="p">:</span> <span class="m">150px</span><span class="p">;</span>
+
+<span class="k">@mixin</span> <span class="nf">avatar</span><span class="p">(</span><span class="nv">$avatar_size</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nl">max-width</span><span class="p">:</span> <span class="nv">$avatar_size</span><span class="p">;</span>
+    <span class="nl">max-height</span><span class="p">:</span> <span class="nv">$avatar_size</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nc">.header</span> <span class="p">{</span>
+    <span class="nc">.user-widget</span> <span class="nc">.avatar</span> <span class="p">{</span>
+        <span class="k">@include</span> <span class="nd">avatar</span><span class="p">(</span><span class="nv">$header-avatar-size</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nc">.sidebar</span> <span class="p">{</span>
+    <span class="nc">.user-widget</span> <span class="nc">.avatar</span> <span class="p">{</span>
+        <span class="k">@include</span> <span class="nd">avatar</span><span class="p">(</span><span class="nv">$sidebar-avatar-size</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<h3>Gulp</h3>
+
+<p>I found Gulp to be super-easy for tasks like compiling stylesheets, views and javascripts. But before
+we continue with Gulp, let&#39;s initialize an NPM project with <code>npm init</code> and install the plugins required:</p>
+npm <span class="nb">install</span> <span class="nt">-g</span> gulp
+
+<p>And Gulp plugins:</p>
+npm <span class="nb">install</span> <span class="nt">--save-dev</span> gulp gulp-babel gulp-scss gulp-jade
+
+<p>I will describe how Gulp works and how we can use it in our project in a minute. For now, let&#39;s
+just install the frontend dependencies.</p>
+
+<h3>Bower</h3>
+
+<p>Let&#39;s fix our frontend on specific versions of frontend libraries, so when we update the whole project, nothing gets broken. To make our development quick, we’ll use <em>Twitter Bootstrap</em>. All the frontend dependencies will be managed by a tool called <em>Bower</em>.</p>
+
+<p>Bower is a tool like <code>npm</code>, but used strictly with frontend libraries like <em>jQuery</em>, <em>Angular</em>, <em>Twitter Bootstrap</em> and many others. It&#39;s important to keep frontend libraries separate from the backend ones, so we can keep our backend application completely separate from frontend one.</p>
+
+<p>Bower comes with a command-line tool, <code>bower</code>, which we&#39;ll use to fill out the <code>bower.json</code> file. It is used by Bower to specify which libraries does our application require:</p>
+npm <span class="nb">install</span> <span class="nt">-g</span> bower
+bower init
+bower <span class="nb">install</span> <span class="nt">--save</span> bootstrap angular
+
+<p>These commands create a directory <code>bower_components</code>, containing all the dependencies installed, each in its own sub-directory. With that in mind, we&#39;ll be referencing our frontend dependencies, relatively to their catalogs within the <code>bower_components</code> directory.</p>
+
+<p>Now let&#39;s write a build task for Gulp. Gulp is a streamed build tool. That means, that each operation you perform, passes its result to another operation as the input argument. So, for example, if you run <code>gulp.src(&#39;src/styles/*.scss&#39;)</code>, it&#39;ll return you an object with the list of all the SCSS files and the magic <code>pipe()</code> method. And when you call the <code>gulp.src(...).pipe(scss())</code>, Gulp will pass that list to the SCSS compiler plugin, so you will get a compiled CSS code. That is, not a CSS file itself, but a compressed, merged, CSS file&#39; content.</p>
+
+<p>And that describes the second important feature of Gulp: it does not store the intermediate operation results. It is almost like a functional programming - you just have the input data. Then you call a chain of functions on it,
+passing the result of one function call to the next function as its input. Same happens here, but in
+a manner not that strict - since we are using Javascript, we can store the intermediate results in the memory. But to store
+the results in the files, we should pass them to the <code>gulp.dest(...)</code> function. Depending on the function, looking
+to store its results, <code>gulp.dest()</code> may point to a directory or a single file, where the results will be stored.</p>
+
+<p>Below is our first Gulp task. Write this code in the <code>gulpfile.js</code>:</p>
+<span class="kd">var</span> <span class="nx">gulp</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">gulp</span><span class="dl">'</span><span class="p">),</span>
+    <span class="nx">sass</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">gulp-scss</span><span class="dl">'</span><span class="p">),</span>
+    <span class="nx">babel</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">gulp-babel</span><span class="dl">'</span><span class="p">),</span>
+    <span class="nx">jade</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">gulp-jade</span><span class="dl">'</span><span class="p">);</span>
+
+<span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="dl">'</span><span class="s1">build</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">(</span><span class="dl">'</span><span class="s1">src/views/**/*.jade</span><span class="dl">'</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">jade</span><span class="p">())</span>
+        <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="dl">'</span><span class="s1">public/</span><span class="dl">'</span><span class="p">));</span>
+
+    <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">(</span><span class="dl">'</span><span class="s1">src/javascripts/**/*.js</span><span class="dl">'</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">babel</span><span class="p">())</span>
+        <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="dl">'</span><span class="s1">public/javascripts</span><span class="dl">'</span><span class="p">));</span>
+
+    <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">(</span><span class="dl">'</span><span class="s1">src/stylesheets/**/*.scss</span><span class="dl">'</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">sass</span><span class="p">({</span> <span class="na">style</span><span class="p">:</span> <span class="dl">'</span><span class="s1">expanded</span><span class="dl">'</span> <span class="p">}))</span>
+        <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="dl">'</span><span class="s1">public/stylesheets</span><span class="dl">'</span><span class="p">));</span>
+<span class="p">});</span>
+
+<p>This tells Gulp to define <code>build</code> task, which compiles all the Jade, SCSS and ES6+ files into HTML, CSS
+and JS files, correspondingly. Compiled files are placed within the <code>public/</code> directory, so we may
+easily render them with almost any web-server. But first things first, we need to prepare directory structure
+like this for our task:</p>
+<span class="nb">.</span>
+|____bower.json
+|____gulpfile.js
+|____package.json
+|____public
+|____src
+| |____javascripts
+| |____stylesheets
+| |____views
+
+<p>This may seem odd to the paragraph, dedicated to build tools, but let&#39;s check how our tasks work.
+To do this, we need to write some test files to check our <code>build</code> task. So let&#39;s create one of each kind:</p>
+
+<p><em><code>src/views/index.jade</code>:</em></p>
+html(lang="en")
+head
+    meta(charset="UTF-8")
+    title OurStats
+    link(rel="stylesheet" href="/stylesheets/main.css")
+    script(type="text/javascript" src="/javascripts/main.js")
+body
+    h1 Hello, world!
+
+<p><em><code>src/stylesheets/main.scss</code>:</em></p>
+<span class="nt">h1</span> <span class="p">{</span>
+    <span class="nl">padding</span><span class="p">:</span> <span class="m">0</span> <span class="m">10px</span><span class="p">;</span>
+    <span class="nl">border-bottom</span><span class="p">:</span> <span class="m">1px</span> <span class="nb">solid</span> <span class="mh">#dedede</span><span class="p">;</span>
+<span class="p">}</span>
+
+<p><em><code>src/javascripts/main.js</code>:</em></p>
+<span class="kd">function</span> <span class="nx">timeout</span><span class="p">(</span><span class="nx">ms</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="k">new</span> <span class="nb">Promise</span><span class="p">((</span><span class="nx">res</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">setTimeout</span><span class="p">(</span><span class="nx">res</span><span class="p">,</span> <span class="nx">ms</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="k">async</span> <span class="kd">function</span> <span class="nx">f</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+  <span class="k">await</span> <span class="nx">timeout</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+  <span class="k">await</span> <span class="nx">timeout</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="nx">f</span><span class="p">()</span>
+
+<p><a href="https://github.com/shybovycha/two-sides-of-web-application/tree/10f770a5ca64fad1cb6e58bc957e5210bc95bda3" class="btn btn-info">Full code of these steps</a></p>
+
+<p>And to actually check our task, we need to run it with</p>
+gulp build
+
+<p>Now, you may open the HTML generated from Jade in a browser, but it&#39;ll look ugly, because your
+browser will doubtfully find stylesheets and javascripts that easily. To make the magic happen, we
+will use another Gulp plugin, <code>gulp-server-livereload</code>. Generally, the development process with
+different build tools looks very similar nowadays: you set up the environment, find the plugins
+you need, install and configure them - and violà!</p>
+
+<p>I&#39;ve chosen that server plugin because it comes with one handy feature: it automatically reloads
+the opened pages in your web-browser if any of the files you are browsing has changed. Here&#39;s
+the code of our serving task:</p>
+<span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="dl">'</span><span class="s1">serve</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">(</span><span class="dl">'</span><span class="s1">public/</span><span class="dl">'</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">server</span><span class="p">({</span>
+            <span class="na">livereload</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+            <span class="na">directoryListing</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+            <span class="na">open</span><span class="p">:</span> <span class="kc">true</span>
+        <span class="p">}));</span>
+<span class="p">});</span>
+
+<p>But if you remember, we are compiling our sources from SCSS/Jade into the <code>public/</code> directory.
+So how the server would know if anything changed in our <code>*.scss</code> or <code>*.jade</code> files? We need to
+reload the page in web-browser if anything changes in those files. To do that, we&#39;ll write one
+more task, which will re-build our source files if anything changes:</p>
+<span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="dl">'</span><span class="s1">watch</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="dl">'</span><span class="s1">src/**/*</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span> <span class="dl">'</span><span class="s1">build</span><span class="dl">'</span> <span class="p">])</span>
+<span class="p">});</span>
+
+<p>Here we used two new features of Gulp: <em>watching for file changes</em> and <em>running existing tasks from another task</em>.
+Simple? Yeah, <strong>that</strong> simple! So we just tell Gulp: <em>keep an eye on those files - if anything happens - run
+those tasks immediately!</em> - and the magic happens.</p>
+
+<p>But why should we run two tasks? Let&#39;s merge them into one so we just run <code>gulp serve</code> and get both live reload
+and live re-compilation:</p>
+<span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="dl">'</span><span class="s1">serve</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="dl">'</span><span class="s1">src/**/*</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span> <span class="dl">'</span><span class="s1">build</span><span class="dl">'</span> <span class="p">])</span>
+
+    <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">(</span><span class="dl">'</span><span class="s1">public/</span><span class="dl">'</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">server</span><span class="p">({</span>
+            <span class="na">port</span><span class="p">:</span> <span class="mi">3000</span><span class="p">,</span>
+            <span class="na">livereload</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+            <span class="na">directoryListing</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+            <span class="na">open</span><span class="p">:</span> <span class="kc">true</span>
+        <span class="p">}));</span>
+<span class="p">});</span>
+
+<p>This task first defines a watcher for our sources and then starts server, which will react to any changes
+in the <code>public/</code> directory. To check how this awesomeness works, start <code>gulp serve</code>, open the
+<a href="localhost:3000/test.html"><code>localhost:3000/test.html</code></a> page and then change, for example,
+color for the <code>h1</code> tag to green. Save the SCSS file and just switch to the browser window, <strong>don&#39;t reload
+it manually</strong>.</p>
+
+<p><a href="https://github.com/shybovycha/two-sides-of-web-application/tree/07f6cda21da377719861f41f89064a414e808268" class="btn btn-info">Full code of these steps</a></p>

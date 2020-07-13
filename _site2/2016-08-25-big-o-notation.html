@@ -1,0 +1,130 @@
+<meta name="layout" content="post">
+<meta name="title" content="Big O notation">
+<meta name="categories" content="">
+<meta name="tags" content="">
+<meta name="date" content="2016-08-25T13:00:00">
+<p>The best big O notation explanation I&#39;ve ever saw I&#39;ve found on... Google Play Market! I was
+hanging around, looking for the suggested software and, for some reason, I&#39;ve decided to
+install some educational application for programmers. And here&#39;s what I&#39;ve found...</p>
+
+<!--more-->
+
+<p>Big O notation shows, how many steps or memory units will the algorithm use to complete,
+at its maximum. Here&#39;s an example:</p>
+<span class="kt">void</span> <span class="nf">someAlgorithm</span><span class="o">(</span><span class="kt">int</span> <span class="n">n</span><span class="o">)</span> <span class="o">{</span>
+  <span class="c1">// part 1</span>
+  <span class="n">doSomething</span><span class="o">();</span>
+
+  <span class="c1">// part 2</span>
+  <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+    <span class="n">doSomething</span><span class="o">();</span>
+  <span class="o">}</span>
+
+  <span class="c1">// part 3</span>
+  <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+    <span class="n">doSomething</span><span class="o">();</span>
+  <span class="o">}</span>
+
+  <span class="c1">// part 4</span>
+  <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+    <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">t</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="n">n</span><span class="o">;</span> <span class="n">t</span><span class="o">++)</span> <span class="o">{</span>
+      <span class="n">doSomething</span><span class="o">();</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+
+  <span class="k">return</span> <span class="n">n</span><span class="o">;</span>
+<span class="o">}</span>
+
+<p>Let&#39;s take a look at each of four algorithm parts. Part 1 just calls some function, <code>doSomething()</code>.
+Let&#39;s assume it takes some constant amount of time to complete, <code>C</code>. The time complexity of calling
+a function, which uses constant time to complete is <code>O(1)</code>. So part 1 will take <code>O(1)</code> time to complete.</p>
+
+<p>Part 2 has a loop, which has exactly 10 iterations, calling <code>doSomething()</code> at each iteration. As we&#39;ve
+discussed above, this part takes <code>10 * C</code> (ten calls of <code>doSomething()</code> function, which takes <code>C</code> steps to
+complete) steps. This is a constant value too, so part 2 of the function <code>myAlgorithm()</code> will have the
+complexity of <code>O(1)</code>.</p>
+
+<p>Part 3 has a loop, whose number of iterations relies on the input parameter of <code>myAlgorithm()</code>, namely <code>n</code>.
+We do not know, what value the <code>n</code> will take. But as it increases, the steps, needed for this part to complete
+increases too. So the complexity of this part will be <code>O(n)</code>.</p>
+
+<p>Part 4 has two nested loops. As in the previous case, when <code>n</code> increases, the steps needed by this part to
+complete will increase even faster: for <code>n = 1</code> it will take exactly <code>C</code> steps to complete (recall:
+the complexity of <code>doSomething()</code> is <code>C</code>); for <code>n = 2</code> it will take <code>2 * 2 * C = 4 * C</code> steps to complete;
+for <code>n = 10</code> the amount of steps would be <code>10 * 10 * C = 100 * C</code>. One can notice that the complexity
+equals to <code>n * n * C</code>. This is quadratical complexity, denoted as <code>O(n^2)</code>.</p>
+
+<p>The final complexity of an algorithm could be calculated by easily adding all those parts&#39; complexities:
+<code>O(1) + O(1) + O(n) + O(n^2)</code>. But here&#39;s the trick: if the <code>n</code> is relatively small (like, <code>10</code> or <code>100</code>),
+the difference between <code>O(1)</code> and <code>O(n)</code> is huge (noticeable, at least). But if we say the value of <code>n</code>
+is insanely large (like, billiards), we may not notice the <code>O(1)</code> is just nothing, compared to <code>O(n)</code>. And
+<code>O(n)</code> is just nothing, when compared to <code>O(n^2)</code>. And here comes the rule: total complexity of an algorithm is
+the maximum needed amount of steps to complete. Just as follows:</p>
+
+<ul>
+<li><code>O(C) = O(1)</code></li>
+<li><code>O(1) + O(n) = O(n)</code></li>
+<li><code>O(n) + O(n^2) = O(n^2)</code></li>
+</ul>
+
+<p>Here comes the comparison of the known complexities: <code>O(1) &lt; O(log n) &lt; O(n) &lt; O(n*log n) &lt; O(n^m)</code>.</p>
+
+<p>But we can measure not time consumption only, using the big O notation. It is also handy for memory
+complexity measurements.</p>
+
+<p>Here the same rules apply, except of <u>&quot;steps to complete&quot;</u> we use
+<u>&quot;memory cells allocated&quot;</u>. So we will count the amount of allocated memory. This is mostly used
+by lists, not by objects and structures (as they always use the same memory amount). Check this out:</p>
+<span class="k">struct</span> <span class="n">Moo</span> <span class="p">{</span>
+  <span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">;</span>
+  <span class="kt">float</span> <span class="n">d</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">Foo</span> <span class="p">{</span>
+<span class="nl">public:</span>
+  <span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">;</span>
+  <span class="kt">float</span> <span class="o">*</span><span class="n">d</span><span class="p">;</span>
+<span class="p">};</span>
+
+<p>Both <code>Moo</code> and <code>Foo</code> will use the same amount of memory initially (since pointers in C++ are just
+integer memory addresses&#39; values and floats use same 4 bytes - just as integers do). But depending on
+how many memory we will allocate for <code>Foo.d</code> we will get the different values. Consider the continuation
+of this example below:</p>
+<span class="kt">int</span> <span class="nf">myAlgorithm</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// part 1</span>
+  <span class="n">Foo</span> <span class="o">*</span><span class="n">foo</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Foo</span><span class="p">();</span>
+
+  <span class="c1">// part 2</span>
+  <span class="n">foo</span><span class="o">-&gt;</span><span class="n">d</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">float</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span>
+
+  <span class="c1">// part 3</span>
+  <span class="kt">int</span> <span class="o">*</span><span class="n">a</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="p">[</span><span class="n">n</span><span class="p">];</span>
+
+  <span class="c1">// part 4</span>
+  <span class="kt">int</span> <span class="o">**</span><span class="n">b</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">*</span><span class="p">[</span><span class="n">n</span><span class="p">];</span>
+
+  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="p">[</span><span class="mi">15</span><span class="p">];</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<p>Here, in part 1, we have just an instance of <code>Foo</code> class, which uses
+<code>3 * int + float* = 3 * 1 + 1 = 4</code> memory cells. As in case with time complexity, this amount is constant,
+thus it has <code>O(1)</code> memory consumption.</p>
+
+<p>In part 2, however, we extend this amount by placing 10 memory cells into
+<code>foo.d</code> field, but this does not change much, as <code>foo</code> will use constant memory cells anyway. So, part 2 has
+memory complexity of <code>O(1)</code> too.</p>
+
+<p>In part 3 we create a new array, and its size depends on function&#39;s argument <code>n</code>, so its memory consumption
+is <code>O(n)</code>.</p>
+
+<p>In part 4 we create a two-dimensional array, whose size is <code>n * 15</code>. We can split its size into two components:
+<code>O(n) * O(15) = O(n)</code>, because <code>15</code> is <code>15</code> no matter what.</p>
+
+<p>And the total memory complexity of the algorithm is <code>O(1) + O(1) + O(n) + O(n) = O(n)</code>.</p>
+
+<p>For even more simple <code>O(*)</code> calculus, replace the <code>+</code> operator with the <code>min</code> operator:
+memory complexity of <code>myAlgorithm()</code> is <code>max(O(1), O(1), O(n), O(n)) = O(n)</code>.</p>

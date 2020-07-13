@@ -1,0 +1,257 @@
+<meta name="layout" content="post">
+<meta name="title" content="One-night games: snake">
+<p><a href="https://github.com/shybovycha/moo-snake">source code</a></p>
+
+<p><img src="" alt="" data-src="/images/one-night-games/snake-screenshot.png" class="medium"></p>
+
+<p>Under the cut you can find the interesting algorithmic solutions I&#39;ve mentioned.</p>
+
+<!--more-->
+
+<h2>Snake</h2>
+
+<p><a href="https://github.com/shybovycha/moo-snake">Source code</a></p>
+
+<p>Snake is a very simple game to implement. The core is the field, which is a binary matrix of whether there is something to draw in a specific position or there is nothing. The game is tightly bound to the timer, since it is almost a turn-based game and the movement speed should increase as the snake grows. The only things which might be interesting are: snake movement <u>(in other words, how do we update the game matrix on each timer tick)</u>, snake growth <u>(or what happens when a snake collides with the food)</u> and the collision test <u>(or how to determine what the snake collided with)</u>.</p>
+
+<p>The snake movement is quite simple - try thinking of a snake as of a stack of <code>Vector2</code> objects, having just the coordinates of each body part of a snake:</p>
+<span class="kd">class</span> <span class="nx">Point</span> <span class="p">{</span>
+    <span class="kd">constructor</span><span class="p">(</span><span class="nx">x</span><span class="p">,</span> <span class="nx">y</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">x</span> <span class="o">=</span> <span class="nx">x</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">y</span> <span class="o">=</span> <span class="nx">y</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nx">equals</span><span class="p">(</span><span class="nx">other</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">((</span><span class="k">this</span><span class="p">.</span><span class="nx">x</span> <span class="o">===</span> <span class="nx">other</span><span class="p">.</span><span class="nx">x</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">y</span> <span class="o">===</span> <span class="nx">other</span><span class="p">.</span><span class="nx">y</span><span class="p">));</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">class</span> <span class="nx">Snake</span> <span class="p">{</span>
+    <span class="kd">constructor</span><span class="p">(</span><span class="nx">points</span><span class="p">,</span> <span class="nx">direction</span><span class="p">,</span> <span class="nx">maxX</span><span class="p">,</span> <span class="nx">maxY</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">points</span> <span class="o">=</span> <span class="nx">points</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">direction</span> <span class="o">=</span> <span class="nx">direction</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">maxX</span> <span class="o">=</span> <span class="nx">maxX</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">maxY</span> <span class="o">=</span> <span class="nx">maxY</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nx">advance</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">points</span><span class="p">.</span><span class="nx">shift</span><span class="p">();</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">points</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">nextPoint</span><span class="p">());</span>
+    <span class="p">}</span>
+
+    <span class="nx">nextPoint</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="p">{</span> <span class="nx">x</span><span class="p">,</span> <span class="nx">y</span> <span class="p">}</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">points</span><span class="p">.</span><span class="nx">last</span><span class="p">();</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">direction</span> <span class="o">===</span> <span class="dl">'</span><span class="s1">up</span><span class="dl">'</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">y</span><span class="o">--</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">direction</span> <span class="o">===</span> <span class="dl">'</span><span class="s1">right</span><span class="dl">'</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">x</span><span class="o">++</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">direction</span> <span class="o">===</span> <span class="dl">'</span><span class="s1">down</span><span class="dl">'</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">y</span><span class="o">++</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">direction</span> <span class="o">===</span> <span class="dl">'</span><span class="s1">left</span><span class="dl">'</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">x</span><span class="o">--</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nx">x</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">x</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">maxX</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">x</span> <span class="o">&gt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">maxX</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nx">y</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">y</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">maxY</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">y</span> <span class="o">&gt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">maxY</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">y</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="k">new</span> <span class="nx">Point</span><span class="p">(</span><span class="nx">x</span><span class="p">,</span> <span class="nx">y</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<p>On every timer tick we should &quot;advance&quot; the snake in the direction of movement by simply adding a new element to the top of a stack and remove the last one, representing snake&#39;s tail. When a player hits any of the arrow keys, we simply set the movement direction for a snake, which will be considered on a next timer tick:</p>
+<span class="kd">class</span> <span class="nx">Game</span> <span class="p">{</span>
+    <span class="kd">constructor</span><span class="p">(</span><span class="nx">rows</span><span class="p">,</span> <span class="nx">cols</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">rows</span> <span class="o">=</span> <span class="nx">rows</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">cols</span> <span class="o">=</span> <span class="nx">cols</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">score</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">snake</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">_createSnake</span><span class="p">();</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">food</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">_generateFood</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="nx">updateState</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">const</span> <span class="nx">nextSnakePoint</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">snake</span><span class="p">.</span><span class="nx">nextPoint</span><span class="p">();</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">food</span><span class="p">.</span><span class="nx">equals</span><span class="p">(</span><span class="nx">nextSnakePoint</span><span class="p">))</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">score</span><span class="o">++</span><span class="p">;</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">snake</span><span class="p">.</span><span class="nx">points</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">nextSnakePoint</span><span class="p">);</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">food</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">_generateFood</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="k">this</span><span class="p">.</span><span class="nx">snake</span><span class="p">.</span><span class="nx">advance</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<p>There is a need for one more bounds check: when a snake is about to cross the boundaries of a game field, we need to change the next point a snake is about to advance to the opposite &quot;wall&quot; <u>(if we want such a feature)</u>.</p>
+
+<p>The game ends when a snake hits one of its body parts. The check for that is really simple: we just need to check whether the next point is contained in the stack of a snake:</p>
+<span class="nx">isGameOver</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="nx">p</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">snake</span><span class="p">.</span><span class="nx">nextPoint</span><span class="p">();</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">snake</span><span class="p">.</span><span class="nx">points</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="nx">e</span> <span class="o">=&gt;</span> <span class="nx">e</span><span class="p">.</span><span class="nx">equals</span><span class="p">(</span><span class="nx">p</span><span class="p">));</span>
+<span class="p">}</span>
+
+<p>To render a field, we need to render the food and each of snake&#39;s body parts:</p>
+<span class="kd">class</span> <span class="nx">Renderer</span> <span class="p">{</span>
+    <span class="nx">_render</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">_clearCanvas</span><span class="p">();</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">game</span><span class="p">.</span><span class="nx">snake</span><span class="p">.</span><span class="nx">points</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kd">const</span> <span class="p">{</span> <span class="nx">x</span><span class="p">,</span> <span class="nx">y</span> <span class="p">}</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">game</span><span class="p">.</span><span class="nx">snake</span><span class="p">.</span><span class="nx">points</span><span class="p">[</span><span class="nx">i</span><span class="p">];</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">_drawRectangle</span><span class="p">(</span><span class="nx">x</span> <span class="o">*</span> <span class="k">this</span><span class="p">.</span><span class="nx">cellSize</span><span class="p">,</span> <span class="nx">y</span> <span class="o">*</span> <span class="k">this</span><span class="p">.</span><span class="nx">cellSize</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">cellSize</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">cellSize</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">this</span><span class="p">.</span><span class="nx">_drawRectangle</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">game</span><span class="p">.</span><span class="nx">food</span><span class="p">.</span><span class="nx">x</span> <span class="o">*</span> <span class="k">this</span><span class="p">.</span><span class="nx">cellSize</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">game</span><span class="p">.</span><span class="nx">food</span><span class="p">.</span><span class="nx">y</span> <span class="o">*</span> <span class="k">this</span><span class="p">.</span><span class="nx">cellSize</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">cellSize</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">cellSize</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<h2>Tetris</h2>
+
+<p><a href="https://github.com/shybovycha/moo-tetris">Source code</a></p>
+
+<p>The most interesting part about tetris was to implement piece rotation. I&#39;ve represented all the possible figures as a list of matrices.</p>
+<span class="kd">const</span> <span class="nx">FIGURES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span>
+    <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span>
+    <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span>
+    <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span>
+    <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span>
+    <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span>
+    <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span>
+<span class="p">];</span>
+
+<p>The problem however is that all figures are different, hence all the matrices have different dimensions - a &quot;stick&quot; is 4x1, whilst a &quot;cube&quot; is 2x2. Other pieces are 3x2. Rotation algorithm might not be simple. And it implies one limitation - pieces should preserve their position - not to move to the sides when rotating them.</p>
+
+<p>Pieces are best represented as matrices, but in order to operate on matrices we need to have the corresponding methods. I decided to just implement the class <code>Piece</code> with the essential methods:</p>
+<span class="kd">class</span> <span class="nx">Piece</span> <span class="p">{</span>
+    <span class="kd">constructor</span><span class="p">(</span><span class="nx">row</span><span class="p">,</span> <span class="nx">col</span><span class="p">,</span> <span class="nx">shape</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">piece</span> <span class="o">=</span> <span class="p">[].</span><span class="nx">slice</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">shape</span><span class="p">);</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">rows</span> <span class="o">=</span> <span class="nx">shape</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">cols</span> <span class="o">=</span> <span class="nx">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">length</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">col</span> <span class="o">=</span> <span class="nx">col</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">row</span> <span class="o">=</span> <span class="nx">row</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<p>Here <code>row</code> and <code>col</code> describe the position of a piece on a screen whilst <code>rows</code> and <code>cols</code> are the dimensions of a piece. <code>piece</code> contains the matrix data of a piece.</p>
+
+<p>The rotation algorithm I&#39;ve implemented tries to transpose piece&#39;s matrix in a very simple manner:</p>
+<span class="kd">class</span> <span class="nx">Piece</span> <span class="p">{</span>
+    <span class="nx">rotate</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">result</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Array</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">cols</span><span class="p">);</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">cols</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">result</span><span class="p">[</span><span class="nx">i</span><span class="p">])</span> <span class="p">{</span>
+                <span class="nx">result</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[];</span>
+            <span class="p">}</span>
+
+            <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">t</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">t</span> <span class="o">&lt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">rows</span><span class="p">;</span> <span class="nx">t</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">result</span><span class="p">[</span><span class="nx">i</span><span class="p">][</span><span class="nx">t</span><span class="p">]</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">figure</span><span class="p">[</span><span class="nx">t</span><span class="p">][</span><span class="k">this</span><span class="p">.</span><span class="nx">cols</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="nx">i</span><span class="p">];</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">this</span><span class="p">.</span><span class="nx">figure</span> <span class="o">=</span> <span class="nx">result</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">rows</span> <span class="o">=</span> <span class="nx">result</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">cols</span> <span class="o">=</span> <span class="nx">result</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">length</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<p>What it does is actually creating a totally new matrix, where the dimensions are swapped and the data is the opposite data to what was in the original matrix. In other words, we iterate the original matrix over its normal indices, but write the data to the new matrix in the reversed direction. So if we read the row with index <code>0</code> and column with index <code>2</code>, this means we need to write the data from the source matrix at <code>data[0][2]</code> to the destination matrix at <code>data[2][0]</code>. Sounds correct, right?</p>
+
+<p>But if we do that with the array, we will end up having the new matrix mirrored:</p>
+           given:
+
+      0   1   2   3
+    +---+---+---+---+
+ 0  | 1 | 2 | 3 | 4 |
+    +---+---+-------+
+ 1  | 5 | 6 | 7 | 8 |
+    +---+---+---+---+
+
+
+            expectation:
+
+      0   1                0    1
+    +---+---+             +---+---+
+ 0  | 4 | 8 |          0  | 5 | 1 |
+    +---+---+             +---+---+
+ 1  | 3 | 7 |          1  | 6 | 2 |
+    +---+---+    or       +---+---+
+ 2  | 2 | 6 |          2  | 7 | 3 |
+    +---+---+             +---+---+
+ 3  | 1 | 5 |          3  | 8 | 4 |
+    +---+---+             +---+---+
+
+
+
+    reality:
+
+      0   1
+    +---+---+
+ 0  | 1 | 5 |
+    +---+---+
+ 1  | 2 | 6 |
+    +---+---+
+ 2  | 3 | 7 |
+    +---+---+
+ 3  | 4 | 8 |
+    +---+---+
+
+<p>Thus we need to copy the data to the new matrix in the reverse order along one axis.</p>
+
+<p>In order to allow for a two-way rotation I&#39;ve introduced a numeric argument to the <code>Piece#rotate</code> method, defining which way <u>(clockwise or counter-clockwise)</u> the piece will be rotated:</p>
+<span class="nx">rotate</span><span class="p">(</span><span class="nx">direction</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">t</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">t</span> <span class="o">&lt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">rows</span><span class="p">;</span> <span class="nx">t</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">result</span><span class="p">[</span><span class="nx">i</span><span class="p">][</span><span class="nx">t</span><span class="p">]</span> <span class="o">=</span> <span class="nx">direction</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">?</span> <span class="k">this</span><span class="p">.</span><span class="nx">figure</span><span class="p">[</span><span class="nx">t</span><span class="p">][</span><span class="k">this</span><span class="p">.</span><span class="nx">cols</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="nx">i</span><span class="p">]</span> <span class="p">:</span> <span class="k">this</span><span class="p">.</span><span class="nx">figure</span><span class="p">[</span><span class="k">this</span><span class="p">.</span><span class="nx">rows</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="nx">t</span><span class="p">][</span><span class="nx">i</span><span class="p">];</span>
+    <span class="p">}</span>
+
+    <span class="c1">// ...</span>
+<span class="p">}</span>
+
+<p>The other interesting algorithm is collision detection. This is slightly more complex than just checking boundariesof a figure. Since we can not think of a regular (circle, rectangle, line) shape for the field formed by the previous pieces, we will need to check each cell of a field against each cell of a currently falling piece. But if we decide to do that - we should either do this before rendering the falling piece (to check whether we are allowed to render it) and then, in the case of collision we will be made to &quot;cancel&quot; the piece&#39;s move down one cell. Alternatively, we could check each cell of a field agains the data of a falling piece, but with a one row shift down:</p>
+what we draw:
+
++-------+
+|   xx  |
+|    x  |
+|    x  |
+|   *   |
+| ****  |
+| ***** |
++-------+
+
+what we check:
+
++-------+
+|       |
+|   ..  |
+|    .  |
+|   *.  |
+| ****  |
+| ***** |
++-------+
+
+same example,
+but with the
+collision occuring:
+
++-------+
+|       |
+|       |
+|   ..  |
+|   *.  |
+| ***!  |
+| ***** |
++-------+
+
+<p>The check is trivial: if both field cell at the checked position and any of the piece data at the piece position plus one row shift down are non-zero - then we have detected a collision and we should not move the piece down, but just render it and generate the next piece.</p>

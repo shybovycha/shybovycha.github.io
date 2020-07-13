@@ -1,0 +1,327 @@
+<meta name="layout" content="post">
+<meta name="title" content="ReactJS introduction">
+<meta name="date" content="2015-07-12T00:20:05+02:00">
+<meta name="tags" content="rtfm,tutorial,react,angular,riot">
+<meta name="tumblr_url" content="https://shybovycha.tumblr.com/post/123838775416/reactjs-introduction">
+<h2>Foreword</h2>
+
+<p>Last time I wrote an article on how one can encapsulate both HTML and CSS in one entity, called WebComponent. This time I want to tell a bit about how to encapsulate JavaScript and HTML.</p>
+
+<p>When I see an article on <a href="http://habrahabr.ru">Habrahabr</a> titled <em>React something</em>, I think <u>Omg, React again?..</u>. But React, just as Ember was always a mystery for me.</p>
+
+<p>Until today.</p>
+
+<!--more-->
+
+<p>I&#39;ve read an awesome article, <a href="http://reactfordesigners.com/labs/reactjs-introduction-for-people-who-know-just-enough-jquery-to-get-by/?utm_source=javascriptweekly&amp;utm_medium=email"><em>React.js Introduction For People Who Know Just Enough jQuery To Get By</em></a>.</p>
+
+<p>And now I really see the power of React. Though, I am still planning to play with Angular 2.0 and still remain a fan of Angular, I can tell you for sure, React may help you to raise your level if you are still writing your web-sites with jQuery.</p>
+
+<p>React is a way to make your project consist of a components. So, for example, you have a complex webpage.
+You may then have a layout, styled in a way to support different themes. Then you may split all its partials into components, so you do not need your layout to hardly rely on its partials.</p>
+
+<p>Although building components with react may seem polluting your code with HTML, it is really great concept to keep your HTML code near the JS code handling it. React has its own restrictions for the components.</p>
+
+<p>For example, you can not use two tags alongside inside your component. It is required to use <strong>exactly</strong> one top-level tag. And all the variables are stored in the <code>state</code> variable.</p>
+
+<p>But I will tell you how to overcome that restriction later.</p>
+
+<h2>The architecture</h2>
+
+<p>This article relies on JavaScript, so let&#39;s be kind and create an initial project structure for a typical JS project. Just like this:</p>
+
+<p><img src="https://40.media.tumblr.com/963c862fc4d835d180a4bb6e5dfdfd9c/tumblr_inline_nrcgsc8eei1qh5oee_540.png" alt="Project structure"/></p>
+
+<p>This is always great to have a typical structure for a project so anyone new to the project will not get lost.</p>
+
+<p>So, we can assume we will always have a set of javascripts and stylesheets, used on a front-end.</p>
+
+<p>We also may need some third-party libraries, managed by NPM or Bower. And this is <strong>always</strong> <u>(I mean not only javascript projects)</u> a great idea to have your changes being tracked by some version control system. I like Git the most.</p>
+
+<p>Based on those few assumptions, we will need a folder with <code>javascripts</code> and <code>stylesheets</code> sub-dirs; <code>.gitignore</code>, <code>package.json</code> and <code>bower.json</code> files <u>(select those you need)</u>.</p>
+
+<p>In some cases, like with this article, we may need to compile some of resources. For that purpose we may create something like <code>build</code> directory. And define the build command in <code>package.json</code> file, within the <code>scripts</code> section.</p>
+
+<h2>A very simple introduction</h2>
+
+<h3>Preparing layout template</h3>
+
+<p>Let&#39;s start writing a layout for our sample webpage. This may be done with <a href="http://emmet.io/"><strong>Emmet</strong></a>.</p>
+
+<p>Just type <code>html:5</code> and press <kbd>Tab</kbd> within your favorite text editor <u>(I feel comfortable with both Sublime and Atom, yet you may run Emacs and still use Emmet)</u>.</p>
+
+<h3>Front-end dependencies</h3>
+
+<p>Now, let&#39;s add <code>bootstrap</code> and <code>react</code> scripts. The good way of doing it is using <a href="http://bower.io/"><strong>bower</strong></a>.
+Now there are two ways of adding dependencies with bower: manually editing <code>bower.json</code> or using command-line.</p>
+
+<p>If you decided to add dependencies into <code>bower.json</code> file, remember to set the concrete versions for each dependency.
+Or you may face situations, when someone installs your project and uses the newer versions of libraries, which are incompatible with the code, which uses them.</p>
+
+<p>Here are the lines you will need to add to your <code>bower.json</code> file to proceed:</p>
+<span class="nl">"dependencies"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="err">//</span><span class="w"> </span><span class="err">...</span><span class="w">
+  </span><span class="nl">"react"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0.13.3"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"bootstrap"</span><span class="p">:</span><span class="w"> </span><span class="s2">"3.3.5"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span>
+<p>If you have chosen the CLI way, consider this command:</p>
+bower <span class="nb">install</span> <span class="nt">--save</span> bootstrap react
+
+<p>I preferred the CLI way as it chooses the correct libraries&#39; versions automatically.</p>
+
+<p>Now you may add React&#39;s javascript and Bootstrap&#39;s CSS into the layout:</p>
+<span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html&gt;</span>
+  <span class="nt">&lt;head&gt;</span>
+    <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">"utf-8"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;title&gt;</span>Introduction to ReactJS<span class="nt">&lt;/title&gt;</span>
+
+    <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"bower_components/react/react.min.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+
+    <span class="nt">&lt;link</span> <span class="na">href=</span><span class="s">"bower_components/bootstrap/dist/css/bootstrap.min.css"</span> <span class="na">rel=</span><span class="s">"stylesheet"</span> <span class="na">type=</span><span class="s">"text/css"</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;/head&gt;</span>
+  <span class="nt">&lt;body&gt;</span>
+  <span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+
+<h3>First NPM task</h3>
+
+<p>You may want to add a task to your <code>package.json</code> to install bower dependencies automatically:</p>
+<span class="p">{</span><span class="w">
+  </span><span class="nl">"dependencies"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"bower"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1.4.1"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+  </span><span class="nl">"scripts"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"bower"</span><span class="p">:</span><span class="w"> </span><span class="s2">"./node_modules/bower/bin/bower install"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span>
+<p>This may be useful later, when building a project. Here I used the local version of bower in the script
+to not make another project requirement of globally installed bower.
+This approach is used lately in this article for building task.</p>
+
+<h3>JSX vs JavaScript</h3>
+
+<p>React uses <strong>JSX</strong>. JSX has two meanings. Accordingly to <a href="https://github.com/jashkenas/coffeescript/wiki/List-of-languages-that-compile-to-JS#static-typing"><em>List of languages that compile to JS</em></a>, JSX is an extension of JavaScript with human-friendly OOP and type safety support. In the universe of React, JSX is an extension of JavaScript too. But in this case, JSX only allows to create DOM elements from within the code in a DSL-style.</p>
+
+<p>To explain what is DSL-style, I shall show you two examples:</p>
+
+<p><strong>non-DSL way:</strong></p>
+<span class="nx">React</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="dl">"</span><span class="s2">div</span><span class="dl">"</span><span class="p">,</span> <span class="p">{</span><span class="na">className</span><span class="p">:</span> <span class="dl">"</span><span class="s2">well clearfix</span><span class="dl">"</span><span class="p">},</span>
+  <span class="nx">React</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="dl">"</span><span class="s2">textarea</span><span class="dl">"</span><span class="p">,</span> <span class="p">{</span><span class="na">className</span><span class="p">:</span> <span class="dl">"</span><span class="s2">form-control</span><span class="dl">"</span><span class="p">,</span> <span class="na">onChange</span><span class="p">:</span> <span class="k">this</span><span class="p">.</span><span class="nx">handleChange</span><span class="p">}),</span>
+  <span class="nx">React</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="dl">"</span><span class="s2">br</span><span class="dl">"</span><span class="p">,</span> <span class="kc">null</span><span class="p">),</span>
+  <span class="nx">React</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="dl">"</span><span class="s2">button</span><span class="dl">"</span><span class="p">,</span> <span class="p">{</span><span class="na">className</span><span class="p">:</span> <span class="dl">"</span><span class="s2">btn btn-primary pull-right</span><span class="dl">"</span><span class="p">},</span> <span class="dl">"</span><span class="s2">Tweet</span><span class="dl">"</span><span class="p">)</span>
+<span class="p">)</span>
+
+<p><strong>DSL way:</strong></p>
+<span class="k">return</span> <span class="p">(</span>
+  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">className=</span><span class="s2">"well clearfix"</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">textarea</span> <span class="na">className=</span><span class="s2">"form-control"</span> <span class="na">onChange=</span><span class="si">{</span><span class="k">this</span><span class="p">.</span><span class="nx">handleChange</span><span class="si">}</span><span class="p">&gt;&lt;/</span><span class="nt">textarea</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">br</span><span class="p">/&gt;</span>
+    <span class="p">&lt;</span><span class="nt">button</span> <span class="na">className=</span><span class="s2">"btn btn-primary pull-right"</span><span class="p">&gt;</span>Tweet<span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="p">);</span>
+
+<p>Both of JSX branches are, again, extensions to JavaScript, thus they need to be compiled to ES5 <u>(also known as &quot;usual javascript&quot;)</u> to make the code understood by browser. For this purpose we need a compiler.</p>
+
+<p>For React this is called <code>react-tools</code>. So let&#39;s add it as a dependency inside our project&#39;s <code>package.json</code> file.</p>
+
+<p>This will add the <code>jsx</code> utility to the <code>node_modules</code> sub-dir. So we may define another build task within the <code>package.json</code> file:</p>
+<span class="p">{</span><span class="w">
+  </span><span class="nl">"scripts"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"build"</span><span class="p">:</span><span class="w"> </span><span class="s2">"./node_modules/react-tools/bin/jsx src/javascripts/ build/"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span>
+<p>This task compiles all the scripts from the <code>src/javascripts/</code> directory and stores the compiled javascripts in
+<code>build/</code> directory.</p>
+
+<h3>First component</h3>
+
+<p>All components are made simply calling <code>React.createClass()</code> method and providing it with a component&#39;s rendering method <u>(a method that returns component&#39;s HTML)</u>, its initial <strong>state</strong> <u>(something similar to Angular&#39;s <code>$scope</code>)</u> and event handlers. Just check it out:</p>
+<span class="kd">var</span> <span class="nx">TweetBox</span> <span class="o">=</span> <span class="nx">React</span><span class="p">.</span><span class="nx">createClass</span><span class="p">({</span>
+  <span class="na">render</span><span class="p">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span>
+      <span class="p">&lt;</span><span class="nt">div</span> <span class="na">className=</span><span class="s2">"well clearfix"</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">textarea</span> <span class="na">className=</span><span class="s2">"form-control"</span><span class="p">&gt;&lt;/</span><span class="nt">textarea</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">br</span><span class="p">/&gt;</span>
+        <span class="p">&lt;</span><span class="nt">button</span> <span class="na">className=</span><span class="s2">"btn btn-primary pull-right"</span><span class="p">&gt;</span>Tweet<span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
+      <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+
+<p>Here you may see a few restricts, done by React:</p>
+
+<ol>
+<li>you need <strong>exactly</strong> one top-level tag for your component</li>
+<li>you may not use <code>class</code> attribute within elements, use <code>className</code> instead</li>
+</ol>
+
+<p>And this is how this component is used:</p>
+  <span class="nx">React</span><span class="p">.</span><span class="nx">render</span><span class="p">(</span>
+    <span class="p">&lt;</span><span class="nc">TweetBox</span> <span class="p">/&gt;,</span>
+    <span class="nb">document</span><span class="p">.</span><span class="nx">body</span>
+  <span class="p">);</span>
+
+<p>Note: you may not use the <code>&lt;TweetBox /&gt;</code> tag from within the HTML.</p>
+
+<p>Now let&#39;s write that component within the <code>javascripts/app.js</code> file and reference it in the layout, at the end of <code>&lt;body&gt;</code> tag; to make it loaded when all the document is done loading:</p>
+<span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html&gt;</span>
+  <span class="nt">&lt;head&gt;</span>
+    <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">"utf-8"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;title&gt;</span>Introduction to ReactJS<span class="nt">&lt;/title&gt;</span>
+
+    <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"bower_components/react/react.min.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+
+    <span class="nt">&lt;link</span> <span class="na">href=</span><span class="s">"bower_components/bootstrap/dist/css/bootstrap.min.css"</span> <span class="na">rel=</span><span class="s">"stylesheet"</span> <span class="na">type=</span><span class="s">"text/css"</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;/head&gt;</span>
+  <span class="nt">&lt;body&gt;</span>
+    <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"build/app.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+  <span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+
+<p>To see the page we&#39;ve written in action, first compile the sources with <code>npm run build</code> to compile the JSX code to javascript and use it in the layout template.</p>
+
+<h3>State</h3>
+
+<p>The component&#39;s internals are stored within the <code>state</code> variable. This is something like Angular&#39;s <code>$scope</code>.</p>
+
+<p>React adds a method to initialize your component&#39;s state, called <code>getInitialState()</code>. It should return object, representing the initial state. State variables may be accessed via <code>this.state.myVar</code> and interpolated in template with curly-braces syntax, <code>{this.state.myVar}</code>. So you may do something like this:</p>
+<span class="kd">var</span> <span class="nx">TweetBox</span> <span class="o">=</span> <span class="nx">React</span><span class="p">.</span><span class="nx">createClass</span><span class="p">({</span>
+  <span class="na">getInitialState</span><span class="p">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">{</span>
+      <span class="na">text</span><span class="p">:</span> <span class="dl">""</span><span class="p">,</span>
+      <span class="na">maxLength</span><span class="p">:</span> <span class="mi">140</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="na">render</span><span class="p">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span>
+      <span class="p">&lt;</span><span class="nt">div</span> <span class="na">className=</span><span class="s2">"well clearfix"</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">textarea</span> <span class="na">className=</span><span class="s2">"form-control"</span><span class="p">&gt;&lt;/</span><span class="nt">textarea</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">br</span><span class="p">/&gt;</span>
+        <span class="p">&lt;</span><span class="nt">span</span><span class="p">&gt;</span><span class="si">{</span> <span class="k">this</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">maxLength</span> <span class="o">-</span> <span class="k">this</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">text</span><span class="p">.</span><span class="nx">length</span> <span class="si">}</span><span class="p">&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">button</span> <span class="na">className=</span><span class="s2">"btn btn-primary pull-right"</span><span class="p">&gt;</span>Tweet<span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
+      <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+
+<p>State may be changed with the <code>setState()</code> method, receiving... object! But this time, the object for <code>setState()</code> represents a set of new field values. So, for example, using syntax</p>
+<span class="k">this</span><span class="p">.</span><span class="nx">setState</span><span class="p">({</span> <span class="na">text</span><span class="p">:</span> <span class="dl">"</span><span class="s2">newValue</span><span class="dl">"</span> <span class="p">});</span>
+
+<p>will not replace the whole state with <code>text</code> field only. Instead, it will modify <code>text</code> field only and will left <code>maxLength</code> unchanged.</p>
+
+<p>But when can we call the <code>changeState()</code>? In Angular it is done with <strong>data binding</strong>. But in React we have events. Yes-yes, simple DOM events!</p>
+
+<p>So, for example, we may set the <code>onChange</code> event in the <code>&lt;textarea rows=&quot;10&quot; cols=&quot;50&quot;&gt;</code> and just handle it:</p>
+<span class="kd">var</span> <span class="nx">TweetBox</span> <span class="o">=</span> <span class="nx">React</span><span class="p">.</span><span class="nx">createClass</span><span class="p">({</span>
+  <span class="p">...</span>
+  <span class="na">handleChange</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">evt</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">setState</span><span class="p">({</span> <span class="na">text</span><span class="p">:</span> <span class="nx">evt</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">value</span> <span class="p">});</span>
+  <span class="p">},</span>
+  <span class="na">render</span><span class="p">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="p">...</span>
+    <span class="o">&lt;</span><span class="nx">textarea</span> <span class="nx">className</span><span class="o">=</span><span class="dl">"</span><span class="s2">form-control</span><span class="dl">"</span> <span class="nx">onChange</span><span class="o">=</span><span class="p">{</span> <span class="k">this</span><span class="p">.</span><span class="nx">handleChange</span> <span class="p">}</span><span class="o">&gt;</span>
+    <span class="p">...</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+
+<p>Yeah, looks not so pretty as with Angular...</p>
+
+<h3>React: conclusion</h3>
+
+<p>I assume React&#39;s way of doing websites is nice until you learn something better. At least, when switching from jQuery, you can make your webpage&#39;s code look much better with React!</p>
+
+<h2>Alternatives</h2>
+
+<h3>Riot</h3>
+
+<p>But wait! There are alternatives! <a href="https://muut.com/riotjs/"><strong>Riot</strong></a> continues React experience of state. But makes it with a much more pretty code. But the main advantage of Riot is ES6. Yeah, when both of libraries use compilation, why reject the future and invent a wheel? Thus Riot makes your code much more clear. Check this out:</p>
+<span class="nt">&lt;tweet-box&gt;</span>
+  <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"well clearfix"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;textarea</span> <span class="na">class=</span><span class="s">"form-control"</span> <span class="na">onkeyup=</span><span class="s">{</span> <span class="na">handleChange</span> <span class="err">}</span><span class="nt">&gt;&lt;/textarea&gt;</span>
+    <span class="nt">&lt;br/&gt;</span>
+    <span class="nt">&lt;span&gt;</span>{ maxLength - text.length }<span class="nt">&lt;/span&gt;</span>
+    <span class="nt">&lt;button</span> <span class="na">class=</span><span class="s">"btn btn-primary pull-right"</span><span class="nt">&gt;</span>Tweet<span class="nt">&lt;/button&gt;</span>
+  <span class="nt">&lt;/div&gt;</span>
+
+  <span class="nt">&lt;script&gt;</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">text</span> <span class="o">=</span> <span class="dl">""</span><span class="p">;</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">maxLength</span> <span class="o">=</span> <span class="mi">140</span><span class="p">;</span>
+
+    <span class="nx">handleChange</span><span class="p">(</span><span class="nx">evt</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">text</span> <span class="o">=</span> <span class="nx">evt</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">value</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="nt">&lt;/script&gt;</span>
+<span class="nt">&lt;/tweet-box&gt;</span>
+
+<p>Everything looks great with Riot: its size is much more lower than React&#39;s; it has ES6 and nice syntax; it does not turn your JS code into substance on the edge of two worlds - <strong>views layer</strong> and <strong>logic layer</strong>; it has even <a href="https://muut.com/riotjs/guide/#scoped-css"><strong>scoped css</strong></a>!..</p>
+
+<p>But Riot has one huge drawback. That drawback is <code>XHTTPRequest</code>. By default, you <u>may</u> define your components inline, just within your layout page. But as long as it is a mix of HTML and JS, browser will not correctly respond to your page, throwing you strange exceptions. So, you may decide to extract your components into separate files.</p>
+
+<p>But here you may face the fact that most of modern browsers do not allow for asynchronous requests to the files without protocol being provided <u>(so you can not load project files via AJAX while testing project locally)</u>.</p>
+
+<p>And that&#39;s how Riot loads your components - via AJAX. So you need either to pre-compile your components or run your project on a web server.</p>
+
+<h3>Angular 2.0</h3>
+
+<p>Great news for each and every AngularJS fan; the essence of future of web development, <a href="https://angular.io"><strong>Angular.js 2.0</strong></a>.</p>
+
+<p>It is made with <a href="http://www.typescriptlang.org/"><strong>TypeScript</strong></a>, which is even more powerful than ES6. It provides developers with component architecture - HTML and JS encapsulation, but in even more sophisticated form.</p>
+
+<p>So, for example, our <code>&lt;tweet-box&gt;</code> component in Angular 2.0 may look like this:</p>
+
+<p><strong>tweet-box.ts:</strong></p>
+<span class="c1">/// &lt;reference path="../typings/angular2/angular2.d.ts" /&gt;</span>
+<span class="n">import</span> <span class="p">{</span><span class="n">Component</span><span class="p">,</span> <span class="n">View</span><span class="p">,</span> <span class="n">bootstrap</span><span class="p">,</span> <span class="n">formDirectives</span><span class="p">}</span> <span class="k">from</span> <span class="err">'</span><span class="n">angular2</span><span class="p">/</span><span class="n">angular2</span><span class="err">'</span><span class="p">;</span>
+
+<span class="nf">@Component</span><span class="p">({</span>
+  <span class="n">selector</span><span class="p">:</span> <span class="err">'</span><span class="n">tweet</span><span class="p">-</span><span class="n">box</span><span class="err">'</span>
+<span class="p">})</span>
+<span class="nf">@View</span><span class="p">({</span>
+  <span class="n">directives</span><span class="p">:</span> <span class="p">[</span><span class="n">formDirectives</span><span class="p">],</span>
+  <span class="n">templateUrl</span><span class="p">:</span> <span class="err">'</span><span class="n">src</span><span class="p">/</span><span class="n">tweet</span><span class="p">-</span><span class="n">box</span><span class="p">.</span><span class="n">html</span><span class="err">'</span>
+<span class="p">})</span>
+<span class="k">class</span> <span class="nc">TweetBox</span> <span class="p">{</span>
+  <span class="n">text</span><span class="p">:</span> <span class="kt">string</span><span class="p">;</span>
+  <span class="n">maxLength</span><span class="p">:</span> <span class="n">integer</span><span class="p">;</span>
+
+  <span class="nf">constructor</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="n">maxLength</span> <span class="p">=</span> <span class="m">140</span><span class="p">;</span>
+    <span class="k">this</span><span class="p">.</span><span class="n">text</span> <span class="p">=</span> <span class="err">''</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nf">bootstrap</span><span class="p">(</span><span class="n">TweetBox</span><span class="p">);</span>
+
+<p><strong>tweet-box.html:</strong></p>
+<span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"well clearfix"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;textarea</span> <span class="na">class=</span><span class="s">"form-control"</span> <span class="na">[(ng-model)]=</span><span class="s">"text"</span><span class="nt">&gt;&lt;/textarea&gt;</span>
+  <span class="nt">&lt;br/&gt;</span>
+  <span class="nt">&lt;span&gt;&lt;/span&gt;</span>
+  <span class="nt">&lt;button</span> <span class="na">class=</span><span class="s">"btn btn-primary pull-right"</span><span class="nt">&gt;</span>Tweet<span class="nt">&lt;/button&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+
+<p>Here, as you can see, data binding is used, so there is no more need in event handling. And you can use all the power of TypeScript. But still, the great Angular 2.0 drawbacks are:</p>
+
+<ol>
+<li>Angular 2.0 is still on the <strong>alpha</strong> stage <u>(at least, while I am writing this post, it is)</u></li>
+<li>too much effort is needed to get it working <u>(because of p. 1; still, THREE dependency managers to get it work is way too much...)</u></li>
+<li>it still needs the server to serve templates or using templates inline</li>
+<li>there are some major differences with all of the other libs referenced here, which may be hard to get used to <u>(for ex., using <code>formDirectories</code> like <code>[(ng-model)]=&quot;modelName&quot;</code>)</u></li>
+</ol>
+
+<h2>Fin</h2>
+
+<p>Looking at those three libraries, I can tell that Riot made my day. It is as simple as powerful and small. It lacks for two-way data binding, but makes much more sense than React. And yet does not require you to get mad installing all those dependencies to make it work.</p>
+
+<p>All the examples, mentioned in the article are on my GitHub account:</p>
+
+<ul>
+<li><a href="https://github.com/shybovycha/intro-to-react">React example</a></li>
+<li><a href="https://github.com/shybovycha/intro-to-riot">Riot example</a></li>
+<li><a href="https://github.com/shybovycha/intro-to-angular2">Angular 2.0 example</a></li>
+</ul>

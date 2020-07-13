@@ -1,0 +1,245 @@
+<meta name="layout" content="post">
+<meta name="title" content="Speeding up with Ruby native extensions">
+<meta name="date" content="2014-11-15T00:21:00+01:00">
+<meta name="tags" content="ruby,programming,c,optimization">
+<meta name="tumblr_url" content="http://shybovycha.tumblr.com/post/102644483371/speeding-up-with-ruby-native-extensions">
+<p><img alt="" src="https://31.media.tumblr.com/5c826c2ac8e6d86d2aa4b21715002736/tumblr_inline_nf1y0xXwtM1qh5oee.jpg"/></p>
+
+<h2>Foreword</h2>
+
+<p>At my job, our current project has many bottle-necks, where Ruby really sucks on its performance. We were thinking on how to optimize them, and finally come to usage of Ruby Native API.</p>
+
+<p>Our project uses Redis and MySQL hardly, so much of statistic data is stored in Redis. For speeding up. But one fine day made us use a <code>reduce</code> on a set of statistic data from Redis. And that’s where we got stuck on Ruby’ performance. Our server timed out in a minute of waiting for that reduce to complete.</p>
+
+<!--more-->
+
+<p>The trouble was in a loop like this:</p>
+<span class="n">json_data</span> <span class="o">=</span> <span class="no">JSON</span><span class="p">.</span><span class="nf">pase</span><span class="p">(</span><span class="n">json_file</span><span class="p">)</span>
+<span class="n">keys</span> <span class="o">=</span> <span class="vg">$redis</span><span class="p">.</span><span class="nf">keys</span> <span class="s2">"*:hash_pattern:date:*"</span>
+<span class="n">count</span><span class="p">,</span> <span class="n">total_count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+
+<span class="n">keys</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">hash_key</span><span class="o">|</span>
+    <span class="n">elements</span> <span class="o">=</span> <span class="vg">$redis</span><span class="p">.</span><span class="nf">hgetall</span> <span class="n">hash_key</span>
+
+    <span class="n">elements</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="o">|</span>
+        <span class="n">i_value</span> <span class="o">=</span> <span class="n">value</span><span class="p">.</span><span class="nf">to_i</span>
+
+        <span class="n">count</span> <span class="o">+=</span> <span class="n">i_value</span> <span class="k">if</span> <span class="n">key</span> <span class="o">=~</span> <span class="sr">/some:regex/</span> <span class="n">and</span> <span class="n">json_data</span><span class="p">.</span><span class="nf">has_key?</span> <span class="n">key</span>
+        <span class="n">total_count</span> <span class="o">+=</span> <span class="n">i_value</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+
+<p>My first attempt was implemented on a D language. But when I tried to use the compiled code library with Ruby, I failed. That’s why I thought <u>I feel more comfortable with C/C++ than with D</u>. And wrote the same code on C/C++. I took three third-party libraries:</p>
+
+<ul>
+<li><strong>RE2</strong> for regular expressions</li>
+<li><strong>hiredis</strong> for Redis operations</li>
+<li><strong>rapidjson</strong> for JSON parsing</li>
+</ul>
+
+<p>But when I compiled and ran what I’ve done, I could not believe my eyes - the process worked for <strong>59 seconds</strong>! That was more than 10x slower than Ruby did!</p>
+
+<p><img alt="" src="https://31.media.tumblr.com/69082ba5dc2c74b2e5d9059a05a3b07a/tumblr_inline_nf1xzoyiAa1qh5oee.jpg"/></p>
+
+<!--more-->
+
+<p>So, I started optimizations. First of all, I dropped regular expressions as they were simply replaced by substring check and substring extraction (as the first part of a string in a regular expression had a fixed length). That did the trick, lowering the execution time to <strong>25 seconds</strong>. Yet, it was too much.</p>
+
+<p>The last step I took, I removed hiredis and replaced it with a set of five custom functions, performing only those operations, which we needed via sockets. First, that failed with a really, REALLY long segfault. Yet, when I replaced the host string <code>&quot;localhost&quot;</code> with <code>&quot;127.0.0.1&quot;</code>, my tiny extension arose and did its job in <strong>4.8 seconds</strong>.</p>
+
+<p>That was great! Yet, it is not the best time I can get, let’s take a look on what was done and in which manner.</p>
+
+<h2>Creating native extensions for Ruby</h2>
+
+<p>Creating a native extension will need you to have compiled <strong>shared object</strong> file. Shared object is a library for POSIX OSes. There are two kinds of library formats for Linux and others:</p>
+
+<ul>
+<li><strong>shared libraries</strong> (<code>*.so</code> files) - could be placed anywhere and used in a runtime by a few applications</li>
+<li><strong>static libraries</strong> (<code>*.a</code> files) - are bundled to a compile target (library, executable, etc.) and are used in that environment</li>
+</ul>
+
+<p>For that purpose you’d better use <strong>C/C++ Ruby API</strong>. Yes, you <strong>could</strong> use other-language-compiled shared libraries, but through an interface called <strong>FFI</strong>, which I did not manage to work for me. Thus, this article covers only the C/C++ way.</p>
+
+<p>To make your extension available in Ruby, you will need to define some of these:</p>
+
+<ul>
+<li>method for existing classes and modules</li>
+<li>new class or module</li>
+</ul>
+
+<p>All of them are not hard to implement. We will make our own module and define its method.</p>
+
+<p>First, create a directory names as your extension will be named. Let’s say, <code>my_ext</code>. Create two files there - <code>my_ext.cpp</code> and <code>extconf.rb</code>. First file will define an extension shared library, whilst the second one will create a Makefile for us.</p>
+
+<p>Our extension will have a very simple source file with just one non-standard include and two functions defined:</p>
+<span class="cp">#include "ruby.h"
+</span>
+<span class="cp">#include &lt;string.h&gt;
+#include &lt;stdlib.h&gt;
+</span>
+<span class="n">VALUE</span> <span class="nf">moo_method</span><span class="p">(</span><span class="n">VALUE</span> <span class="n">_name</span><span class="p">,</span> <span class="n">VALUE</span> <span class="n">_age</span><span class="p">,</span> <span class="n">VALUE</span> <span class="n">_self</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">char</span><span class="o">*</span> <span class="n">name</span> <span class="o">=</span> <span class="n">StringValueCStr</span><span class="p">(</span><span class="n">_name</span><span class="p">);</span>
+    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">age</span> <span class="o">=</span> <span class="n">num2uint</span><span class="p">(</span><span class="n">_age</span><span class="p">);</span>
+
+    <span class="kt">char</span><span class="o">*</span> <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span> <span class="n">malloc</span><span class="p">(</span><span class="mi">255</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">));</span>
+    <span class="n">sprintf</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s">"Hello, my name is %s and I am %d years old!</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">age</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="n">rb_str_new2</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">extern</span> <span class="s">"C"</span>
+
+<span class="kt">void</span> <span class="nf">Init_my_ext</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">VALUE</span> <span class="n">MyModule</span> <span class="o">=</span> <span class="n">rb_define_module</span><span class="p">(</span><span class="s">"MyModule"</span><span class="p">);</span>
+  <span class="n">rb_define_module_function</span><span class="p">(</span><span class="n">MyModule</span><span class="p">,</span> <span class="s">"moo"</span><span class="p">,</span> <span class="n">reinterpret_cast</span><span class="p">(</span><span class="n">moo</span><span class="p">),</span> <span class="mi">2</span><span class="p">);</span>
+<span class="p">}</span>
+
+<p>Now let’s look at this source. There is only one exported function, <code>Init_my_ext</code>. That’s correct, because all our extension needs to do is to define something. And that is done in that method. The function <code>Init_my_ext</code> should have such name format: <code>Init_$extension_name$</code>. That’s how Ruby finds out what to call first.</p>
+
+<p>Now, there are many of those <code>VALUE</code> type instances. That is internal type of Ruby Native API. That is the variant type, holding Ruby’ value. And whilst Ruby is not strongly typed language, that type could contain anything - from <code>nil</code> to <code>string</code> and even <code>object</code>. There are a few really useful functions defined in <code>ruby.h</code> to help you checking variables for types and converting them to C++ types.</p>
+
+<p>Then we define a module named <code>MyModule</code> and stored its reference in the <code>MyModule</code> variable. Then we can do what we want with that module - define classes, variables and methods. Let’s see how we defined a method. Function <code>rb_define_module_function</code> contains four arguments:</p>
+
+<ol>
+<li>reference to a module</li>
+<li>method name</li>
+<li>pointer to a C function, representing method internals - note the <code>reinterpret_cast</code></li>
+<li>argument count - when this number is less than zero, than method will receive three arguments - <code>int argc</code>, <code>VALUE* argv</code> and <code>VALUE self</code>, representing variable amount of arguments; if this number is greater than zero - it defines the amount of required method arguments</li>
+</ol>
+
+<p>Now, lets create a <code>extconf.rb</code> file, which will create <code>Makefile</code> for final library compilation:</p>
+<span class="nb">require</span> <span class="s1">'mkmf'</span>
+
+<span class="n">extension_name</span> <span class="o">=</span> <span class="s1">'my_ext'</span>
+
+<span class="k">def</span> <span class="nf">get_dir</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
+    <span class="no">File</span><span class="p">.</span><span class="nf">expand_path</span><span class="p">(</span><span class="no">File</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="no">File</span><span class="p">.</span><span class="nf">dirname</span><span class="p">(</span><span class="kp">__FILE__</span><span class="p">),</span> <span class="nb">name</span><span class="p">))</span>
+<span class="k">end</span>
+
+<span class="no">LIBDIR</span>     <span class="o">=</span> <span class="no">RbConfig</span><span class="o">::</span><span class="no">CONFIG</span><span class="p">[</span><span class="s1">'libdir'</span><span class="p">]</span>
+<span class="no">INCLUDEDIR</span> <span class="o">=</span> <span class="no">RbConfig</span><span class="o">::</span><span class="no">CONFIG</span><span class="p">[</span><span class="s1">'includedir'</span><span class="p">]</span>
+
+<span class="no">HEADER_DIRS</span> <span class="o">=</span> <span class="p">[</span> <span class="no">INCLUDEDIR</span> <span class="p">]</span>
+
+<span class="c1"># setup constant that is equal to that of the file path that holds that static libraries that will need to be compiled against</span>
+<span class="no">LIB_DIRS</span> <span class="o">=</span> <span class="p">[</span> <span class="no">LIBDIR</span> <span class="p">]</span>
+
+<span class="n">libs</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="c1"># The destination</span>
+<span class="n">dir_config</span><span class="p">(</span><span class="n">extension_name</span><span class="p">,</span> <span class="no">HEADER_DIRS</span><span class="p">,</span> <span class="no">LIB_DIRS</span><span class="p">)</span>
+
+<span class="n">libs</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">lib</span><span class="o">|</span>
+    <span class="vg">$LOCAL_LIBS</span> <span class="o">&lt;&lt;</span> <span class="s2">"</span><span class="si">#{</span><span class="n">lib</span><span class="si">}</span><span class="s2"> "</span>
+<span class="k">end</span>
+
+<span class="c1"># Additional compiler / linker flags</span>
+<span class="c1"># $CFLAGS &lt;&lt; " -fPIC "</span>
+<span class="c1"># $LDFLAGS &lt;&lt; " -lpthread "</span>
+
+<span class="c1"># Do the work</span>
+<span class="n">create_makefile</span><span class="p">(</span><span class="n">extension_name</span><span class="p">)</span>
+
+<p>That’s it, it defines parameters for our future <code>Makefile</code>. Note the <code>get_dir(name)</code> method - I’ve defined it for you to simplify adding library sub-directories to the <code>LIBDIR</code> and <code>INCLUDEDIR</code> arrays, just like this:</p>
+<span class="no">LIB_DIRS</span> <span class="o">=</span> <span class="p">[</span> <span class="no">LIBDIR</span><span class="p">,</span> <span class="n">get_dir</span><span class="p">(</span><span class="s1">'hiredis'</span><span class="p">)</span> <span class="p">]</span>
+
+<p>Also, note the <code>-fPIC</code> option - it is needed for most libraries to compile under different architectures. So, you may need to add them to your third-party libraries’ Makefiles to resolve corresponding compiler errors when building the extension.</p>
+
+<p>When you are done, let’s generate Makefile:</p>
+<span class="n">ruby</span> <span class="n">extconf</span><span class="p">.</span><span class="nf">rb</span>
+
+<p>Then, you should be able to build your shared object with</p>
+make
+
+<p>Using our extension is simple when playing around locally - you just add it to your <code>irb</code> or <code>ruby</code> command-line arguments like this:</p>
+irb <span class="nt">-r</span> ./my_ext.so
+
+<p>And then just using the modules you’ve defined. But in most situations, that is impossible, as, for example, you are running a Rails application on a production server. So, you will probably want a RubyGem for that purpose.</p>
+
+<h2>Wrapping extension in a Gem</h2>
+
+<p>Building a Ruby Gem containing native extension is a little different than building usual gems. You here have two options:</p>
+
+<ol>
+<li>bundle a pre-built library with a gem</li>
+<li>provide a sources to perform build on a target machine</li>
+</ol>
+
+<p>First way is for dummies. That’s it, you will probably want your code ran on different platforms than your own machine. So, you will not want your gem to fail with a segfault like <u>this architecture differs from what the library was built on</u>. Thus, we will concentrate on a second way.</p>
+
+<p><img alt="" src="https://31.media.tumblr.com/fa991a97c370065b424f4e58f57fa947/tumblr_inline_nf1y1oTQRp1qh5oee.jpg"/></p>
+
+<p>First, we will need a correct directory structure:</p>
+.
+├── ext
+│   └── my_gemname
+│       ├── extconf.rb
+│       └── my_ext.cpp
+├── lib
+│   └── my_gemname.rb
+└── my_gemname.gemspec
+
+<p>File <code>lib/my_gemname.rb</code> will contain only the extension initialization call:</p>
+require 'my_gemname/my_ext'
+
+<p>Whilst the main difference hides in gemspec file:</p>
+<span class="no">Gem</span><span class="o">::</span><span class="no">Specification</span><span class="p">.</span><span class="nf">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">spec</span><span class="o">|</span>
+  <span class="n">spec</span><span class="p">.</span><span class="nf">name</span> <span class="o">=</span> <span class="s1">'my_gemname'</span>
+  <span class="n">spec</span><span class="p">.</span><span class="nf">version</span> <span class="o">=</span> <span class="s1">'0.1'</span>
+  <span class="n">spec</span><span class="p">.</span><span class="nf">description</span> <span class="o">=</span> <span class="s1">'Some cool description here'</span>
+  <span class="n">spec</span><span class="p">.</span><span class="nf">summary</span> <span class="o">=</span> <span class="s1">'Short description'</span>
+  <span class="n">spec</span><span class="p">.</span><span class="nf">email</span> <span class="o">=</span> <span class="s1">'author@email.com'</span>
+  <span class="n">spec</span><span class="p">.</span><span class="nf">homepage</span> <span class="o">=</span> <span class="s1">''</span>
+  <span class="n">spec</span><span class="p">.</span><span class="nf">author</span> <span class="o">=</span> <span class="s1">'Author Name'</span>
+  <span class="n">spec</span><span class="p">.</span><span class="nf">files</span> <span class="o">=</span> <span class="no">Dir</span><span class="p">[</span><span class="s1">'lib/**/*.rb'</span><span class="p">]</span> <span class="o">+</span> <span class="no">Dir</span><span class="p">[</span><span class="s1">'ext/**/*'</span><span class="p">]</span>
+  <span class="n">spec</span><span class="p">.</span><span class="nf">platform</span> <span class="o">=</span> <span class="no">Gem</span><span class="o">::</span><span class="no">Platform</span><span class="o">::</span><span class="no">RUBY</span>
+  <span class="n">spec</span><span class="p">.</span><span class="nf">require_paths</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">'lib'</span><span class="p">,</span> <span class="s1">'ext'</span> <span class="p">]</span>
+  <span class="n">spec</span><span class="p">.</span><span class="nf">extensions</span> <span class="o">=</span> <span class="no">Dir</span><span class="p">[</span><span class="s1">'ext/my_gemname/extconf.rb'</span><span class="p">]</span>
+<span class="k">end</span>
+
+<p>Here four lines make the magick:</p>
+  <span class="n">spec</span><span class="p">.</span><span class="nf">files</span> <span class="o">=</span> <span class="no">Dir</span><span class="p">[</span><span class="s1">'lib/**/*.rb'</span><span class="p">]</span> <span class="o">+</span> <span class="no">Dir</span><span class="p">[</span><span class="s1">'ext/**/*'</span><span class="p">]</span>
+  <span class="n">spec</span><span class="p">.</span><span class="nf">platform</span> <span class="o">=</span> <span class="no">Gem</span><span class="o">::</span><span class="no">Platform</span><span class="o">::</span><span class="no">RUBY</span>
+  <span class="n">spec</span><span class="p">.</span><span class="nf">require_paths</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">'lib'</span><span class="p">,</span> <span class="s1">'ext'</span> <span class="p">]</span>
+  <span class="n">spec</span><span class="p">.</span><span class="nf">extensions</span> <span class="o">=</span> <span class="no">Dir</span><span class="p">[</span><span class="s1">'ext/my_gemname/extconf.rb'</span><span class="p">]</span>
+
+<p>They set, respectively:</p>
+
+<ol>
+<li>directories of the extension with all the files and sub-directories, needed to compile it</li>
+<li>universal target platform</li>
+<li>extension required path</li>
+<li>path to the extension’ extconf file</li>
+</ol>
+
+<p>Now you can build your gem with</p>
+gem build my_gemname.gemspec
+
+<p>Using the gemfile may require you never to push it to RubyGems repository. For example, when your gem is a very specific for the project you are working on, or it may conflict with your job contract. But you can’t simply specify the <code>path</code> attribute for your gem in the <code>Gemfile</code> - it just does not work!</p>
+
+<p>Way to solve this lays beyound using custom repository. My solution was to create a directory under <code>lib/</code> sub-directory of our project:</p>
+repository
+└── gems
+    └── my_gemname-0.1.gem
+
+<p>Then, go to the <code>repository</code> directory (that’s important NOT to go to the <code>gems</code> subdir) and run this magic command:</p>
+gem generate_index
+
+<p>This will make your repository directory look like this:</p>
+repository
+├── gems
+│   └── my_gemname-0.1.gem
+├── latest_specs.4.8
+├── latest_specs.4.8.gz
+├── prerelease_specs.4.8
+├── prerelease_specs.4.8.gz
+├── quick
+│   └── Marshal.4.8
+│       └── my_gemname-0.1.gemspec.rz
+├── specs.4.8
+└── specs.4.8.gz
+
+<p>This directory now could be used as a RubyGems repository. Just like the <code>rubygems.org</code>! Just point your <code>Gemfile</code> to this directory:</p>
+<span class="n">source</span> <span class="no">File</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s1">'file://'</span><span class="p">,</span> <span class="no">File</span><span class="p">.</span><span class="nf">dirname</span><span class="p">(</span><span class="kp">__FILE__</span><span class="p">),</span> <span class="s1">'lib'</span><span class="p">,</span> <span class="s1">'repository'</span><span class="p">)</span>
+
+<p>And an <strong>important note</strong>: do not try to keep your <code>Gemfile</code> and <code>Gemfile.lock</code> up-to date by using <code>= latest.version</code> for every dependency in the <code>Gemfile</code> - this way you will end up in a situation when nothing is compatible anymore if trying to run your code in quite some time.</p>

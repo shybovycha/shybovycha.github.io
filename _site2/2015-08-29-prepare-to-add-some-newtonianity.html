@@ -1,0 +1,416 @@
+<meta name="layout" content="post">
+<meta name="title" content="Prepare to add some Newtonianity">
+<meta name="date" content="2015-08-29T18:06:00+01:00">
+<p>At this point we have an application with</p>
+
+<ul>
+<li><strong>1x Ninja</strong>, walking around</li>
+<li><strong>1x sphere</strong>, hanging in the center of the screen</li>
+<li><strong>1x cube</strong>, flying around the sphere</li>
+</ul>
+
+<p>That&#39;s our &quot;game&quot;? Doubtely... So let&#39;s make things move like in real world! Or just like that...</p>
+
+<h2>Requirements</h2>
+
+<p>First of all, <a href="https://github.com/MADEAPPS/newton-dynamics/archive/newton-3.13.zip"><strong>go and get</strong></a> the
+Newton GD files. And unpack it... right to the <code>source</code> directory of our project! That&#39;s right!
+I&#39;m not insane and I&#39;m aware you are going to put <strong>a lot</strong> of files in your project. But have no
+fear - you may always add them to <code>.gitignore</code> and skip them from being tracked in your Git repo:</p>
+source/newton-dynamics-master/applications
+source/newton-dynamics-master/packages/projects
+source/newton-dynamics-master/packages/thirdParty
+source/newton-dynamics-master/coreLibrary_300/projects
+
+<p>You are using Git, right?.. Now, you place the Newton GD sources in your project directory and change
+your <code>CMakeLists.txt</code> file to look like this:</p>
+<span class="nb">cmake_minimum_required</span><span class="p">(</span>VERSION 3.1<span class="p">)</span>
+<span class="nb">project</span><span class="p">(</span>irrlicht_newton_game1<span class="p">)</span>
+
+<span class="nb">set</span><span class="p">(</span>CMAKE_CXX_FLAGS <span class="s2">"</span><span class="si">${</span><span class="nv">CMAKE_CXX_FLAGS</span><span class="si">}</span><span class="s2"> -std=c++11"</span><span class="p">)</span>
+
+<span class="nb">option</span><span class="p">(</span><span class="s2">"NEWTON_DEMOS_SANDBOX"</span> <span class="s2">"Build demos sandbox"</span> OFF<span class="p">)</span>
+
+<span class="nb">set</span><span class="p">(</span>NEWTONGD_PATH source/newton-dynamics-master<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>NEWTONGD_INCLUDE_DIRS
+        <span class="si">${</span><span class="nv">NEWTONGD_PATH</span><span class="si">}</span>/packages/dCustomJoints
+        <span class="si">${</span><span class="nv">NEWTONGD_PATH</span><span class="si">}</span>/packages/dContainers
+        <span class="si">${</span><span class="nv">NEWTONGD_PATH</span><span class="si">}</span>/packages/dMath
+        <span class="p">)</span>
+
+<span class="nb">set</span><span class="p">(</span>NEWTON_LIBRARIES Newton dMath<span class="p">)</span>
+
+<span class="nb">add_subdirectory</span><span class="p">(</span><span class="si">${</span><span class="nv">NEWTONGD_PATH</span><span class="si">}</span><span class="p">)</span>
+
+<span class="nb">find_package</span><span class="p">(</span>X11<span class="p">)</span>
+<span class="nb">find_package</span><span class="p">(</span>OpenGL<span class="p">)</span>
+<span class="nb">find_package</span><span class="p">(</span>ZLIB<span class="p">)</span>
+
+<span class="nb">if</span> <span class="p">(</span>NOT IRRLICHT_LIBRARY_PATH<span class="p">)</span>
+    <span class="nb">find_library</span><span class="p">(</span>IRRLICHT_LIBRARY_PATH
+            NAMES Irrlicht
+            PATHS <span class="si">${</span><span class="nv">IRRLICHT_PATH</span><span class="si">}</span>/lib/
+            PATH_SUFFIXES Linux MacOSX Win32-gcc Win32-visualstudio Win64-visualstudio<span class="p">)</span>
+
+    <span class="nb">message</span><span class="p">(</span>STATUS <span class="s2">"Found Irrlicht: </span><span class="si">${</span><span class="nv">IRRLICHT_LIBRARY_PATH</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">endif</span><span class="p">()</span>
+
+<span class="nb">include_directories</span><span class="p">(</span><span class="si">${</span><span class="nv">IRRLICHT_PATH</span><span class="si">}</span>/include <span class="si">${</span><span class="nv">NEWTONGD_INCLUDE_DIRS</span><span class="si">}</span><span class="p">)</span>
+
+<span class="nb">set</span><span class="p">(</span>SOURCE_FILES source/main.cpp<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>EXECUTABLE_NAME irrlicht_newton_game1<span class="p">)</span>
+
+<span class="nb">add_executable</span><span class="p">(</span><span class="si">${</span><span class="nv">EXECUTABLE_NAME</span><span class="si">}</span> <span class="si">${</span><span class="nv">SOURCE_FILES</span><span class="si">}</span><span class="p">)</span>
+
+<span class="nb">target_link_libraries</span><span class="p">(</span><span class="si">${</span><span class="nv">EXECUTABLE_NAME</span><span class="si">}</span>
+        <span class="si">${</span><span class="nv">NEWTON_LIBRARIES</span><span class="si">}</span>
+        <span class="si">${</span><span class="nv">IRRLICHT_LIBRARY_PATH</span><span class="si">}</span>
+        <span class="si">${</span><span class="nv">X11_LIBRARIES</span><span class="si">}</span>
+        <span class="si">${</span><span class="nv">OPENGL_LIBRARIES</span><span class="si">}</span>
+        <span class="si">${</span><span class="nv">ZLIB_LIBRARIES</span><span class="si">}</span>
+        <span class="si">${</span><span class="nv">X11_Xxf86vm_LIB</span><span class="si">}</span><span class="p">)</span>
+
+<p>Try to compile your project - it should be just fine. And observe the power of CMake!</p>
+
+<!--more-->
+
+<h2>Gravity</h2>
+
+<p>Let&#39;s start modifying our Irrlicht sample application. First of all, we will add some Newton headers:</p>
+<span class="cp">#include "newton-dynamics-master/coreLibrary_300/source/newton/Newton.h"
+#include "newton-dynamics-master/packages/dMath/dVector.h"
+#include "newton-dynamics-master/packages/dMath/dMatrix.h"
+#include "newton-dynamics-master/packages/dMath/dQuaternion.h"
+</span>
+<p>The basic thing in the whole Newton GD library is <code>NewtonWorld</code>. That is what it means - the world, where
+all the physics happen. It is something different from where we place our 3D models. And that should be
+obvious - graphics are managed by Irrlicht and physics - by Newton. Those are totally different libraries.
+So we need to tie those two so that graphics correspond to what happens in <u>physical</u> world.</p>
+
+<p>First of all, we need to have a variable for our <code>NewtonWorld</code>. And since physics are handled by scripts too,
+we need to have that variable close to our other objects - in the <code>ScriptManager</code> class.</p>
+
+<p>There are two functions we need to bind to our <code>NewtonBody</code>:</p>
+<span class="k">static</span> <span class="kt">void</span> <span class="nf">transformCallback</span><span class="p">(</span><span class="k">const</span> <span class="n">NewtonBody</span><span class="o">*</span> <span class="n">body</span><span class="p">,</span> <span class="k">const</span> <span class="n">dFloat</span><span class="o">*</span> <span class="n">matrix</span><span class="p">,</span> <span class="kt">int</span> <span class="n">threadIndex</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// update ISceneNode so that it is in the same position and rotation as the NewtonBody</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">void</span> <span class="nf">applyForceAndTorqueCallback</span><span class="p">(</span><span class="k">const</span> <span class="n">NewtonBody</span><span class="o">*</span> <span class="n">body</span><span class="p">,</span> <span class="n">dFloat</span> <span class="n">timestep</span><span class="p">,</span> <span class="kt">int</span> <span class="n">threadIndex</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// just add gravity to our body</span>
+    <span class="n">dFloat</span> <span class="n">Ixx</span><span class="p">,</span> <span class="n">Iyy</span><span class="p">,</span> <span class="n">Izz</span><span class="p">;</span>
+    <span class="n">dFloat</span> <span class="n">mass</span><span class="p">;</span>
+
+    <span class="n">NewtonBodyGetMassMatrix</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mass</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">Ixx</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">Iyy</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">Izz</span><span class="p">);</span>
+
+    <span class="n">dVector</span> <span class="n">gravityForce</span><span class="p">(</span><span class="mf">0.0</span><span class="n">f</span><span class="p">,</span> <span class="n">mass</span> <span class="o">*</span> <span class="o">-</span><span class="mf">9.8</span><span class="n">f</span><span class="p">,</span> <span class="mf">0.0</span><span class="n">f</span><span class="p">,</span> <span class="mf">1.0</span><span class="n">f</span><span class="p">);</span>
+    <span class="n">NewtonBodySetForce</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">gravityForce</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+<span class="p">}</span>
+
+<p>The first one, <code>transformCallback</code>, is called whenever body changes its transform -
+e. g. either position or rotation. This is a good place to synchronize our Irrlicht meshes&#39;
+positions with their Newton bodies.</p>
+
+<p>The <code>applyForceAndTorqueCallback</code> function is called on each <code>NewtonUpdate</code> to set the final
+forces and torques for bodies. We will modify this one later, but for now its implementation
+is just good.</p>
+
+<p>But what&#39;s with that <code>NewtonUpdate</code>? This is a function, which does as it says: it
+updates <code>NewtonWorld</code> and all its bodies, taking into account the time since the
+last update. This function call has one great candidate to be placed into: <code>handleFrame</code>.
+But we need to modify that method to receive the time since the last frame been rendered
+and we will use this time to update <code>NewtonWorld</code> too.</p>
+<span class="nl">private:</span>
+    <span class="kt">void</span> <span class="nf">updatePhysics</span><span class="p">(</span><span class="kt">float</span> <span class="n">dt</span><span class="p">)</span> <span class="p">{</span>
+         <span class="n">NewtonUpdate</span><span class="p">(</span><span class="n">newtonWorld</span><span class="p">,</span> <span class="n">dt</span><span class="p">);</span>
+    <span class="p">}</span>
+
+<span class="k">public</span><span class="o">:</span>
+    <span class="kt">void</span> <span class="nf">handleFrame</span><span class="p">(</span><span class="kt">float</span> <span class="n">dt</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">auto</span> <span class="n">handler</span> <span class="o">=</span> <span class="n">luaState</span><span class="p">.</span><span class="n">GetGlobalEnvironment</span><span class="p">().</span><span class="n">Get</span><span class="o">&lt;</span><span class="n">LuaFunction</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="s">"handleFrame"</span><span class="p">);</span>
+
+        <span class="n">updatePhysics</span><span class="p">(</span><span class="n">dt</span><span class="p">);</span>
+        <span class="n">setKeyStates</span><span class="p">();</span>
+
+        <span class="n">handler</span><span class="p">.</span><span class="n">Invoke</span><span class="p">();</span>
+    <span class="p">}</span>
+
+<p>Remember about architecture: everything, what needs to be exposed to our scripts should be
+declared as <code>public</code> in our <code>ScriptManager</code>. Everything else - as <code>protected</code> or <code>private</code>.
+This is the basic principle of <em>encapsulation</em>, so let&#39;s keep it in our application.</p>
+
+<p>And update the main application loop:</p>
+<span class="k">while</span> <span class="p">(</span><span class="n">device</span><span class="o">-&gt;</span><span class="n">run</span><span class="p">())</span> <span class="p">{</span>
+    <span class="c1">// Work out a frame delta time.</span>
+    <span class="k">const</span> <span class="n">u32</span> <span class="n">now</span> <span class="o">=</span> <span class="n">device</span><span class="o">-&gt;</span><span class="n">getTimer</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">getTime</span><span class="p">();</span>
+    <span class="k">const</span> <span class="n">f32</span> <span class="n">frameDeltaTime</span> <span class="o">=</span> <span class="p">(</span><span class="n">f32</span><span class="p">)</span> <span class="p">(</span><span class="n">now</span> <span class="o">-</span> <span class="n">then</span><span class="p">);</span>
+    <span class="n">then</span> <span class="o">=</span> <span class="n">now</span><span class="p">;</span>
+
+    <span class="c1">// ...</span>
+
+    <span class="n">scriptMgr</span><span class="o">-&gt;</span><span class="n">handleFrame</span><span class="p">(</span><span class="n">frameDeltaTime</span><span class="p">);</span>
+
+    <span class="c1">// ...</span>
+<span class="p">}</span>
+
+<p><strong>Hint:</strong> to make simulation slower and so watch ball falling in detail, make the
+<code>NewtonUpdate</code> argument even smaller. Thousand times, say.</p>
+
+<p>Since we have initialization for our Newton stuff, we need to clean it up at the exit
+to prevent memory leaks. Let&#39;s declare a method for that:</p>
+<span class="nl">private:</span>
+    <span class="kt">void</span> <span class="nf">stopPhysics</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">NewtonDestroyAllBodies</span><span class="p">(</span><span class="n">newtonWorld</span><span class="p">);</span>
+        <span class="n">NewtonDestroy</span><span class="p">(</span><span class="n">newtonWorld</span><span class="p">);</span>
+    <span class="p">}</span>
+
+<p>And call it right before the program&#39;s end:</p>
+<span class="n">device</span><span class="o">-&gt;</span><span class="n">drop</span><span class="p">();</span>
+
+<span class="n">scriptMgr</span><span class="o">-&gt;</span><span class="n">handleExit</span><span class="p">();</span>
+<span class="k">delete</span> <span class="n">scriptMgr</span><span class="p">;</span>
+
+<p>And now is the right moment to add key codes&#39; definitions and exit function to our
+<code>ScriptManager</code> so that we could write more clear code and close our application
+correctly, using, say, <kbd>Esc</kbd> key.</p>
+
+<p>To stop our application, we need to break our <code>while (device-&gt;run())</code> loop. This could be
+achieved by simply closing the <code>IrrlichtDevice</code> with <code>device-&gt;closeDevice()</code>. But we
+do not have an access to the device from the <code>ScriptManager</code>. So let&#39;s add it as a
+constructor argument:</p>
+<span class="nl">private:</span>
+    <span class="n">irr</span><span class="o">::</span><span class="n">IrrlichtDevice</span> <span class="o">*</span><span class="n">device</span><span class="p">;</span>
+
+<span class="k">public</span><span class="o">:</span>
+    <span class="n">ScriptManager</span><span class="p">(</span><span class="n">irr</span><span class="o">::</span><span class="n">IrrlichtDevice</span> <span class="o">*</span><span class="n">_device</span><span class="p">,</span> <span class="n">scene</span><span class="o">::</span><span class="n">ISceneManager</span> <span class="o">*</span><span class="n">_smgr</span><span class="p">,</span> <span class="n">video</span><span class="o">::</span><span class="n">IVideoDriver</span> <span class="o">*</span><span class="n">_driver</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">driver</span> <span class="o">=</span> <span class="n">_driver</span><span class="p">;</span>
+        <span class="n">smgr</span> <span class="o">=</span> <span class="n">_smgr</span><span class="p">;</span>
+        <span class="n">device</span> <span class="o">=</span> <span class="n">_device</span><span class="p">;</span>
+
+        <span class="n">initPhysics</span><span class="p">();</span>
+    <span class="p">}</span>
+
+<p>So now we can create a function, exposed to our scripts, which will stop our application:</p>
+<span class="kt">void</span> <span class="nf">exit</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">device</span><span class="o">-&gt;</span><span class="n">closeDevice</span><span class="p">();</span>
+<span class="p">}</span>
+
+<p>And bind it to the Lua function:</p>
+<span class="k">auto</span> <span class="n">exitFn</span> <span class="o">=</span> <span class="n">luaState</span><span class="p">.</span><span class="n">CreateFunction</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="o">&gt;</span><span class="p">(</span>
+                <span class="p">[</span><span class="o">&amp;</span><span class="p">]()</span> <span class="o">-&gt;</span> <span class="kt">void</span> <span class="p">{</span> <span class="n">exit</span><span class="p">();</span> <span class="p">});</span>
+
+<span class="n">global</span><span class="p">.</span><span class="n">Set</span><span class="p">(</span><span class="s">"exit"</span><span class="p">,</span> <span class="n">exitFn</span><span class="p">);</span>
+
+<p>Now we can use our <code>exit</code> function in the Lua scripts. But we will need to use hexadecimal
+key codes and that&#39;s... ugly. So we need to define some symbolic names for those codes:</p>
+<span class="kt">void</span> <span class="nf">setGlobalVariables</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">setKeyStates</span><span class="p">();</span>
+    <span class="n">setKeyCodeConstants</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">setKeyCodeConstants</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">map</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;</span> <span class="n">keyMapping</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">{</span> <span class="s">"KEY_LBUTTON"</span><span class="p">,</span> <span class="mh">0x01</span> <span class="p">},</span> <span class="c1">// Left mouse button</span>
+        <span class="p">{</span> <span class="s">"KEY_RBUTTON"</span><span class="p">,</span> <span class="mh">0x02</span> <span class="p">},</span> <span class="c1">// Right mouse button</span>
+        <span class="p">{</span> <span class="s">"KEY_CANCEL"</span><span class="p">,</span> <span class="mh">0x03</span> <span class="p">},</span> <span class="c1">// Control-break processing</span>
+        <span class="p">{</span> <span class="s">"KEY_MBUTTON"</span><span class="p">,</span> <span class="mh">0x04</span> <span class="p">},</span> <span class="c1">// Middle mouse button (three-button mouse)</span>
+        <span class="p">{</span> <span class="s">"KEY_XBUTTON1"</span><span class="p">,</span> <span class="mh">0x05</span> <span class="p">},</span> <span class="c1">// Windows 2000/XP: X1 mouse button</span>
+        <span class="p">{</span> <span class="s">"KEY_XBUTTON2"</span><span class="p">,</span> <span class="mh">0x06</span> <span class="p">},</span> <span class="c1">// Windows 2000/XP: X2 mouse button</span>
+        <span class="p">{</span> <span class="s">"KEY_BACK"</span><span class="p">,</span> <span class="mh">0x08</span> <span class="p">},</span> <span class="c1">// BACKSPACE key</span>
+        <span class="p">{</span> <span class="s">"KEY_TAB"</span><span class="p">,</span> <span class="mh">0x09</span> <span class="p">},</span> <span class="c1">// TAB key</span>
+        <span class="p">{</span> <span class="s">"KEY_CLEAR"</span><span class="p">,</span> <span class="mh">0x0C</span> <span class="p">},</span> <span class="c1">// CLEAR key</span>
+        <span class="p">{</span> <span class="s">"KEY_RETURN"</span><span class="p">,</span> <span class="mh">0x0D</span> <span class="p">},</span> <span class="c1">// ENTER key</span>
+        <span class="p">{</span> <span class="s">"KEY_SHIFT"</span><span class="p">,</span> <span class="mh">0x10</span> <span class="p">},</span> <span class="c1">// SHIFT key</span>
+        <span class="p">{</span> <span class="s">"KEY_CONTROL"</span><span class="p">,</span> <span class="mh">0x11</span> <span class="p">},</span> <span class="c1">// CTRL key</span>
+        <span class="p">{</span> <span class="s">"KEY_MENU"</span><span class="p">,</span> <span class="mh">0x12</span> <span class="p">},</span> <span class="c1">// ALT key</span>
+        <span class="p">{</span> <span class="s">"KEY_PAUSE"</span><span class="p">,</span> <span class="mh">0x13</span> <span class="p">},</span> <span class="c1">// PAUSE key</span>
+        <span class="p">{</span> <span class="s">"KEY_CAPITAL"</span><span class="p">,</span> <span class="mh">0x14</span> <span class="p">},</span> <span class="c1">// CAPS LOCK key</span>
+        <span class="p">{</span> <span class="s">"KEY_KANA"</span><span class="p">,</span> <span class="mh">0x15</span> <span class="p">},</span> <span class="c1">// IME Kana mode</span>
+        <span class="p">{</span> <span class="s">"KEY_HANGUEL"</span><span class="p">,</span> <span class="mh">0x15</span> <span class="p">},</span> <span class="c1">// IME Hanguel mode (maintained for compatibility use KEY_HANGUL)</span>
+        <span class="p">{</span> <span class="s">"KEY_HANGUL"</span><span class="p">,</span> <span class="mh">0x15</span> <span class="p">},</span> <span class="c1">// IME Hangul mode</span>
+        <span class="p">{</span> <span class="s">"KEY_JUNJA"</span><span class="p">,</span> <span class="mh">0x17</span> <span class="p">},</span> <span class="c1">// IME Junja mode</span>
+        <span class="p">{</span> <span class="s">"KEY_FINAL"</span><span class="p">,</span> <span class="mh">0x18</span> <span class="p">},</span> <span class="c1">// IME final mode</span>
+        <span class="p">{</span> <span class="s">"KEY_HANJA"</span><span class="p">,</span> <span class="mh">0x19</span> <span class="p">},</span> <span class="c1">// IME Hanja mode</span>
+        <span class="p">{</span> <span class="s">"KEY_KANJI"</span><span class="p">,</span> <span class="mh">0x19</span> <span class="p">},</span> <span class="c1">// IME Kanji mode</span>
+        <span class="p">{</span> <span class="s">"KEY_ESCAPE"</span><span class="p">,</span> <span class="mh">0x1B</span> <span class="p">},</span> <span class="c1">// ESC key</span>
+        <span class="p">{</span> <span class="s">"KEY_CONVERT"</span><span class="p">,</span> <span class="mh">0x1C</span> <span class="p">},</span> <span class="c1">// IME convert</span>
+        <span class="p">{</span> <span class="s">"KEY_NONCONVERT"</span><span class="p">,</span> <span class="mh">0x1D</span> <span class="p">},</span> <span class="c1">// IME nonconvert</span>
+        <span class="p">{</span> <span class="s">"KEY_ACCEPT"</span><span class="p">,</span> <span class="mh">0x1E</span> <span class="p">},</span> <span class="c1">// IME accept</span>
+        <span class="p">{</span> <span class="s">"KEY_MODECHANGE"</span><span class="p">,</span> <span class="mh">0x1F</span> <span class="p">},</span> <span class="c1">// IME mode change request</span>
+        <span class="p">{</span> <span class="s">"KEY_SPACE"</span><span class="p">,</span> <span class="mh">0x20</span> <span class="p">},</span> <span class="c1">// SPACEBAR</span>
+        <span class="p">{</span> <span class="s">"KEY_PRIOR"</span><span class="p">,</span> <span class="mh">0x21</span> <span class="p">},</span> <span class="c1">// PAGE UP key</span>
+        <span class="p">{</span> <span class="s">"KEY_NEXT"</span><span class="p">,</span> <span class="mh">0x22</span> <span class="p">},</span> <span class="c1">// PAGE DOWN key</span>
+        <span class="p">{</span> <span class="s">"KEY_END"</span><span class="p">,</span> <span class="mh">0x23</span> <span class="p">},</span> <span class="c1">// END key</span>
+        <span class="p">{</span> <span class="s">"KEY_HOME"</span><span class="p">,</span> <span class="mh">0x24</span> <span class="p">},</span> <span class="c1">// HOME key</span>
+        <span class="p">{</span> <span class="s">"KEY_LEFT"</span><span class="p">,</span> <span class="mh">0x25</span> <span class="p">},</span> <span class="c1">// LEFT ARROW key</span>
+        <span class="p">{</span> <span class="s">"KEY_UP"</span><span class="p">,</span> <span class="mh">0x26</span> <span class="p">},</span> <span class="c1">// UP ARROW key</span>
+        <span class="p">{</span> <span class="s">"KEY_RIGHT"</span><span class="p">,</span> <span class="mh">0x27</span> <span class="p">},</span> <span class="c1">// RIGHT ARROW key</span>
+        <span class="p">{</span> <span class="s">"KEY_DOWN"</span><span class="p">,</span> <span class="mh">0x28</span> <span class="p">},</span> <span class="c1">// DOWN ARROW key</span>
+        <span class="p">{</span> <span class="s">"KEY_SELECT"</span><span class="p">,</span> <span class="mh">0x29</span> <span class="p">},</span> <span class="c1">// SELECT key</span>
+        <span class="p">{</span> <span class="s">"KEY_PRINT"</span><span class="p">,</span> <span class="mh">0x2A</span> <span class="p">},</span> <span class="c1">// PRINT key</span>
+        <span class="p">{</span> <span class="s">"KEY_EXECUT"</span><span class="p">,</span> <span class="mh">0x2B</span> <span class="p">},</span> <span class="c1">// EXECUTE key</span>
+        <span class="p">{</span> <span class="s">"KEY_SNAPSHOT"</span><span class="p">,</span> <span class="mh">0x2C</span> <span class="p">},</span> <span class="c1">// PRINT SCREEN key</span>
+        <span class="p">{</span> <span class="s">"KEY_INSERT"</span><span class="p">,</span> <span class="mh">0x2D</span> <span class="p">},</span> <span class="c1">// INS key</span>
+        <span class="p">{</span> <span class="s">"KEY_DELETE"</span><span class="p">,</span> <span class="mh">0x2E</span> <span class="p">},</span> <span class="c1">// DEL key</span>
+        <span class="p">{</span> <span class="s">"KEY_HELP"</span><span class="p">,</span> <span class="mh">0x2F</span> <span class="p">},</span> <span class="c1">// HELP key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_0"</span><span class="p">,</span> <span class="mh">0x30</span> <span class="p">},</span> <span class="c1">// 0 key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_1"</span><span class="p">,</span> <span class="mh">0x31</span> <span class="p">},</span> <span class="c1">// 1 key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_2"</span><span class="p">,</span> <span class="mh">0x32</span> <span class="p">},</span> <span class="c1">// 2 key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_3"</span><span class="p">,</span> <span class="mh">0x33</span> <span class="p">},</span> <span class="c1">// 3 key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_4"</span><span class="p">,</span> <span class="mh">0x34</span> <span class="p">},</span> <span class="c1">// 4 key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_5"</span><span class="p">,</span> <span class="mh">0x35</span> <span class="p">},</span> <span class="c1">// 5 key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_6"</span><span class="p">,</span> <span class="mh">0x36</span> <span class="p">},</span> <span class="c1">// 6 key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_7"</span><span class="p">,</span> <span class="mh">0x37</span> <span class="p">},</span> <span class="c1">// 7 key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_8"</span><span class="p">,</span> <span class="mh">0x38</span> <span class="p">},</span> <span class="c1">// 8 key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_9"</span><span class="p">,</span> <span class="mh">0x39</span> <span class="p">},</span> <span class="c1">// 9 key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_A"</span><span class="p">,</span> <span class="mh">0x41</span> <span class="p">},</span> <span class="c1">// A key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_B"</span><span class="p">,</span> <span class="mh">0x42</span> <span class="p">},</span> <span class="c1">// B key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_C"</span><span class="p">,</span> <span class="mh">0x43</span> <span class="p">},</span> <span class="c1">// C key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_D"</span><span class="p">,</span> <span class="mh">0x44</span> <span class="p">},</span> <span class="c1">// D key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_E"</span><span class="p">,</span> <span class="mh">0x45</span> <span class="p">},</span> <span class="c1">// E key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_F"</span><span class="p">,</span> <span class="mh">0x46</span> <span class="p">},</span> <span class="c1">// F key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_G"</span><span class="p">,</span> <span class="mh">0x47</span> <span class="p">},</span> <span class="c1">// G key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_H"</span><span class="p">,</span> <span class="mh">0x48</span> <span class="p">},</span> <span class="c1">// H key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_I"</span><span class="p">,</span> <span class="mh">0x49</span> <span class="p">},</span> <span class="c1">// I key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_J"</span><span class="p">,</span> <span class="mh">0x4A</span> <span class="p">},</span> <span class="c1">// J key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_K"</span><span class="p">,</span> <span class="mh">0x4B</span> <span class="p">},</span> <span class="c1">// K key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_L"</span><span class="p">,</span> <span class="mh">0x4C</span> <span class="p">},</span> <span class="c1">// L key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_M"</span><span class="p">,</span> <span class="mh">0x4D</span> <span class="p">},</span> <span class="c1">// M key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_N"</span><span class="p">,</span> <span class="mh">0x4E</span> <span class="p">},</span> <span class="c1">// N key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_O"</span><span class="p">,</span> <span class="mh">0x4F</span> <span class="p">},</span> <span class="c1">// O key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_P"</span><span class="p">,</span> <span class="mh">0x50</span> <span class="p">},</span> <span class="c1">// P key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_Q"</span><span class="p">,</span> <span class="mh">0x51</span> <span class="p">},</span> <span class="c1">// Q key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_R"</span><span class="p">,</span> <span class="mh">0x52</span> <span class="p">},</span> <span class="c1">// R key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_S"</span><span class="p">,</span> <span class="mh">0x53</span> <span class="p">},</span> <span class="c1">// S key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_T"</span><span class="p">,</span> <span class="mh">0x54</span> <span class="p">},</span> <span class="c1">// T key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_U"</span><span class="p">,</span> <span class="mh">0x55</span> <span class="p">},</span> <span class="c1">// U key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_V"</span><span class="p">,</span> <span class="mh">0x56</span> <span class="p">},</span> <span class="c1">// V key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_W"</span><span class="p">,</span> <span class="mh">0x57</span> <span class="p">},</span> <span class="c1">// W key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_X"</span><span class="p">,</span> <span class="mh">0x58</span> <span class="p">},</span> <span class="c1">// X key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_Y"</span><span class="p">,</span> <span class="mh">0x59</span> <span class="p">},</span> <span class="c1">// Y key</span>
+        <span class="p">{</span> <span class="s">"KEY_KEY_Z"</span><span class="p">,</span> <span class="mh">0x5A</span> <span class="p">},</span> <span class="c1">// Z key</span>
+        <span class="p">{</span> <span class="s">"KEY_LWIN"</span><span class="p">,</span> <span class="mh">0x5B</span> <span class="p">},</span> <span class="c1">// Left Windows key (Microsoft� Natural� keyboard)</span>
+        <span class="p">{</span> <span class="s">"KEY_RWIN"</span><span class="p">,</span> <span class="mh">0x5C</span> <span class="p">},</span> <span class="c1">// Right Windows key (Natural keyboard)</span>
+        <span class="p">{</span> <span class="s">"KEY_APPS"</span><span class="p">,</span> <span class="mh">0x5D</span> <span class="p">},</span> <span class="c1">// Applications key (Natural keyboard)</span>
+        <span class="p">{</span> <span class="s">"KEY_SLEEP"</span><span class="p">,</span> <span class="mh">0x5F</span> <span class="p">},</span> <span class="c1">// Computer Sleep key</span>
+        <span class="p">{</span> <span class="s">"KEY_NUMPAD0"</span><span class="p">,</span> <span class="mh">0x60</span> <span class="p">},</span> <span class="c1">// Numeric keypad 0 key</span>
+        <span class="p">{</span> <span class="s">"KEY_NUMPAD1"</span><span class="p">,</span> <span class="mh">0x61</span> <span class="p">},</span> <span class="c1">// Numeric keypad 1 key</span>
+        <span class="p">{</span> <span class="s">"KEY_NUMPAD2"</span><span class="p">,</span> <span class="mh">0x62</span> <span class="p">},</span> <span class="c1">// Numeric keypad 2 key</span>
+        <span class="p">{</span> <span class="s">"KEY_NUMPAD3"</span><span class="p">,</span> <span class="mh">0x63</span> <span class="p">},</span> <span class="c1">// Numeric keypad 3 key</span>
+        <span class="p">{</span> <span class="s">"KEY_NUMPAD4"</span><span class="p">,</span> <span class="mh">0x64</span> <span class="p">},</span> <span class="c1">// Numeric keypad 4 key</span>
+        <span class="p">{</span> <span class="s">"KEY_NUMPAD5"</span><span class="p">,</span> <span class="mh">0x65</span> <span class="p">},</span> <span class="c1">// Numeric keypad 5 key</span>
+        <span class="p">{</span> <span class="s">"KEY_NUMPAD6"</span><span class="p">,</span> <span class="mh">0x66</span> <span class="p">},</span> <span class="c1">// Numeric keypad 6 key</span>
+        <span class="p">{</span> <span class="s">"KEY_NUMPAD7"</span><span class="p">,</span> <span class="mh">0x67</span> <span class="p">},</span> <span class="c1">// Numeric keypad 7 key</span>
+        <span class="p">{</span> <span class="s">"KEY_NUMPAD8"</span><span class="p">,</span> <span class="mh">0x68</span> <span class="p">},</span> <span class="c1">// Numeric keypad 8 key</span>
+        <span class="p">{</span> <span class="s">"KEY_NUMPAD9"</span><span class="p">,</span> <span class="mh">0x69</span> <span class="p">},</span> <span class="c1">// Numeric keypad 9 key</span>
+        <span class="p">{</span> <span class="s">"KEY_MULTIPLY"</span><span class="p">,</span> <span class="mh">0x6A</span> <span class="p">},</span> <span class="c1">// Multiply key</span>
+        <span class="p">{</span> <span class="s">"KEY_ADD"</span><span class="p">,</span> <span class="mh">0x6B</span> <span class="p">},</span> <span class="c1">// Add key</span>
+        <span class="p">{</span> <span class="s">"KEY_SEPARATOR"</span><span class="p">,</span> <span class="mh">0x6C</span> <span class="p">},</span> <span class="c1">// Separator key</span>
+        <span class="p">{</span> <span class="s">"KEY_SUBTRACT"</span><span class="p">,</span> <span class="mh">0x6D</span> <span class="p">},</span> <span class="c1">// Subtract key</span>
+        <span class="p">{</span> <span class="s">"KEY_DECIMAL"</span><span class="p">,</span> <span class="mh">0x6E</span> <span class="p">},</span> <span class="c1">// Decimal key</span>
+        <span class="p">{</span> <span class="s">"KEY_DIVIDE"</span><span class="p">,</span> <span class="mh">0x6F</span> <span class="p">},</span> <span class="c1">// Divide key</span>
+        <span class="p">{</span> <span class="s">"KEY_F1"</span><span class="p">,</span> <span class="mh">0x70</span> <span class="p">},</span> <span class="c1">// F1 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F2"</span><span class="p">,</span> <span class="mh">0x71</span> <span class="p">},</span> <span class="c1">// F2 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F3"</span><span class="p">,</span> <span class="mh">0x72</span> <span class="p">},</span> <span class="c1">// F3 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F4"</span><span class="p">,</span> <span class="mh">0x73</span> <span class="p">},</span> <span class="c1">// F4 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F5"</span><span class="p">,</span> <span class="mh">0x74</span> <span class="p">},</span> <span class="c1">// F5 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F6"</span><span class="p">,</span> <span class="mh">0x75</span> <span class="p">},</span> <span class="c1">// F6 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F7"</span><span class="p">,</span> <span class="mh">0x76</span> <span class="p">},</span> <span class="c1">// F7 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F8"</span><span class="p">,</span> <span class="mh">0x77</span> <span class="p">},</span> <span class="c1">// F8 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F9"</span><span class="p">,</span> <span class="mh">0x78</span> <span class="p">},</span> <span class="c1">// F9 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F10"</span><span class="p">,</span> <span class="mh">0x79</span> <span class="p">},</span> <span class="c1">// F10 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F11"</span><span class="p">,</span> <span class="mh">0x7A</span> <span class="p">},</span> <span class="c1">// F11 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F12"</span><span class="p">,</span> <span class="mh">0x7B</span> <span class="p">},</span> <span class="c1">// F12 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F13"</span><span class="p">,</span> <span class="mh">0x7C</span> <span class="p">},</span> <span class="c1">// F13 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F14"</span><span class="p">,</span> <span class="mh">0x7D</span> <span class="p">},</span> <span class="c1">// F14 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F15"</span><span class="p">,</span> <span class="mh">0x7E</span> <span class="p">},</span> <span class="c1">// F15 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F16"</span><span class="p">,</span> <span class="mh">0x7F</span> <span class="p">},</span> <span class="c1">// F16 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F17"</span><span class="p">,</span> <span class="mh">0x80</span> <span class="p">},</span> <span class="c1">// F17 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F18"</span><span class="p">,</span> <span class="mh">0x81</span> <span class="p">},</span> <span class="c1">// F18 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F19"</span><span class="p">,</span> <span class="mh">0x82</span> <span class="p">},</span> <span class="c1">// F19 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F20"</span><span class="p">,</span> <span class="mh">0x83</span> <span class="p">},</span> <span class="c1">// F20 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F21"</span><span class="p">,</span> <span class="mh">0x84</span> <span class="p">},</span> <span class="c1">// F21 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F22"</span><span class="p">,</span> <span class="mh">0x85</span> <span class="p">},</span> <span class="c1">// F22 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F23"</span><span class="p">,</span> <span class="mh">0x86</span> <span class="p">},</span> <span class="c1">// F23 key</span>
+        <span class="p">{</span> <span class="s">"KEY_F24"</span><span class="p">,</span> <span class="mh">0x87</span> <span class="p">},</span> <span class="c1">// F24 key</span>
+        <span class="p">{</span> <span class="s">"KEY_NUMLOCK"</span><span class="p">,</span> <span class="mh">0x90</span> <span class="p">},</span> <span class="c1">// NUM LOCK key</span>
+        <span class="p">{</span> <span class="s">"KEY_SCROLL"</span><span class="p">,</span> <span class="mh">0x91</span> <span class="p">},</span> <span class="c1">// SCROLL LOCK key</span>
+        <span class="p">{</span> <span class="s">"KEY_LSHIFT"</span><span class="p">,</span> <span class="mh">0xA0</span> <span class="p">},</span> <span class="c1">// Left SHIFT key</span>
+        <span class="p">{</span> <span class="s">"KEY_RSHIFT"</span><span class="p">,</span> <span class="mh">0xA1</span> <span class="p">},</span> <span class="c1">// Right SHIFT key</span>
+        <span class="p">{</span> <span class="s">"KEY_LCONTROL"</span><span class="p">,</span> <span class="mh">0xA2</span> <span class="p">},</span> <span class="c1">// Left CONTROL key</span>
+        <span class="p">{</span> <span class="s">"KEY_RCONTROL"</span><span class="p">,</span> <span class="mh">0xA3</span> <span class="p">},</span> <span class="c1">// Right CONTROL key</span>
+        <span class="p">{</span> <span class="s">"KEY_LMENU"</span><span class="p">,</span> <span class="mh">0xA4</span> <span class="p">},</span> <span class="c1">// Left MENU key</span>
+        <span class="p">{</span> <span class="s">"KEY_RMENU"</span><span class="p">,</span> <span class="mh">0xA5</span> <span class="p">},</span> <span class="c1">// Right MENU key</span>
+        <span class="p">{</span> <span class="s">"KEY_OEM_1"</span><span class="p">,</span> <span class="mh">0xBA</span> <span class="p">},</span> <span class="c1">// for US    ";:"</span>
+        <span class="p">{</span> <span class="s">"KEY_PLUS"</span><span class="p">,</span> <span class="mh">0xBB</span> <span class="p">},</span> <span class="c1">// Plus Key   "+"</span>
+        <span class="p">{</span> <span class="s">"KEY_COMMA"</span><span class="p">,</span> <span class="mh">0xBC</span> <span class="p">},</span> <span class="c1">// Comma Key  ","</span>
+        <span class="p">{</span> <span class="s">"KEY_MINUS"</span><span class="p">,</span> <span class="mh">0xBD</span> <span class="p">},</span> <span class="c1">// Minus Key  "-"</span>
+        <span class="p">{</span> <span class="s">"KEY_PERIOD"</span><span class="p">,</span> <span class="mh">0xBE</span> <span class="p">},</span> <span class="c1">// Period Key "."</span>
+        <span class="p">{</span> <span class="s">"KEY_OEM_2"</span><span class="p">,</span> <span class="mh">0xBF</span> <span class="p">},</span> <span class="c1">// for US    "/?"</span>
+        <span class="p">{</span> <span class="s">"KEY_OEM_3"</span><span class="p">,</span> <span class="mh">0xC0</span> <span class="p">},</span> <span class="c1">// for US    "`~"</span>
+        <span class="p">{</span> <span class="s">"KEY_OEM_4"</span><span class="p">,</span> <span class="mh">0xDB</span> <span class="p">},</span> <span class="c1">// for US    "[{"</span>
+        <span class="p">{</span> <span class="s">"KEY_OEM_5"</span><span class="p">,</span> <span class="mh">0xDC</span> <span class="p">},</span> <span class="c1">// for US    "\|"</span>
+        <span class="p">{</span> <span class="s">"KEY_OEM_6"</span><span class="p">,</span> <span class="mh">0xDD</span> <span class="p">},</span> <span class="c1">// for US    "]}"</span>
+        <span class="p">{</span> <span class="s">"KEY_OEM_7"</span><span class="p">,</span> <span class="mh">0xDE</span> <span class="p">},</span> <span class="c1">// for US    "'""</span>
+        <span class="p">{</span> <span class="s">"KEY_OEM_8"</span><span class="p">,</span> <span class="mh">0xDF</span> <span class="p">},</span> <span class="c1">// None</span>
+        <span class="p">{</span> <span class="s">"KEY_OEM_AX"</span><span class="p">,</span> <span class="mh">0xE1</span> <span class="p">},</span> <span class="c1">// for Japan "AX"</span>
+        <span class="p">{</span> <span class="s">"KEY_OEM_102"</span><span class="p">,</span> <span class="mh">0xE2</span> <span class="p">},</span> <span class="c1">// "&lt;&gt;" or "\|"</span>
+        <span class="p">{</span> <span class="s">"KEY_ATTN"</span><span class="p">,</span> <span class="mh">0xF6</span> <span class="p">},</span> <span class="c1">// Attn key</span>
+        <span class="p">{</span> <span class="s">"KEY_CRSEL"</span><span class="p">,</span> <span class="mh">0xF7</span> <span class="p">},</span> <span class="c1">// CrSel key</span>
+        <span class="p">{</span> <span class="s">"KEY_EXSEL"</span><span class="p">,</span> <span class="mh">0xF8</span> <span class="p">},</span> <span class="c1">// ExSel key</span>
+        <span class="p">{</span> <span class="s">"KEY_EREOF"</span><span class="p">,</span> <span class="mh">0xF9</span> <span class="p">},</span> <span class="c1">// Erase EOF key</span>
+        <span class="p">{</span> <span class="s">"KEY_PLAY"</span><span class="p">,</span> <span class="mh">0xFA</span> <span class="p">},</span> <span class="c1">// Play key</span>
+        <span class="p">{</span> <span class="s">"KEY_ZOOM"</span><span class="p">,</span> <span class="mh">0xFB</span> <span class="p">},</span> <span class="c1">// Zoom key</span>
+        <span class="p">{</span> <span class="s">"KEY_PA1"</span><span class="p">,</span> <span class="mh">0xFD</span> <span class="p">},</span> <span class="c1">// PA1 key</span>
+        <span class="p">{</span> <span class="s">"KEY_OEM_CLEAR"</span><span class="p">,</span> <span class="mh">0xFE</span> <span class="p">},</span> <span class="c1">// Clear key</span>
+    <span class="p">};</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">keyMapping</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">keyMapping</span><span class="p">.</span><span class="n">end</span><span class="p">();</span> <span class="o">++</span><span class="n">it</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">luaState</span><span class="p">.</span><span class="n">GetGlobalEnvironment</span><span class="p">().</span><span class="n">Set</span><span class="p">(</span><span class="n">it</span><span class="o">-&gt;</span><span class="n">first</span><span class="p">,</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<p>Now we can create a <kbd>Esc</kbd> key handler in our script:</p>
+<span class="k">function</span> <span class="nf">handleFrame</span><span class="p">()</span>
+    <span class="c1">-- Esc</span>
+    <span class="k">if</span> <span class="n">KEY_STATE</span><span class="p">[</span><span class="n">KEY_ESCAPE</span><span class="p">]</span> <span class="o">==</span> <span class="kc">true</span> <span class="k">then</span>
+        <span class="n">exit</span><span class="p">()</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+
+<p>Now we are ready to create our first Newton bodies. Bodies are some invisible objects,
+which define how our Irrlicht meshes will behave (e. g. where they will be placed,
+how they will interact when moving, etc.). Basically, there are two types of bodies:</p>
+
+<ol>
+<li><strong>dynamic</strong>, whose movement is determined by the forces, applied to them</li>
+<li><strong>kinematic</strong>, which are controlled by setting their velocities</li>
+</ol>
+
+<p>Those two kinds of bodies are totally different, so the interactions between them
+are not pre-defined. So when your dynamic body will fall onto a kinematic one, it will
+fall through.</p>
+
+<p>And each body has its shape, which determines behaviour of the body, when it collides others
+and the collision detection itself, of course. Shapes could be <strong>convex</strong> or <strong>concave</strong>.
+Convex shapes are easier to work with <u>(on the level of physics simulation)</u>, but not all the
+bodies in practice are convex. For example, levels are oftenly concave. So they need their special
+shapes, which are called <code>Triangle Mesh</code>.</p>
+
+<p><strong>Note:</strong> to keep the performance of your application high, try to minimalize the use of
+triangle meshes and use as simple shapes, as possible. Sometimes it is more effective to
+combine a set of primitive shapes, like spheres, cylinders and boxes into one <strong>compound</strong>
+shape, then to use a trimesh.</p>
+
+<p>Let&#39;s create our first simple scene, empowered with physics! We will need only two things:</p>
+
+<ol>
+<li>a sphere</li>
+<li>the floor</li>
+</ol>
+
+<p>Since we do not have the good mesh in standard Irrlicht distribution for the floor
+<u>(there is a Quake-like level, but that is too much for our case)</u>, we will learn how
+to make that simple thing in Blender. The next part is a short break between coding
+sessions.</p>
+
+<p><a href="//irrlicht-newton-tutorials/2015-12-15-making-simple-level-with-blender " class="btn btn-success">Next chapter</a></p>

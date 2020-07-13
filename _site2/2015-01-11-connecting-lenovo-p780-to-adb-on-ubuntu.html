@@ -1,0 +1,79 @@
+<meta name="layout" content="post">
+<meta name="title" content="Connecting Lenovo P780 to ADB on Ubuntu">
+<meta name="date" content="2015-01-11T17:38:00+01:00">
+<meta name="tags" content="rtfm,tutorial,android,ubuntu">
+<meta name="tumblr_url" content="http://shybovycha.tumblr.com/post/107798726991/connecting-lenovo-p780-to-adb-on-ubuntu">
+<p>Ohhh... Today I&#39;ve faced one great trouble: recently I reinstalled my Ubuntu, so I lost all my configurations. And when I tried to connect my <u>Lenovo P780</u> to debug my Android application, I saw horrible error:</p>
+$ adb devices
+* daemon not running. starting it now on port 5037 *
+* daemon started successfully *
+List of devices attached
+????????????    no permissions
+
+<p>Hey! Where did my smartphone gone?!</p>
+
+<p>Fooling around in the internet, I found two simple steps to fix this:</p>
+
+<h3>1. find the <code>VendorID</code> and <code>ProductID</code> of your device</h3>
+
+<p>Run <code>lsusb</code> two times <u>(just find the difference line)</u>:</p>
+
+<ol>
+<li>when your device is disconnected</li>
+<li>when your device is connected</li>
+</ol>
+
+<p>This will give you two outputs:</p>
+<span class="nv">$ </span><span class="c"># disconnected device</span>
+
+<span class="nv">$ </span>lsusb
+Bus 002 Device 002: ID 8087:0024 Intel Corp. Integrated Rate Matching Hub
+Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 004: ID 064e:d213 Suyin Corp.
+Bus 001 Device 002: ID 8087:0024 Intel Corp. Integrated Rate Matching Hub
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 004 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+
+<span class="nv">$ </span><span class="c"># connected device (via USB)</span>
+
+<span class="nv">$ </span>lsusb
+Bus 002 Device 002: ID 8087:0024 Intel Corp. Integrated Rate Matching Hub
+Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 004: ID 064e:d213 Suyin Corp.
+Bus 001 Device 002: ID 8087:0024 Intel Corp. Integrated Rate Matching Hub
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 004 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 003 Device 006: ID 0bb4:0c03 HTC <span class="o">(</span>High Tech Computer Corp.<span class="o">)</span>
+Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+
+<p>Note the row, which is present in the second output block and is absent in the first one:</p>
+Bus 003 Device 006: ID 0bb4:0c03 HTC (High Tech Computer Corp.)
+
+<p>For some reason, my phone is recognized as a HTC, but that does not bother me so much.
+We will need only two parts of that row:</p>
+0bb4:0c03
+
+<p>The <code>0bb4</code> is a <strong>VendorID</strong> and the <code>0c03</code> is the <strong>ProductID</strong> for my phone.</p>
+
+<h3>2. add the phone attributes to the system</h3>
+
+<p>Sudo-edit the file <code>/lib/udev/rules.d/69-libmtp.rules</code> and point it to your device. Add a line like this (without any newlines):</p>
+ATTR{idVendor}=="0bb4", ATTR{idProduct}=="0c03", SYMLINK+="libmtp-%k", MODE="0666", GROUP="audio", ENV{ID_MTP_DEVICE}="1", ENV{ID_MEDIA_PLAYER}="1"
+
+<p>That should enable your system to see the device later.</li></p>
+
+<h3>3. enable write permissions for your device</h3>
+
+<p>Sudo-edit the file `/etc/udev/rules.d/51-android.rules <u>(you may need to create it)</u> and add one line there:</p>
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0bb4", ATTRS{idProduct} =="0c03", MODE="0666", GROUP="plugdev"
+
+<h3>4. final step</h3>
+
+<p>Check if your phone is recognized by <code>adb</code> - restart ABD server and check its device list:</p>
+<span class="nv">$ </span>adb kill-server
+<span class="nv">$ </span>adb devices
+<span class="k">*</span> daemon not running. starting it now on port 5037 <span class="k">*</span>
+<span class="k">*</span> daemon started successfully <span class="k">*</span>
+List of devices attached
+0123456789ABCDEF    device

@@ -1,0 +1,398 @@
+<meta name="layout" content="post">
+<meta name="title" content="First script">
+<meta name="date" content="2015-08-28T18:10:00+01:00">
+<p>As we discussed, we will describe the whole game in scripts, and the core functionality
+we will define in the core. In this chapter we will be adding <strong>Lua</strong> to our application.
+You do not need to download Lua itself - you&#39;d better install it with your system&#39;s
+package manager <u>(<code>yum</code> or <code>apt</code> or whatever your Linux uses, <code>brew</code> for OSX...)</u>.</p>
+
+<h2>Dependencies</h2>
+
+<p>The only thing you need to download from Internet this time is Lua wrapper called
+<strong>luacppinterface</strong>.
+So <a href="https://github.com/davidsiaw/luacppinterface/archive/master.zip"><strong>go and get it</strong></a> from
+Github.</p>
+
+<p>And unpack it... right to the <code>source</code> directory of our project! That&#39;s right! That&#39;s
+really small library so it will not pollute your project with tons of files.</p>
+
+<p>Now, I mentioned dependency managers earlier. This is how <u>we</u> will handle them in our <u>C++</u>
+application - we will simply put the sources of all the libraries we depend on, with the
+versions we depend on, right in our project. Given that, you may put Irrlicht there as well -
+you are free to do anything with our project!</p>
+
+<!--more-->
+
+<h2>Build instructions</h2>
+
+<p>To build our project we will need to change our <code>CMakeLists.txt</code> file to fetch
+our new dependency:</p>
+<span class="nb">cmake_minimum_required</span><span class="p">(</span>VERSION 3.1<span class="p">)</span>
+<span class="nb">project</span><span class="p">(</span>irrlicht_newton_game1<span class="p">)</span>
+
+<span class="nb">set</span><span class="p">(</span>CMAKE_CXX_FLAGS <span class="s2">"</span><span class="si">${</span><span class="nv">CMAKE_CXX_FLAGS</span><span class="si">}</span><span class="s2"> -std=c++11"</span><span class="p">)</span>
+
+<span class="nb">set</span><span class="p">(</span>SOURCE_FILES source/main.cpp<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>EXECUTABLE_NAME irrlicht_newton_game1<span class="p">)</span>
+
+<span class="nb">set</span><span class="p">(</span>LUACPPINTERFACE_PATH source/luacppinterface-master<span class="p">)</span>
+
+<span class="nb">add_subdirectory</span><span class="p">(</span><span class="si">${</span><span class="nv">LUACPPINTERFACE_PATH</span><span class="si">}</span><span class="p">)</span>
+
+<span class="nb">find_package</span><span class="p">(</span>X11<span class="p">)</span>
+<span class="nb">find_package</span><span class="p">(</span>OpenGL<span class="p">)</span>
+<span class="nb">find_package</span><span class="p">(</span>ZLIB<span class="p">)</span>
+<span class="nb">find_package</span><span class="p">(</span>Lua<span class="p">)</span>
+
+<span class="nb">if</span> <span class="p">(</span>NOT IRRLICHT_LIBRARY_PATH<span class="p">)</span>
+    <span class="nb">find_library</span><span class="p">(</span>IRRLICHT_LIBRARY_PATH
+            NAMES Irrlicht
+            PATHS <span class="si">${</span><span class="nv">IRRLICHT_PATH</span><span class="si">}</span>/lib/
+            PATH_SUFFIXES Linux MacOSX Win32-gcc Win32-visualstudio Win64-visualstudio<span class="p">)</span>
+
+    <span class="nb">message</span><span class="p">(</span>STATUS <span class="s2">"Found Irrlicht: </span><span class="si">${</span><span class="nv">IRRLICHT_LIBRARY_PATH</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">endif</span><span class="p">()</span>
+
+<span class="nb">include_directories</span><span class="p">(</span><span class="si">${</span><span class="nv">IRRLICHT_PATH</span><span class="si">}</span>/include <span class="si">${</span><span class="nv">LUA_INCLUDE_DIR</span><span class="si">}</span> <span class="si">${</span><span class="nv">LUACPPINTERFACE_PATH</span><span class="si">}</span>/include<span class="p">)</span>
+
+<span class="nb">add_executable</span><span class="p">(</span><span class="si">${</span><span class="nv">EXECUTABLE_NAME</span><span class="si">}</span> <span class="si">${</span><span class="nv">SOURCE_FILES</span><span class="si">}</span><span class="p">)</span>
+
+<span class="nb">target_link_libraries</span><span class="p">(</span><span class="si">${</span><span class="nv">EXECUTABLE_NAME</span><span class="si">}</span>
+        luacppinterface
+        <span class="si">${</span><span class="nv">IRRLICHT_LIBRARY_PATH</span><span class="si">}</span>
+        <span class="si">${</span><span class="nv">X11_LIBRARIES</span><span class="si">}</span>
+        <span class="si">${</span><span class="nv">OPENGL_LIBRARIES</span><span class="si">}</span>
+        <span class="si">${</span><span class="nv">ZLIB_LIBRARIES</span><span class="si">}</span>
+        <span class="si">${</span><span class="nv">X11_Xxf86vm_LIB</span><span class="si">}</span>
+        <span class="si">${</span><span class="nv">LUA_LIBRARIES</span><span class="si">}</span><span class="p">)</span>
+
+<p>And here&#39;s the thing: if you try to compile our project on another machine, you will
+not need to install any other libraries than Lua on that machine! That supposed to sound
+like <u>&quot;sweet, huh?&quot;</u>, except that one little <u>&quot;but...&quot;</u>... Bittersweet...</p>
+
+<p>Back to our busines... <code>luacppinterface</code> needs to be tweaked a bit to fit our project -
+we will hack its <code>CMakeLists.txt</code> file to make it depend on system Lua libraries.
+Just make it look like this:</p>
+<span class="nb">cmake_minimum_required</span> <span class="p">(</span>VERSION 2.6<span class="p">)</span>
+
+<span class="nb">project</span><span class="p">(</span>luacppinterface<span class="p">)</span>
+
+<span class="nb">include_directories</span><span class="p">(</span><span class="s2">"lua/src"</span><span class="p">)</span>
+
+<span class="nb">find_package</span><span class="p">(</span>Lua<span class="p">)</span>
+
+<span class="nb">include_directories</span><span class="p">(</span><span class="si">${</span><span class="nv">LUA_INCLUDE_DIR</span><span class="si">}</span><span class="p">)</span>
+
+<span class="nb">add_library</span><span class="p">(</span>luacppinterface STATIC
+    include/luacoroutine.cpp
+    include/luareference.cpp
+    include/luacppinterface.cpp
+    include/luatable.cpp
+    include/luafunction.cpp
+<span class="p">)</span>
+
+<span class="nb">target_link_libraries</span><span class="p">(</span>luacppinterface <span class="si">${</span><span class="nv">LUA_LIBRARIES</span><span class="si">}</span><span class="p">)</span>
+
+<p>It barely differs from the original file, but it makes a compilation pleasant - you
+do not need to specify paths to Lua libs anymore!</p>
+
+<h2>Injecting some Lua</h2>
+
+<p>Our application now uses C++ code to place some 3D objects in a scene. Let&#39;s move,
+say, sphere creation, to the script.</p>
+
+<p>First of all, add <code>luacppinterface</code> headers to our <code>main.cpp</code> file:</p>
+<span class="cp">#include "luacppinterface-master/include/luacppinterface.h"
+</span>
+<p>Now let&#39;s look at some of Irrlicht&#39; conventions:</p>
+
+<ul>
+<li>it uses <code>irr::video::IVideoDriver</code> for rendering operations</li>
+<li>it uses <code>irr::scene::ISceneManager</code> for scene management</li>
+</ul>
+
+<p>So why not to define a <code>ScriptManager</code> to handle scripts? Our requirements
+for this class (for now) are:</p>
+
+<ul>
+<li>it should load and evaluate scripts</li>
+<li>it should provide simple API to our scripts</li>
+</ul>
+
+<p>Let&#39;s get coding!</p>
+<span class="k">class</span> <span class="nc">ScriptManager</span> <span class="p">{</span>
+<span class="nl">private:</span>
+    <span class="n">Lua</span> <span class="n">luaState</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">map</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">,</span> <span class="n">scene</span><span class="o">::</span><span class="n">ISceneNode</span><span class="o">*&gt;</span> <span class="n">nodes</span><span class="p">;</span>
+    <span class="n">video</span><span class="o">::</span><span class="n">IVideoDriver</span> <span class="o">*</span><span class="n">driver</span><span class="p">;</span>
+    <span class="n">scene</span><span class="o">::</span><span class="n">ISceneManager</span> <span class="o">*</span><span class="n">smgr</span><span class="p">;</span>
+
+    <span class="kt">void</span> <span class="n">bindFunctions</span><span class="p">();</span>
+
+<span class="nl">public:</span>
+    <span class="n">ScriptManager</span><span class="p">(</span><span class="n">scene</span><span class="o">::</span><span class="n">ISceneManager</span> <span class="o">*</span><span class="n">_smgr</span><span class="p">,</span> <span class="n">video</span><span class="o">::</span><span class="n">IVideoDriver</span> <span class="o">*</span><span class="n">_driver</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">driver</span> <span class="o">=</span> <span class="n">_driver</span><span class="p">;</span>
+        <span class="n">smgr</span> <span class="o">=</span> <span class="n">_smgr</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kt">void</span> <span class="n">createSphereNode</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">name</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">textureFile</span><span class="p">);</span>
+
+    <span class="kt">void</span> <span class="n">setNodePosition</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">name</span><span class="p">,</span> <span class="n">LuaTable</span> <span class="n">pos</span><span class="p">);</span>
+
+    <span class="n">LuaTable</span> <span class="n">getNodePosition</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">name</span><span class="p">);</span>
+
+    <span class="kt">void</span> <span class="n">loadScript</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">filename</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">ifstream</span> <span class="n">inf</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">code</span><span class="p">((</span><span class="n">std</span><span class="o">::</span><span class="n">istreambuf_iterator</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="p">(</span><span class="n">inf</span><span class="p">)),</span> <span class="n">std</span><span class="o">::</span><span class="n">istreambuf_iterator</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="p">());</span>
+
+        <span class="n">bindFunctions</span><span class="p">();</span>
+
+        <span class="n">luaState</span><span class="p">.</span><span class="n">RunScript</span><span class="p">(</span><span class="n">code</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<p>This is just a skeleton - we will fill it out in a minute. Just catching up:</p>
+
+<ol>
+<li>this class depends on <code>IVideoDriver</code> and <code>ISceneManager</code> to handle 3D objects and the scene</li>
+<li>it contains <code>Lua luaState</code> field to store the current state of our script running</li>
+<li>it stores all the nodes as a <code>&lt;string, ISceneNode*&gt;</code> map to allow access to our nodes from scripts</li>
+<li>it exposes three methods as an API to Lua scripts: <code>createSphereNode</code>, <code>setNodePosition</code> and
+<code>getNodePosition</code> so we will be able to make some manipulations in our scripts</li>
+<li>it provides really short and simple interface to our C++ core: <code>ScriptManager(...)</code> and <code>loadScript</code></li>
+</ol>
+
+<p>The main principle, each and every programmer breaks every day is <strong>KISS</strong> <u>(Keep It Stupidly Simple)</u>.
+And that principle should guide us through this whole tutorial to not overthink and override
+ourselves as well as the project we are making. That is why our APIs are that simple.</p>
+
+<p>But let&#39;s get back to our <code>ScriptManager</code>. It shows how things will look like, but never
+defines how they will actually <strong>work</strong>. So here are the key points to Lua API:</p>
+
+<ol>
+<li><p><code>LuaTable</code> is an array-like structure in Lua, representing both indexed as well as key-value
+arrays in Lua. This type is a way to pass variables between Lua script and C++ program. You
+may use both <code>table.Get&lt;value_type&gt;(index)</code> and <code>table.Get&lt;value_type&gt;(&quot;key&quot;)</code> methods
+to access its values.</p></li>
+<li><p>To bind our <code>ScriptManager</code> methods to Lua functions, we need to use pointers to those
+functions. And as it is not that simple in usual C++, we will use C++11x lambdas:</p>
+<span class="k">auto</span> <span class="n">createSphere</span> <span class="o">=</span> <span class="n">luaState</span><span class="p">.</span><span class="n">CreateFunction</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">)</span><span class="o">&gt;</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">name</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">tex</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">void</span> <span class="p">{</span> <span class="n">createSphereNode</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">tex</span><span class="p">);</span> <span class="p">});</span></li>
+<li><p>All the functions and variables you want to pass to Lua scripts should be global. And since
+we have our pretty <code>luaState</code> member, we may set global members through its methods:</p>
+<span class="n">LuaTable</span> <span class="n">global</span> <span class="o">=</span> <span class="n">luaState</span><span class="p">.</span><span class="n">GetGlobalEnvironment</span><span class="p">();</span>
+
+<span class="c1">// ...</span>
+
+<span class="n">global</span><span class="p">.</span><span class="n">Set</span><span class="p">(</span><span class="s">"createSphere"</span><span class="p">,</span> <span class="n">createSphere</span><span class="p">);</span></li>
+<li><p>We will be using just a map of a Irrlicht&#39; nodes and its name to bypass those nodes between
+scripts and core:</p>
+<span class="kt">void</span> <span class="nf">createSphereNode</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">name</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">textureFile</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">scene</span><span class="o">::</span><span class="n">ISceneNode</span> <span class="o">*</span><span class="n">node</span> <span class="o">=</span> <span class="n">smgr</span><span class="o">-&gt;</span><span class="n">addSphereSceneNode</span><span class="p">();</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">node</span><span class="o">-&gt;</span><span class="n">setPosition</span><span class="p">(</span><span class="n">core</span><span class="o">::</span><span class="n">vector3df</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">30</span><span class="p">));</span>
+      <span class="n">node</span><span class="o">-&gt;</span><span class="n">setMaterialTexture</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">driver</span><span class="o">-&gt;</span><span class="n">getTexture</span><span class="p">(</span><span class="n">textureFile</span><span class="p">.</span><span class="n">c_str</span><span class="p">()));</span>
+      <span class="n">node</span><span class="o">-&gt;</span><span class="n">setMaterialFlag</span><span class="p">(</span><span class="n">video</span><span class="o">::</span><span class="n">EMF_LIGHTING</span><span class="p">,</span> <span class="nb">false</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="n">nodes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">setNodePosition</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">name</span><span class="p">,</span> <span class="n">LuaTable</span> <span class="n">pos</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kt">float</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">;</span>
+
+      <span class="n">x</span> <span class="o">=</span> <span class="n">pos</span><span class="p">.</span><span class="n">Get</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="s">"x"</span><span class="p">);</span>
+      <span class="n">y</span> <span class="o">=</span> <span class="n">pos</span><span class="p">.</span><span class="n">Get</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="s">"y"</span><span class="p">);</span>
+      <span class="n">z</span> <span class="o">=</span> <span class="n">pos</span><span class="p">.</span><span class="n">Get</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="s">"z"</span><span class="p">);</span>
+
+      <span class="n">nodes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">setPosition</span><span class="p">(</span><span class="n">core</span><span class="o">::</span><span class="n">vector3df</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">));</span>
+  <span class="p">}</span>
+
+  <span class="n">LuaTable</span> <span class="nf">getNodePosition</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">name</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">LuaTable</span> <span class="n">pos</span> <span class="o">=</span> <span class="n">luaState</span><span class="p">.</span><span class="n">CreateTable</span><span class="p">();</span>
+
+      <span class="n">core</span><span class="o">::</span><span class="n">vector3df</span> <span class="n">v</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">getPosition</span><span class="p">();</span>
+
+      <span class="n">pos</span><span class="p">.</span><span class="n">Set</span><span class="p">(</span><span class="s">"x"</span><span class="p">,</span> <span class="n">v</span><span class="p">.</span><span class="n">X</span><span class="p">);</span>
+      <span class="n">pos</span><span class="p">.</span><span class="n">Set</span><span class="p">(</span><span class="s">"y"</span><span class="p">,</span> <span class="n">v</span><span class="p">.</span><span class="n">Y</span><span class="p">);</span>
+      <span class="n">pos</span><span class="p">.</span><span class="n">Set</span><span class="p">(</span><span class="s">"z"</span><span class="p">,</span> <span class="n">v</span><span class="p">.</span><span class="n">Z</span><span class="p">);</span>
+
+      <span class="k">return</span> <span class="n">pos</span><span class="p">;</span>
+  <span class="p">}</span></li>
+</ol>
+
+<p>Given those, we have our API and are able to create and run our first Lua script.
+Add one in the <code>media/scripts/</code> directory:</p>
+<span class="n">createSphere</span><span class="p">(</span><span class="s2">"sphere1"</span><span class="p">,</span> <span class="s2">"media/textures/wall.bmp"</span><span class="p">)</span>
+
+<p><strong>Note:</strong> paths in the script will be used by C++ core, relatively to the binary file, which
+is... generated by our C++ code! So all the paths in the scripts are just the same as they
+are in C++ core.</p>
+
+<p>And add the <code>ScriptManager</code> initialization code:</p>
+<span class="n">ScriptManager</span> <span class="o">*</span><span class="n">scriptMgr</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ScriptManager</span><span class="p">(</span><span class="n">smgr</span><span class="p">,</span> <span class="n">driver</span><span class="p">);</span>
+
+<span class="n">scriptMgr</span><span class="o">-&gt;</span><span class="n">loadScript</span><span class="p">(</span><span class="s">"media/scripts/test1.lua"</span><span class="p">);</span>
+
+<p>Now you may remove the code, creating sphere in the <code>main()</code> function. And run the code.
+You should see exactly the same picture as before:</p>
+
+<p><img data-src="/images/04_movement_untouched.png"></p>
+
+<h2>Homework</h2>
+
+<p>Your task is: try to move all the other &quot;factory&quot; functions <u>(creating cube, ninja,
+circle animator for cube and fly animator for Ninja)</u> to Lua script, adding API for them
+to <code>ScriptManager</code>.</p>
+
+<h2>More separation</h2>
+
+<p>We will now advance our script and add some convention to it. These will be our tasks
+for the rest of this chapter:</p>
+
+<ol>
+<li>move keyboard events handling to script</li>
+<li>create two function in script so we may call them <u>by convention, not by configuration</u></li>
+</ol>
+
+<p>The last phrase I took from <strong>Ember.js introduction</strong>. It says <u>&quot;prefer convention over
+configuration&quot;</u>, meaning we&#39;d better call the functions of same name on different scripts,
+instead of setting somehow which function to call.</p>
+
+<p>That is, we will define <code>handleFrame()</code> function in our script, which will be called
+on each <code>onFrame</code> event in our C++ core and the <code>main()</code> function, which will be called right
+after script has been loaded.</p>
+<span class="k">auto</span> <span class="n">handler</span> <span class="o">=</span> <span class="n">luaState</span><span class="p">.</span><span class="n">GetGlobalEnvironment</span><span class="p">().</span><span class="n">Get</span><span class="o">&lt;</span><span class="n">LuaFunction</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="s">"handleFrame"</span><span class="p">);</span>
+
+<span class="c1">// ...</span>
+
+<span class="n">handler</span><span class="p">.</span><span class="n">Invoke</span><span class="p">();</span>
+
+<p>Moreover, we will define a global keyboard state table for each of scripts we load and will
+be updating it as user presses keys on his keyboard. And this variable will be shared with
+script, but as read-only one. So changes in that table will have no effect on the application
+itself.</p>
+<span class="k">class</span> <span class="nc">ScriptManager</span> <span class="p">{</span>
+<span class="nl">private:</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">map</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="kt">bool</span><span class="o">&gt;</span> <span class="n">keyStates</span><span class="p">;</span>
+
+<span class="nl">public:</span>
+    <span class="kt">void</span> <span class="n">setGlobalVariables</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">setKeyStates</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="kt">void</span> <span class="n">setKeyStates</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">LuaTable</span> <span class="n">keysTable</span> <span class="o">=</span> <span class="n">luaState</span><span class="p">.</span><span class="n">CreateTable</span><span class="p">();</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="o">&amp;</span><span class="n">kv</span> <span class="o">:</span> <span class="n">keyStates</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">keysTable</span><span class="p">.</span><span class="n">Set</span><span class="p">(</span><span class="n">kv</span><span class="p">.</span><span class="n">first</span><span class="p">,</span> <span class="n">kv</span><span class="p">.</span><span class="n">second</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="n">luaState</span><span class="p">.</span><span class="n">GetGlobalEnvironment</span><span class="p">().</span><span class="n">Set</span><span class="p">(</span><span class="s">"KEY_STATE"</span><span class="p">,</span> <span class="n">keysTable</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="kt">void</span> <span class="n">setKeyState</span><span class="p">(</span><span class="kt">int</span> <span class="n">key</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">state</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">keyStates</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kt">void</span> <span class="n">handleFrame</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">auto</span> <span class="n">handler</span> <span class="o">=</span> <span class="n">luaState</span><span class="p">.</span><span class="n">GetGlobalEnvironment</span><span class="p">().</span><span class="n">Get</span><span class="o">&lt;</span><span class="n">LuaFunction</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="s">"handleFrame"</span><span class="p">);</span>
+
+        <span class="n">setKeyStates</span><span class="p">();</span>
+
+        <span class="n">handler</span><span class="p">.</span><span class="n">Invoke</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="kt">void</span> <span class="n">loadScript</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">filename</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">ifstream</span> <span class="n">inf</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">code</span><span class="p">((</span><span class="n">std</span><span class="o">::</span><span class="n">istreambuf_iterator</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="p">(</span><span class="n">inf</span><span class="p">)),</span> <span class="n">std</span><span class="o">::</span><span class="n">istreambuf_iterator</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="p">());</span>
+
+        <span class="n">bindFunctions</span><span class="p">();</span>
+        <span class="n">setGlobalVariables</span><span class="p">();</span>
+
+        <span class="n">luaState</span><span class="p">.</span><span class="n">RunScript</span><span class="p">(</span><span class="n">code</span><span class="p">);</span>
+
+        <span class="k">auto</span> <span class="n">scriptMainFn</span> <span class="o">=</span> <span class="n">luaState</span><span class="p">.</span><span class="n">GetGlobalEnvironment</span><span class="p">().</span><span class="n">Get</span><span class="o">&lt;</span><span class="n">LuaFunction</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="s">"main"</span><span class="p">);</span>
+        <span class="n">scriptMainFn</span><span class="p">.</span><span class="n">Invoke</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">MyEventReceiver</span> <span class="o">:</span> <span class="k">public</span> <span class="n">IEventReceiver</span> <span class="p">{</span>
+<span class="nl">public:</span>
+    <span class="n">MyEventReceiver</span><span class="p">(</span><span class="n">ScriptManager</span> <span class="o">*</span><span class="n">scriptManager</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">scriptMgr</span> <span class="o">=</span> <span class="n">scriptManager</span><span class="p">;</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">u32</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">KEY_KEY_CODES_COUNT</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">scriptMgr</span><span class="o">-&gt;</span><span class="n">setKeyState</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">false</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="c1">// This is the one method that we have to implement</span>
+    <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">OnEvent</span><span class="p">(</span><span class="k">const</span> <span class="n">SEvent</span> <span class="o">&amp;</span><span class="n">event</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Remember whether each key is down or up</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">event</span><span class="p">.</span><span class="n">EventType</span> <span class="o">==</span> <span class="n">irr</span><span class="o">::</span><span class="n">EET_KEY_INPUT_EVENT</span><span class="p">)</span>
+            <span class="n">scriptMgr</span><span class="o">-&gt;</span><span class="n">setKeyState</span><span class="p">(</span><span class="n">event</span><span class="p">.</span><span class="n">KeyInput</span><span class="p">.</span><span class="n">Key</span><span class="p">,</span> <span class="n">event</span><span class="p">.</span><span class="n">KeyInput</span><span class="p">.</span><span class="n">PressedDown</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+    <span class="p">}</span>
+
+<span class="nl">private:</span>
+    <span class="n">ScriptManager</span> <span class="o">*</span><span class="n">scriptMgr</span><span class="p">;</span>
+<span class="p">};</span>
+
+<p>Variables are added to a <code>GlobalEnvironment</code> just as function do:</p>
+<span class="n">luaState</span><span class="p">.</span><span class="n">GetGlobalEnvironment</span><span class="p">().</span><span class="n">Set</span><span class="p">(</span><span class="s">"KEY_STATE"</span><span class="p">,</span> <span class="n">keysTable</span><span class="p">);</span>
+
+<p>Lua-defined functions are found by their names and called with <code>Invoke(args)</code> method:</p>
+<span class="k">auto</span> <span class="n">handler</span> <span class="o">=</span> <span class="n">luaState</span><span class="p">.</span><span class="n">GetGlobalEnvironment</span><span class="p">().</span><span class="n">Get</span><span class="o">&lt;</span><span class="n">LuaFunction</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="s">"handleFrame"</span><span class="p">);</span>
+
+<span class="n">handler</span><span class="p">.</span><span class="n">Invoke</span><span class="p">();</span>
+
+<p>Let&#39;s add some simple interaction to our script now. I&#39;ll help you a bit:</p>
+<span class="kt">void</span> <span class="nf">moveNode</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">name</span><span class="p">,</span> <span class="n">LuaTable</span> <span class="n">pos</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">scene</span><span class="o">::</span><span class="n">ISceneNode</span> <span class="o">*</span><span class="n">node</span> <span class="o">=</span> <span class="n">findNode</span><span class="p">(</span><span class="n">name</span><span class="p">);</span>
+    <span class="n">core</span><span class="o">::</span><span class="n">vector3df</span> <span class="n">vec</span> <span class="o">=</span> <span class="n">tableToVector3df</span><span class="p">(</span><span class="n">pos</span><span class="p">);</span>
+
+    <span class="n">core</span><span class="o">::</span><span class="n">matrix4</span> <span class="n">m</span><span class="p">;</span>
+
+    <span class="n">core</span><span class="o">::</span><span class="n">vector3df</span> <span class="n">rot</span> <span class="o">=</span> <span class="n">node</span><span class="o">-&gt;</span><span class="n">getRotation</span><span class="p">();</span>
+    <span class="n">m</span><span class="p">.</span><span class="n">setRotationDegrees</span><span class="p">(</span><span class="n">rot</span><span class="p">);</span>
+
+    <span class="n">m</span><span class="p">.</span><span class="n">transformVect</span><span class="p">(</span><span class="n">vec</span><span class="p">);</span>
+    <span class="n">node</span><span class="o">-&gt;</span><span class="n">setPosition</span><span class="p">(</span><span class="n">node</span><span class="o">-&gt;</span><span class="n">getPosition</span><span class="p">()</span> <span class="o">+</span> <span class="n">vec</span><span class="p">);</span>
+    <span class="n">node</span><span class="o">-&gt;</span><span class="n">updateAbsolutePosition</span><span class="p">();</span>
+<span class="p">}</span>
+
+<p>This is how nodes could be moved relatively to their current position in Irrlicht.</p>
+
+<p>And here&#39;s how our Lua script may look like now:</p>
+<span class="k">function</span> <span class="nf">handleFrame</span><span class="p">()</span>
+    <span class="c1">-- w</span>
+    <span class="k">if</span> <span class="n">KEY_STATE</span><span class="p">[</span><span class="mh">0x57</span><span class="p">]</span> <span class="o">==</span> <span class="kc">true</span> <span class="k">then</span>
+        <span class="n">move</span><span class="p">(</span><span class="s2">"sphere1"</span><span class="p">,</span> <span class="p">{</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="mi">0</span> <span class="p">})</span>
+    <span class="k">end</span>
+
+    <span class="c1">-- s</span>
+    <span class="k">if</span> <span class="n">KEY_STATE</span><span class="p">[</span><span class="mh">0x53</span><span class="p">]</span> <span class="o">==</span> <span class="kc">true</span> <span class="k">then</span>
+        <span class="n">move</span><span class="p">(</span><span class="s2">"sphere1"</span><span class="p">,</span> <span class="p">{</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="mi">0</span> <span class="p">})</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">function</span> <span class="nf">main</span><span class="p">()</span>
+    <span class="n">createSphere</span><span class="p">(</span><span class="s2">"sphere1"</span><span class="p">,</span> <span class="s2">"media/textures/wall.bmp"</span><span class="p">)</span>
+    <span class="n">setPosition</span><span class="p">(</span><span class="s2">"sphere1"</span><span class="p">,</span> <span class="p">{</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="mi">30</span> <span class="p">})</span>
+
+    <span class="n">createCube</span><span class="p">(</span><span class="s2">"cube1"</span><span class="p">,</span> <span class="s2">"media/textures/t351sml.jpg"</span><span class="p">)</span>
+    <span class="n">addCircleAnimator</span><span class="p">(</span><span class="s2">"cube1"</span><span class="p">,</span> <span class="p">{</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="mi">30</span> <span class="p">},</span> <span class="mi">20</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">createAnimatedMesh</span><span class="p">(</span><span class="s2">"ninja"</span><span class="p">,</span> <span class="s2">"media/models/ninja.b3d"</span><span class="p">,</span> <span class="s2">"media/textures/nskinbl.jpg"</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+    <span class="n">setRotation</span><span class="p">(</span><span class="s2">"ninja"</span><span class="p">,</span> <span class="p">{</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="mi">0</span> <span class="p">})</span>
+    <span class="n">setScale</span><span class="p">(</span><span class="s2">"ninja"</span><span class="p">,</span> <span class="p">{</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="mi">2</span> <span class="p">})</span>
+    <span class="n">addForwardAnimator</span><span class="p">(</span><span class="s2">"ninja"</span><span class="p">,</span> <span class="p">{</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="mi">60</span> <span class="p">},</span> <span class="p">{</span> <span class="n">x</span> <span class="o">=</span> <span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="mi">60</span> <span class="p">},</span> <span class="mi">3500</span><span class="p">,</span> <span class="kc">true</span><span class="p">)</span>
+<span class="k">end</span>
+
+<p>If you run our application <em>now</em>, you should be able to control sphere with <kbd>w</kbd> and
+<kbd>s</kbd> keys:</p>
+
+<p><img data-src="/images/irrlicht-newton-tutorials/lua_script_with_kbd_handling.png"></p>
+
+<p><a href="//irrlicht-newton-tutorials/2015-08-29-prepare-to-add-some-newtonianity " class="btn btn-success">Next chapter</a></p>

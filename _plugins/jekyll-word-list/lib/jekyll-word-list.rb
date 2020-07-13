@@ -14,7 +14,7 @@ module JekyllWordList
 
     def add(doc, doc_reference)
       doc_id = generate_doc_id
-      
+
       @docs[doc_id] = doc_reference
 
       doc_words = extract_words doc
@@ -62,7 +62,7 @@ module JekyllWordList
 
         [ word, Hash[new_data] ]
       end
-                                          
+
       { words: Hash[compact_words], documents: @docs }.to_json
     end
 
@@ -112,7 +112,7 @@ module JekyllWordList
 =end
 
       schema = {}
-      
+
       { words: @words, documents: @docs, schema: schema }.to_json
     end
 
@@ -124,15 +124,15 @@ module JekyllWordList
     def extract_words(text)
       # \W - all non-word chars; including dash ('-')
       # classes in regexes could have subtractions: [baseClass-[exclusions]], but not in Ruby; in Ruby it works by using a negative union: [baseClass&&[^exclusion]]
-      text.split(/[!?,;'"\/\\|=(){}\[\]<>@#%\^&`*\s]+/).map { |word| word.strip.downcase }.reject { |word| word.empty? or /^(\W+|\d+)$/.match? word }
+      text.split(/[!?,;'"\/\\|=(){}\[\]<>@#%\^&`*\s.“”»:]+/).map { |word| word.strip.downcase }.reject { |word| word.empty? or /^(\W+|\d+)$/.match? word }
     end
   end
-  
+
   class Parser
     def initialize
       @index = JekyllWordList::Index.new
     end
-    
+
     def parse(page_html, page_id)
       doc = Nokogiri::HTML.parse(page_html)
 
@@ -143,13 +143,14 @@ module JekyllWordList
       @index.add body_text, page_id
     end
 
-    def index_json
-      @index.to_json
+    def index_json(format)
+      @index.to_json(format)
     end
 
     private
 
     def traverse(node, acc = [])
+      return acc if node.nil?
       return acc if ['script', 'style'].include? node.name or (node.name == 'pre' and node.parent.name == 'code') or (node.name == 'code' and node.parent.name == 'pre')
 
       return acc + [node.text] if node.text?
@@ -160,17 +161,20 @@ module JekyllWordList
 end
 
 Jekyll::Hooks.register :site, :post_render do |site|
-  # puts ">>> site.dest = #{site.dest}"
-  # puts ">>> site.source = #{site.source}"
-  # puts ">>> site.config = #{site.config}"
-  
   parser = JekyllWordList::Parser.new
 
   documents = (site.pages + site.posts.docs).reject { |e| e.url =~ /(css|js|xml)$/ }
-  
+
   documents.each { |page| parser.parse(page.content, page.url) }
 
-  # puts parser.index_json
-  index_filename = File.expand_path('word_list.json', site.source)
-  File.write(index_filename, parser.index_json)
+  [ :compact, :full ].each do |format|
+    index_filename = File.expand_path("_data/word_list_#{format}.json", site.source)
+    dirname = File.dirname index_filename
+
+    Dir.mkdir(dirname) unless Dir.exist? dirname
+
+    File.write(index_filename, parser.index_json(format))
+
+    puts "Wrote word list file #{index_filename}"
+  end
 end

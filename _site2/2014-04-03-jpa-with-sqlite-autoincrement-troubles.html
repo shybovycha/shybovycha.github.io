@@ -1,0 +1,43 @@
+<meta name="layout" content="post">
+<meta name="title" content="JPA with SQLite autoincrement troubles">
+<meta name="date" content="2014-04-03T11:46:00+02:00">
+<meta name="tags" content="sqlite,jpa,java">
+<meta name="tumblr_url" content="http://shybovycha.tumblr.com/post/81573029618/jpa-with-sqlite-autoincrement-troubles">
+<p>Today I&#39;ve got an exception when JPA was trying to insert a new row to a table.</p>
+
+<p>My model definition was like this:</p>
+<span class="nd">@Entity</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Merchant</span> <span class="o">{</span>
+    <span class="nd">@Id</span>
+    <span class="nd">@GeneratedValue</span><span class="o">(</span><span class="n">strategy</span><span class="o">=</span><span class="nc">GenerationType</span><span class="o">.</span><span class="na">IDENTITY</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">id</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">name</span><span class="o">;</span>
+
+    <span class="c1">// ...</span>
+
+    <span class="kd">public</span> <span class="nf">Merchant</span><span class="o">(){</span>   <span class="o">}</span>
+
+    <span class="c1">// ...</span>
+
+<p>And the table creation script was the following:</p>
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">MERCHANT</span>
+<span class="p">(</span>
+    <span class="n">ID</span> <span class="nb">INTEGER</span> <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">NAME</span> <span class="nb">TEXT</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">BANKNAME</span> <span class="nb">TEXT</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">SWIFT</span> <span class="nb">TEXT</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">ACCOUNT</span> <span class="nb">TEXT</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">CHARGE</span> <span class="nb">REAL</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">PERIOD</span> <span class="nb">INTEGER</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">MINSUM</span> <span class="nb">REAL</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">TOTAL</span> <span class="nb">REAL</span> <span class="k">NOT</span> <span class="k">NULL</span>
+<span class="p">);</span>
+
+<p>I faced some strange exceptions like <code>id could not be null</code>, <code>SQL error or missing database (near &#39;values&#39;: syntax error)</code>, etc.</p>
+
+<p>The solution to this consists of two steps:</p>
+
+<ul>
+<li><strong>in database:</strong> remove the <code>AUTOINCREMENT</code> and <code>NOT NULL</code> constraints from the <code>ID</code> column as SQLite will automatically increment its value (in the database)</li>
+<li><strong>in entity code:</strong> remove the <code>GenerationStrategyType</code> from the <code>id</code> member annotation</li>
+</ul>

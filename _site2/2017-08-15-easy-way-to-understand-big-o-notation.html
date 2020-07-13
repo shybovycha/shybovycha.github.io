@@ -1,0 +1,91 @@
+<meta name="layout" content="post">
+<meta name="title" content="Easy way to understand algorithm complexity and big O notation">
+<meta name="date" content="2017-08-15T11:38:24+02:00">
+<h2>Foreword</h2>
+
+<p>Some time ago I&#39;ve published an <a href="/2016-08-25-big-o-notation ">article about bit O notation</a>. I&#39;ve mentioned its source but never published it. So here it is, the original article.</p>
+
+<h2>The article</h2>
+
+<p>Big O notation is the most widely used method which describes algorithm complexity - the execution time required or the space used in memory or in the disk by an algorithm. Often in exams or interviews, you will be asked some questions about algorithm complexity in the following form:</p>
+
+<blockquote>
+<p>For an algorithm that uses a data structure of size n, what is the run-time complexity or space complexity of the algorithm? The answer to such questions often uses big O notations to describe the algorithm complexity, such as <code>O(1)</code>, <code>O(n)</code>, <code>O(n^2)</code> or <code>O(log(n))</code>.</p>
+</blockquote>
+
+<!--more-->
+
+<h2>Big O for time complexity</h2>
+
+<p>Here we don&#39;t want to discuss big O mathematically. Basically, when analyzing the time complexity of an algorithm, big O notation is used to describe the rough estimate of the number of &quot;steps&quot; to complete the algorithm. Let&#39;s take the following example:</p>
+<span class="kt">void</span> <span class="nf">fun</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// partl</span>
+    <span class="n">doSomething</span><span class="p">();</span>
+
+    <span class="c1">// part2</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">doSomething</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="c1">// part3</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">doSomething</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="c1">// part4</span>
+    <span class="k">return</span><span class="p">;</span>
+<span class="p">}</span>
+
+<p>Here lets assume that <code>doSomething()</code> takes <code>C</code> steps to complete. The whole <code>fun(n)</code> method has 4 parts. What is the time complexity of each part for different parameters <code>n</code>?</p>
+
+<p>For part 1, it does <code>doSomething()</code> so it takes constant <code>C</code> steps. Here <code>C</code> is independent of the parameter <code>n</code>. When the time complexity is independent of the parameter, we use <code>O(1)</code> to mark it.</p>
+
+<p>For part 2, it does <code>doSomething()</code> exactly <code>n</code> times. Each time it takes <code>C</code> steps. So in total, it takes <code>C*n</code> steps to complete part 2. Then as described above, we use <code>O(1)</code> to complete the <code>C</code> steps. Then for <code>C*n</code>, the complexity becomes <code>n * O(1)</code>. Here, an important rule is that <code>a * O(n)</code> equals <code>O(a * n)</code>. In such case, <code>n * O(1) = O(n)</code>. So the time complexity of part 2 is <code>O(n)</code>.</p>
+
+<p>For part 3, it has two loops. The inner loop is exactly like part 2. The outer loop does part 2 <code>n</code> times again so the time complexity of part 3 is <code>n * O(n)</code> which is <code>O(n^2)</code>.</p>
+
+<p>For part 4, it takes exactly <code>1</code> step to return. So the time complexity is <code>O(1)</code>.</p>
+
+<p>Then what is the total time complexity of the whole <code>fun(n)</code>? It is easy, we just need to add up the time complexity of all the 4 parts:</p>
+O(1) + O(n) + O(n^2) + O(1)
+
+<p>Now let&#39;s assume <code>n</code> becomes very-very large. Parts 1 and 4 will still take constant number of steps, <code>C + 1</code>, to complete, so the total time of running part 1 and part 4 could be ignored when calculating the execution time for part 2 and part 3, as now both part 2 and part 3 take much more time than part 1 and part 4.</p>
+
+<p>Let&#39;s we compare part 2 and part 3:</p>
+
+<ul>
+<li>when <code>n</code> is <code>1</code>, both part 2 and part 3 take <code>C</code> steps</li>
+<li>when <code>n</code> is <code>3</code>, part 2 takes <code>3*C</code> steps while part 3 takes <code>9*C</code> steps</li>
+<li>when <code>n</code> is <code>1000</code>, part 2 needs <code>1000 * C</code> steps but part 3 takes <code>1000000 * C</code> steps!</li>
+</ul>
+
+<p>As <code>n</code> increases, the time complexity of part 3 increases much quicker than part 2. When <code>n</code> becomes extremely large, the time of part 2 can be ignored by the time of part 3.</p>
+
+<p>So here is another rule: when we add up big O notation, the notation with slower increase speed could be ignored by the notation with faster increase speed. As we could see, <code>O(1)</code> does not increase at all so it could be ignored by <code>O(n)</code>. <code>O(n)</code> is slower than <code>O(n^2)</code> so it could be ignored by <code>O(n^2)</code>. Therefore, the complexity of the whole <code>fun()</code> is <code>O(n^2)</code>.</p>
+
+<h2>Rules summary of big O notation</h2>
+
+<p>From the above examples, we could summarize the following rule: for multiplying two O notations, <code>O(A)</code> and <code>O(B)</code>, the result is <code>O(A*B)</code>. For example:</p>
+O(1) x O(n) = O(n).
+O(n) x O(n) = O(n^2).
+O(1) + O(n) = O(n).
+O(n) + O(n^2) = O(n^2).
+O(1) + O(n) + O(n^2) = O(n^2).
+
+<p>Here is the comparison of the increase speed of different O notations:</p>
+O(1) &lt; O(log(n)) &lt; O(n) &lt; O(n * log(n)) &lt; O(n^2)
+
+<h2>How to use big O notation to compare algorithm complexity and why</h2>
+
+<p>When comparing different algorithms, we often say the one with a &quot;smaller&quot; big O notation is more efficient. However, there are situations that algorithms with &quot;smaller&quot; bit O is faster.</p>
+
+<p>For example, there are two algorithms <code>f1(n)</code> and <code>f2(n)</code>. <code>f(1)</code> takes <code>100</code> steps and <code>f(2)</code> takes <code>n</code> steps so <code>f(1)</code> is <code>O(1)</code> and <code>f(2)</code> is <code>O(n)</code>. When <code>n</code> is less than <code>100</code>, <code>f1(n)</code> is more efficient than <code>f2(n)</code>. However, big O compares when <code>n</code> goes to extremely (or infinitely) large. When <code>n</code> goes up to <code>10000</code>, <code>f2(n)</code> becomes way more efficient. As the nature of large-scale data in computer engineering, it makes more sense to compare algorithms in the cases that the data is very large.</p>
+
+<h2>Big 0 for space complexity</h2>
+
+<p>It is easier to understand using big O to estimate space complexity as it is more concrete. For example, in an algorithm, we need to create an array of size <code>n</code> to store the temporary results before getting the final result. If we assume that the size of the element in the array is a constant <code>C</code> which is independent of <code>n</code>, the space complexity of using the array is <code>C*n</code> which is</p>
+O(n) x O(C) = O(n) x O(1) = O(n)
+
+<p>When comparing different algorithms, we often compare how much &quot;extra&quot; space complexity is needed to solve the problem. For example, as an algorithm that needs an extra array of size <code>n</code> is not as good as the one which only needs two variables, <code>O(1)</code> space complexity is more efficient than <code>O(n)</code>.</p>

@@ -1,0 +1,287 @@
+<meta name="layout" content="post">
+<meta name="title" content="Finishing the first scene">
+<meta name="date" content="2015-12-16T18:00:00+01:00">
+<p>If you remember, we ended our coding excercises at place, where we almost created our first
+Newtonian body, but we did not actually have enough models.</p>
+
+<p>We discussed collision shapes a bit. So let&#39;s create one for our brand new model!</p>
+
+<p>We have a nice ramp to work with. But how we can reconstruct the same shape in the
+terms of Newton? Newton offers a set of collision shapes for us:</p>
+
+<ul>
+<li><p>Sphere</p>
+
+<p><img data-src="/images/irrlicht-newton-tutorials/collision_shapes/sphere.jpg" alt="Sphere" class="img-responsive"></p></li>
+<li><p>Box</p>
+
+<p><img data-src="/images/irrlicht-newton-tutorials/collision_shapes/box.jpg" alt="Box" class="img-responsive"></p></li>
+<li><p>Cone</p>
+
+<p><img data-src="/images/irrlicht-newton-tutorials/collision_shapes/cone.jpg" alt="Cone" class="img-responsive"></p></li>
+<li><p>Capsule</p>
+
+<p><img data-src="/images/irrlicht-newton-tutorials/collision_shapes/capsule.jpg" alt="Capsule" class="img-responsive"></p></li>
+<li><p>Cylinder</p>
+
+<p><img data-src="/images/irrlicht-newton-tutorials/collision_shapes/cylinder.jpg" alt="Cylinder" class="img-responsive"></p></li>
+<li><p>Chamfer Cylinder</p>
+
+<p><img data-src="/images/irrlicht-newton-tutorials/collision_shapes/chamfer_cylinder.jpg" alt="Chamfer Cylinder" class="img-responsive"></p></li>
+<li><p>Convex Hull</p>
+
+<p><img data-src="/images/irrlicht-newton-tutorials/collision_shapes/convex_hull.jpg" alt="Convex Hull" class="img-responsive"></p></li>
+<li><p>Trimesh</p>
+
+<p><img data-src="/images/irrlicht-newton-tutorials/collision_shapes/trimesh.jpg" alt="Trimesh" class="img-responsive"></p></li>
+</ul>
+
+<p>Obviously, not sphere, cone, capsule, nor cylinder make sense for us.
+We could use box shape, but then we simply ignore our inner faces (inside walls):</p>
+
+<p><img data-src="/images/irrlicht-newton-tutorials/collision_shapes/ramp_box.png" alt="Box collision shape for our ramp" class="img-responsive"></p>
+
+<p>A bit better, but still the same situation with convex hull shape:</p>
+
+<p><img data-src="/images/irrlicht-newton-tutorials/collision_shapes/ramp_convex.png" alt="Convex hull collision shape for our ramp" class="img-responsive"></p>
+
+<p>Generally, the way we create our Newtonian body is:</p>
+
+<ol>
+<li>create collision shape</li>
+<li>create blank Newtonian body</li>
+<li>set body properties like collision shape, mass, inertia parameters, etc.</li>
+<li>store the pointer to the graphical entity for that body in the <code>userData</code> property</li>
+</ol>
+
+<p>And then Newton Game Dynamics will take your body into account when processing other objects
+in the <code>NewtonWorld</code>.</p>
+
+<!--more-->
+
+<h2>Tree mesh collision shape</h2>
+
+<p>So we gonna use the triangle mesh shape. What we gonna do is loop through all the triangles
+of our mesh and build its copy, but in the world of <u>&quot;physic&quot;</u> bodies.</p>
+
+<p>To loop through all the triangles, we need to take each 3 edges of our mesh and the corresponding
+vertices <u>(because each edge is represented by two its vertices - their indexes in the list
+of vertices)</u> and create Newtonian triangle. Irrlicht stores vertices in one of three formats:</p>
+
+<ol>
+<li>plain vertex, represented by its three coordinates; the <code>irr::video::S3DVertex</code> class in Irrlicht</li>
+<li>vertex with texture coordinates; <code>irr::video::S3DVertex2TCoords</code> class</li>
+<li>vertex with its tangent information; <code>irr::video::S3DVertexTangents</code> class</li>
+</ol>
+
+<p>All those are represented by <code>irr::video::S3DVertex</code> class or its children. Moreover, we do not
+need nothing but the information on vertex&#39; coordinates in our case, so we may use only the
+base class&#39; properties.</p>
+
+<p>The code, creating trimesh collision shape is quite simple and straightforward:</p>
+<span class="kt">void</span> <span class="nf">createTrimeshShape</span><span class="p">(</span><span class="n">irr</span><span class="o">::</span><span class="n">scene</span><span class="o">::</span><span class="n">IMeshBuffer</span> <span class="o">*</span><span class="n">meshBuffer</span><span class="p">,</span> <span class="n">NewtonCollision</span> <span class="o">*</span><span class="n">treeCollision</span><span class="p">,</span>
+                                     <span class="n">irr</span><span class="o">::</span><span class="n">core</span><span class="o">::</span><span class="n">vector3df</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">irr</span><span class="o">::</span><span class="n">core</span><span class="o">::</span><span class="n">vector3df</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="p">{</span>
+    <span class="n">irr</span><span class="o">::</span><span class="n">core</span><span class="o">::</span><span class="n">vector3df</span> <span class="n">vArray</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
+
+    <span class="n">irr</span><span class="o">::</span><span class="n">video</span><span class="o">::</span><span class="n">S3DVertex</span> <span class="o">*</span><span class="n">mb_vertices</span> <span class="o">=</span> <span class="p">(</span><span class="n">irr</span><span class="o">::</span><span class="n">video</span><span class="o">::</span><span class="n">S3DVertex</span> <span class="o">*</span><span class="p">)</span> <span class="n">meshBuffer</span><span class="o">-&gt;</span><span class="n">getVertices</span><span class="p">();</span>
+
+    <span class="n">u16</span> <span class="o">*</span><span class="n">mb_indices</span> <span class="o">=</span> <span class="n">meshBuffer</span><span class="o">-&gt;</span><span class="n">getIndices</span><span class="p">();</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">meshBuffer</span><span class="o">-&gt;</span><span class="n">getIndexCount</span><span class="p">();</span> <span class="n">j</span> <span class="o">+=</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">v1i</span> <span class="o">=</span> <span class="n">mb_indices</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">0</span><span class="p">];</span>
+        <span class="kt">int</span> <span class="n">v2i</span> <span class="o">=</span> <span class="n">mb_indices</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
+        <span class="kt">int</span> <span class="n">v3i</span> <span class="o">=</span> <span class="n">mb_indices</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">2</span><span class="p">];</span>
+
+        <span class="n">vArray</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">mb_vertices</span><span class="p">[</span><span class="n">v1i</span><span class="p">].</span><span class="n">Pos</span> <span class="o">*</span> <span class="n">scale</span><span class="p">.</span><span class="n">X</span><span class="p">;</span>
+        <span class="n">vArray</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">mb_vertices</span><span class="p">[</span><span class="n">v2i</span><span class="p">].</span><span class="n">Pos</span> <span class="o">*</span> <span class="n">scale</span><span class="p">.</span><span class="n">Y</span><span class="p">;</span>
+        <span class="n">vArray</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">mb_vertices</span><span class="p">[</span><span class="n">v3i</span><span class="p">].</span><span class="n">Pos</span> <span class="o">*</span> <span class="n">scale</span><span class="p">.</span><span class="n">Z</span><span class="p">;</span>
+
+        <span class="n">NewtonTreeCollisionAddFace</span><span class="p">(</span><span class="n">treeCollision</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">vArray</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">X</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">irr</span><span class="o">::</span><span class="n">core</span><span class="o">::</span><span class="n">vector3df</span><span class="p">),</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<p>We take the edges <u>(indices)</u>, find their vertices, create a triangle - and we&#39;re done!
+You may have noticed, we do not actually create the collision shape here - we take it as
+an argument for our function. You will see why this is done that way in a moment.</p>
+
+<p>Now it&#39;s body&#39;s turn! But we need to extend our <code>Entity</code> class with the <code>NewtonBody</code>
+field so that we can seamlesly integrate it to our engine:</p>
+<span class="k">class</span> <span class="nc">Entity</span> <span class="p">{</span>
+<span class="nl">private:</span>
+    <span class="n">scene</span><span class="o">::</span><span class="n">ISceneNode</span> <span class="o">*</span><span class="n">mNode</span><span class="p">;</span>
+    <span class="n">NewtonBody</span> <span class="o">*</span><span class="n">mBody</span><span class="p">;</span>
+
+<span class="nl">public:</span>
+    <span class="n">Entity</span><span class="p">(</span><span class="n">scene</span><span class="o">::</span><span class="n">ISceneNode</span> <span class="o">*</span><span class="n">node</span><span class="p">)</span> <span class="o">:</span> <span class="n">mNode</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="n">mBody</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">{</span> <span class="p">}</span>
+
+    <span class="n">Entity</span><span class="p">(</span><span class="n">scene</span><span class="o">::</span><span class="n">ISceneNode</span> <span class="o">*</span><span class="n">node</span><span class="p">,</span> <span class="n">NewtonBody</span> <span class="o">*</span><span class="n">body</span><span class="p">)</span> <span class="o">:</span> <span class="n">mNode</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="n">mBody</span><span class="p">(</span><span class="n">body</span><span class="p">)</span> <span class="p">{</span> <span class="p">}</span>
+
+    <span class="n">scene</span><span class="o">::</span><span class="n">ISceneNode</span> <span class="o">*</span><span class="n">getSceneNode</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">mNode</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">NewtonBody</span> <span class="o">*</span><span class="n">getBody</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">mBody</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kt">void</span> <span class="n">setBody</span><span class="p">(</span><span class="n">NewtonBody</span> <span class="o">*</span><span class="n">body</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">mBody</span> <span class="o">=</span> <span class="n">body</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<p>And now we are ready to set our <code>NewtonBody</code>:</p>
+<span class="kt">void</span> <span class="nf">createMeshBody</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">name</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">Entity</span> <span class="o">*</span><span class="n">entity</span> <span class="o">=</span> <span class="n">entities</span><span class="p">[</span><span class="n">name</span><span class="p">];</span>
+    <span class="n">irr</span><span class="o">::</span><span class="n">scene</span><span class="o">::</span><span class="n">IMeshSceneNode</span> <span class="o">*</span><span class="n">node</span> <span class="o">=</span> <span class="p">(</span><span class="n">irr</span><span class="o">::</span><span class="n">scene</span><span class="o">::</span><span class="n">IMeshSceneNode</span> <span class="o">*</span><span class="p">)</span> <span class="n">entity</span><span class="o">-&gt;</span><span class="n">getSceneNode</span><span class="p">();</span>
+
+    <span class="n">NewtonCollision</span> <span class="o">*</span><span class="n">shape</span> <span class="o">=</span> <span class="n">NewtonCreateTreeCollision</span><span class="p">(</span><span class="n">newtonWorld</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="n">NewtonTreeCollisionBeginBuild</span><span class="p">(</span><span class="n">shape</span><span class="p">);</span>
+
+    <span class="n">irr</span><span class="o">::</span><span class="n">scene</span><span class="o">::</span><span class="n">IMesh</span> <span class="o">*</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">node</span><span class="o">-&gt;</span><span class="n">getMesh</span><span class="p">();</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">mesh</span><span class="o">-&gt;</span><span class="n">getMeshBufferCount</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">irr</span><span class="o">::</span><span class="n">scene</span><span class="o">::</span><span class="n">IMeshBuffer</span> <span class="o">*</span><span class="n">mb</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">-&gt;</span><span class="n">getMeshBuffer</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+        <span class="n">createTrimeshShape</span><span class="p">(</span><span class="n">mb</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">node</span><span class="o">-&gt;</span><span class="n">getScale</span><span class="p">());</span>
+    <span class="p">}</span>
+
+    <span class="n">NewtonTreeCollisionEndBuild</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+
+    <span class="kt">float</span> <span class="n">mass</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">f</span><span class="p">;</span>
+
+    <span class="n">dMatrix</span> <span class="n">origin</span><span class="p">;</span>
+    <span class="n">NewtonCollisionGetMatrix</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">origin</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]);</span>
+    <span class="n">NewtonBody</span> <span class="o">*</span><span class="n">body</span> <span class="o">=</span> <span class="n">NewtonCreateDynamicBody</span><span class="p">(</span><span class="n">newtonWorld</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">origin</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]);</span>
+
+    <span class="n">dVector</span> <span class="n">inertia</span><span class="p">;</span>
+    <span class="n">NewtonConvexCollisionCalculateInertialMatrix</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">inertia</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">origin</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]);</span>
+    <span class="n">NewtonBodySetMassMatrix</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">mass</span><span class="p">,</span> <span class="n">mass</span> <span class="o">*</span> <span class="n">inertia</span><span class="p">.</span><span class="n">m_x</span><span class="p">,</span> <span class="n">mass</span> <span class="o">*</span> <span class="n">inertia</span><span class="p">.</span><span class="n">m_y</span><span class="p">,</span> <span class="n">mass</span> <span class="o">*</span> <span class="n">inertia</span><span class="p">.</span><span class="n">m_z</span><span class="p">);</span>
+    <span class="n">NewtonBodySetCentreOfMass</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">origin</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]);</span>
+
+    <span class="n">NewtonDestroyCollision</span><span class="p">(</span><span class="n">shape</span><span class="p">);</span>
+
+    <span class="n">NewtonBodySetTransformCallback</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">transformCallback</span><span class="p">);</span>
+    <span class="n">NewtonBodySetForceAndTorqueCallback</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">applyForceAndTorqueCallback</span><span class="p">);</span>
+
+    <span class="n">NewtonBodySetUserData</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">entity</span><span class="p">);</span>
+    <span class="n">NewtonInvalidateCache</span><span class="p">(</span><span class="n">newtonWorld</span><span class="p">);</span>
+
+    <span class="n">entity</span><span class="o">-&gt;</span><span class="n">setBody</span><span class="p">(</span><span class="n">body</span><span class="p">);</span>
+<span class="p">}</span>
+
+<p>There is an interesting piece here, though: we used recursion to create collision shape...
+But if you remember, we did not create collision shape with our <code>createTrimeshShape</code> method -
+all we do in that method is that we add new triangles to the existing shape. That&#39;s because meshes
+in Irrlicht are stored as a tree structure - they may have sub-meshes, which are still
+parts of the whole mesh. And they can have their sub-meshes too. So we created a blank
+collision shape and fill it with new parts of the mesh.</p>
+
+<p>Doing it that way prevents us from overcomplicating the task and building a composite mesh,
+made of a set of trimeshes. That would be really hard to calculate in real-time! And our
+really simple scene would work with the speed of 5x5 battle in Unreal Tournament 3...</p>
+
+<p>Looking back to our list, we should now fill out all the fields for our <code>NewtonBody</code>. And since
+we are making the static model, we will set its mass to zero. This is enough for Newton to
+treat our body as the static one. I placed the other code to show the other fields, we need
+to fill in case we have a &quot;usual&quot; body.</p>
+
+<p>So the other fields of <code>NewtonBody</code> are:</p>
+
+<ol>
+<li><code>massMatrix</code>, which determines how the mass is spread along the body</li>
+<li><code>transformCallback</code> and <code>forceAndTorqueCallback</code> are two mandatory fields, required by Newton</li>
+<li><code>userData</code>, which will hold the pointer to the whole entity</li>
+</ol>
+
+<p><code>massMatrix</code> could be calculated automatically from the collision shape, like in our case.
+Without digging much into details, we will simply set it so the mass of our body is distributed
+uniformely.</p>
+
+<p><code>transformCallback</code> is the function, which will be called for our body each time it changes its
+position due to the interaction with other bodies inside <code>NewtonWorld</code>.</p>
+
+<p><code>forceAndTorqueCallback</code> is the function, which applies forces and torques to our body. This is
+a bit tricky, but you need to keep track of each force and torque by yourself and then apply
+them in a way that they summ up and create the final force, influencing the body. We will
+talk about it later, when we will deal with impulses.</p>
+
+<p>So, the <code>transformCallback</code>:</p>
+<span class="k">static</span> <span class="kt">void</span> <span class="nf">transformCallback</span><span class="p">(</span><span class="k">const</span> <span class="n">NewtonBody</span> <span class="o">*</span><span class="n">body</span><span class="p">,</span> <span class="k">const</span> <span class="n">dFloat</span> <span class="o">*</span><span class="n">matrix</span><span class="p">,</span> <span class="kt">int</span> <span class="n">threadIndex</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">Entity</span> <span class="o">*</span><span class="n">entity</span> <span class="o">=</span> <span class="p">(</span><span class="n">Entity</span> <span class="o">*</span><span class="p">)</span> <span class="n">NewtonBodyGetUserData</span><span class="p">(</span><span class="n">body</span><span class="p">);</span>
+    <span class="n">scene</span><span class="o">::</span><span class="n">ISceneNode</span> <span class="o">*</span><span class="n">node</span> <span class="o">=</span> <span class="n">entity</span><span class="o">-&gt;</span><span class="n">getSceneNode</span><span class="p">();</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">node</span><span class="p">)</span>
+        <span class="k">return</span><span class="p">;</span>
+
+    <span class="n">core</span><span class="o">::</span><span class="n">matrix4</span> <span class="n">transform</span><span class="p">;</span>
+    <span class="n">transform</span><span class="p">.</span><span class="n">setM</span><span class="p">(</span><span class="n">matrix</span><span class="p">);</span>
+
+    <span class="n">node</span><span class="o">-&gt;</span><span class="n">setPosition</span><span class="p">(</span><span class="n">transform</span><span class="p">.</span><span class="n">getTranslation</span><span class="p">());</span>
+    <span class="n">node</span><span class="o">-&gt;</span><span class="n">setRotation</span><span class="p">(</span><span class="n">transform</span><span class="p">.</span><span class="n">getRotationDegrees</span><span class="p">());</span>
+<span class="p">}</span>
+
+<p>Nothing tricky here.</p>
+
+<p>To put everything in place, let&#39;s add a sphere to our scene. The process is totally same,
+except of the collision shape creation - in case of primitives like box, sphere or cylinder,
+it is much more easy than with trimeshes - you do not need to loop through any indices or
+vertices - just set shape params like dimensions or radius. And body creation process is
+totally same.</p>
+<span class="kt">void</span> <span class="nf">createSphereNode</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">name</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">textureFile</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">scene</span><span class="o">::</span><span class="n">ISceneNode</span> <span class="o">*</span><span class="n">node</span> <span class="o">=</span> <span class="n">smgr</span><span class="o">-&gt;</span><span class="n">addSphereSceneNode</span><span class="p">();</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">node</span><span class="o">-&gt;</span><span class="n">setMaterialTexture</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">driver</span><span class="o">-&gt;</span><span class="n">getTexture</span><span class="p">(</span><span class="n">textureFile</span><span class="p">.</span><span class="n">c_str</span><span class="p">()));</span>
+        <span class="n">node</span><span class="o">-&gt;</span><span class="n">setMaterialFlag</span><span class="p">(</span><span class="n">video</span><span class="o">::</span><span class="n">EMF_LIGHTING</span><span class="p">,</span> <span class="nb">false</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="n">entities</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Entity</span><span class="p">(</span><span class="n">node</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">NewtonCollision</span> <span class="o">*</span><span class="nf">createSphereCollisionShape</span><span class="p">(</span><span class="n">scene</span><span class="o">::</span><span class="n">ISceneNode</span> <span class="o">*</span><span class="n">node</span><span class="p">,</span> <span class="kt">float</span> <span class="n">radius</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">dQuaternion</span> <span class="n">q</span><span class="p">(</span><span class="n">node</span><span class="o">-&gt;</span><span class="n">getRotation</span><span class="p">().</span><span class="n">X</span><span class="p">,</span> <span class="n">node</span><span class="o">-&gt;</span><span class="n">getRotation</span><span class="p">().</span><span class="n">Y</span><span class="p">,</span> <span class="n">node</span><span class="o">-&gt;</span><span class="n">getRotation</span><span class="p">().</span><span class="n">Z</span><span class="p">,</span> <span class="mf">1.</span><span class="n">f</span><span class="p">);</span>
+    <span class="n">dVector</span> <span class="n">v</span><span class="p">(</span><span class="n">node</span><span class="o">-&gt;</span><span class="n">getPosition</span><span class="p">().</span><span class="n">X</span><span class="p">,</span> <span class="n">node</span><span class="o">-&gt;</span><span class="n">getPosition</span><span class="p">().</span><span class="n">Y</span><span class="p">,</span> <span class="n">node</span><span class="o">-&gt;</span><span class="n">getPosition</span><span class="p">().</span><span class="n">Z</span><span class="p">);</span>
+    <span class="n">dMatrix</span> <span class="n">origin</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span>
+
+    <span class="kt">int</span> <span class="n">shapeId</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="n">NewtonCreateSphere</span><span class="p">(</span><span class="n">newtonWorld</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">shapeId</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">origin</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">createSphereBody</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">name</span><span class="p">,</span> <span class="kt">float</span> <span class="n">radius</span><span class="p">,</span> <span class="kt">float</span> <span class="n">mass</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">Entity</span> <span class="o">*</span><span class="n">entity</span> <span class="o">=</span> <span class="n">entities</span><span class="p">[</span><span class="n">name</span><span class="p">];</span>
+    <span class="n">scene</span><span class="o">::</span><span class="n">ISceneNode</span> <span class="o">*</span><span class="n">node</span> <span class="o">=</span> <span class="n">entity</span><span class="o">-&gt;</span><span class="n">getSceneNode</span><span class="p">();</span>
+
+    <span class="n">dQuaternion</span> <span class="n">q</span><span class="p">(</span><span class="n">node</span><span class="o">-&gt;</span><span class="n">getRotation</span><span class="p">().</span><span class="n">X</span><span class="p">,</span> <span class="n">node</span><span class="o">-&gt;</span><span class="n">getRotation</span><span class="p">().</span><span class="n">Y</span><span class="p">,</span> <span class="n">node</span><span class="o">-&gt;</span><span class="n">getRotation</span><span class="p">().</span><span class="n">Z</span><span class="p">,</span> <span class="mf">1.</span><span class="n">f</span><span class="p">);</span>
+    <span class="n">dVector</span> <span class="n">v</span><span class="p">(</span><span class="n">node</span><span class="o">-&gt;</span><span class="n">getPosition</span><span class="p">().</span><span class="n">X</span><span class="p">,</span> <span class="n">node</span><span class="o">-&gt;</span><span class="n">getPosition</span><span class="p">().</span><span class="n">Y</span><span class="p">,</span> <span class="n">node</span><span class="o">-&gt;</span><span class="n">getPosition</span><span class="p">().</span><span class="n">Z</span><span class="p">);</span>
+    <span class="n">dMatrix</span> <span class="n">origin</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span>
+
+    <span class="kt">int</span> <span class="n">shapeId</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="n">NewtonCollision</span> <span class="o">*</span><span class="n">shape</span> <span class="o">=</span> <span class="n">NewtonCreateSphere</span><span class="p">(</span><span class="n">newtonWorld</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">shapeId</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">origin</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]);</span>
+
+    <span class="n">dMatrix</span> <span class="n">origin</span><span class="p">;</span>
+    <span class="n">NewtonCollisionGetMatrix</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">origin</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]);</span>
+    <span class="n">NewtonBody</span> <span class="o">*</span><span class="n">body</span> <span class="o">=</span> <span class="n">NewtonCreateDynamicBody</span><span class="p">(</span><span class="n">newtonWorld</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">origin</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]);</span>
+
+    <span class="n">dVector</span> <span class="n">inertia</span><span class="p">;</span>
+    <span class="n">NewtonConvexCollisionCalculateInertialMatrix</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">inertia</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">origin</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]);</span>
+    <span class="n">NewtonBodySetMassMatrix</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">mass</span><span class="p">,</span> <span class="n">mass</span> <span class="o">*</span> <span class="n">inertia</span><span class="p">.</span><span class="n">m_x</span><span class="p">,</span> <span class="n">mass</span> <span class="o">*</span> <span class="n">inertia</span><span class="p">.</span><span class="n">m_y</span><span class="p">,</span> <span class="n">mass</span> <span class="o">*</span> <span class="n">inertia</span><span class="p">.</span><span class="n">m_z</span><span class="p">);</span>
+    <span class="n">NewtonBodySetCentreOfMass</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">origin</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]);</span>
+
+    <span class="n">NewtonDestroyCollision</span><span class="p">(</span><span class="n">shape</span><span class="p">);</span>
+
+    <span class="n">NewtonBodySetTransformCallback</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">transformCallback</span><span class="p">);</span>
+    <span class="n">NewtonBodySetForceAndTorqueCallback</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">applyForceAndTorqueCallback</span><span class="p">);</span>
+
+    <span class="n">NewtonBodySetUserData</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">entity</span><span class="p">);</span>
+    <span class="n">NewtonInvalidateCache</span><span class="p">(</span><span class="n">newtonWorld</span><span class="p">);</span>
+
+    <span class="n">entity</span><span class="o">-&gt;</span><span class="n">setBody</span><span class="p">(</span><span class="n">body</span><span class="p">);</span>
+<span class="p">}</span>
+
+<p>Have no fear about code duplication - we will remove it later. When you are done, you should
+get picture like this one:</p>
+
+<p><img data-src="/images/irrlicht-newton-tutorials/collision_shapes/ramp_with_ball.png" alt="First completed dynamic scene" class="img-responsive"></p>
+
+<p>Congrats! That&#39;s our first completed dynamic scene!</p>

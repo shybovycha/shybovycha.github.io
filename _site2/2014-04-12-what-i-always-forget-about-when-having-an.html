@@ -1,0 +1,69 @@
+<meta name="layout" content="post">
+<meta name="title" content="What i always forget about when having an interview">
+<meta name="date" content="2014-04-12T18:52:00+02:00">
+<meta name="tags" content="ruby,interview">
+<meta name="tumblr_url" content="http://shybovycha.tumblr.com/post/82491993325/what-i-always-forget-about-when-having-an">
+<h2>Ruby interview</h2>
+
+<p>I am always being asked at least two questions. Just to verify that I know Ruby basics.</p>
+
+<h3>What is the main difference between <code>Module</code> and <code>Class</code>?</h3>
+
+<p>That is so simple and obvious! Yet it&#39;s too easy to forget... The answer is: <strong>you can not instantiate a Module</strong>. See, Modules in Ruby do not have constructors. Yeah, they may contain variables, but they do not have an <code>initialize</code> method.</p>
+
+<p>You could define one this way:</p>
+<span class="k">module</span> <span class="nn">Moo</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="vi">@x</span> <span class="o">=</span> <span class="n">x</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<p>But when you try to call <code>Moo.new</code> you will get a <code>method missing</code> error.  When you try to run <code>Moo#initialize</code> you will get a <code>private method called</code> error.</p>
+
+<p>So yes, there is no way to instantiate Modules.</p>
+
+<h3>What&#39;s the difference between <code>Proc</code>, <code>lambda</code> and <code>block</code>?</h3>
+
+<p>This is simple enough to remember as the answer contains only a few points:</p>
+
+<ul>
+<li><code>Proc</code> is an object; <code>block</code> is not</li>
+<li><code>Proc</code> does not check the number of arguments; <code>lambda</code> does</li>
+<li><code>lambda</code> returns from itself; <code>Proc</code> returns from the outer (containing the <code>Proc</code> call) method</li>
+</ul>
+
+<h3>What is REST?</h3>
+
+<p>The answer on that question hardly depends on what the asking person means.</p>
+
+<p>So, I got two possible <u>correct answers</u>:</p>
+
+<ol>
+<li>That is the principle of web application development, when the application responds to a request, depending on which HTTP method was provided <u>(<code>PUT</code>, <code>GET</code>, <code>POST</code>, <code>DELETE</code>, <code>OPTIONS</code>)</u>.</li>
+<li>This is a way of encapsulation Resource and its Handlers. That is a bit hard to explain. Something like <u>&quot;you have to split your application to Resources&quot;</u>.</li>
+</ol>
+
+<h3>Is <code>Module</code> an ancestor of <code>Class</code> or is <code>Class</code> a child of <code>Module</code>?</h3>
+
+<p>This question, actually, may be asked on <code>Class</code>, <code>Module</code> or <code>Object</code> classes.
+It proves to be especially tricky when you do not know the answer.</p>
+
+<p>The reality is plain however:</p>
+<span class="n">irb</span><span class="p">(</span><span class="n">main</span><span class="p">):</span><span class="mo">005</span><span class="p">:</span><span class="mi">0</span><span class="o">&gt;</span> <span class="no">Object</span><span class="p">.</span><span class="nf">superclass</span>
+<span class="o">=&gt;</span> <span class="no">BasicObject</span>
+<span class="n">irb</span><span class="p">(</span><span class="n">main</span><span class="p">):</span><span class="mo">006</span><span class="p">:</span><span class="mi">0</span><span class="o">&gt;</span> <span class="no">Class</span><span class="p">.</span><span class="nf">superclass</span>
+<span class="o">=&gt;</span> <span class="no">Module</span>
+<span class="n">irb</span><span class="p">(</span><span class="n">main</span><span class="p">):</span><span class="mo">007</span><span class="p">:</span><span class="mi">0</span><span class="o">&gt;</span> <span class="no">Module</span><span class="p">.</span><span class="nf">superclass</span>
+<span class="o">=&gt;</span> <span class="no">Object</span>
+<span class="n">irb</span><span class="p">(</span><span class="n">main</span><span class="p">):</span><span class="mo">00</span><span class="mi">8</span><span class="p">:</span><span class="mi">0</span><span class="o">&gt;</span> <span class="no">BasicObject</span><span class="p">.</span><span class="nf">superclass</span>
+<span class="o">=&gt;</span> <span class="kp">nil</span>
+
+<p>So, you can even draw a chain:</p>
+<span class="kt">BasicObject</span> <span class="o">=&gt;</span> <span class="kt">Object</span> <span class="o">=&gt;</span> <span class="kt">Module</span> <span class="o">=&gt;</span> <span class="kt">Class</span>
+
+<h2>Some hints</h2>
+
+<ul>
+<li>Think out loud. Show an interviewing person how your thought flow. That is the good practice. It shows <strong>your ability to think logically, not your memory</strong>. And you could get to some friendly talk when you say some magic <strong>keyword</strong> or tell something the interviewer is interested in.</li>
+<li>When I am asked about <strong>Rails best practices</strong>, or just creating my web application, I should never forget one core principle: web application controllers <u>(looking at Rails&#39; MVC)</u> should be <strong>thin</strong>. So, the most logic at <code>Controller</code>&#39;s action should get or set some data on <code>Model</code> and provide a response. Nothing more.</li>
+</ul>

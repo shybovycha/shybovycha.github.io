@@ -1,0 +1,17 @@
+<meta name="layout" content="post">
+<meta name="title" content="incompatible character encodings: UTF-8 and ASCII-8BIT">
+<meta name="date" content="2012-08-16T11:20:00+02:00">
+<meta name="tags" content="rails,rails3,RTFM,mysql">
+<meta name="tumblr_url" content="http://shybovycha.tumblr.com/post/29543348338/incompatible-character-encodings-utf-8-and">
+<p>Just got the following error in my Rails project (Rails 3.2.6, Ruby 1.9.3):</p>
+ActionView::Template::Error (incompatible character encodings: UTF-8 and ASCII-8BIT)
+
+<p>That was caused by the case when MySQL record (ActiveReciord object, actually) contained UTF-8 characters and i was trying to output those chars in my template.
+But <strong>mysql</strong> gem does not support those. It needs a bit of hacking.</p>
+
+<p>Luckily, there is more convenient way to solve the problem. The solution of this issue now appears too easy:</p>
+
+<ul>
+<li>Install the <code>mysql2</code> gem</li>
+<li>Use <code>adapter: mysql2</code> instead of <code>adapter: mysql</code> in your <code>config/database.yml</code> file</li>
+</ul>

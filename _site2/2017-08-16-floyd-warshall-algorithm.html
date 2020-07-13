@@ -1,0 +1,943 @@
+<meta name="layout" content="post">
+<meta name="title" content="Floyd-Warshall algorithm">
+<meta name="date" content="2017-09-04T11:38:24+11:00">
+<h2>The story behind this post</h2>
+
+<p>Recently I&#39;ve received <code>+10</code> karma on StackOverflow. I was curious for what question or answer and clicked to check this. It appeared
+to be a <a href="https://stackoverflow.com/a/4526639/330471"><strong>seven-year-old</strong> answer</a> about a Floyd-Warshall algorithm. I was surprised with both my bad English (back those days...) and the very small value the answer had. So I&#39;ve revised it and here it is -- the brand-new version!</p>
+
+<h2>The definitions</h2>
+
+<p>Let us have a graph, described by matrix <code>D</code>, where <code>D[i][j]</code> is the length of the edge <code>(i -&gt; j)</code> <em>(from graph&#39;s vertex with index <code>i</code> to the vertex with index <code>j</code>)</em>.</p>
+
+<p>Matrix <code>D</code> has the size of <code>N * N</code>, where <code>N</code> is a total number of vertices in a graph because we can reach the maximum of paths by connecting each graph&#39;s vertex to each other.</p>
+
+<p>Also, we&#39;ll need matrix <code>R</code>, where we will store the vertices of the shortest paths (<code>R[i][j]</code> contains the index of a vertex, where the shortest path from vertex <code>i</code> to vertex <code>j</code> lies).</p>
+
+<p>Matrix <code>R</code> has the same size as <code>D</code>.</p>
+
+<p>The Floyd-Warshall algorithm performs these steps:</p>
+
+<ol>
+<li><p>initialize the matrix of all the paths between any two pairs of vertices in a graph with the edge&#39;s end vertex <em>(this is important since this value will be used for path reconstruction)</em></p></li>
+<li><p>for each pair of connected vertices <em>(read: for each edge <code>(u -&gt; v)</code>)</em>, <code>u</code> and <code>v</code>, find the vertex, which forms shortest path between them: if the vertex <code>k</code> defines two valid edges <code>(u -&gt; k)</code> and <code>(k -&gt; v)</code> <em>(if they are present in the graph)</em>, which are together shorter than path <code>(u -&gt; v)</code>, then assume the shortest path between <code>u</code> and <code>v</code> lies through <code>k</code>; set the shortest pivot point in matrix <code>R</code> for edge <code>(u -&gt; v)</code> to be the corresponding pivot point for edge <code>(u -&gt; k)</code></p></li>
+</ol>
+
+<p>But how do we read the matrix <code>D</code>?</p>
+
+<!--more-->
+
+<h2>Inputs</h2>
+
+<p>Take sample graph:</p>
+
+<!--
+```graphviz
+digraph G {
+    // layout = "circo";
+
+    0->2 [label = "1"];
+    2->3 [label = "5"];
+    3->1 [label = "2"];
+    1->2 [label = "6"];
+    1->0 [label = "7"];
+}
+```
+-->
+
+<p><img data-src="/images/floyd-warshall/floyd-warshall-graph-sample.png" alt=""></p>
+
+<p>In <em>GraphViz</em> it would be described as follows:</p>
+<span class="k">digraph</span> <span class="nv">G</span> <span class="p">{</span>
+    <span class="n">layout</span> <span class="p">=</span> <span class="s2">"circo"</span><span class="p">;</span>
+
+    <span class="mi">0</span><span class="o">-&gt;</span><span class="mi">2</span> <span class="o">[</span><span class="n">label</span> <span class="p">=</span> <span class="s2">"1"</span><span class="o">]</span><span class="p">;</span>
+    <span class="mi">2</span><span class="o">-&gt;</span><span class="mi">3</span> <span class="o">[</span><span class="n">label</span> <span class="p">=</span> <span class="s2">"5"</span><span class="o">]</span><span class="p">;</span>
+    <span class="mi">3</span><span class="o">-&gt;</span><span class="mi">1</span> <span class="o">[</span><span class="n">label</span> <span class="p">=</span> <span class="s2">"2"</span><span class="o">]</span><span class="p">;</span>
+    <span class="mi">1</span><span class="o">-&gt;</span><span class="mi">2</span> <span class="o">[</span><span class="n">label</span> <span class="p">=</span> <span class="s2">"6"</span><span class="o">]</span><span class="p">;</span>
+    <span class="mi">1</span><span class="o">-&gt;</span><span class="mi">0</span> <span class="o">[</span><span class="n">label</span> <span class="p">=</span> <span class="s2">"7"</span><span class="o">]</span><span class="p">;</span>
+<span class="p">}</span>
+
+<p>We first create a two-dimensional array of size <code>4</code> <em>(since there are exactly <code>4</code> vertices in our graph)</em>.</p>
+
+<p>We initialize its main diagonal <em>(the items, whose indices are equal, for ex. <code>G[0, 0]</code>, <code>G[1, 1]</code>, etc.)</em> with zeros, because
+the shortest path from vertex to itself has the length <code>0</code> and the other elements with a very large number <em>(to indicate there is no edge or an infinitely long edge between them)</em>. The defined elements, corresponding to graph&#39;s edges, we fill with edges&#39; lengths:</p>
+<span class="kt">int</span> <span class="n">N</span> <span class="p">=</span> <span class="m">4</span><span class="p">;</span>
+<span class="kt">int</span><span class="p">[,]</span> <span class="n">D</span> <span class="p">=</span> <span class="k">new</span> <span class="kt">int</span><span class="p">[</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">];</span>
+
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="p">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="p">++)</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">t</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">t</span> <span class="p">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">t</span><span class="p">++)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="p">==</span> <span class="n">t</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">D</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">t</span><span class="p">]</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">D</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">t</span><span class="p">]</span> <span class="p">=</span> <span class="m">9999</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<p>And let&#39;s say we initialize our <code>D</code> matrix by hand:</p>
+<span class="n">D</span><span class="p">[</span><span class="m">0</span><span class="p">,</span> <span class="m">2</span><span class="p">]</span> <span class="p">=</span> <span class="m">1</span><span class="p">;</span>
+<span class="n">D</span><span class="p">[</span><span class="m">1</span><span class="p">,</span> <span class="m">0</span><span class="p">]</span> <span class="p">=</span> <span class="m">7</span><span class="p">;</span>
+<span class="n">D</span><span class="p">[</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">]</span> <span class="p">=</span> <span class="m">6</span><span class="p">;</span>
+<span class="n">D</span><span class="p">[</span><span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">]</span> <span class="p">=</span> <span class="m">5</span><span class="p">;</span>
+<span class="n">D</span><span class="p">[</span><span class="m">3</span><span class="p">,</span> <span class="m">1</span><span class="p">]</span> <span class="p">=</span> <span class="m">2</span><span class="p">;</span>
+
+<h2>The algorithm itself</h2>
+
+<p>Now that we are on a same page with definitions, algorithm can be implemented like this:</p>
+<span class="kt">int</span><span class="p">[,]</span> <span class="n">R</span> <span class="p">=</span> <span class="k">new</span> <span class="kt">int</span><span class="p">[</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">];</span>
+
+<span class="c1">// Initialise the routes matrix R, essentially saying "the shortest path from u to v is straight"</span>
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="p">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="p">++)</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">t</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">t</span> <span class="p">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">t</span><span class="p">++)</span> <span class="p">{</span>
+        <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">t</span><span class="p">]</span> <span class="p">=</span> <span class="n">t</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Floyd-Warshall algorithm; note the order of iterators DOES matter:</span>
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">k</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">k</span> <span class="p">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">k</span><span class="p">++)</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">u</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">u</span> <span class="p">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">u</span><span class="p">++)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">v</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">v</span> <span class="p">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">v</span><span class="p">++)</span> <span class="p">{</span>
+            <span class="c1">// check if the shortest path from "u" to "v" is actually through "k"</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">D</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="p">&gt;</span> <span class="n">D</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="p">+</span> <span class="n">D</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">])</span> <span class="p">{</span>
+                <span class="n">D</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="p">=</span> <span class="n">D</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="p">+</span> <span class="n">D</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">];</span>
+                <span class="n">R</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="p">=</span> <span class="n">R</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">k</span><span class="p">];</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<p>Let&#39;s &quot;animate&quot; this algorithm in few steps for the sample graph from above:</p>
+
+<h3>Initial state</h3>
+
+<ul>
+<li>the <code>D</code> matrix contains distance from vertex <code>u</code> to vertex <code>v</code>, where both <code>u</code> and <code>v</code> are indexes of those vertices in a graph and <code>u</code> is the index of a row and <code>v</code> is the index of the column in any of the matrices <code>R</code> and <code>D</code></li>
+<li>path from <code>u</code> to <code>u</code> is thought to be infinitely long meaning we do not allow this type of paths</li>
+<li>in matrix <code>R</code> we define the shortest path from <code>u</code> to <code>v</code> to lie through <code>v</code></li>
+</ul>
+
+<div class="row space-between">
+    <div class="col">
+        <table>
+            <tbody>
+                <tr>
+                    <td rowspan="2"></td>
+                    <td colspan="5" class="center head">D</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td class="head">1</td>
+                    <td class="head">2</td>
+                    <td class="head">3</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td>0</td>
+                    <td>&infin;</td>
+                    <td>1</td>
+                    <td>&infin;</td>
+                </tr>
+                <tr>
+                    <td class="head">1</td>
+                    <td>7</td>
+                    <td>0</td>
+                    <td>6</td>
+                    <td>&infin;</td>
+                </tr>
+                <tr>
+                    <td class="head">2</td>
+                    <td>&infin;</td>
+                    <td>&infin;</td>
+                    <td>0</td>
+                    <td>5</td>
+                </tr>
+                <tr>
+                    <td class="head">3</td>
+                    <td>&infin;</td>
+                    <td>2</td>
+                    <td>&infin;</td>
+                    <td>0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col">
+        <table>
+            <tbody>
+                <tr>
+                    <td rowspan="2"></td>
+                    <td colspan="5" class="center head">R</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td class="head">1</td>
+                    <td class="head">2</td>
+                    <td class="head">3</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="head">1</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="head">2</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="head">3</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h3>Step 1</h3>
+
+<p>We try to find the vertex which makes the <strong>shorter</strong> path through itself than the direct path between two vertices. E.g. for every vertex <code>k</code> we find the pair of vertices <code>u</code> and <code>v</code> where path <code>u -&gt; v</code> is <strong>longer</strong> than the path <code>u -&gt; k -&gt; v</code>. If we found one - we will update the matrices <code>D</code> and <code>R</code>, correspondingly.</p>
+
+<p>For vertex <code>k = 0</code> we will check each combination of:</p>
+
+<p><strong>paths through <code>0</code> starting at <code>0</code>:</strong></p>
+
+<ul>
+<li><code>0 -&gt; 0</code> vs <code>0 -&gt; 0 -&gt; 0</code></li>
+<li><code>0 -&gt; 1</code> vs <code>0 -&gt; 0 -&gt; 1</code></li>
+<li><code>0 -&gt; 2</code> vs <code>0 -&gt; 0 -&gt; 2</code></li>
+<li><code>0 -&gt; 3</code> vs <code>0 -&gt; 0 -&gt; 3</code></li>
+</ul>
+
+<p><strong>paths through <code>0</code> starting at <code>1</code>:</strong></p>
+
+<ul>
+<li><code>1 -&gt; 0</code> vs <code>1 -&gt; 0 -&gt; 0</code></li>
+<li><code>1 -&gt; 1</code> vs <code>1 -&gt; 0 -&gt; 1</code></li>
+<li><code>1 -&gt; 2</code> vs <code>1 -&gt; 0 -&gt; 2</code></li>
+<li><code>1 -&gt; 3</code> vs <code>1 -&gt; 0 -&gt; 3</code></li>
+</ul>
+
+<p><strong>paths through <code>0</code> starting at <code>2</code>:</strong></p>
+
+<ul>
+<li><code>2 -&gt; 0</code> vs <code>2 -&gt; 0 -&gt; 0</code></li>
+<li><code>2 -&gt; 1</code> vs <code>2 -&gt; 0 -&gt; 1</code></li>
+<li><code>2 -&gt; 2</code> vs <code>2 -&gt; 0 -&gt; 2</code></li>
+<li><code>2 -&gt; 3</code> vs <code>2 -&gt; 0 -&gt; 3</code></li>
+</ul>
+
+<p><strong>paths through <code>0</code> starting at <code>3</code>:</strong></p>
+
+<ul>
+<li><code>3 -&gt; 0</code> vs <code>3 -&gt; 0 -&gt; 0</code></li>
+<li><code>3 -&gt; 1</code> vs <code>3 -&gt; 0 -&gt; 1</code></li>
+<li><code>3 -&gt; 2</code> vs <code>3 -&gt; 0 -&gt; 2</code></li>
+<li><code>3 -&gt; 3</code> vs <code>3 -&gt; 0 -&gt; 3</code></li>
+</ul>
+
+<p>As you can see, there are lots of invalid paths here - those which either do not exist or do not make sense. Examples are: paths which do not exist <em>(like <code>0 -&gt; 3</code>)</em> and paths to any vertex through source vertex <em>(like <code>0 -&gt; 0 -&gt; 0</code> and <code>0 -&gt; 0 -&gt; (any)</code>)</em>.</p>
+
+<p>We could easily reduce the amount of the steps performed by the algorithm by throwing few <code>if</code> conditions to check for those cases.</p>
+
+<p>But let&#39;s first finish animating this step: there are very few valid paths amongst <code>N * N === 16</code> of those we&#39;ve checked. And only one comparison: for path <code>1 -&gt; 2</code> vs <code>1 -&gt; 0 -&gt; 2</code> we compare <code>6</code> <em>(direct)</em> and <code>7 + 1 = 8</code> <em>(<code>1 -&gt; 0</code> and then <code>0 -&gt; 2</code>)</em>.</p>
+
+<p><img data-src="/images/floyd-warshall/floyd-warshall-sample-step-1.png" alt=""></p>
+
+<!--
+digraph G {
+    layout = "circo";
+
+    0->2 [label = "1", color = "blue"];
+    2->3 [label = "5"];
+    3->1 [label = "2"];
+    1->2 [label = "6", color = "green"];
+    1->0 [label = "7", color = "blue"];
+}
+-->
+
+<p>So there are no changes in our matrices.</p>
+
+<div class="row space-between">
+    <div class="col">
+        <table>
+            <tbody>
+                <tr>
+                    <td rowspan="2"></td>
+                    <td colspan="5" class="center head">D</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td class="head">1</td>
+                    <td class="head">2</td>
+                    <td class="head">3</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td>0</td>
+                    <td>&infin;</td>
+                    <td>1</td>
+                    <td>&infin;</td>
+                </tr>
+                <tr>
+                    <td class="head">1</td>
+                    <td>7</td>
+                    <td>0</td>
+                    <td>6</td>
+                    <td>&infin;</td>
+                </tr>
+                <tr>
+                    <td class="head">2</td>
+                    <td>&infin;</td>
+                    <td>&infin;</td>
+                    <td>0</td>
+                    <td>5</td>
+                </tr>
+                <tr>
+                    <td class="head">3</td>
+                    <td>&infin;</td>
+                    <td>2</td>
+                    <td>&infin;</td>
+                    <td>0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col">
+        <table>
+            <tbody>
+                <tr>
+                    <td rowspan="2"></td>
+                    <td colspan="5" class="center head">R</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td class="head">1</td>
+                    <td class="head">2</td>
+                    <td class="head">3</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="head">1</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="head">2</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="head">3</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h3>Step 2</h3>
+
+<p>For vertex <code>1</code> we will check each combination of:</p>
+
+<p><strong>paths through <code>1</code> starting at <code>0</code>:</strong></p>
+
+<ul>
+<li><code>0 -&gt; 0</code> vs <code>0 -&gt; 1 -&gt; 0</code></li>
+<li><code>0 -&gt; 1</code> vs <code>0 -&gt; 1 -&gt; 1</code></li>
+<li><code>0 -&gt; 2</code> vs <code>0 -&gt; 1 -&gt; 2</code></li>
+<li><code>0 -&gt; 3</code> vs <code>0 -&gt; 1 -&gt; 3</code></li>
+</ul>
+
+<p><strong>paths through <code>1</code> starting at <code>1</code>:</strong></p>
+
+<ul>
+<li><code>1 -&gt; 0</code> vs <code>1 -&gt; 1 -&gt; 0</code></li>
+<li><code>1 -&gt; 1</code> vs <code>1 -&gt; 1 -&gt; 1</code></li>
+<li><code>1 -&gt; 2</code> vs <code>1 -&gt; 1 -&gt; 2</code></li>
+<li><code>1 -&gt; 3</code> vs <code>1 -&gt; 1 -&gt; 3</code></li>
+</ul>
+
+<p><strong>paths through <code>1</code> starting at <code>2</code>:</strong></p>
+
+<ul>
+<li><code>2 -&gt; 0</code> vs <code>2 -&gt; 1 -&gt; 0</code></li>
+<li><code>2 -&gt; 1</code> vs <code>2 -&gt; 1 -&gt; 1</code></li>
+<li><code>2 -&gt; 2</code> vs <code>2 -&gt; 1 -&gt; 2</code></li>
+<li><code>2 -&gt; 3</code> vs <code>2 -&gt; 1 -&gt; 3</code></li>
+</ul>
+
+<p><strong>paths through <code>1</code> starting at <code>3</code>:</strong></p>
+
+<ul>
+<li><code>3 -&gt; 0</code> vs <code>3 -&gt; 1 -&gt; 0</code></li>
+<li><code>3 -&gt; 1</code> vs <code>3 -&gt; 1 -&gt; 1</code></li>
+<li><code>3 -&gt; 2</code> vs <code>3 -&gt; 1 -&gt; 2</code></li>
+<li><code>3 -&gt; 3</code> vs <code>3 -&gt; 1 -&gt; 3</code></li>
+</ul>
+
+<p>This case is more interesting - there are more things to compare. Let&#39;s see each combination:</p>
+
+<ol>
+<li><code>3 -&gt; 0</code> does not exist (<code>inf</code>)</li>
+<li><code>3 -&gt; 1</code> has length <code>2</code> and <code>1 -&gt; 0</code> has length <code>7</code>, the indirect path <code>3 -&gt; 1 -&gt; 0</code> has length <code>9</code></li>
+</ol>
+
+<p>Hence we will update matrices <code>D</code> and <code>R</code> reflecting that.</p>
+
+<p>For path <code>3 -&gt; 1 -&gt; 2</code>:</p>
+
+<ol>
+<li>there is no path from <code>3</code> to <code>2</code> directly, so its length is <code>inf</code></li>
+<li><code>3 -&gt; 1</code> has length <code>2</code> and <code>1 -&gt; 2</code> has length <code>6</code>, the total is <code>8</code> which is infinitely better than infinity</li>
+</ol>
+
+<p>Here are the updated matrices:</p>
+
+<div class="row space-between">
+    <div class="col">
+        <table>
+            <tbody>
+                <tr>
+                    <td rowspan="2"></td>
+                    <td colspan="5" class="center head">D</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td class="head">1</td>
+                    <td class="head">2</td>
+                    <td class="head">3</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td>0</td>
+                    <td>&infin;</td>
+                    <td>1</td>
+                    <td>&infin;</td>
+                </tr>
+                <tr>
+                    <td class="head">1</td>
+                    <td>7</td>
+                    <td>0</td>
+                    <td>6</td>
+                    <td>&infin;</td>
+                </tr>
+                <tr>
+                    <td class="head">2</td>
+                    <td>&infin;</td>
+                    <td>&infin;</td>
+                    <td>0</td>
+                    <td>5</td>
+                </tr>
+                <tr>
+                    <td class="head">3</td>
+                    <td class="change">9</td>
+                    <td>2</td>
+                    <td class="change">8</td>
+                    <td>0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col">
+        <table>
+            <tbody>
+                <tr>
+                    <td rowspan="2"></td>
+                    <td colspan="5" class="center head">R</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td class="head">1</td>
+                    <td class="head">2</td>
+                    <td class="head">3</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="head">1</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="head">2</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="head">3</td>
+                    <td class="change">1</td>
+                    <td>1</td>
+                    <td class="change">1</td>
+                    <td>3</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h3>Step 3</h3>
+
+<p>For vertex <code>2</code> we will check each combination of:</p>
+
+<p><strong>paths through <code>2</code> starting at <code>0</code>:</strong></p>
+
+<ul>
+<li><code>0 -&gt; 0</code> vs <code>0 -&gt; 2 -&gt; 0</code></li>
+<li><code>0 -&gt; 1</code> vs <code>0 -&gt; 2 -&gt; 1</code></li>
+<li><code>0 -&gt; 2</code> vs <code>0 -&gt; 2 -&gt; 2</code></li>
+<li><code>0 -&gt; 3</code> vs <code>0 -&gt; 2 -&gt; 3</code></li>
+</ul>
+
+<p><strong>paths through <code>2</code> starting at <code>1</code>:</strong></p>
+
+<ul>
+<li><code>1 -&gt; 0</code> vs <code>1 -&gt; 2 -&gt; 0</code></li>
+<li><code>1 -&gt; 1</code> vs <code>1 -&gt; 2 -&gt; 1</code></li>
+<li><code>1 -&gt; 2</code> vs <code>1 -&gt; 2 -&gt; 2</code></li>
+<li><code>1 -&gt; 3</code> vs <code>1 -&gt; 2 -&gt; 3</code></li>
+</ul>
+
+<p><strong>paths through <code>2</code> starting at <code>2</code>:</strong></p>
+
+<ul>
+<li><code>2 -&gt; 0</code> vs <code>2 -&gt; 2 -&gt; 0</code></li>
+<li><code>2 -&gt; 1</code> vs <code>2 -&gt; 2 -&gt; 1</code></li>
+<li><code>2 -&gt; 2</code> vs <code>2 -&gt; 2 -&gt; 2</code></li>
+<li><code>2 -&gt; 3</code> vs <code>2 -&gt; 2 -&gt; 3</code></li>
+</ul>
+
+<p><strong>paths through <code>2</code> starting at <code>3</code>:</strong></p>
+
+<ul>
+<li><code>3 -&gt; 0</code> vs <code>3 -&gt; 2 -&gt; 0</code></li>
+<li><code>3 -&gt; 1</code> vs <code>3 -&gt; 2 -&gt; 1</code></li>
+<li><code>3 -&gt; 2</code> vs <code>3 -&gt; 2 -&gt; 2</code></li>
+<li><code>3 -&gt; 3</code> vs <code>3 -&gt; 2 -&gt; 3</code></li>
+</ul>
+
+<p>The valid comparisons are:</p>
+
+<ul>
+<li><code>0 -&gt; 3</code> vs <code>0 -&gt; 2 -&gt; 3</code></li>
+<li><code>1 -&gt; 3</code> vs <code>1 -&gt; 2 -&gt; 3</code></li>
+</ul>
+
+<p>In first case, we compare infinity (<code>0 -&gt; 3</code>) to <code>1 + 5 == 6</code> (<code>0 -&gt; 2</code> and then <code>2 -&gt; 3</code>).
+In second case we compare infinity again (<code>1 -&gt; 3</code>) to <code>6 + 5 == 11</code> (<code>1 -&gt; 2</code> and then <code>2 -&gt; 3</code>).
+In both cases we select the path through vertex <code>2</code>.</p>
+
+<div class="row space-between">
+    <div class="col">
+        <table>
+            <tbody>
+                <tr>
+                    <td rowspan="2"></td>
+                    <td colspan="5" class="center head">D</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td class="head">1</td>
+                    <td class="head">2</td>
+                    <td class="head">3</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td>0</td>
+                    <td>&infin;</td>
+                    <td>1</td>
+                    <td class="change">6</td>
+                </tr>
+                <tr>
+                    <td class="head">1</td>
+                    <td>7</td>
+                    <td>0</td>
+                    <td>6</td>
+                    <td class="change">11</td>
+                </tr>
+                <tr>
+                    <td class="head">2</td>
+                    <td>&infin;</td>
+                    <td>&infin;</td>
+                    <td>0</td>
+                    <td>5</td>
+                </tr>
+                <tr>
+                    <td class="head">3</td>
+                    <td>9</td>
+                    <td>2</td>
+                    <td>8</td>
+                    <td>0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col">
+        <table>
+            <tbody>
+                <tr>
+                    <td rowspan="2"></td>
+                    <td colspan="5" class="center head">R</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td class="head">1</td>
+                    <td class="head">2</td>
+                    <td class="head">3</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td class="change">2</td>
+                </tr>
+                <tr>
+                    <td class="head">1</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td class="change">2</td>
+                </tr>
+                <tr>
+                    <td class="head">2</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="head">3</td>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>3</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h3>Step 4</h3>
+
+<p>For vertex <code>3</code> we will check each combination of:</p>
+
+<p><strong>paths through <code>3</code> starting at <code>0</code>:</strong></p>
+
+<ul>
+<li><code>0 -&gt; 0</code> vs <code>0 -&gt; 3 -&gt; 0</code></li>
+<li><code>0 -&gt; 1</code> vs <code>0 -&gt; 3 -&gt; 1</code></li>
+<li><code>0 -&gt; 2</code> vs <code>0 -&gt; 3 -&gt; 2</code></li>
+<li><code>0 -&gt; 3</code> vs <code>0 -&gt; 3 -&gt; 3</code></li>
+</ul>
+
+<p><strong>paths through <code>3</code> starting at <code>1</code>:</strong></p>
+
+<ul>
+<li><code>1 -&gt; 0</code> vs <code>1 -&gt; 3 -&gt; 0</code></li>
+<li><code>1 -&gt; 1</code> vs <code>1 -&gt; 3 -&gt; 1</code></li>
+<li><code>1 -&gt; 2</code> vs <code>1 -&gt; 3 -&gt; 2</code></li>
+<li><code>1 -&gt; 3</code> vs <code>1 -&gt; 3 -&gt; 3</code></li>
+</ul>
+
+<p><strong>paths through <code>3</code> starting at <code>2</code>:</strong></p>
+
+<ul>
+<li><code>2 -&gt; 0</code> vs <code>2 -&gt; 3 -&gt; 0</code></li>
+<li><code>2 -&gt; 1</code> vs <code>2 -&gt; 3 -&gt; 1</code></li>
+<li><code>2 -&gt; 2</code> vs <code>2 -&gt; 3 -&gt; 2</code></li>
+<li><code>2 -&gt; 3</code> vs <code>2 -&gt; 3 -&gt; 3</code></li>
+</ul>
+
+<p><strong>paths through <code>3</code> starting at <code>3</code>:</strong></p>
+
+<ul>
+<li><code>3 -&gt; 0</code> vs <code>3 -&gt; 3 -&gt; 0</code></li>
+<li><code>3 -&gt; 1</code> vs <code>3 -&gt; 3 -&gt; 1</code></li>
+<li><code>3 -&gt; 2</code> vs <code>3 -&gt; 3 -&gt; 2</code></li>
+<li><code>3 -&gt; 3</code> vs <code>3 -&gt; 3 -&gt; 3</code></li>
+</ul>
+
+<p>This case is the last one. It is similar to the previous two. But please note that we are using the matrix values from the previous step.</p>
+
+<p>For path <code>0 -&gt; 1</code>:</p>
+
+<ol>
+<li>direct path from <code>0</code> to <code>1</code> does not exist, take it as <code>inf</code></li>
+<li>shortest path from <code>0</code> to <code>3</code> <em>(whichever it is)</em> has length <code>6</code>; <code>3 -&gt; 1</code> has length <code>2</code>; the total path has length <code>8</code> which is better than infinity</li>
+</ol>
+
+<p><img data-src="/images/floyd-warshall/floyd-warshall-sample-step-4-1.png" alt=""></p>
+
+<!--
+digraph G {
+    layout = "circo";
+
+    0->2 [label = "1", color = "blue"];
+    2->3 [label = "5", color = "blue"];
+    3->1 [label = "2", color = "blue"];
+    1->2 [label = "6"];
+    1->0 [label = "7"];
+    0->1 [label = "∞", style = "dashed", color = "red"];
+}
+-->
+
+<p>For path <code>2 -&gt; 0</code>:</p>
+
+<ol>
+<li>direct path <code>2 -&gt; 0</code> does not exist</li>
+<li>the edge <code>2 -&gt; 3</code> exists and has length <code>5</code>; path from <code>3</code> to <code>0</code> has length <code>9</code>; so the shortest path from <code>2</code> to <code>0</code> through <code>3</code> will have length <code>9 + 5 == 14</code></li>
+</ol>
+
+<p>For path <code>2 -&gt; 1</code>:</p>
+
+<ol>
+<li>there is no direct path <code>2 -&gt; 1</code></li>
+<li>the path <code>2 -&gt; 3</code> is <code>5</code> and <code>3 -&gt; 1</code> is <code>2</code>, so <code>2 -&gt; 3 -&gt; 1</code> is <code>7</code></li>
+</ol>
+
+<p>Both matrices <code>R</code> and <code>D</code> will be updated to reflect that:</p>
+
+<div class="row space-between">
+    <div class="col">
+        <table>
+            <tbody>
+                <tr>
+                    <td rowspan="2"></td>
+                    <td colspan="5" class="center head">D</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td class="head">1</td>
+                    <td class="head">2</td>
+                    <td class="head">3</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td>0</td>
+                    <td class="change">8</td>
+                    <td>1</td>
+                    <td>6</td>
+                </tr>
+                <tr>
+                    <td class="head">1</td>
+                    <td>7</td>
+                    <td>0</td>
+                    <td>6</td>
+                    <td>11</td>
+                </tr>
+                <tr>
+                    <td class="head">2</td>
+                    <td class="change">14</td>
+                    <td class="change">7</td>
+                    <td>0</td>
+                    <td>5</td>
+                </tr>
+                <tr>
+                    <td class="head">3</td>
+                    <td>9</td>
+                    <td>2</td>
+                    <td>8</td>
+                    <td>0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col">
+        <table>
+            <tbody>
+                <tr>
+                    <td rowspan="2"></td>
+                    <td colspan="5" class="center head">R</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td class="head">1</td>
+                    <td class="head">2</td>
+                    <td class="head">3</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td>0</td>
+                    <td class="change">2</td>
+                    <td>2</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td class="head">1</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td class="head">2</td>
+                    <td class="change">3</td>
+                    <td class="change">3</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="head">3</td>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>3</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<p>And then the algorithm is done.</p>
+
+<h2>Path reconstruction</h2>
+
+<p>In order to reconstruct the path from vertex <code>u</code> to vertex <code>v</code>, you need follow the elements of matrix <code>R</code>, effectively going &quot;through&quot; each vertex:</p>
+    <span class="n">List</span><span class="p">&lt;</span><span class="n">Int32</span><span class="p">&gt;</span> <span class="n">Path</span> <span class="p">=</span> <span class="k">new</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">Int32</span><span class="p">&gt;();</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="n">start</span> <span class="p">!=</span> <span class="n">end</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">Path</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">start</span><span class="p">);</span>
+
+        <span class="n">start</span> <span class="p">=</span> <span class="n">R</span><span class="p">[</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">];</span>
+    <span class="p">}</span>
+
+    <span class="n">Path</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">end</span><span class="p">);</span>
+
+<p>Let&#39;s follow this logic in steps again, &quot;animating&quot; the algorithm. For instance, the longest path in this graph possible, from <code>0</code> to <code>1</code>:</p>
+
+<ol>
+<li><code>start = 0, end = 1</code></li>
+<li><code>R[0, 1] == 2, start = 2, end = 1</code></li>
+<li><code>R[2, 1] == 3, start = 3, end = 1</code></li>
+<li><code>R[3, 1] == 1, start = 1, end = 1</code></li>
+</ol>
+
+<p>So the path from <code>0</code> to <code>1</code> is all the values the <code>start</code> variable takes <em>(except last)</em>, namely: <code>0 -&gt; 2 -&gt; 3</code>.</p>
+
+<h2>Summary</h2>
+
+<p>The whole code could be wrapped in a couple of methods:</p>
+<span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Collections.Generic</span><span class="p">;</span>
+
+<span class="k">public</span> <span class="k">class</span> <span class="nc">FloydWarshallPathFinder</span> <span class="p">{</span>
+    <span class="k">private</span> <span class="kt">int</span> <span class="n">N</span><span class="p">;</span>
+    <span class="k">private</span> <span class="kt">int</span><span class="p">[,]</span> <span class="n">D</span><span class="p">;</span>
+    <span class="k">private</span> <span class="kt">int</span><span class="p">[,]</span> <span class="n">R</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="nf">FloydWarshallPathFinder</span><span class="p">(</span><span class="kt">int</span> <span class="n">NumberOfVertices</span><span class="p">,</span> <span class="kt">int</span><span class="p">[,]</span> <span class="n">EdgesLengths</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">N</span> <span class="p">=</span> <span class="n">NumberOfVertices</span><span class="p">;</span>
+        <span class="n">D</span> <span class="p">=</span> <span class="n">EdgesLengths</span><span class="p">;</span>
+        <span class="n">R</span> <span class="p">=</span> <span class="k">null</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="kt">int</span><span class="p">[,]</span> <span class="nf">FindAllPaths</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">R</span> <span class="p">=</span> <span class="k">new</span> <span class="kt">int</span><span class="p">[</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">];</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="p">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="p">++)</span> <span class="p">{</span>
+            <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">t</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">t</span> <span class="p">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">t</span><span class="p">++)</span> <span class="p">{</span>
+                <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">t</span><span class="p">]</span> <span class="p">=</span> <span class="n">t</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">k</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">k</span> <span class="p">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">k</span><span class="p">++)</span> <span class="p">{</span>
+            <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">v</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">v</span> <span class="p">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">v</span><span class="p">++)</span> <span class="p">{</span>
+                <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">u</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">u</span> <span class="p">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">u</span><span class="p">++)</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">D</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="p">+</span> <span class="n">D</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="p">&lt;</span> <span class="n">D</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">])</span> <span class="p">{</span>
+                        <span class="n">D</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="p">=</span> <span class="n">D</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="p">+</span> <span class="n">D</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">];</span>
+                        <span class="n">R</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="p">=</span> <span class="n">R</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">k</span><span class="p">];</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">R</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">Int32</span><span class="p">&gt;</span> <span class="nf">FindShortestPath</span><span class="p">(</span><span class="kt">int</span> <span class="n">start</span><span class="p">,</span> <span class="kt">int</span> <span class="n">end</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">R</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nf">FindAllPaths</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="n">List</span><span class="p">&lt;</span><span class="n">Int32</span><span class="p">&gt;</span> <span class="n">Path</span> <span class="p">=</span> <span class="k">new</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">Int32</span><span class="p">&gt;();</span>
+
+        <span class="k">while</span> <span class="p">(</span><span class="n">start</span> <span class="p">!=</span> <span class="n">end</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">Path</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">start</span><span class="p">);</span>
+
+            <span class="n">start</span> <span class="p">=</span> <span class="n">R</span><span class="p">[</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">];</span>
+        <span class="p">}</span>
+
+        <span class="n">Path</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">end</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="n">Path</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">public</span> <span class="k">class</span> <span class="nc">MainClass</span> <span class="p">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">N</span> <span class="p">=</span> <span class="m">4</span><span class="p">;</span>
+        <span class="kt">int</span><span class="p">[,]</span> <span class="n">D</span> <span class="p">=</span> <span class="k">new</span> <span class="kt">int</span><span class="p">[</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">];</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="p">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="p">++)</span> <span class="p">{</span>
+            <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">t</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">t</span> <span class="p">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">t</span><span class="p">++)</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="p">==</span> <span class="n">t</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="n">D</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">t</span><span class="p">]</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="n">D</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">t</span><span class="p">]</span> <span class="p">=</span> <span class="m">9999</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="n">D</span><span class="p">[</span><span class="m">0</span><span class="p">,</span> <span class="m">2</span><span class="p">]</span> <span class="p">=</span> <span class="m">1</span><span class="p">;</span>
+        <span class="n">D</span><span class="p">[</span><span class="m">1</span><span class="p">,</span> <span class="m">0</span><span class="p">]</span> <span class="p">=</span> <span class="m">7</span><span class="p">;</span>
+        <span class="n">D</span><span class="p">[</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">]</span> <span class="p">=</span> <span class="m">6</span><span class="p">;</span>
+        <span class="n">D</span><span class="p">[</span><span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">]</span> <span class="p">=</span> <span class="m">5</span><span class="p">;</span>
+        <span class="n">D</span><span class="p">[</span><span class="m">3</span><span class="p">,</span> <span class="m">1</span><span class="p">]</span> <span class="p">=</span> <span class="m">2</span><span class="p">;</span>
+
+        <span class="n">FloydWarshallPathFinder</span> <span class="n">pathFinder</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">FloydWarshallPathFinder</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">D</span><span class="p">);</span>
+
+        <span class="kt">int</span> <span class="n">start</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">end</span> <span class="p">=</span> <span class="m">1</span><span class="p">;</span>
+
+        <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">"Path: {0}"</span><span class="p">,</span> <span class="n">String</span><span class="p">.</span><span class="nf">Join</span><span class="p">(</span><span class="s">" -&gt; "</span><span class="p">,</span> <span class="n">pathFinder</span><span class="p">.</span><span class="nf">FindShortestPath</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">).</span><span class="nf">ToArray</span><span class="p">()));</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<p>You can read &#39;bout this algorithm on <a href="http://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm">wikipedia</a> and get some data structures generated automatically <a href="http://quickgraph.codeplex.com/">here</a></p>

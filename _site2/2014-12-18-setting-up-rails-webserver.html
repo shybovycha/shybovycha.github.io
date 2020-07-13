@@ -1,0 +1,191 @@
+<meta name="layout" content="post">
+<meta name="title" content="Setting up Rails webserver">
+<meta name="date" content="2014-12-18T10:55:00+01:00">
+<meta name="tags" content="rails,rails4,tutorial,servers">
+<meta name="tumblr_url" content="http://shybovycha.tumblr.com/post/105514079521/setting-up-rails-webserver">
+<h2>Foreword</h2>
+
+<p>This tutorial I wrote when was quitting my previous job, almost one year ago. But it&#39;s still handy!</p>
+
+<h2>Abstract Rails application setup</h2>
+<span class="nv">$ </span>git clone .../project_name.git
+<span class="nv">$ </span><span class="nb">cd </span>project_name
+<span class="nv">$ </span><span class="o">[</span><span class="nb">sudo</span><span class="o">]</span> bundle <span class="nb">install</span>
+<span class="nv">$ </span><span class="nb">cat </span>config/database.yml
+<span class="nv">$ </span><span class="c"># create database and/or change config/database.yml settings</span>
+<span class="nv">$ </span>rake db:migrate <span class="nv">RAILS_ENV</span><span class="o">=</span>production
+<span class="nv">$ </span>rake db:seed <span class="nv">RAILS_ENV</span><span class="o">=</span>production <span class="c"># don't worry if one fails</span>
+<span class="nv">$ </span><span class="c"># start the server of your choice</span>
+<span class="sb">``</span>
+
+<span class="c">## `Puma` webserver</span>
+
+<span class="c">### Application-wide settings</span>
+
+First you need to <span class="nb">set </span>up <span class="k">**</span>Puma<span class="k">**</span> <span class="k">for </span>your specific project. For this purpose, add this
+line to the <span class="sb">`</span>Gemfile<span class="sb">`</span>:
+
+<span class="sb">```</span>ruby
+gem <span class="s1">'puma'</span>
+
+<p>Then, run <code>[sudo] bundle install</code>.</p>
+
+<p>When you are done, you should be able to create a Puma config file at <code>$PROJECT_DIR/config/puma.rb</code>:</p>
+<span class="k">def</span> <span class="nf">home_dir</span>
+    <span class="s1">'/home/user/$PROJECT_DIR/'</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">path</span><span class="p">(</span><span class="nb">p</span><span class="p">)</span>
+    <span class="no">File</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="n">home_dir</span><span class="p">,</span> <span class="nb">p</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="n">directory</span> <span class="n">home_dir</span>
+<span class="n">environment</span> <span class="s1">'development'</span>
+<span class="n">daemonize</span>
+<span class="n">pidfile</span> <span class="n">path</span><span class="p">(</span><span class="s1">'tmp/pids/puma.pid'</span><span class="p">)</span>
+<span class="n">state_path</span> <span class="n">path</span><span class="p">(</span><span class="s1">'tmp/pids/puma.state'</span><span class="p">)</span>
+<span class="n">stdout_redirect</span> <span class="n">path</span><span class="p">(</span><span class="s1">'log/puma.log'</span><span class="p">),</span> <span class="n">path</span><span class="p">(</span><span class="s1">'log/error.puma.log'</span><span class="p">),</span> <span class="kp">true</span>
+<span class="n">threads</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
+<span class="n">bind</span> <span class="s1">'tcp://0.0.0.0:5100'</span>
+<span class="n">activate_control_app</span>
+
+<p>More details here: <a href="https://github.com/puma/puma/blob/master/examples/config.rb"><a href="https://github.com/puma/puma/blob/master/examples/config.rb">https://github.com/puma/puma/blob/master/examples/config.rb</a></a></p>
+
+<p>Now, add project root path to the <code>/etc/puma.conf</code> file, e. g.:</p>
+/home/user/project_name
+
+<h3>Start Puma at boot</h3>
+
+<p>There is a specific utility, called <strong>Jungle</strong>. It manages your applications&#39; instances at startup.</p>
+
+<h4>Ububtu-based systems</h4>
+
+<p>First of all, create <code>/etc/init/puma.conf</code> file and fill it with this:</p>
+<span class="c"># /etc/init/puma.conf - Puma config</span>
+
+<span class="c"># This example config should work with Ubuntu 12.04+.  It</span>
+<span class="c"># allows you to manage multiple Puma instances with</span>
+<span class="c"># Upstart, Ubuntu's native service management tool.</span>
+<span class="c">#</span>
+<span class="c"># See workers.conf for how to manage all Puma instances at once.</span>
+<span class="c">#</span>
+<span class="c"># Save this config as /etc/init/puma.conf then manage puma with:</span>
+<span class="c">#   sudo start puma app=PATH_TO_APP</span>
+<span class="c">#   sudo stop puma app=PATH_TO_APP</span>
+<span class="c">#   sudo status puma app=PATH_TO_APP</span>
+<span class="c">#</span>
+<span class="c"># or use the service command:</span>
+<span class="c">#   sudo service puma {start,stop,restart,status}</span>
+<span class="c">#</span>
+
+description <span class="s2">"Puma Background Worker"</span>
+
+<span class="c"># no "start on", we don't want to automatically start</span>
+stop on <span class="o">(</span>stopping puma-manager or runlevel <span class="o">[</span>06]<span class="o">)</span>
+
+<span class="c"># change apps to match your deployment user if you want to use this as a less privileged user (recommended!)</span>
+setuid apps
+setgid apps
+
+respawn
+respawn limit 3 30
+
+instance <span class="k">${</span><span class="nv">app</span><span class="k">}</span>
+
+script
+<span class="c"># this script runs in /bin/sh by default</span>
+<span class="c"># respawn as bash so we can source in rbenv/rvm</span>
+<span class="c"># quoted heredoc to tell /bin/sh not to interpret</span>
+<span class="c"># variables</span>
+<span class="nb">exec</span> /bin/bash <span class="o">&lt;&lt;</span><span class="sh">'</span><span class="no">EOT</span><span class="sh">'
+  # set HOME to the setuid user's home, there doesn't seem to be a better, portable way
+  export HOME="</span><span class="si">$(</span><span class="nb">eval echo</span> ~<span class="si">$(</span><span class="nb">id</span> <span class="nt">-un</span><span class="si">))</span><span class="sh">"
+
+  cd </span><span class="nv">$app</span><span class="sh">
+
+  if [ -d "</span><span class="nv">$HOME</span><span class="sh">/.rbenv/bin" ]; then
+    export PATH="</span><span class="nv">$HOME</span><span class="sh">/.rbenv/bin:</span><span class="nv">$PATH</span><span class="sh">"
+  elif [ -f  /etc/profile.d/rvm.sh ]; then
+    source /etc/profile.d/rvm.sh
+  elif [ -f /usr/local/rvm/scripts/rvm ]; then
+    source /etc/profile.d/rvm.sh
+  elif [ -f "</span><span class="nv">$HOME</span><span class="sh">/.rvm/scripts/rvm" ]; then
+    source "</span><span class="nv">$HOME</span><span class="sh">/.rvm/scripts/rvm"
+  elif [ -f /usr/local/share/chruby/chruby.sh ]; then
+    source /usr/local/share/chruby/chruby.sh
+    if [ -f /usr/local/share/chruby/auto.sh ]; then
+      source /usr/local/share/chruby/auto.sh
+    fi
+    # if you aren't using auto, set your version here
+    # chruby 2.0.0
+  fi
+
+  logger -t puma "Starting server: </span><span class="nv">$app</span><span class="sh">"
+
+  exec bundle exec puma -C config/puma.rb
+</span><span class="no">EOT
+</span>end script
+
+<p>Now, create <code>/etc/init/puma-manager.conf</code> and fill it with this:</p>
+<span class="c"># /etc/init/puma-manager.conf - manage a set of Pumas</span>
+
+<span class="c"># This example config should work with Ubuntu 12.04+.  It</span>
+<span class="c"># allows you to manage multiple Puma instances with</span>
+<span class="c"># Upstart, Ubuntu's native service management tool.</span>
+<span class="c">#</span>
+<span class="c"># See puma.conf for how to manage a single Puma instance.</span>
+<span class="c">#</span>
+<span class="c"># Use "stop puma-manager" to stop all Puma instances.</span>
+<span class="c"># Use "start puma-manager" to start all instances.</span>
+<span class="c"># Use "restart puma-manager" to restart all instances.</span>
+<span class="c"># Crazy, right?</span>
+<span class="c">#</span>
+
+description <span class="s2">"Manages the set of puma processes"</span>
+
+<span class="c"># This starts upon bootup and stops on shutdown</span>
+start on runlevel <span class="o">[</span>2345]
+stop on runlevel <span class="o">[</span>06]
+
+<span class="c"># Set this to the number of Puma processes you want</span>
+<span class="c"># to run on this machine</span>
+<span class="nb">env </span><span class="nv">PUMA_CONF</span><span class="o">=</span><span class="s2">"/etc/puma.conf"</span>
+
+pre-start script
+  <span class="k">for </span>i <span class="k">in</span> <span class="sb">`</span><span class="nb">cat</span> <span class="nv">$PUMA_CONF</span><span class="sb">`</span><span class="p">;</span> <span class="k">do
+    </span><span class="nv">app</span><span class="o">=</span><span class="sb">`</span><span class="nb">echo</span> <span class="nv">$i</span> | <span class="nb">cut</span> <span class="nt">-d</span> , <span class="nt">-f</span> 1
+    logger <span class="nt">-t</span> <span class="s2">"puma-manager"</span> <span class="s2">"Starting </span><span class="nv">$app</span><span class="s2">"</span>
+    start puma <span class="nv">app</span><span class="o">=</span><span class="nv">$app</span>
+  <span class="k">done
+</span>end script
+
+<p>And create a blank <code>/etc/puma.conf</code> file. This will be filled for each application separately.</p>
+
+<h4>Caveat:</h4>
+
+<p>You need to customise <code>/etc/init/puma.conf</code> to:</p>
+
+<ul>
+<li>Set the right user your app should be running on unless you want root to execute it!
+
+<ul>
+<li>Look for <code>setuid apps</code> and <code>setgid apps</code>, uncomment those lines and replace <code>apps</code> to whatever your deployment user is.</li>
+<li>Replace <code>apps</code> on the paths (or set the right paths to your user&#39;s home) everywhere else.</li>
+</ul></li>
+<li>Uncomment the source lines for <code>rbenv</code> or <code>rvm</code> support unless you use a system wide installation of Ruby.</li>
+</ul>
+
+<p>Now, start Jungle like this: <code>sudo start puma-manager</code>.
+And all your applications should be available when you reboot the machine.</p>
+
+<p>More details at <a href="https://github.com/puma/puma/tree/master/tools/jungle/"><a href="https://github.com/puma/puma/tree/master/tools/jungle/">https://github.com/puma/puma/tree/master/tools/jungle/</a></a></p>
+
+<h4>Debian-based systems</h4>
+
+<p><u>TBD</u></p>
+
+<h2>Starting up and shutting down</h2>
+
+<p>To start up the application is easy enough. Just navigate yourself to project directory and run the following: <code>puma -C config/puma.rb</code>.</p>
+
+<p>If you want to shut down one, run this command in the project directory: <code>[sudo] pumactl -S tmp/pids/puma.state halt</code>.</p>

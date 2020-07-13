@@ -1,0 +1,582 @@
+<meta name="layout" content="post">
+<meta name="title" content="Two sides of web application. Part 3: Communication Layer">
+<meta name="date" content="2016-02-11T14:47:39+01:00">
+<div class="row">
+    <div class="col-md-6 col-xs-12">
+        Liquid error: internal
+    </div>
+    <div class="col-md-6 col-xs-12 text-xs-center text-md-right">
+        <img data-src="/images/two-sides-of-web-application/a305-1-compressed.jpg" class="img-responsive" style="max-height: 150px" alt="Funny image" />
+    </div>
+</div>
+
+<h2>Foreword</h2>
+
+<p>In this section we will implement the communication layer for our application. It&#39;ll handle
+all the requests to/from our web server. Have no worries - we will create server application
+in the next section!</p>
+
+<h2>First resource</h2>
+
+<p>Let&#39;s create a <code>Session</code> resource. Since we have no backend part, we should stub
+the data. We&#39;ll use Angular <strong>Services</strong>. That&#39;s easy: a service defines a
+function, returning, say, an object. That object will be used every time you
+call a service. And you may use not only objects - you may return functions,
+constants or literally anything from your services.</p>
+
+<!--more-->
+
+<p>We&#39;ll return an object with two methods: <code>get(account)</code> and <code>create(account)</code>.
+Both methods will take an object, containing user account details - <code>email</code>,
+<code>password</code>, and, in case of <code>create()</code>, <code>name</code> and <code>password_confirmation</code>, additionally.
+You might&#39;ve guessed already: the <code>get(account)</code> method will log the user in and
+<code>create(account)</code> will register a new account for the user.</p>
+<span class="nx">ourStatsControllers</span><span class="p">.</span><span class="nx">factory</span><span class="p">(</span><span class="dl">'</span><span class="s1">Session</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span>
+    <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">testAccount</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="na">name</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Artem</span><span class="dl">'</span><span class="p">,</span>
+                    <span class="na">email</span><span class="p">:</span> <span class="dl">'</span><span class="s1">artem@ourstats.com</span><span class="dl">'</span>
+                <span class="p">};</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="na">get</span><span class="p">:</span> <span class="p">(</span><span class="nx">account</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="kd">var</span> <span class="nx">params</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="na">email</span><span class="p">:</span> <span class="nx">account</span><span class="p">.</span><span class="nx">email</span><span class="p">,</span>
+                    <span class="na">password</span><span class="p">:</span> <span class="nx">account</span><span class="p">.</span><span class="nx">password</span>
+                <span class="p">};</span>
+            <span class="p">},</span>
+
+            <span class="na">create</span><span class="p">:</span> <span class="p">(</span><span class="nx">account</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="kd">var</span> <span class="nx">params</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="na">name</span><span class="p">:</span> <span class="nx">account</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span>
+                    <span class="na">email</span><span class="p">:</span> <span class="nx">account</span><span class="p">.</span><span class="nx">email</span><span class="p">,</span>
+                    <span class="na">password</span><span class="p">:</span> <span class="nx">account</span><span class="p">.</span><span class="nx">password</span>
+                <span class="p">};</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">]);</span>
+
+<p>When you inject it into your controller, you may use it via</p>
+<span class="nx">Session</span><span class="p">.</span><span class="kd">get</span><span class="p">({</span> <span class="na">email</span><span class="p">:</span> <span class="dl">''</span><span class="p">,</span> <span class="na">password</span><span class="p">:</span> <span class="dl">''</span> <span class="p">});</span>
+
+<p>The thing here is that we want to keep user data somewhere to simulate a
+database work. So when user <em>&quot;signs up&quot;</em>, he will have his data saved in the memory
+not to loose it when changing a page. We&#39;ll use another service for that purpose.
+But contrary to our <code>sessions</code> service, this one will be used in the future and even
+barely changed.</p>
+
+<p>Now, here&#39;s one more trick: we defined our <code>Session</code> factory in the <code>ourStatsControllers</code> module.
+Why did we do this? Why not just use <code>ourStatsApp</code> module? This is done mostly to keep things
+in one place, so everything related to controllers and UI processing is kept inside one module.
+Doing so we can later separate our modules into separate files and keep our main application
+module clean from unnecessary code <em>(in terms of the whole application)</em>.</p>
+
+<p>To store user account data we&#39;ll use cookies. And there is a plugin for this
+already! It is called <code>ngCookies</code>. And we&#39;ll install it right now:</p>
+bower <span class="nb">install</span> <span class="nt">--save</span> angular-cookies
+
+<p>This one&#39;s configuration is a bit more complicated. But just a bit: it needs
+to be added to application dependency list:</p>
+<span class="kd">var</span> <span class="nx">ourStatsApp</span> <span class="o">=</span> <span class="nx">angular</span><span class="p">.</span><span class="nx">module</span><span class="p">(</span><span class="dl">'</span><span class="s1">ourStatsApp</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span> <span class="dl">'</span><span class="s1">ngRoute</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">ngCookies</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">ourStatsControllers</span><span class="dl">'</span> <span class="p">]);</span>
+
+<p>But since we use cookies directly in controllers only, we may move the <code>ngCookies</code> dependency to
+the <code>ourStatsControllers</code> module:</p>
+<span class="kd">var</span> <span class="nx">ourStatsControllers</span> <span class="o">=</span> <span class="nx">angular</span><span class="p">.</span><span class="nx">module</span><span class="p">(</span><span class="dl">'</span><span class="s1">ourStatsControllers</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span> <span class="dl">'</span><span class="s1">ngCookies</span><span class="dl">'</span> <span class="p">]);</span>
+
+<span class="c1">// ...</span>
+
+<span class="kd">var</span> <span class="nx">ourStatsApp</span> <span class="o">=</span> <span class="nx">angular</span><span class="p">.</span><span class="nx">module</span><span class="p">(</span><span class="dl">'</span><span class="s1">ourStatsApp</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span> <span class="dl">'</span><span class="s1">ngRoute</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">ourStatsControllers</span><span class="dl">'</span> <span class="p">]);</span>
+
+<p>Now we need to define our <code>AccountData</code> service. It&#39;ll also require a <code>ngCookies</code> dependency:</p>
+<span class="nx">ourStatsControllers</span><span class="p">.</span><span class="nx">factory</span><span class="p">(</span><span class="dl">'</span><span class="s1">AccountData</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span> <span class="dl">'</span><span class="s1">$cookies</span><span class="dl">'</span><span class="p">,</span>
+    <span class="p">(</span><span class="nx">$cookies</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="na">get</span><span class="p">:</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="nx">$cookies</span><span class="p">.</span><span class="nx">getObject</span><span class="p">(</span><span class="dl">'</span><span class="s1">account</span><span class="dl">'</span><span class="p">);</span>
+            <span class="p">},</span>
+            <span class="na">set</span><span class="p">:</span> <span class="p">(</span><span class="nx">account</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="nx">$cookies</span><span class="p">.</span><span class="nx">putObject</span><span class="p">(</span><span class="dl">'</span><span class="s1">account</span><span class="dl">'</span><span class="p">,</span> <span class="nx">account</span><span class="p">);</span>
+            <span class="p">},</span>
+            <span class="na">reset</span><span class="p">:</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="nx">$cookies</span><span class="p">.</span><span class="nx">remove</span><span class="p">(</span><span class="dl">'</span><span class="s1">account</span><span class="dl">'</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">]);</span>
+
+<p>And we need to modify our <code>Session</code> service a bit:</p>
+<span class="nx">ourStatsControllers</span><span class="p">.</span><span class="nx">factory</span><span class="p">(</span><span class="dl">'</span><span class="s1">Session</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span> <span class="dl">'</span><span class="s1">$http</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">AccountData</span><span class="dl">'</span><span class="p">,</span>
+    <span class="p">(</span><span class="nx">$http</span><span class="p">,</span> <span class="nx">AccountData</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">testAccount</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="na">name</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Artem</span><span class="dl">'</span><span class="p">,</span>
+                    <span class="na">email</span><span class="p">:</span> <span class="dl">'</span><span class="s1">artem@ourstats.com</span><span class="dl">'</span>
+                <span class="p">};</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="na">get</span><span class="p">:</span> <span class="p">(</span><span class="nx">account</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="kd">var</span> <span class="nx">params</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="na">email</span><span class="p">:</span> <span class="nx">account</span><span class="p">.</span><span class="nx">email</span><span class="p">,</span>
+                    <span class="na">password</span><span class="p">:</span> <span class="nx">account</span><span class="p">.</span><span class="nx">password</span>
+                <span class="p">};</span>
+
+                <span class="nx">AccountData</span><span class="p">.</span><span class="kd">set</span><span class="p">(</span><span class="nx">testAccount</span><span class="p">);</span>
+            <span class="p">},</span>
+
+            <span class="na">create</span><span class="p">:</span> <span class="p">(</span><span class="nx">account</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="kd">var</span> <span class="nx">params</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="na">name</span><span class="p">:</span> <span class="nx">account</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span>
+                    <span class="na">email</span><span class="p">:</span> <span class="nx">account</span><span class="p">.</span><span class="nx">email</span><span class="p">,</span>
+                    <span class="na">password</span><span class="p">:</span> <span class="nx">account</span><span class="p">.</span><span class="nx">password</span>
+                <span class="p">};</span>
+
+                <span class="nx">AccountData</span><span class="p">.</span><span class="kd">set</span><span class="p">(</span><span class="nx">testAccount</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">]);</span>
+
+<p>And now we can implement the controller to pick up the newly added service:</p>
+<span class="nx">ourStatsControllers</span><span class="p">.</span><span class="nx">controller</span><span class="p">(</span><span class="dl">'</span><span class="s1">NewSessionCtrl</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span> <span class="dl">'</span><span class="s1">$scope</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">Session</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">AccountData</span><span class="dl">'</span><span class="p">,</span>
+    <span class="p">(</span><span class="nx">$scope</span><span class="p">,</span> <span class="nx">Session</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">$scope</span><span class="p">.</span><span class="nx">newAccount</span> <span class="o">=</span> <span class="p">{};</span>
+        <span class="nx">$scope</span><span class="p">.</span><span class="nx">existingAccount</span> <span class="o">=</span> <span class="p">{};</span>
+
+        <span class="nx">$scope</span><span class="p">.</span><span class="nx">signIn</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">Session</span><span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="nx">$scope</span><span class="p">.</span><span class="nx">existingAccount</span><span class="p">);</span>
+        <span class="p">};</span>
+
+        <span class="nx">$scope</span><span class="p">.</span><span class="nx">signUp</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">Session</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="nx">$scope</span><span class="p">.</span><span class="nx">newAccount</span><span class="p">);</span>
+        <span class="p">};</span>
+
+        <span class="nx">$scope</span><span class="p">.</span><span class="nx">signOut</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">AccountData</span><span class="p">.</span><span class="nx">reset</span><span class="p">();</span>
+        <span class="p">};</span>
+    <span class="p">}</span>
+<span class="p">]);</span>
+
+<p>But here&#39;s just one small detail: we need both <code>Session</code> and <code>AccountData</code> services to perform
+similar actions - managing session. We can refactor our code to keep all the session management
+tasks in one place - <code>Session</code> service:</p>
+<span class="nx">ourStatsControllers</span><span class="p">.</span><span class="nx">factory</span><span class="p">(</span><span class="dl">'</span><span class="s1">Session</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span> <span class="dl">'</span><span class="s1">$http</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">AccountData</span><span class="dl">'</span><span class="p">,</span>
+    <span class="p">(</span><span class="nx">$http</span><span class="p">,</span> <span class="nx">AccountData</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">testAccount</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="na">name</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Artem</span><span class="dl">'</span><span class="p">,</span>
+                    <span class="na">email</span><span class="p">:</span> <span class="dl">'</span><span class="s1">artem@ourstats.com</span><span class="dl">'</span>
+                <span class="p">};</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="na">get</span><span class="p">:</span> <span class="p">(</span><span class="nx">account</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="kd">var</span> <span class="nx">params</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="na">email</span><span class="p">:</span> <span class="nx">account</span><span class="p">.</span><span class="nx">email</span><span class="p">,</span>
+                    <span class="na">password</span><span class="p">:</span> <span class="nx">account</span><span class="p">.</span><span class="nx">password</span>
+                <span class="p">};</span>
+
+                <span class="nx">AccountData</span><span class="p">.</span><span class="kd">set</span><span class="p">(</span><span class="nx">testAccount</span><span class="p">);</span>
+            <span class="p">},</span>
+
+            <span class="na">create</span><span class="p">:</span> <span class="p">(</span><span class="nx">account</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="kd">var</span> <span class="nx">params</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="na">name</span><span class="p">:</span> <span class="nx">account</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span>
+                    <span class="na">email</span><span class="p">:</span> <span class="nx">account</span><span class="p">.</span><span class="nx">email</span><span class="p">,</span>
+                    <span class="na">password</span><span class="p">:</span> <span class="nx">account</span><span class="p">.</span><span class="nx">password</span>
+                <span class="p">};</span>
+
+                <span class="nx">AccountData</span><span class="p">.</span><span class="kd">set</span><span class="p">(</span><span class="nx">testAccount</span><span class="p">);</span>
+            <span class="p">},</span>
+
+            <span class="na">reset</span><span class="p">:</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="nx">AccountData</span><span class="p">.</span><span class="nx">reset</span><span class="p">();</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">]);</span>
+
+<p>Now our <code>NewSessionCtrl</code> could be refactored too:</p>
+<span class="nx">ourStatsControllers</span><span class="p">.</span><span class="nx">controller</span><span class="p">(</span><span class="dl">'</span><span class="s1">NewSessionCtrl</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span> <span class="dl">'</span><span class="s1">$scope</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">Session</span><span class="dl">'</span><span class="p">,</span>
+    <span class="p">(</span><span class="nx">$scope</span><span class="p">,</span> <span class="nx">Session</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">$scope</span><span class="p">.</span><span class="nx">newAccount</span> <span class="o">=</span> <span class="p">{};</span>
+        <span class="nx">$scope</span><span class="p">.</span><span class="nx">existingAccount</span> <span class="o">=</span> <span class="p">{};</span>
+
+        <span class="nx">$scope</span><span class="p">.</span><span class="nx">signIn</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">Session</span><span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="nx">$scope</span><span class="p">.</span><span class="nx">existingAccount</span><span class="p">);</span>
+        <span class="p">};</span>
+
+        <span class="nx">$scope</span><span class="p">.</span><span class="nx">signUp</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">Session</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="nx">$scope</span><span class="p">.</span><span class="nx">newAccount</span><span class="p">);</span>
+        <span class="p">};</span>
+
+        <span class="nx">$scope</span><span class="p">.</span><span class="nx">signOut</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">Session</span><span class="p">.</span><span class="nx">reset</span><span class="p">();</span>
+        <span class="p">};</span>
+    <span class="p">}</span>
+<span class="p">]);</span>
+
+<p>Looks better, huh?</p>
+
+<p>So now we have our first member of our <strong>Model</strong> layer. It works with stubbed data right now,
+but we&#39;ll be changing that later. It is not bound to the <strong>ViewModel</strong>, because the values
+of our <code>$scope.newAccount</code> and <code>$scope.existingAccount</code> are constant and don&#39;t depend on
+the template. To change this, we need to modify our <code>new_session.jade</code> template:</p>
+.row
+    .col-xs-12.col-md-4.col-md-offset-1.well
+        h3 Sign up
+        form(ng-submit="signUp()")
+            fieldset.form-group
+                input.form-control(type="text" placeholder="Your name" ng-model="newAccount.name")
+            fieldset.form-group
+                input.form-control(type="email" placeholder="Email" ng-model="newAccount.email")
+            fieldset.form-group
+                input.form-control(type="password" placeholder="Password" ng-model="newAccount.password")
+            fieldset.form-group
+                input.form-control(type="password" placeholder="Password confirmation")
+            fieldset.form-group.text-center
+                button.btn.btn-primary(type="submit") Sign up
+
+    .col-md-2
+
+    .col-xs-12.col-md-4.well
+        h3 Sign in
+        form(ng-submit="signIn()")
+            fieldset.form-group
+                input.form-control(type="email" placeholder="Email" ng-model="existingAccount.name")
+            fieldset.form-group
+                input.form-control(type="password" placeholder="Password" ng-model="existingAccount.password")
+            fieldset.form-group.text-center
+                button.btn.btn-success(type="submit") Sign in
+
+<p>Note the <code>ng-model</code> directive: it performs two-way data binding. It means, when user changes the
+value of our, say, <code>name</code> input, the corresponding value inside controller, namely <code>$scope.newAccount.name</code>,
+will also change. What&#39;s more, when the value of <code>$scope.newAccount.name</code> will be changed from
+the JavaScript (or, from the controller itself), the value within the input in a user&#39;s browser,
+will also be changed.</p>
+
+<p>Now, what&#39;s about the <code>ng-submit</code> directive. It is added to form tags only. And it works exactly as
+you might&#39;ve guessed: when form is submitted, the corresponding expression within that directive is called.</p>
+
+<h2>Making fake calls</h2>
+
+<p>Now that we have our stubbed signing in and up routines, we may redirect user to the right page
+when he signed in or up successfully. This is the job for <code>$location</code> service. It&#39;s available
+in Angular core module, <code>ng</code>, so we don&#39;t need to add any new module-wise dependencies.
+Just use it in our <code>NewSessionCtrl</code>:</p>
+<span class="nx">ourStatsControllers</span><span class="p">.</span><span class="nx">controller</span><span class="p">(</span><span class="dl">'</span><span class="s1">NewSessionCtrl</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span> <span class="dl">'</span><span class="s1">$scope</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">$location</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">Session</span><span class="dl">'</span><span class="p">,</span>
+    <span class="p">(</span><span class="nx">$scope</span><span class="p">,</span> <span class="nx">$location</span><span class="p">,</span> <span class="nx">Session</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">$scope</span><span class="p">.</span><span class="nx">newAccount</span> <span class="o">=</span> <span class="p">{};</span>
+        <span class="nx">$scope</span><span class="p">.</span><span class="nx">existingAccount</span> <span class="o">=</span> <span class="p">{};</span>
+
+        <span class="nx">$scope</span><span class="p">.</span><span class="nx">signIn</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">Session</span><span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="nx">$scope</span><span class="p">.</span><span class="nx">existingAccount</span><span class="p">);</span>
+            <span class="nx">$location</span><span class="p">.</span><span class="nx">path</span><span class="p">(</span><span class="dl">'</span><span class="s1">/applications</span><span class="dl">'</span><span class="p">);</span>
+        <span class="p">};</span>
+
+        <span class="nx">$scope</span><span class="p">.</span><span class="nx">signUp</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">Session</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="nx">$scope</span><span class="p">.</span><span class="nx">newAccount</span><span class="p">);</span>
+            <span class="nx">$location</span><span class="p">.</span><span class="nx">path</span><span class="p">(</span><span class="dl">'</span><span class="s1">/applications</span><span class="dl">'</span><span class="p">);</span>
+        <span class="p">};</span>
+
+        <span class="nx">$scope</span><span class="p">.</span><span class="nx">signOut</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">Session</span><span class="p">.</span><span class="nx">reset</span><span class="p">();</span>
+            <span class="nx">$location</span><span class="p">.</span><span class="nx">path</span><span class="p">(</span><span class="dl">'</span><span class="s1">/</span><span class="dl">'</span><span class="p">);</span>
+        <span class="p">};</span>
+    <span class="p">}</span>
+<span class="p">]);</span>
+
+<p>Here comes new refactoring-able piece of code: we now have our routes declared in both
+<code>ourStatsApp</code> module and <code>ourStatsControllers</code>. So if we decide to change, let&#39;s say,
+route <code>/new-session</code> to <code>/login</code>, we will need to change it in both modules. We can easily
+extract those URLs into a single service and use it in both <code>ourStatsControllers</code>
+and <code>ourStatsApp</code> modules, because everything we define in <code>ourStatsControllers</code> will be
+available in the <code>ourStatsApp</code> thanks to dependency injection. And since our URLs will
+always be the same <em>(except, maybe, the parametrised ones)</em>, we may define a constant
+instead of factory:</p>
+<span class="nx">ourStatsControllers</span><span class="p">.</span><span class="nx">constant</span><span class="p">(</span><span class="dl">'</span><span class="s1">Url</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span>
+        <span class="na">landing</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/</span><span class="dl">'</span><span class="p">,</span>
+        <span class="na">newSession</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/new-session</span><span class="dl">'</span><span class="p">,</span>
+        <span class="na">editAccount</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/edit-account</span><span class="dl">'</span><span class="p">,</span>
+        <span class="na">listApplications</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/applications</span><span class="dl">'</span><span class="p">,</span>
+        <span class="na">newApplication</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/applications/new</span><span class="dl">'</span><span class="p">,</span>
+
+        <span class="na">showApplication</span><span class="p">:</span> <span class="p">(</span><span class="nx">id</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">id</span><span class="p">)</span>
+                <span class="nx">id</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">:id</span><span class="dl">'</span><span class="p">;</span>
+
+            <span class="k">return</span> <span class="s2">`/applications/</span><span class="p">${</span><span class="nx">id</span><span class="p">}</span><span class="s2">`</span><span class="p">;</span>
+        <span class="p">},</span>
+
+        <span class="na">editApplication</span><span class="p">:</span> <span class="p">(</span><span class="nx">id</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">id</span><span class="p">)</span>
+                <span class="nx">id</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">:id</span><span class="dl">'</span><span class="p">;</span>
+
+            <span class="k">return</span> <span class="s2">`/applications/</span><span class="p">${</span><span class="nx">id</span><span class="p">}</span><span class="s2">/edit`</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">})</span>
+
+<h2>Application startup phases</h2>
+
+<p>As you can see, there are a couple of entities you can create with Angular - we&#39;ve already
+dealt with <strong>controllers</strong>, <strong>factories</strong>, <strong>modules</strong> and <strong>constants</strong>. They all are slighty
+different from each other and the difference lies under Angular startup process.</p>
+
+<p>When your application <em>&quot;starts up&quot;</em> or initializes, there are two kingds of methods, which are
+ran first: <code>config</code> and <code>run</code>. They are user-defined and your application can have more than just
+one of those. Those methods define the initialization behaviour of your application. They both
+can deal with dependency injection. But their run order is different: <code>config</code> blocks are executed
+first, at the very beginning of the whole application initialization process. Thus you can inject
+only <strong>providers</strong> <em>(<code>$routeProvider</code> for instance)</em> and <strong>constants</strong> into <code>config</code> blocks.
+Whilst <code>run</code> blocks can only handle <strong>instances</strong> <em>(for example, <code>$scope</code>)</em> and <strong>constants</strong>.</p>
+
+<p>Since we have our routes defined at the <code>config</code> stage, we need to use <strong>constant</strong> to name our
+routes. And then use them like this:</p>
+<span class="nx">ourStatsApp</span>
+    <span class="p">.</span><span class="nx">config</span><span class="p">([</span><span class="dl">'</span><span class="s1">$routeProvider</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">Url</span><span class="dl">'</span><span class="p">,</span>
+        <span class="p">(</span><span class="nx">$routeProvider</span><span class="p">,</span> <span class="nx">Url</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">$routeProvider</span>
+                <span class="p">.</span><span class="nx">when</span><span class="p">(</span><span class="nx">Url</span><span class="p">.</span><span class="nx">landing</span><span class="p">,</span> <span class="p">{</span>
+                    <span class="na">templateUrl</span><span class="p">:</span> <span class="dl">'</span><span class="s1">landing-page.html</span><span class="dl">'</span><span class="p">,</span>
+                    <span class="na">controller</span><span class="p">:</span> <span class="dl">'</span><span class="s1">LandingPageCtrl</span><span class="dl">'</span>
+                <span class="p">})</span>
+                <span class="p">.</span><span class="nx">when</span><span class="p">(</span><span class="nx">Url</span><span class="p">.</span><span class="nx">newSession</span><span class="p">,</span> <span class="p">{</span>
+                    <span class="na">templateUrl</span><span class="p">:</span> <span class="dl">'</span><span class="s1">new-session.html</span><span class="dl">'</span><span class="p">,</span>
+                    <span class="na">controller</span><span class="p">:</span> <span class="dl">'</span><span class="s1">NewSessionCtrl</span><span class="dl">'</span>
+                <span class="p">})</span>
+                <span class="p">.</span><span class="nx">when</span><span class="p">(</span><span class="nx">Url</span><span class="p">.</span><span class="nx">editAccount</span><span class="p">,</span> <span class="p">{</span>
+                    <span class="na">templateUrl</span><span class="p">:</span> <span class="dl">'</span><span class="s1">edit-account.html</span><span class="dl">'</span><span class="p">,</span>
+                    <span class="na">controller</span><span class="p">:</span> <span class="dl">'</span><span class="s1">EditAccountCtrl</span><span class="dl">'</span>
+                <span class="p">})</span>
+                <span class="p">.</span><span class="nx">when</span><span class="p">(</span><span class="nx">Url</span><span class="p">.</span><span class="nx">listApplications</span><span class="p">,</span> <span class="p">{</span>
+                    <span class="na">templateUrl</span><span class="p">:</span> <span class="dl">'</span><span class="s1">list-applications.html</span><span class="dl">'</span><span class="p">,</span>
+                    <span class="na">controller</span><span class="p">:</span> <span class="dl">'</span><span class="s1">ListApplicationsCtrl</span><span class="dl">'</span>
+                <span class="p">})</span>
+                <span class="p">.</span><span class="nx">when</span><span class="p">(</span><span class="nx">Url</span><span class="p">.</span><span class="nx">newApplication</span><span class="p">,</span> <span class="p">{</span>
+                    <span class="na">templateUrl</span><span class="p">:</span> <span class="dl">'</span><span class="s1">new-application.html</span><span class="dl">'</span><span class="p">,</span>
+                    <span class="na">controller</span><span class="p">:</span> <span class="dl">'</span><span class="s1">NewApplicationCtrl</span><span class="dl">'</span>
+                <span class="p">})</span>
+                <span class="p">.</span><span class="nx">when</span><span class="p">(</span><span class="nx">Url</span><span class="p">.</span><span class="nx">editApplication</span><span class="p">(),</span> <span class="p">{</span>
+                    <span class="na">templateUrl</span><span class="p">:</span> <span class="dl">'</span><span class="s1">edit-application.html</span><span class="dl">'</span><span class="p">,</span>
+                    <span class="na">controller</span><span class="p">:</span> <span class="dl">'</span><span class="s1">EditApplicationCtrl</span><span class="dl">'</span>
+                <span class="p">})</span>
+                <span class="p">.</span><span class="nx">when</span><span class="p">(</span><span class="nx">Url</span><span class="p">.</span><span class="nx">showApplication</span><span class="p">(),</span> <span class="p">{</span>
+                    <span class="na">templateUrl</span><span class="p">:</span> <span class="dl">'</span><span class="s1">show-application.html</span><span class="dl">'</span><span class="p">,</span>
+                    <span class="na">controller</span><span class="p">:</span> <span class="dl">'</span><span class="s1">ShowApplicationCtrl</span><span class="dl">'</span>
+                <span class="p">})</span>
+                <span class="p">.</span><span class="nx">otherwise</span><span class="p">({</span>
+                    <span class="na">redirectTo</span><span class="p">:</span> <span class="nx">Url</span><span class="p">.</span><span class="nx">landing</span>
+                <span class="p">});</span>
+        <span class="p">}]);</span>
+
+<span class="nx">ourStatsControllers</span>
+    <span class="p">.</span><span class="nx">controller</span><span class="p">(</span><span class="dl">'</span><span class="s1">NewSessionCtrl</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span> <span class="dl">'</span><span class="s1">$scope</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">$location</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">Session</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">Url</span><span class="dl">'</span><span class="p">,</span>
+        <span class="p">(</span><span class="nx">$scope</span><span class="p">,</span> <span class="nx">$location</span><span class="p">,</span> <span class="nx">Session</span><span class="p">,</span> <span class="nx">Url</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">$scope</span><span class="p">.</span><span class="nx">newAccount</span> <span class="o">=</span> <span class="p">{};</span>
+
+            <span class="nx">$scope</span><span class="p">.</span><span class="nx">existingAccount</span> <span class="o">=</span> <span class="p">{};</span>
+
+            <span class="nx">$scope</span><span class="p">.</span><span class="nx">signIn</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="nx">Session</span><span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="nx">$scope</span><span class="p">.</span><span class="nx">existingAccount</span><span class="p">);</span>
+                <span class="nx">$location</span><span class="p">.</span><span class="nx">path</span><span class="p">(</span><span class="nx">Url</span><span class="p">.</span><span class="nx">listApplications</span><span class="p">);</span>
+            <span class="p">};</span>
+
+            <span class="nx">$scope</span><span class="p">.</span><span class="nx">signUp</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="nx">Session</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="nx">$scope</span><span class="p">.</span><span class="nx">newAccount</span><span class="p">);</span>
+                <span class="nx">$location</span><span class="p">.</span><span class="nx">path</span><span class="p">(</span><span class="nx">Url</span><span class="p">.</span><span class="nx">listApplications</span><span class="p">);</span>
+            <span class="p">};</span>
+
+            <span class="nx">$scope</span><span class="p">.</span><span class="nx">signOut</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="nx">AccountData</span><span class="p">.</span><span class="nx">reset</span><span class="p">();</span>
+                <span class="nx">$location</span><span class="p">.</span><span class="nx">path</span><span class="p">(</span><span class="nx">Url</span><span class="p">.</span><span class="nx">landing</span><span class="p">);</span>
+            <span class="p">};</span>
+        <span class="p">}</span>
+    <span class="p">])</span>
+
+<p>To show the difference in practice, let&#39;s add the authentication verification. We now have our
+stubbed account and session management service, so why not? Angular provides us with two options:</p>
+
+<ol>
+<li>the <code>resolve</code> attribute for the <code>$routeProvider.when()</code> method</li>
+<li>the <code>$routeChangeStart</code> event</li>
+</ol>
+
+<p>The first approach is nice, but since we set up routes in the <code>config</code> section, we are not allowed
+to use services. And that is the problem, because we&#39;ve got our <code>Session</code> service, handling the
+tasks we need. And one more drawback of this method: one should set it for each route, which requires
+verification:</p>
+<span class="kd">var</span> <span class="nx">verifyAuthentication</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+<span class="p">};</span>
+
+<span class="nx">ourStatsApp</span>
+    <span class="p">.</span><span class="nx">config</span><span class="p">([</span><span class="dl">'</span><span class="s1">$routeProvider</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">Url</span><span class="dl">'</span><span class="p">,</span>
+        <span class="p">(</span><span class="nx">$routeProvider</span><span class="p">,</span> <span class="nx">Url</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">$routeProvider</span>
+                <span class="p">.</span><span class="nx">when</span><span class="p">(</span><span class="nx">Url</span><span class="p">.</span><span class="nx">landing</span><span class="p">,</span> <span class="p">{</span>
+                    <span class="na">templateUrl</span><span class="p">:</span> <span class="dl">'</span><span class="s1">landing-page.html</span><span class="dl">'</span><span class="p">,</span>
+                    <span class="na">controller</span><span class="p">:</span> <span class="dl">'</span><span class="s1">LandingPageCtrl</span><span class="dl">'</span>
+                <span class="p">})</span>
+                <span class="p">.</span><span class="nx">when</span><span class="p">(</span><span class="nx">Url</span><span class="p">.</span><span class="nx">newSession</span><span class="p">,</span> <span class="p">{</span>
+                    <span class="na">templateUrl</span><span class="p">:</span> <span class="dl">'</span><span class="s1">new-session.html</span><span class="dl">'</span><span class="p">,</span>
+                    <span class="na">controller</span><span class="p">:</span> <span class="dl">'</span><span class="s1">NewSessionCtrl</span><span class="dl">'</span>
+                <span class="p">})</span>
+                <span class="p">.</span><span class="nx">when</span><span class="p">(</span><span class="nx">Url</span><span class="p">.</span><span class="nx">editAccount</span><span class="p">,</span> <span class="p">{</span>
+                    <span class="na">templateUrl</span><span class="p">:</span> <span class="dl">'</span><span class="s1">edit-account.html</span><span class="dl">'</span><span class="p">,</span>
+                    <span class="na">controller</span><span class="p">:</span> <span class="dl">'</span><span class="s1">EditAccountCtrl</span><span class="dl">'</span><span class="p">,</span>
+                    <span class="na">resolve</span><span class="p">:</span> <span class="nx">verifyAuthentication</span>
+                <span class="p">})</span>
+                <span class="p">.</span><span class="nx">when</span><span class="p">(</span><span class="nx">Url</span><span class="p">.</span><span class="nx">listApplications</span><span class="p">,</span> <span class="p">{</span>
+                    <span class="na">templateUrl</span><span class="p">:</span> <span class="dl">'</span><span class="s1">list-applications.html</span><span class="dl">'</span><span class="p">,</span>
+                    <span class="na">controller</span><span class="p">:</span> <span class="dl">'</span><span class="s1">ListApplicationsCtrl</span><span class="dl">'</span><span class="p">,</span>
+                    <span class="na">resolve</span><span class="p">:</span> <span class="nx">verifyAuthentication</span>
+                <span class="p">})</span>
+                <span class="p">.</span><span class="nx">when</span><span class="p">(</span><span class="nx">Url</span><span class="p">.</span><span class="nx">newApplication</span><span class="p">,</span> <span class="p">{</span>
+                    <span class="na">templateUrl</span><span class="p">:</span> <span class="dl">'</span><span class="s1">new-application.html</span><span class="dl">'</span><span class="p">,</span>
+                    <span class="na">controller</span><span class="p">:</span> <span class="dl">'</span><span class="s1">NewApplicationCtrl</span><span class="dl">'</span><span class="p">,</span>
+                    <span class="na">resolve</span><span class="p">:</span> <span class="nx">verifyAuthentication</span>
+                <span class="p">})</span>
+                <span class="p">.</span><span class="nx">when</span><span class="p">(</span><span class="nx">Url</span><span class="p">.</span><span class="nx">editApplication</span><span class="p">(),</span> <span class="p">{</span>
+                    <span class="na">templateUrl</span><span class="p">:</span> <span class="dl">'</span><span class="s1">edit-application.html</span><span class="dl">'</span><span class="p">,</span>
+                    <span class="na">controller</span><span class="p">:</span> <span class="dl">'</span><span class="s1">EditApplicationCtrl</span><span class="dl">'</span><span class="p">,</span>
+                    <span class="na">resolve</span><span class="p">:</span> <span class="nx">verifyAuthentication</span>
+                <span class="p">})</span>
+                <span class="p">.</span><span class="nx">when</span><span class="p">(</span><span class="nx">Url</span><span class="p">.</span><span class="nx">showApplication</span><span class="p">(),</span> <span class="p">{</span>
+                    <span class="na">templateUrl</span><span class="p">:</span> <span class="dl">'</span><span class="s1">show-application.html</span><span class="dl">'</span><span class="p">,</span>
+                    <span class="na">controller</span><span class="p">:</span> <span class="dl">'</span><span class="s1">ShowApplicationCtrl</span><span class="dl">'</span><span class="p">,</span>
+                    <span class="na">resolve</span><span class="p">:</span> <span class="nx">verifyAuthentication</span>
+                <span class="p">})</span>
+                <span class="p">.</span><span class="nx">otherwise</span><span class="p">({</span>
+                    <span class="na">redirectTo</span><span class="p">:</span> <span class="nx">Url</span><span class="p">.</span><span class="nx">landing</span>
+                <span class="p">});</span>
+            <span class="p">}]);</span>
+
+<p>Handling <code>$routeChangeStart</code> event suits us, and what&#39;s more interesting: it shows the use of <code>run</code>
+section. But as a drawback to this, we&#39;ll need the list of routes, which need to be checked. So
+I modified the definition of <code>Url</code> constant like this:</p>
+<span class="nx">ourStatsApp</span>
+    <span class="p">.</span><span class="nx">constant</span><span class="p">(</span><span class="dl">'</span><span class="s1">Url</span><span class="dl">'</span><span class="p">,</span> <span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">urls</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="na">landing</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/</span><span class="dl">'</span><span class="p">,</span>
+            <span class="na">newSession</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/new-session</span><span class="dl">'</span><span class="p">,</span>
+            <span class="na">editAccount</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/edit-account</span><span class="dl">'</span><span class="p">,</span>
+            <span class="na">listApplications</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/applications</span><span class="dl">'</span><span class="p">,</span>
+            <span class="na">newApplication</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/applications/new</span><span class="dl">'</span><span class="p">,</span>
+
+            <span class="na">showApplication</span><span class="p">:</span> <span class="p">(</span><span class="nx">id</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">id</span><span class="p">)</span>
+                    <span class="nx">id</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">:id</span><span class="dl">'</span><span class="p">;</span>
+
+                <span class="k">return</span> <span class="s2">`/applications/</span><span class="p">${</span><span class="nx">id</span><span class="p">}</span><span class="s2">`</span><span class="p">;</span>
+            <span class="p">},</span>
+
+            <span class="na">editApplication</span><span class="p">:</span> <span class="p">(</span><span class="nx">id</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">id</span><span class="p">)</span>
+                    <span class="nx">id</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">:id</span><span class="dl">'</span><span class="p">;</span>
+
+                <span class="k">return</span> <span class="s2">`/applications/</span><span class="p">${</span><span class="nx">id</span><span class="p">}</span><span class="s2">/edit`</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">};</span>
+
+        <span class="nx">urls</span><span class="p">.</span><span class="nx">authRequired</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="nx">urls</span><span class="p">.</span><span class="nx">editAccount</span><span class="p">,</span>
+            <span class="nx">urls</span><span class="p">.</span><span class="nx">listApplications</span><span class="p">,</span>
+            <span class="nx">urls</span><span class="p">.</span><span class="nx">newApplication</span><span class="p">,</span>
+            <span class="nx">urls</span><span class="p">.</span><span class="nx">showApplication</span><span class="p">(),</span>
+            <span class="nx">urls</span><span class="p">.</span><span class="nx">editApplication</span><span class="p">()</span>
+        <span class="p">];</span>
+
+        <span class="k">return</span> <span class="nx">urls</span><span class="p">;</span>
+    <span class="p">})());</span>
+
+<p>A bit tricky, does not it? And here&#39;s the handler for the <code>$routeChangeStart</code> event:</p>
+<span class="nx">ourStatsApp</span>
+    <span class="p">.</span><span class="nx">run</span><span class="p">([</span><span class="dl">'</span><span class="s1">$rootScope</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">$location</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">Session</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">AccountData</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">Url</span><span class="dl">'</span><span class="p">,</span>
+        <span class="p">(</span><span class="nx">$rootScope</span><span class="p">,</span> <span class="nx">$location</span><span class="p">,</span> <span class="nx">Session</span><span class="p">,</span> <span class="nx">AccountData</span><span class="p">,</span> <span class="nx">Url</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nx">$rootScope</span><span class="p">.</span><span class="nx">$on</span><span class="p">(</span><span class="dl">'</span><span class="s1">$routeChangeStart</span><span class="dl">'</span><span class="p">,</span> <span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">current</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="c1">// check if user is authenticated for selected URLs only</span>
+                <span class="c1">// first, try to restore his session</span>
+                <span class="c1">// if this failed because user has no AccountData cookie - redirect him to newSession page</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nx">Url</span><span class="p">.</span><span class="nx">authRequired</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">$location</span><span class="p">.</span><span class="nx">path</span><span class="p">())</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="nx">Session</span><span class="p">.</span><span class="kd">get</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="nx">AccountData</span><span class="p">.</span><span class="kd">get</span><span class="p">())</span>
+                    <span class="nx">$location</span><span class="p">.</span><span class="nx">path</span><span class="p">(</span><span class="nx">Url</span><span class="p">.</span><span class="nx">newSession</span><span class="p">);</span>
+            <span class="p">});</span>
+        <span class="p">}]);</span>
+
+<h2>Rocking on</h2>
+
+<p>Other services and controllers are much like those we already have, so I&#39;ll just put in the code
+in the end of the page. The interesting thing here is the <code>MockData</code> service that I&#39;ve used to keep
+data, used while we have no server side.</p>
+<span class="nx">ourStatsApp</span>
+    <span class="p">.</span><span class="nx">constant</span><span class="p">(</span><span class="dl">'</span><span class="s1">MockData</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span>
+        <span class="na">account</span><span class="p">:</span> <span class="p">{</span>
+            <span class="na">name</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Artem</span><span class="dl">'</span><span class="p">,</span>
+            <span class="na">email</span><span class="p">:</span> <span class="dl">'</span><span class="s1">artem@ourstats.com</span><span class="dl">'</span><span class="p">,</span>
+            <span class="na">password</span><span class="p">:</span> <span class="dl">'</span><span class="s1">abc123</span><span class="dl">'</span>
+        <span class="p">},</span>
+        <span class="na">applications</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="na">id</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="na">name</span><span class="p">:</span> <span class="dl">'</span><span class="s1">App #1</span><span class="dl">'</span><span class="p">,</span>
+                <span class="na">token</span><span class="p">:</span> <span class="dl">'</span><span class="s1">APP1TOK</span><span class="dl">'</span><span class="p">,</span>
+                <span class="na">stats</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="na">byCountry</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="p">{</span><span class="na">country</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Poland</span><span class="dl">'</span><span class="p">,</span> <span class="na">amount</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+                        <span class="p">{</span><span class="na">country</span><span class="p">:</span> <span class="dl">'</span><span class="s1">USA</span><span class="dl">'</span><span class="p">,</span> <span class="na">amount</span><span class="p">:</span> <span class="mi">190</span><span class="p">},</span>
+                        <span class="p">{</span><span class="na">country</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Algeria</span><span class="dl">'</span><span class="p">,</span> <span class="na">amount</span><span class="p">:</span> <span class="mi">5</span><span class="p">}</span>
+                    <span class="p">]</span>
+                <span class="p">}</span>
+            <span class="p">},</span> <span class="p">{</span>
+                <span class="na">id</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="na">name</span><span class="p">:</span> <span class="dl">'</span><span class="s1">App #2</span><span class="dl">'</span><span class="p">,</span>
+                <span class="na">token</span><span class="p">:</span> <span class="dl">'</span><span class="s1">APP2TOK</span><span class="dl">'</span><span class="p">,</span>
+                <span class="na">stats</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="na">byCountry</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="p">{</span><span class="na">country</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Vietnam</span><span class="dl">'</span><span class="p">,</span> <span class="na">amount</span><span class="p">:</span> <span class="mi">7</span><span class="p">},</span>
+                        <span class="p">{</span><span class="na">country</span><span class="p">:</span> <span class="dl">'</span><span class="s1">New Zeland</span><span class="dl">'</span><span class="p">,</span> <span class="na">amount</span><span class="p">:</span> <span class="mi">19</span><span class="p">},</span>
+                        <span class="p">{</span><span class="na">country</span><span class="p">:</span> <span class="dl">'</span><span class="s1">USA</span><span class="dl">'</span><span class="p">,</span> <span class="na">amount</span><span class="p">:</span> <span class="mi">15</span><span class="p">}</span>
+                    <span class="p">]</span>
+                <span class="p">}</span>
+            <span class="p">},</span> <span class="p">{</span>
+                <span class="na">id</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="na">name</span><span class="p">:</span> <span class="dl">'</span><span class="s1">App #3</span><span class="dl">'</span><span class="p">,</span>
+                <span class="na">token</span><span class="p">:</span> <span class="dl">'</span><span class="s1">APP3TOK</span><span class="dl">'</span><span class="p">,</span>
+                <span class="na">stats</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="na">byCountry</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="p">{</span><span class="na">country</span><span class="p">:</span> <span class="dl">'</span><span class="s1">USA</span><span class="dl">'</span><span class="p">,</span> <span class="na">amount</span><span class="p">:</span> <span class="mi">95</span><span class="p">}</span>
+                    <span class="p">]</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">]</span>
+    <span class="p">});</span>
+
+<span class="c1">// ...</span>
+
+<span class="nx">ourStatsApp</span>
+    <span class="p">.</span><span class="nx">factory</span><span class="p">(</span><span class="dl">'</span><span class="s1">Application</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span><span class="dl">'</span><span class="s1">$http</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">MockData</span><span class="dl">'</span><span class="p">,</span> <span class="p">(</span><span class="nx">$http</span><span class="p">,</span> <span class="nx">MockData</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="na">create</span><span class="p">:</span> <span class="p">(</span><span class="nx">application</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="c1">// send data to the server and check if response status == 200; return application (arg)</span>
+                <span class="k">return</span> <span class="nx">application</span><span class="p">;</span>
+            <span class="p">},</span>
+
+            <span class="na">get</span><span class="p">:</span> <span class="p">(</span><span class="nx">id</span><span class="p">,</span> <span class="nx">fromDate</span><span class="p">,</span> <span class="nx">toDate</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="c1">// fromDate and toDate are used for stats filtering</span>
+                <span class="c1">// send data to the server and return response</span>
+                <span class="k">return</span> <span class="nx">MockData</span><span class="p">.</span><span class="nx">applications</span><span class="p">[</span><span class="nx">id</span><span class="p">];</span>
+            <span class="p">},</span>
+
+            <span class="na">update</span><span class="p">:</span> <span class="p">(</span><span class="nx">id</span><span class="p">,</span> <span class="nx">application</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="c1">// send data to the server and check if response status == 200; return application (arg)</span>
+                <span class="k">return</span> <span class="nx">application</span><span class="p">;</span>
+            <span class="p">},</span>
+
+            <span class="na">all</span><span class="p">:</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="c1">// send request to the server and return the response</span>
+                <span class="k">return</span> <span class="nx">MockData</span><span class="p">.</span><span class="nx">applications</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">};</span>
+    <span class="p">}]);</span>
+
+<p>And here&#39;s the demo of what we&#39;ve done up until now:</p>
+
+<p data-height="494" data-theme-id="0" data-slug-hash="vLMZmd" data-default-tab="result" data-user="shybovycha" class='codepen'>See the Pen <a href='http://codepen.io/shybovycha/pen/vLMZmd/'>Simple web analytics. Communication layer. v2</a> by Artem Shoobovych (<a href='http://codepen.io/shybovycha'>@shybovycha</a>) on <a href='http://codepen.io'>CodePen</a>.</p>
+
+<script async src="/assets.codepen.io/assets/embed/ei.js"></script>

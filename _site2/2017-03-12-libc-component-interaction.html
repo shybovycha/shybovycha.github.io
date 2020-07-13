@@ -1,0 +1,210 @@
+<meta name="layout" content="post">
+<meta name="title" content="libc.js: component interaction">
+<meta name="date" content="2017-03-12T23:22:24+02:00">
+<p><img data-src="/images/microverse-battery_optimized.jpg" alt=""></p>
+
+<h1>libc.js</h1>
+
+<p>Recently I&#39;ve written a post about functional programming techniques, coming into the world of front-end and
+the library I crafted as an experiment. That library, <a href="https://github.com/shybovycha/libc.js">libc.js</a> was
+highly inspired by <a href="http://elm-lang.org/">Elm</a> and <a href="http://mithril.js.org">Mithril</a>. But it suffered two major features:</p>
+
+<ol>
+<li>components were hardly able to be used in other components</li>
+<li>the interaction between components was nearly impossible <u>(or, at least, not very transparent)</u></li>
+</ol>
+
+<p>What&#39;s hidden beneath the next version of the library?</p>
+
+<!--more-->
+
+<p>The next logical step in library development was to make the interaction between components smooth and
+natural. I was primarily thinking of two options:</p>
+
+<ol>
+<li>inheriting component from a <code>VirtualDOMNode</code> class</li>
+<li>passing both properties and children as arguments to the <code>view</code> function of a component</li>
+</ol>
+
+<p>I&#39;ll first describe the second approach a bit: since properties and children basically describe
+a <code>VirtualDOMNode</code> itself, that meant to pass a <code>VirtualDOMNode</code> instance to the <code>view</code> function.
+And if I did so, I&#39;d get <code>Mithril.js</code>.</p>
+
+<p>If I inherit a component class from a <code>VirtualDOMNode</code>, I&#39;d step away from the initial purpose
+of keeping <code>view</code> and <code>update</code> functions separated and pure.</p>
+
+<p>The library exposes a <code>Store</code> class, which is very similar to <a href="http://redux.js.org">Redux</a>.
+This class was also used internally to handle components&#39; state changes. But that did not
+solve the problem in any way.</p>
+
+<p>I ended up creating a <code>Component</code> class, which encapsulated both <code>view</code> and
+<code>update</code> functions, internal component state and the <code>dispatch</code> function, which operated on
+the component&#39;s internal state. I also exposed the <code>render()</code> method, which could then be used
+to bind a component to an external <code>Store</code> object <u>(which I&#39;ll cover in a minute)</u>.</p>
+
+<h1>Re-using components</h1>
+
+<p>The changes made allowed components to be used in other components. To illustrate that, I
+created a <code>Tab</code> component and the corresponding example:</p>
+<span class="kd">let</span> <span class="nx">Tabs</span> <span class="o">=</span> <span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">update</span> <span class="o">=</span> <span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">message</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">message</span><span class="p">.</span><span class="nx">type</span> <span class="o">==</span> <span class="dl">'</span><span class="s1">SELECT_TAB</span><span class="dl">'</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">assign</span><span class="p">({},</span> <span class="nx">state</span><span class="p">,</span> <span class="p">{</span>
+                <span class="na">currentTabIndex</span><span class="p">:</span> <span class="nx">message</span><span class="p">.</span><span class="nx">tabIndex</span>
+            <span class="p">});</span>
+
+        <span class="k">return</span> <span class="nx">state</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="kd">let</span> <span class="nx">view</span> <span class="o">=</span> <span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">children</span><span class="p">,</span> <span class="nx">dispatch</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">currentTabIndex</span> <span class="o">=</span> <span class="nx">state</span><span class="p">.</span><span class="nx">currentTabIndex</span> <span class="o">||</span> <span class="mi">0</span><span class="p">;</span>
+
+        <span class="kd">let</span> <span class="nx">tabHeaders</span> <span class="o">=</span> <span class="nx">children</span><span class="p">.</span><span class="nx">map</span><span class="p">((</span><span class="nx">tab</span><span class="p">,</span> <span class="nx">tabIndex</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="p">[</span> <span class="dl">'</span><span class="s1">div</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span>
+                    <span class="na">class</span><span class="p">:</span> <span class="s2">`tab-header </span><span class="p">${</span><span class="nx">tabIndex</span> <span class="o">==</span> <span class="nx">currentTabIndex</span> <span class="p">?</span> <span class="dl">'</span><span class="s1">selected</span><span class="dl">'</span> <span class="p">:</span> <span class="dl">''</span><span class="p">}</span><span class="s2">`</span><span class="p">,</span>
+                    <span class="na">click</span><span class="p">:</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">dispatch</span><span class="p">({</span>
+                        <span class="na">type</span><span class="p">:</span> <span class="dl">'</span><span class="s1">SELECT_TAB</span><span class="dl">'</span><span class="p">,</span>
+                        <span class="nx">tabIndex</span>
+                    <span class="p">})</span>
+                <span class="p">},</span>
+                <span class="p">[</span> <span class="nx">tab</span><span class="p">.</span><span class="nx">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">]</span>
+            <span class="p">];</span>
+        <span class="p">});</span>
+
+        <span class="kd">let</span> <span class="nx">tabs</span> <span class="o">=</span> <span class="nx">children</span><span class="p">.</span><span class="nx">map</span><span class="p">((</span><span class="nx">tab</span><span class="p">,</span> <span class="nx">tabIndex</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="p">[</span> <span class="dl">'</span><span class="s1">div</span><span class="dl">'</span><span class="p">,</span>
+                <span class="p">{</span> <span class="na">class</span><span class="p">:</span> <span class="s2">`tab-content </span><span class="p">${</span><span class="nx">tabIndex</span> <span class="o">==</span> <span class="nx">currentTabIndex</span> <span class="p">?</span> <span class="dl">'</span><span class="s1">selected</span><span class="dl">'</span> <span class="p">:</span> <span class="dl">''</span><span class="p">}</span><span class="s2">`</span> <span class="p">},</span>
+                <span class="nx">tab</span><span class="p">.</span><span class="nx">children</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="p">];</span>
+        <span class="p">});</span>
+
+        <span class="k">return</span> <span class="p">[</span> <span class="dl">'</span><span class="s1">div</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span>
+            <span class="p">[</span> <span class="dl">'</span><span class="s1">div</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span> <span class="na">class</span><span class="p">:</span> <span class="dl">'</span><span class="s1">tab-headers</span><span class="dl">'</span> <span class="p">},</span> <span class="nx">tabHeaders</span> <span class="p">],</span>
+            <span class="p">[</span> <span class="dl">'</span><span class="s1">div</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span> <span class="na">class</span><span class="p">:</span> <span class="dl">'</span><span class="s1">tab-container</span><span class="dl">'</span> <span class="p">},</span> <span class="nx">tabs</span> <span class="p">]</span>
+        <span class="p">]];</span>
+    <span class="p">};</span>
+
+    <span class="k">return</span> <span class="nx">createComponent</span><span class="p">(</span><span class="nx">view</span><span class="p">,</span> <span class="nx">update</span><span class="p">);</span>
+<span class="p">})();</span>
+
+<span class="kd">let</span> <span class="nx">app</span> <span class="o">=</span> <span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">view</span> <span class="o">=</span> <span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">children</span><span class="p">,</span> <span class="nx">dispatch</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">[</span> <span class="nx">Tabs</span><span class="p">,</span> <span class="p">[</span>
+            <span class="p">[</span><span class="dl">'</span><span class="s1">div</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span>
+                <span class="p">[</span><span class="dl">'</span><span class="s1">div</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span> <span class="na">class</span><span class="p">:</span> <span class="dl">'</span><span class="s1">header</span><span class="dl">'</span> <span class="p">},</span> <span class="dl">'</span><span class="s1">Tab #1</span><span class="dl">'</span><span class="p">],</span>
+                <span class="p">[</span><span class="dl">'</span><span class="s1">div</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">FIRST TAB CONTENT</span><span class="dl">'</span><span class="p">]</span>
+            <span class="p">]],</span>
+            <span class="p">[</span><span class="dl">'</span><span class="s1">div</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span>
+                <span class="p">[</span><span class="dl">'</span><span class="s1">div</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span> <span class="na">class</span><span class="p">:</span> <span class="dl">'</span><span class="s1">header</span><span class="dl">'</span> <span class="p">},</span> <span class="dl">'</span><span class="s1">Tab #2</span><span class="dl">'</span><span class="p">],</span>
+                <span class="p">[</span><span class="dl">'</span><span class="s1">div</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">SECOND TAB CONTENT</span><span class="dl">'</span><span class="p">]</span>
+            <span class="p">]],</span>
+            <span class="p">[</span><span class="dl">'</span><span class="s1">div</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span>
+                <span class="p">[</span><span class="dl">'</span><span class="s1">div</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span> <span class="na">class</span><span class="p">:</span> <span class="dl">'</span><span class="s1">header</span><span class="dl">'</span> <span class="p">},</span> <span class="dl">'</span><span class="s1">Tab #3</span><span class="dl">'</span><span class="p">],</span>
+                <span class="p">[</span><span class="dl">'</span><span class="s1">div</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">THIRD TAB CONTENT</span><span class="dl">'</span><span class="p">]</span>
+            <span class="p">]],</span>
+        <span class="p">]</span> <span class="p">];</span>
+    <span class="p">};</span>
+
+    <span class="k">return</span> <span class="nx">createComponent</span><span class="p">(</span><span class="nx">view</span><span class="p">);</span>
+<span class="p">})();</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nx">init</span><span class="p">().</span><span class="nx">mount</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nx">querySelector</span><span class="p">(</span><span class="dl">'</span><span class="s1">#app</span><span class="dl">'</span><span class="p">));</span>
+
+<p>I also use these styles to make tabs look like tabs:</p>
+<span class="nc">.tab-container</span> <span class="p">{</span>
+    <span class="nl">display</span><span class="p">:</span> <span class="n">flex</span><span class="p">;</span>
+    <span class="nl">flex-direction</span><span class="p">:</span> <span class="n">column</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nc">.tab-headers</span> <span class="p">{</span>
+    <span class="nl">display</span><span class="p">:</span> <span class="n">flex</span><span class="p">;</span>
+    <span class="nl">justify-content</span><span class="p">:</span> <span class="n">space-around</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nc">.tab-header</span> <span class="p">{</span>
+    <span class="nl">text-align</span><span class="p">:</span> <span class="nb">center</span><span class="p">;</span>
+    <span class="nl">cursor</span><span class="p">:</span> <span class="nb">pointer</span><span class="p">;</span>
+    <span class="nl">flex-grow</span><span class="p">:</span> <span class="m">1</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nc">.tab-header</span><span class="nd">:hover</span> <span class="p">{</span>
+    <span class="nl">text-decoration</span><span class="p">:</span> <span class="nb">underline</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nc">.tab-header.selected</span><span class="nd">:hover</span> <span class="p">{</span>
+    <span class="nl">text-decoration</span><span class="p">:</span> <span class="nb">none</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nc">.tab-header.selected</span> <span class="p">{</span>
+    <span class="nl">background</span><span class="p">:</span> <span class="m">#ddd</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nc">.tab-content</span> <span class="p">{</span>
+    <span class="nl">display</span><span class="p">:</span> <span class="nb">none</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nc">.tab-content.selected</span> <span class="p">{</span>
+    <span class="nl">display</span><span class="p">:</span> <span class="nb">block</span><span class="p">;</span>
+<span class="p">}</span>
+
+<p>This example shows how <code>Tabs</code> component could be used and, what&#39;s more important,
+<strong>as a High-Order Component</strong>, passing tabs along with their headers as a set
+of children to the <code>Tabs</code> component.</p>
+
+<h1>Using external state</h1>
+
+<p>Using component&#39;s <code>render()</code> method and the <code>createStore(initialState)</code> function,
+exposed by a library, we can also create and use the store as an external state
+provider for our component:</p>
+<span class="kd">var</span> <span class="nx">counterStore</span> <span class="o">=</span> <span class="nx">createStore</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+<span class="kd">function</span> <span class="nx">update</span><span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">message</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">message</span> <span class="o">==</span> <span class="dl">'</span><span class="s1">INCREMENT</span><span class="dl">'</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nx">state</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nx">message</span> <span class="o">==</span> <span class="dl">'</span><span class="s1">DECREMENT</span><span class="dl">'</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nx">state</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="nx">state</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nx">counterStore</span><span class="p">.</span><span class="nx">onAction</span><span class="p">(</span><span class="nx">update</span><span class="p">);</span>
+
+<span class="kd">function</span> <span class="nx">view</span><span class="p">(</span><span class="nx">state</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">state</span><span class="p">.</span><span class="nx">store</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="dl">'</span><span class="s1">div</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span>
+        <span class="p">[</span><span class="dl">'</span><span class="s1">button</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span> <span class="na">click</span><span class="p">:</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">store</span><span class="p">.</span><span class="nx">dispatch</span><span class="p">(</span><span class="dl">'</span><span class="s1">INCREMENT</span><span class="dl">'</span><span class="p">)</span> <span class="p">},</span> <span class="dl">'</span><span class="s1">Increment</span><span class="dl">'</span><span class="p">],</span>
+        <span class="p">[</span><span class="dl">'</span><span class="s1">button</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span> <span class="na">click</span><span class="p">:</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">store</span><span class="p">.</span><span class="nx">dispatch</span><span class="p">(</span><span class="dl">'</span><span class="s1">DECREMENT</span><span class="dl">'</span><span class="p">)</span> <span class="p">},</span> <span class="dl">'</span><span class="s1">Decrement</span><span class="dl">'</span><span class="p">],</span>
+        <span class="p">[</span><span class="dl">'</span><span class="s1">div</span><span class="dl">'</span><span class="p">,</span> <span class="s2">`Count: </span><span class="p">${</span> <span class="nx">store</span><span class="p">.</span><span class="nx">getState</span><span class="p">()</span> <span class="p">}</span><span class="s2">`</span><span class="p">]</span>
+    <span class="p">]];</span>
+<span class="p">}</span>
+
+<span class="kd">var</span> <span class="nx">Counter</span> <span class="o">=</span> <span class="nx">createComponent</span><span class="p">(</span><span class="nx">view</span><span class="p">);</span>
+
+<span class="nx">counterStore</span><span class="p">.</span><span class="nx">onStateChanged</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="nx">Counter</span><span class="p">.</span><span class="nx">render</span><span class="p">());</span>
+
+<span class="nx">Counter</span><span class="p">.</span><span class="nx">init</span><span class="p">({</span> <span class="na">store</span><span class="p">:</span> <span class="nx">counterStore</span> <span class="p">}).</span><span class="nx">mount</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">);</span>
+
+<p>Here you can see how to create a store with an initial state. The initial state could be pretty
+much anything - a number, a string, an array, an object...</p>
+
+<p>Using store&#39;s <code>onAction(handler)</code> and <code>onStateChanged(handler)</code> methods, we can set
+a chain of reducers and a list of observers to state changes, correspondingly.</p>
+
+<p>This example also shows how we can pass the initial state to a component&#39;s instance, using
+the <code>init(state, children)</code> method of a <code>Component</code> instance <u>(in this example - <code>Counter.init()</code>)</u>.</p>
+
+<p>In this example a few method signatures are also shown in action:</p>
+
+<ul>
+<li><code>Component.init()</code> has two arguments: <code>initialState</code> and <code>children</code> and both are optional</li>
+<li><code>createComponent()</code> has two arguments: <code>viewFn</code> and <code>updateFn</code> and, again, both are optional</li>
+<li><code>viewFn</code> has three arguments: <code>state</code>, <code>children</code> and <code>dispatchFn</code>; last one is used to change component&#39;s internal state; second one is used for HOCs and will be handy to make configurations or to wrap the children with a markup or logic; first argument is just an internal component&#39;s state and, by the first call of the <code>viewFn</code> is equal to component&#39;s <code>initialState</code>, passed by <code>Component.init()</code> call</li>
+<li><code>createStore(initialState)</code> is used to create a <code>Store</code> instance, where <code>initialState</code> is pretty much anything</li>
+<li><code>Store.dispatch()</code> has exactly the same signature as the <code>dispatchFn</code>, used in <code>viewFn</code></li>
+</ul>
+
+<h1>Instead of wrap-up</h1>
+
+<p>I hope this library is a little bit more than just an experiment and once it will be used for a great good!</p>

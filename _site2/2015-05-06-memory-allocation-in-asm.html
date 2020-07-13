@@ -1,0 +1,139 @@
+<meta name="layout" content="post">
+<meta name="title" content="Memory allocation in ASM">
+<meta name="date" content="2015-05-06T12:20:04+02:00">
+<meta name="tags" content="rtfm,tutorial,assembly,nasm,linux,c++">
+<meta name="tumblr_url" content="http://shybovycha.tumblr.com/post/118273000531/memory-allocation-in-asm">
+<p>Currently I am working on a long arithmetic problem at the university. This problem is much more complicated than I described or than a task I shall be describing now, but here&#39;s the thing: I needed some part of memory to be allocated from within my function. And I needed this to be done in assembly.</p>
+
+<!--more-->
+
+<p>Thus, I created this piece of snippet code:</p>
+<span class="c">; void addition(int* x, int x_len, int* y, int y_len, int* &amp;z, int* z_len);</span>
+<span class="kr">global</span> <span class="n">_Z8additionPiiS_iRS_S_</span>
+<span class="n">_Z8additionPiiS_iRS_S_</span><span class="o">:</span>
+
+    <span class="k">enter</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+
+    <span class="err">%</span><span class="n">define</span> <span class="n">p_x</span> <span class="err">[</span><span class="n">ebp</span> <span class="o">+</span> <span class="mi">8</span><span class="err">]</span>
+    <span class="err">%</span><span class="n">define</span> <span class="n">x_len</span> <span class="err">[</span><span class="n">ebp</span> <span class="o">+</span> <span class="mi">12</span><span class="err">]</span>
+    <span class="err">%</span><span class="n">define</span> <span class="n">p_y</span> <span class="err">[</span><span class="n">ebp</span> <span class="o">+</span> <span class="mi">16</span><span class="err">]</span>
+    <span class="err">%</span><span class="n">define</span> <span class="n">y_len</span> <span class="err">[</span><span class="n">ebp</span> <span class="o">+</span> <span class="mi">20</span><span class="err">]</span>
+    <span class="err">%</span><span class="n">define</span> <span class="n">p_z</span> <span class="err">[</span><span class="n">ebp</span> <span class="o">+</span> <span class="mi">24</span><span class="err">]</span>
+    <span class="err">%</span><span class="n">define</span> <span class="n">p_z_len</span> <span class="err">[</span><span class="n">ebp</span> <span class="o">+</span> <span class="mi">28</span><span class="err">]</span>
+
+<span class="n">addition_allocate_mem</span><span class="o">:</span>
+
+    <span class="c">; push x_len * 4 ; bytes to allocate</span>
+    <span class="k">push</span> <span class="mi">3</span> <span class="o">*</span> <span class="mi">4</span> <span class="c">; bytes to allocate</span>
+    <span class="k">call</span> <span class="n">malloc</span> <span class="c">; call malloc()</span>
+    <span class="k">add</span> <span class="n">esp</span><span class="p">,</span> <span class="mi">4</span> <span class="c">; undo push</span>
+    <span class="k">mov</span> <span class="n">edx</span><span class="p">,</span> <span class="n">eax</span> <span class="c">; save returned address from malloc</span>
+    <span class="k">mov</span> <span class="n">eax</span><span class="p">,</span> <span class="n">p_z</span>
+    <span class="k">mov</span> <span class="p">[eax],</span> <span class="n">edx</span> <span class="c">; z = malloc(...)</span>
+    <span class="k">mov</span> <span class="n">eax</span><span class="p">,</span> <span class="n">p_z_len</span>
+    <span class="k">mov</span> <span class="p">[eax],</span> <span class="n">dword</span> <span class="mi">3</span> <span class="c">; *z_len = elements</span>
+
+<span class="n">addition_fill_mem</span><span class="o">:</span>
+
+    <span class="c">; fill with sample values</span>
+    <span class="k">mov</span> <span class="n">eax</span><span class="p">,</span> <span class="n">p_z</span>
+    <span class="k">mov</span> <span class="n">eax</span><span class="p">,</span> <span class="p">[eax]</span>
+    <span class="k">add</span> <span class="n">eax</span><span class="p">,</span> <span class="mi">0</span> <span class="o">*</span> <span class="mi">4</span>
+    <span class="k">mov</span> <span class="p">[eax],</span> <span class="n">dword</span> <span class="mi">4</span>
+
+    <span class="c">; mov eax, p_z</span>
+    <span class="k">add</span> <span class="n">eax</span><span class="p">,</span> <span class="mi">1</span> <span class="o">*</span> <span class="mi">4</span>
+    <span class="k">mov</span> <span class="p">[eax],</span> <span class="n">dword</span> <span class="mi">3</span>
+
+    <span class="c">; mov eax, p_z</span>
+    <span class="c">; add eax, 2 * 4</span>
+    <span class="k">add</span> <span class="n">eax</span><span class="p">,</span> <span class="mi">1</span> <span class="o">*</span> <span class="mi">4</span>
+    <span class="k">mov</span> <span class="p">[eax],</span> <span class="n">dword</span> <span class="mi">2</span>
+
+    <span class="k">leave</span>
+    <span class="k">ret</span>
+
+<p>There are, however, a few really interesting things in this code:</p>
+
+<ul>
+<li>naming of C++ functions, generated from assembly <u>(so-called &quot;name mangling&quot;)</u></li>
+<li>memory allocation itself</li>
+<li>returning data from function via pointers... <strong>in assembly!</strong></li>
+</ul>
+
+<p>To demonstrate how this stuff works, we need some C++ code which uses our assembly function:</p>
+<span class="cp">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+</span>
+<span class="c1">// our addition function for BIG integers</span>
+<span class="c1">// arguments are as follows: number and its length; two first pairs are the operands</span>
+<span class="c1">// and the last two arguments describe the returned big integer</span>
+<span class="c1">// thus, the result is z = x + y</span>
+<span class="k">extern</span> <span class="s">"C"</span> <span class="kt">void</span> <span class="nf">addition</span><span class="p">(</span><span class="kt">int</span><span class="o">*</span> <span class="n">x</span><span class="p">,</span> <span class="kt">int</span> <span class="n">x_len</span><span class="p">,</span> <span class="kt">int</span><span class="o">*</span> <span class="n">y</span><span class="p">,</span> <span class="kt">int</span> <span class="n">y_len</span><span class="p">,</span> <span class="kt">int</span><span class="o">*</span> <span class="o">&amp;</span><span class="n">z</span><span class="p">,</span> <span class="kt">int</span><span class="o">*</span> <span class="n">z_len</span><span class="p">);</span>
+
+<span class="c1">// helper function to convert BIG integers to strings</span>
+<span class="kt">char</span><span class="o">*</span> <span class="nf">bigint2str</span><span class="p">(</span><span class="kt">int</span><span class="o">*</span> <span class="n">x</span><span class="p">,</span> <span class="kt">int</span> <span class="n">len</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">char</span> <span class="o">*</span><span class="n">res</span> <span class="o">=</span> <span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span> <span class="n">malloc</span><span class="p">((</span><span class="n">len</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">));</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">len</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">res</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="sc">'0'</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">res</span><span class="p">[</span><span class="n">len</span><span class="p">]</span> <span class="o">=</span> <span class="sc">'\0'</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="n">res</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kt">int</span><span class="o">*</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">a_len</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="c1">// here we add nothing with nothing</span>
+    <span class="c1">// and storing the result in a big integer `a`</span>
+    <span class="n">addition</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">a_len</span><span class="p">);</span>
+
+    <span class="n">printf</span><span class="p">(</span><span class="s">"a = %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">bigint2str</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">a_len</span><span class="p">));</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<p>Comments in the code describe those moments which are important.</p>
+
+<p>To compile these codes and link them into one executable, use these:</p>
+nasm <span class="nt">-g</span> <span class="nt">-felf32</span> test.asm <span class="nt">-o</span> test_asm.o
+g++ <span class="nt">-g</span> test.cpp <span class="nt">-c</span> <span class="nt">-m32</span> <span class="nt">-o</span> test_c.o
+g++ <span class="nt">-g</span> <span class="nt">-m32</span> <span class="nt">-o</span> <span class="nb">test </span>test_asm.o test_c.o
+
+<p>Now, let&#39;s talk about name mangling. It is really important. I shall not cover all the depths of this, only the parts, related to this article.</p>
+
+<p>We see that our function,</p>
+<span class="kt">void</span> <span class="nf">addition</span><span class="p">(</span><span class="kt">int</span><span class="o">*</span> <span class="n">x</span><span class="p">,</span> <span class="kt">int</span> <span class="n">x_len</span><span class="p">,</span> <span class="kt">int</span><span class="o">*</span> <span class="n">y</span><span class="p">,</span> <span class="kt">int</span> <span class="n">y_len</span><span class="p">,</span> <span class="kt">int</span><span class="o">*</span> <span class="o">&amp;</span><span class="n">z</span><span class="p">,</span> <span class="kt">int</span><span class="o">*</span> <span class="n">z_len</span><span class="p">);</span>
+
+<p>is named <code>_Z8additionPiiS_iRS_S_</code> in assembly.</p>
+
+<p><u>What&#39;s the..? What are all these strange prefixes?</u>  - you might ask.</p>
+
+<p>Here&#39;s the convention:</p>
+
+<ol>
+<li>functions are named with the underscore and an uppercase letter</li>
+<li>function name&#39; length and the name itself follows that prefix</li>
+<li>arguments are stored as their types only</li>
+</ol>
+
+<p>Argument type is encoded as well. For our example, we see these:</p>
+
+<ol>
+<li><code>Pi</code> - that means, literally, <code>pointer to integer</code></li>
+<li><code>i</code> - that stands for <code>integer</code></li>
+<li><code>S_</code> - that is the same as <code>Pi</code>, equal to <code>signed integer</code>, <strong>but</strong> for some reason <u>(yes, I do not know why this happens)</u> if you try to replace it with <code>Pi</code>, your function will not be found by a linker</li>
+<li><code>RS_</code> - this is <code>a reference to a pointer to integer</code></li>
+</ol>
+
+<p>To get know those conventions better, you might refer to <a href="http://www.ofb.net/gnu/gcc/gxxint_15.html">g++ internals reference</a>.</p>
+
+<p>You can decode demangled <u>(encoded)</u> function names as well. Just use <code>c++filt</code> utility:</p>
+<span class="nv">$ </span>c++filt <span class="nt">-n</span> _Z8divisionPiiS_iRS_S_
+division<span class="o">(</span>int<span class="k">*</span>, int, int<span class="k">*</span>, int, int<span class="k">*</span>&amp;, int<span class="k">*</span><span class="o">)</span>
+
+<p>Until next time!</p>

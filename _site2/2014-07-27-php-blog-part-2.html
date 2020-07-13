@@ -1,0 +1,262 @@
+<meta name="layout" content="post">
+<meta name="title" content="Чоткій блог. Часть друга">
+<meta name="date" content="2014-07-27T23:20:00+02:00">
+<meta name="tags" content="php,rtfm,programming">
+<meta name="tumblr_url" content="http://shybovycha.tumblr.com/post/92565628101">
+<div class="row">
+    <div class="col-md-6 col-xs-12">
+        Liquid error: internal
+    </div>
+
+    <div class="col-md-6 col-xs-12 text-xs-center text-md-right"></div>
+</div>
+
+<h2>Моделі</h2>
+
+<p>Єсть така штука як <strong>MVC, Model-View-Controller</strong>. Це такий прінцип, по якому програма розділяється на три тіпа дєталєй:</p>
+
+<ul>
+<li><code>Model</code> - отвічає за роботу чісто з базой даних</li>
+<li><code>View</code> - отвічає чісто за отображеніє даних перед пользоватєльом (формочка, HTML, і так далєє)</li>
+<li><code>Controller</code> - отвічає за обработку дєйствій пользоватєля, іспользує моделі і передає їх в’юхам</li>
+</ul>
+
+<p>Так от, модель - це такій клас, який работає з рядочками одної таблички і другими табличками, шо прив’язані до нашої. Але тільки якшо та таблічка, з якою работає модель - главна в цій связі. Тоість, якшо у нас є модель <strong>Пост</strong> і модель <strong>Камєнтік</strong>, то модель <strong>Пост</strong> може вліять на <strong>Камєнтікі</strong>, а от модель <strong>Камєнтік</strong> вже нічо не може зробити з <strong>Постом</strong>. Тут таблічка <strong>Пост</strong> - главна, а таблічка <strong>Камєнтік</strong> - просто прив’язана до неї.</p>
+
+<p>В общєм, модель - це такий удобний клас, в якому заникані всі запроси до бази даних. Ти визиваєш метод моделі, а получаєш - масив (або не масив, а тільки один його елємєнт) з запісями з бази даних. Або визиваєш другий мєтод і удаляєш/обновляєш/создаєш рядочки в базі.</p>
+
+<!--more-->
+
+<p>Шоб зробити цей клас унівєрсальним до невозможності, представим, шо <strong>класс</strong> отвічає за роботу з всьою табличкою (вибор рядочків з таблички), а <strong>об’єкт цього класа</strong> отвічає за роботу з конкретним рядочком з цеї таблички. Робота з цим класом буде виглядіть якось так:</p>
+<span class="c1">// всі пости</span>
+<span class="nv">$postings</span> <span class="o">=</span> <span class="nx">Posting</span><span class="o">::</span><span class="na">all</span><span class="p">();</span>
+
+<span class="c1">// один конкретний пост</span>
+<span class="nv">$posting</span> <span class="o">=</span> <span class="nx">Posting</span><span class="o">::</span><span class="na">find</span><span class="p">(</span><span class="nv">$id</span><span class="p">);</span>
+
+<span class="c1">// не до кінця обновлений пост (в базі ще не сохраньон)</span>
+<span class="nv">$posting</span><span class="o">-&gt;</span><span class="na">title</span> <span class="o">=</span> <span class="s2">"moo"</span><span class="p">;</span>
+
+<span class="c1">// сохранить пост в базі</span>
+<span class="nv">$posting</span><span class="o">-&gt;</span><span class="na">save</span><span class="p">();</span>
+
+<span class="c1">// удалить пост</span>
+<span class="nv">$posting</span><span class="o">-&gt;</span><span class="na">destroy</span><span class="p">();</span>
+
+<p>Сама проста реалізація моделі буде схожа на оце:</p>
+<span class="kd">class</span> <span class="nc">Posting</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">$id</span><span class="p">,</span> <span class="nv">$title</span><span class="p">,</span> <span class="nv">$description</span><span class="p">;</span>
+
+    <span class="k">function</span> <span class="nf">__construct</span><span class="p">(</span><span class="nv">$title</span><span class="p">,</span> <span class="nv">$description</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">title</span> <span class="o">=</span> <span class="nv">$title</span><span class="p">;</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">description</span> <span class="o">=</span> <span class="nv">$description</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">__construct</span><span class="p">(</span><span class="nv">$id</span><span class="p">,</span> <span class="nv">$title</span><span class="p">,</span> <span class="nv">$description</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">id</span> <span class="o">=</span> <span class="nv">$id</span><span class="p">;</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">title</span> <span class="o">=</span> <span class="nv">$title</span><span class="p">;</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">description</span> <span class="o">=</span> <span class="nv">$description</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">all</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nv">$results</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+        <span class="nv">$rows</span> <span class="o">=</span> <span class="nb">mysql_query</span><span class="p">(</span><span class="s2">"SELECT id, title, description FROM postings;"</span><span class="p">);</span>
+
+        <span class="k">while</span> <span class="p">(</span><span class="nv">$posting</span> <span class="o">=</span> <span class="nb">mysql_fetch_assoc</span><span class="p">(</span><span class="nv">$rows</span><span class="p">))</span> <span class="p">{</span>
+            <span class="nv">$results</span><span class="p">[]</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Posting</span><span class="p">(</span><span class="nv">$posting</span><span class="p">[</span><span class="s1">'id'</span><span class="p">],</span> <span class="nv">$posting</span><span class="p">[</span><span class="s1">'title'</span><span class="p">],</span> <span class="nv">$posting</span><span class="p">[</span><span class="s1">'description'</span><span class="p">]);</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="nv">$results</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">find</span><span class="p">(</span><span class="nv">$id</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$row</span> <span class="o">=</span> <span class="nb">mysql_fetch_assoc</span><span class="p">(</span><span class="nb">mysql_query</span><span class="p">(</span><span class="s2">"SELECT id, title, description FROM postings WHERE id = </span><span class="nv">$id</span><span class="s2">"</span><span class="p">));</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$row</span><span class="p">[</span><span class="s1">'id'</span><span class="p">]))</span> <span class="p">{</span>
+          <span class="k">return</span> <span class="k">new</span> <span class="nx">Posting</span><span class="p">(</span><span class="nv">$row</span><span class="p">[</span><span class="s1">'id'</span><span class="p">],</span> <span class="nv">$row</span><span class="p">[</span><span class="s1">'title'</span><span class="p">],</span> <span class="nv">$row</span><span class="p">[</span><span class="s1">'description'</span><span class="p">]);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">null</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">save</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">id</span><span class="p">))</span> <span class="p">{</span>
+            <span class="nb">mysql_query</span><span class="p">(</span><span class="s2">"UPDATE postings SET title = '</span><span class="nv">$this-&gt;title</span><span class="s2">', description = '</span><span class="nv">$this-&gt;description</span><span class="s2">' WHERE id = '</span><span class="nv">$this-&gt;id</span><span class="s2">'"</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nb">mysql_query</span><span class="p">(</span><span class="s2">"INSERT INTO postings (id, title, description) VALUES ('</span><span class="nv">$this-&gt;id</span><span class="s2">', '</span><span class="nv">$this-&gt;title</span><span class="s2">', '</span><span class="nv">$this-&gt;description</span><span class="s2">')"</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">delete</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">id</span><span class="p">))</span> <span class="p">{</span>
+            <span class="nb">mysql_query</span><span class="p">(</span><span class="s2">"DELETE FROM postings WHERE id = '</span><span class="nv">$this-&gt;id</span><span class="s2">'"</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<p>Але з таким ращотом, у нас для кожної таблички буде оддєльний клас і оддєльний набор запросов. І вспоминаєм, шо ми рішили не дублірувать код. Будем іспользувать мощ магічних методів PHP!</p>
+
+<p>Нехай ми не знаєм, які поля єсть в табличці. Но всі запроси ці, <code>SELECT/DELETE</code> - вони в основном одінакові і відрізняються тільки для <code>INSERT/UPDATE</code>. Того нам нада так переписать ці <code>INSERT/UPDATE</code> і цей клас, шоб вони работали з любими табличками.</p>
+
+<p>Воспользуємся масивами PHP і магічними методами <code>__set/__get</code>. Ці методи дають можливість описать свою логіку коли програміст записує чи читає неізвєсне поле класа. Напрімєр, якшо у нашого класа <code>Post</code> нема поля <code>moo</code>, то при попитці зробить <code>echo $posting-&gt;moo</code> буде визиватись мєтод <code>__get(&#39;moo&#39;)</code>, а при попитці записать шось туди <code>$posting-&gt;moo = &#39;MOO!&#39;</code> буде визваний <code>__set(&#39;moo&#39;, &#39;MOO!&#39;)</code>. Приступаєм:</p>
+<span class="kd">class</span> <span class="nc">BaseModel</span> <span class="p">{</span>
+    <span class="k">private</span> <span class="nv">$__data</span><span class="p">,</span> <span class="nv">$__tableName</span><span class="p">;</span>
+
+    <span class="k">private</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">getTableName</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nv">$class_name</span> <span class="o">=</span> <span class="nb">get_called_class</span><span class="p">();</span>
+        <span class="k">return</span> <span class="nb">strtolower</span><span class="p">(</span><span class="nv">$class_name</span><span class="p">)</span> <span class="o">.</span> <span class="s1">'s'</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">__construct</span><span class="p">(</span><span class="nv">$data</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">foreach</span> <span class="p">(</span><span class="nv">$data</span> <span class="k">as</span> <span class="nv">$key</span> <span class="o">=&gt;</span> <span class="nv">$value</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">__data</span><span class="p">[</span><span class="nv">$key</span><span class="p">]</span> <span class="o">=</span> <span class="nv">$value</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="nv">$__tableName</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">getTableName</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">__get</span><span class="p">(</span><span class="nv">$field</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">__data</span><span class="p">[</span><span class="nv">$field</span><span class="p">]))</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">__data</span><span class="p">[</span><span class="nv">$field</span><span class="p">];</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">null</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">function</span> <span class="nf">__set</span><span class="p">(</span><span class="nv">$field</span><span class="p">,</span> <span class="nv">$value</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">__data</span><span class="p">[</span><span class="nv">$field</span><span class="p">]</span> <span class="o">=</span> <span class="nv">$value</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">all</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nv">$tableName</span> <span class="o">=</span> <span class="nx">self</span><span class="o">::</span><span class="na">getTableName</span><span class="p">();</span>
+        <span class="nv">$class</span> <span class="o">=</span> <span class="nb">get_called_class</span><span class="p">();</span>
+
+        <span class="nv">$results</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+
+        <span class="nv">$rows</span> <span class="o">=</span> <span class="nb">mysql_query</span><span class="p">(</span><span class="s2">"SELECT * FROM </span><span class="nv">$tableName</span><span class="s2">;"</span><span class="p">);</span>
+
+        <span class="k">while</span> <span class="p">(</span><span class="nv">$row</span> <span class="o">=</span> <span class="nb">mysql_fetch_assoc</span><span class="p">(</span><span class="nv">$rows</span><span class="p">))</span> <span class="p">{</span>
+            <span class="nv">$results</span><span class="p">[]</span> <span class="o">=</span> <span class="k">new</span> <span class="nv">$class</span><span class="p">(</span><span class="nv">$row</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="nv">$results</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">find</span><span class="p">(</span><span class="nv">$id</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$row</span> <span class="o">=</span> <span class="nb">mysql_fetch_assoc</span><span class="p">(</span><span class="nb">mysql_query</span><span class="p">(</span><span class="s2">"SELECT * FROM </span><span class="nv">$tableName</span><span class="s2"> WHERE id = </span><span class="nv">$id</span><span class="s2">"</span><span class="p">));</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$row</span><span class="p">[</span><span class="s1">'id'</span><span class="p">]))</span> <span class="p">{</span>
+          <span class="k">return</span> <span class="k">new</span> <span class="nx">BaseModel</span><span class="p">(</span><span class="nv">$row</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">null</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">save</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nv">$query</span> <span class="o">=</span> <span class="s2">""</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">id</span><span class="p">))</span> <span class="p">{</span>
+            <span class="nv">$fields</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+
+            <span class="k">foreach</span> <span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">__data</span> <span class="k">as</span> <span class="nv">$field</span> <span class="o">=&gt;</span> <span class="nv">$value</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nv">$field</span> <span class="o">==</span> <span class="s1">'id'</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">continue</span><span class="p">;</span>
+                <span class="p">}</span>
+
+                <span class="nv">$fields</span><span class="p">[]</span> <span class="o">=</span> <span class="s2">"`</span><span class="nv">$field</span><span class="s2">` = '</span><span class="nv">$value</span><span class="s2">'"</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="nv">$query</span> <span class="o">=</span> <span class="s2">"UPDATE </span><span class="nv">$this-&gt;__tableName</span><span class="s2"> SET "</span> <span class="o">.</span> <span class="nb">implode</span><span class="p">(</span><span class="s1">', '</span><span class="p">,</span> <span class="nv">$fields</span><span class="p">)</span> <span class="o">.</span> <span class="s2">" WHERE id = '</span><span class="nv">$this-&gt;id</span><span class="s2">'"</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nv">$values</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+
+            <span class="k">foreach</span> <span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">__data</span> <span class="k">as</span> <span class="nv">$field</span> <span class="o">=&gt;</span> <span class="nv">$value</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nv">$values</span><span class="p">[</span><span class="nv">$field</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"'</span><span class="nv">$value</span><span class="s2">'"</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="nv">$query</span> <span class="o">=</span> <span class="s2">"INSERT INTO </span><span class="nv">$this-&gt;__tableName</span><span class="s2"> ("</span> <span class="o">.</span> <span class="nb">implode</span><span class="p">(</span><span class="s1">', '</span><span class="p">,</span> <span class="nb">array_keys</span><span class="p">(</span><span class="nv">$values</span><span class="p">))</span> <span class="o">.</span> <span class="s2">") VALUES ("</span> <span class="o">.</span> <span class="nb">implode</span><span class="p">(</span><span class="s1">', '</span><span class="p">,</span> <span class="nb">array_values</span><span class="p">(</span><span class="nv">$values</span><span class="p">))</span> <span class="o">.</span> <span class="s2">")"</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="nb">mysql_query</span><span class="p">(</span><span class="nv">$query</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">delete</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">id</span><span class="p">))</span> <span class="p">{</span>
+            <span class="nb">mysql_query</span><span class="p">(</span><span class="s2">"DELETE FROM </span><span class="nv">$this-&gt;__tableName</span><span class="s2"> WHERE id = '</span><span class="nv">$this-&gt;id</span><span class="s2">'"</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<p>Так шо ж за ад тут коїться?</p>
+
+<p>По-перше, цей клас - базовий. Всі слєдующі модельки ми будем наслєдувать від нього. Тоість, весь цей ад у нас коїться тільки один раз - дальше всі моделі виглядять приблизно так:</p>
+<span class="kd">class</span> <span class="nc">Posting</span> <span class="k">extends</span> <span class="nx">BaseModel</span> <span class="p">{</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">getViewUrl</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s2">"view.php?</span><span class="nv">$this-&gt;id</span><span class="s2">"</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<p>А іспользовать такі моделі тепер - сплошне удовольствіє!</p>
+<span class="cp">&lt;?php</span> <span class="nv">$postings</span> <span class="o">=</span> <span class="nx">Posting</span><span class="o">::</span><span class="na">all</span><span class="p">();</span> <span class="cp">?&gt;</span>
+
+...
+
+<span class="cp">&lt;?php</span> <span class="k">foreach</span> <span class="p">(</span><span class="nv">$postings</span> <span class="k">as</span> <span class="nv">$posting</span><span class="p">)</span> <span class="cp">?&gt;</span>
+    <span class="nt">&lt;h2&gt;</span><span class="cp">&lt;?php</span> <span class="k">echo</span> <span class="nv">$posting</span><span class="o">-&gt;</span><span class="na">title</span> <span class="cp">?&gt;</span><span class="nt">&lt;/h2&gt;</span>
+
+    <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"description"</span><span class="nt">&gt;</span>
+        <span class="cp">&lt;?php</span> <span class="k">echo</span> <span class="nv">$posting</span><span class="o">-&gt;</span><span class="na">description</span> <span class="cp">?&gt;</span>
+    <span class="nt">&lt;/div&gt;</span>
+
+    <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"read-more"</span><span class="nt">&gt;</span>
+        <span class="cp">&lt;?php</span> <span class="k">echo</span> <span class="nv">$posting</span><span class="o">-&gt;</span><span class="na">getViewUrl</span><span class="p">()</span> <span class="cp">?&gt;</span>
+    <span class="nt">&lt;/div&gt;</span>
+<span class="cp">&lt;?php</span> <span class="k">endforeach</span><span class="p">;</span> <span class="cp">?&gt;</span>
+
+<p>По-друге, в конструктор ми передаєм (всігда) поля з таблички, а конструктор - записує їх в масив <code>__data</code>. Ну і в конструкторі ж ми дуже хітро достаєм імя таблички з імєні класа: якшо у нас, напрімєр, клас моделі <code>Posting</code>, то ім’я таблички буде <code>postings</code>.</p>
+
+<p>Ще один ньюанс з приводу імені таблички і того шо ми вертаєм в мєтоді <code>all()</code>: тут іспользується така хітра функція <code>get_called_class()</code>, яка вертає ім’я класа, який визвав поточний мєтод. Воно працює і з наслєдованієм в ООП, тоість якшо запустити отакє:</p>
+<span class="kd">class</span> <span class="nc">Moo</span> <span class="p">{</span>
+    <span class="k">function</span> <span class="nf">whoami</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">echo</span> <span class="nb">get_called_class</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">class</span> <span class="nc">Foo</span> <span class="k">extends</span> <span class="nx">Moo</span> <span class="p">{</span>
+<span class="p">}</span>
+
+<span class="nv">$a</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Moo</span><span class="p">();</span>
+<span class="nv">$a</span><span class="o">-&gt;</span><span class="na">whoami</span><span class="p">();</span>
+
+<span class="nv">$b</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Foo</span><span class="p">();</span>
+<span class="nv">$b</span><span class="o">-&gt;</span><span class="na">whoami</span><span class="p">();</span>
+
+<p>то воно виведе:</p>
+Moo
+Foo
+
+<p>І якшо ми захочем зробить об’єкт дочєрнього класа внутрі батьківського, то ми можем спокойно визвать</p>
+<span class="nv">$class</span> <span class="o">=</span> <span class="nb">get_called_class</span><span class="p">();</span>
+<span class="k">new</span> <span class="nv">$class</span><span class="p">(</span><span class="o">...</span><span class="p">);</span>
+
+<p>Ну і всі запроси до бази даних строяться вже іспользуя поля <code>$__data</code> і <code>$__tableName</code>.</p>
+
+<p>А тепер трошки поправим файлову структуру: у нас тепер є кілька файлів, які не відносяться конкретно до цього блога, а, так сказать, єсть каркасом, на якому можна наліпити ше шось. Це <code>BaseModel.php</code> і <code>connect.php</code>. Точніше, <code>connect.php</code> - в ньому задаються параметри подключєнія до бази даних конкретно цього блога. Шо я предлагаю - зробити три папки:</p>
+
+<ul>
+<li><code>core</code>, в якому буде <code>BaseModel.php</code></li>
+<li><code>models</code>, куди положити <code>Posting.php</code> і всі прочі моделі, які наслєдують <code>BaseModel</code></li>
+<li><code>config</code>, куди положить <code>connect.php</code></li>
+</ul>
+
+<p>Не забудь поправити всі путі у <code>require()</code>!</p>
+
+<p>Замєть, тепер файл <code>connect.php</code> нам треба тільки в одному місці - в <code>BaseModel.php</code>. Шо тоже кагбе упрощає код.</p>
+
+<p>Тоість, тепер у нас має бути якась така файлова структура:</p>
+
+<p><img alt="чотка файлова структура" src="https://31.media.tumblr.com/a1800a7221cf2a424d042a2ae3349fdd/tumblr_inline_n94w90fOhS1qh5oee.png"/></p>
+
+<h2>Домашнє завдання</h2>
+
+<p>Зроби моделі поста і камєнтіка і застав їх работать внутрі <code>index.php</code> і <code>view.php</code>. Замєть, шо в бєзопасності <code>BaseModel</code> єсть дірка. А ще - і це <strong>дуже</strong> важно - подивись шо таке <strong>PDO</strong> і зроби замість всіх <code>mysql_query</code> і прочіх роботу з <strong>PDO</strong>.</p>

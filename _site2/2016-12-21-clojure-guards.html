@@ -1,0 +1,104 @@
+<meta name="layout" content="post">
+<meta name="title" content="Clojure guards">
+<meta name="categories" content="">
+<meta name="tags" content="">
+<meta name="published" content="true">
+<meta name="date" content="2016-12-21T12:54:00">
+<p>Once I wanted to have something like a pretty &quot;match&quot; operator from Scala, but in Clojure.
+And hence there are no default options for it in Clojure out of the box, here are some
+alternatives I&#39;ve found in the Internet.</p>
+
+<!--more-->
+
+<h2>Using <code>guard</code> macro</h2>
+<span class="p">(</span><span class="k">defn</span><span class="w"> </span><span class="n">generateGuardBody</span><span class="w">
+    </span><span class="s">"Generates the function body required to support the guard macro"</span><span class="w">
+    </span><span class="p">[</span><span class="n">args</span><span class="p">]</span><span class="w">
+    </span><span class="p">(</span><span class="k">let</span><span class="w"> </span><span class="p">[[</span><span class="n">thisBranch</span><span class="w"> </span><span class="n">remainingBranches</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="nb">split-at</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w">
+            </span><span class="n">testCond</span><span class="w"> </span><span class="p">(</span><span class="nb">first</span><span class="w"> </span><span class="n">thisBranch</span><span class="p">)</span><span class="w">
+            </span><span class="n">testResult</span><span class="w"> </span><span class="p">(</span><span class="nb">second</span><span class="w"> </span><span class="n">thisBranch</span><span class="p">)</span><span class="w">
+            </span><span class="n">elseFunc</span><span class="w"> </span><span class="p">(</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nf">empty?</span><span class="w"> </span><span class="n">remainingBranches</span><span class="p">)</span><span class="w">
+                </span><span class="n">false</span><span class="w">
+                </span><span class="p">(</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">=</span><span class="w">  </span><span class="mi">1</span><span class="w"> </span><span class="p">(</span><span class="nb">count</span><span class="w"> </span><span class="n">remainingBranches</span><span class="p">))</span><span class="w">
+                    </span><span class="p">(</span><span class="nb">first</span><span class="w"> </span><span class="n">remainingBranches</span><span class="p">)</span><span class="w">
+                    </span><span class="p">(</span><span class="nf">generateGuardBody</span><span class="w"> </span><span class="n">remainingBranches</span><span class="p">)))]</span><span class="w">
+        </span><span class="o">`</span><span class="p">(</span><span class="k">if</span><span class="w"> </span><span class="o">~</span><span class="n">testCond</span><span class="w">
+            </span><span class="o">~</span><span class="n">testResult</span><span class="w">
+            </span><span class="o">~</span><span class="n">elseFunc</span><span class="p">)))</span><span class="w">
+
+</span><span class="p">(</span><span class="k">defmacro</span><span class="w"> </span><span class="n">defguardfn</span><span class="w">
+    </span><span class="s">"Creates a haskell-style guarded function"</span><span class="w">
+    </span><span class="p">[</span><span class="n">fnName</span><span class="w"> </span><span class="n">args</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">body</span><span class="p">]</span><span class="w">
+    </span><span class="o">`</span><span class="p">(</span><span class="k">defn</span><span class="w"> </span><span class="o">~</span><span class="n">fnName</span><span class="w"> </span><span class="o">~</span><span class="n">args</span><span class="w">
+        </span><span class="o">~</span><span class="p">(</span><span class="nf">generateGuardBody</span><span class="w"> </span><span class="n">body</span><span class="p">)))</span><span class="w">
+
+</span><span class="p">(</span><span class="k">defmacro</span><span class="w"> </span><span class="n">guard</span><span class="w">
+    </span><span class="s">"Allows inline guard syntax without surrounding defn"</span><span class="w">
+    </span><span class="p">[</span><span class="o">&amp;</span><span class="w"> </span><span class="n">body</span><span class="p">]</span><span class="w">
+    </span><span class="o">`~</span><span class="p">(</span><span class="nf">generateGuardBody</span><span class="w"> </span><span class="n">body</span><span class="p">))</span><span class="w">
+
+
+</span><span class="p">(</span><span class="nf">defguardfn</span><span class="w"> </span><span class="n">testFn</span><span class="w"> </span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="w">
+    </span><span class="p">(</span><span class="nb">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="s">"You entered 1!"</span><span class="w">
+    </span><span class="p">(</span><span class="nb">=</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="s">"You entered two!"</span><span class="w">
+    </span><span class="p">(</span><span class="nb">=</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="s">"You entered three!"</span><span class="w">
+    </span><span class="p">(</span><span class="nb">&gt;</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="s">"You entered a big number!"</span><span class="p">)</span><span class="w">
+
+</span><span class="p">(</span><span class="nb">println</span><span class="w"> </span><span class="p">(</span><span class="nf">testFn</span><span class="w"> </span><span class="mi">5</span><span class="p">))</span><span class="w">
+
+</span><span class="p">(</span><span class="nf">defguardfn</span><span class="w"> </span><span class="n">fib</span><span class="w"> </span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="w">
+    </span><span class="p">(</span><span class="nb">&lt;</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="n">n</span><span class="w">
+    </span><span class="p">(</span><span class="nb">+</span><span class="w"> </span><span class="p">(</span><span class="nf">fib</span><span class="w"> </span><span class="p">(</span><span class="nb">-</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="p">(</span><span class="nf">fib</span><span class="w"> </span><span class="p">(</span><span class="nb">-</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="mi">2</span><span class="p">))))</span><span class="w">
+
+
+</span><span class="p">(</span><span class="k">defn</span><span class="w"> </span><span class="n">testFn-2</span><span class="w"> </span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="w">
+    </span><span class="p">(</span><span class="nf">guard</span><span class="w">
+        </span><span class="p">(</span><span class="nb">=</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="s">"One!"</span><span class="w">
+        </span><span class="p">(</span><span class="nb">=</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="s">"Two!"</span><span class="w">
+        </span><span class="n">true</span><span class="w">  </span><span class="s">"Something Else!"</span><span class="p">))</span><span class="w">
+
+</span><span class="p">(</span><span class="nb">println</span><span class="w"> </span><span class="p">(</span><span class="nb">map</span><span class="w"> </span><span class="n">fib</span><span class="w"> </span><span class="p">(</span><span class="nb">range</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">10</span><span class="p">)))</span><span class="w">
+</span><span class="p">(</span><span class="nb">println</span><span class="w"> </span><span class="p">(</span><span class="nf">testFn-2</span><span class="w"> </span><span class="mi">3</span><span class="p">))</span><span class="w"> </span><span class="c1">; "Something else!"</span><span class="w">
+</span>
+<h2>Using multimethods</h2>
+<span class="c1">;; Implementing factorial using multimethods Note that factorial-like function</span><span class="w">
+</span><span class="c1">;; is best implemented using `recur` which enables tail-call optimization to avoid</span><span class="w">
+</span><span class="c1">;; a stack overflow error. This is a only a demonstration of clojure's multimethod</span><span class="w">
+
+</span><span class="c1">;; identity form returns the same value passed</span><span class="w">
+</span><span class="p">(</span><span class="k">defmulti</span><span class="w"> </span><span class="n">factorial</span><span class="w"> </span><span class="nb">identity</span><span class="p">)</span><span class="w">
+
+</span><span class="p">(</span><span class="k">defmethod</span><span class="w"> </span><span class="n">factorial</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">[</span><span class="n">_</span><span class="p">]</span><span class="w">  </span><span class="mi">1</span><span class="p">)</span><span class="w">
+</span><span class="p">(</span><span class="k">defmethod</span><span class="w"> </span><span class="n">factorial</span><span class="w"> </span><span class="no">:default</span><span class="w"> </span><span class="p">[</span><span class="n">num</span><span class="p">]</span><span class="w">
+    </span><span class="p">(</span><span class="nb">*</span><span class="w"> </span><span class="n">num</span><span class="w"> </span><span class="p">(</span><span class="nf">factorial</span><span class="w"> </span><span class="p">(</span><span class="nb">dec</span><span class="w"> </span><span class="n">num</span><span class="p">))))</span><span class="w">
+
+</span><span class="p">(</span><span class="nf">factorial</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="c1">; =&gt; 1</span><span class="w">
+</span><span class="p">(</span><span class="nf">factorial</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="c1">; =&gt; 1</span><span class="w">
+</span><span class="p">(</span><span class="nf">factorial</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="c1">; =&gt; 6</span><span class="w">
+</span><span class="p">(</span><span class="nf">factorial</span><span class="w"> </span><span class="mi">7</span><span class="p">)</span><span class="w"> </span><span class="c1">; =&gt; 5040</span><span class="w">
+</span>
+<h2>Using <code>core.match</code></h2>
+<span class="p">(</span><span class="k">defn</span><span class="w"> </span><span class="n">div3?</span><span class="w"> </span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="nb">zero?</span><span class="w"> </span><span class="p">(</span><span class="nb">rem</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="mi">3</span><span class="p">)))</span><span class="w">
+</span><span class="p">(</span><span class="k">let</span><span class="w"> </span><span class="p">[</span><span class="n">y</span><span class="w"> </span><span class="p">[</span><span class="mi">2</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="mi">5</span><span class="p">]]</span><span class="w">
+  </span><span class="p">(</span><span class="nf">match</span><span class="w"> </span><span class="p">[</span><span class="n">y</span><span class="p">]</span><span class="w">
+    </span><span class="p">[[</span><span class="n">_</span><span class="w"> </span><span class="p">(</span><span class="nf">a</span><span class="w"> </span><span class="no">:guard</span><span class="w"> </span><span class="n">even?</span><span class="p">)</span><span class="w"> </span><span class="n">_</span><span class="w"> </span><span class="n">_</span><span class="p">]]</span><span class="w"> </span><span class="no">:a0</span><span class="w">
+    </span><span class="p">[[</span><span class="n">_</span><span class="w"> </span><span class="p">(</span><span class="nf">b</span><span class="w"> </span><span class="no">:guard</span><span class="w"> </span><span class="p">[</span><span class="n">odd?</span><span class="w"> </span><span class="n">div3?</span><span class="p">])</span><span class="w"> </span><span class="n">_</span><span class="w"> </span><span class="n">_</span><span class="p">]]</span><span class="w"> </span><span class="no">:a1</span><span class="p">))</span><span class="w">
+
+</span><span class="p">(</span><span class="k">let</span><span class="w"> </span><span class="p">[</span><span class="n">x</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="mi">3</span><span class="p">]]</span><span class="w">
+  </span><span class="p">(</span><span class="nf">match</span><span class="w"> </span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="w">
+    </span><span class="p">[[</span><span class="mi">1</span><span class="w"> </span><span class="p">(</span><span class="no">:or</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="mi">3</span><span class="p">]]</span><span class="w"> </span><span class="no">:a0</span><span class="w">
+    </span><span class="p">[[</span><span class="mi">1</span><span class="w"> </span><span class="p">(</span><span class="no">:or</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="mi">3</span><span class="p">]]</span><span class="w"> </span><span class="no">:a1</span><span class="p">))</span><span class="w">
+</span><span class="c1">;=&gt; :a1</span><span class="w">
+
+</span><span class="p">(</span><span class="k">let</span><span class="w"> </span><span class="p">[</span><span class="n">x</span><span class="w"> </span><span class="p">{</span><span class="no">:a</span><span class="w"> </span><span class="mi">3</span><span class="p">}]</span><span class="w">
+  </span><span class="p">(</span><span class="nf">match</span><span class="w"> </span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="w">
+    </span><span class="p">[{</span><span class="no">:a</span><span class="w"> </span><span class="p">(</span><span class="no">:or</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">2</span><span class="p">)}]</span><span class="w"> </span><span class="no">:a0</span><span class="w">
+    </span><span class="p">[{</span><span class="no">:a</span><span class="w"> </span><span class="p">(</span><span class="no">:or</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="mi">4</span><span class="p">)}]</span><span class="w"> </span><span class="no">:a1</span><span class="p">))</span><span class="w">
+</span><span class="c1">;=&gt; :a1</span><span class="w">
+
+</span><span class="p">(</span><span class="k">let</span><span class="w"> </span><span class="p">[</span><span class="n">v</span><span class="w"> </span><span class="p">[[</span><span class="mi">1</span><span class="w"> </span><span class="mi">2</span><span class="p">]]]</span><span class="w">
+  </span><span class="p">(</span><span class="nf">match</span><span class="w"> </span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="w">
+    </span><span class="p">[[[</span><span class="mi">3</span><span class="w"> </span><span class="mi">1</span><span class="p">]]]</span><span class="w"> </span><span class="no">:a0</span><span class="w">
+    </span><span class="p">[[([</span><span class="mi">1</span><span class="w"> </span><span class="n">a</span><span class="p">]</span><span class="w"> </span><span class="no">:as</span><span class="w"> </span><span class="n">b</span><span class="p">)]]</span><span class="w"> </span><span class="p">[</span><span class="no">:a1</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">b</span><span class="p">]))</span><span class="w">
+</span><span class="c1">;=&gt; [:a1 2 [1 2]]</span><span class="w">
+</span>

@@ -1,0 +1,517 @@
+<meta name="layout" content="post">
+<meta name="title" content="Functional web">
+<meta name="date" content="2017-02-18T17:44:39+01:00">
+<p><img data-src="/images/functional_web/bicycle.jpg" class="img-responsive img-sm img-rounded pull-right"></p>
+
+<p>In last couple of years the functional programming paradigm became very popular.
+A huge amount of libraries, tools, tutorials and blog posts appeared.
+Although the paradigm itself is rather old <u>(lambda calculus was developed around 1930 and the Lisp language was introduced in 1950)</u>, its popularity blew up rapidly somewhere in 2014-2016 and that&#39;s what is happening right now.
+Probably one of the most powerful influencers, giving FP <u>(functional programming)</u> that thrust is web development.
+Since Facebook introduced <strong>React</strong>, the community started incorporating many things from FP with React - including <strong>Redux</strong> and <strong>Immutable.js</strong>.
+But there are much more interesting things which were invented on this wave of FP popularity. One of them is <a href="http://elm-lang.org/">Elm</a>.</p>
+
+<p>This is a story how I <s>implemented</s> invented yet another <s>web framework</s> wheel.</p>
+
+<!--more-->
+
+<h2>TL;DR</h2>
+
+<style>
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .row .col {
+    max-width: 48%;
+    margin: 0 1%;
+  }
+</style>
+
+<div class="row">
+  <div class="col">
+    <p><a href="https://facebook.github.io/react/" target="_blank">React</a></p>
+
+    ```js
+    class App extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = { counter: 0 };
+      }
+
+      increment() {
+        this.setState({ counter: this.state.counter + 1 });
+      }
+
+      decrement() {
+        this.setState({ counter: this.state.counter - 1 });
+      }
+
+      render() {
+        return (
+          <div>
+            <button onClick={() => this.increment()}>Increment</button>
+            <button onClick={() => this.decrement()}>Decrement</button>
+            <div>Counter: {this.state.counter}</div>
+          </div>
+        );
+      }
+    }
+
+    ReactDOM.render(<App />, document.body);
+    ```
+
+    <p>
+      <a href="http://codepen.io/shybovycha/pen/dNErOY" target="_blank" class="btn btn-md">Run this code</a>
+    </p>
+  </div>
+
+  <div class="col">
+    <p><a href="https://facebook.github.io/react/" target="_blank">React</a> + <a href="http://redux.js.org/" target="_blank">Redux</a></p>
+
+    ```js
+    function App(props) {
+      var store = props.store;
+
+      return (
+        <div>
+          <button onClick={() => store.dispatch({ type: 'INCREMENT' })}>Increment</button>
+          <button onClick={() => store.dispatch({ type: 'DECREMENT' })}>Decrement</button>
+          <div>Counter: {store.getState()}</div>
+        </div>
+      );
+    }
+
+    function update(state = 0, action) {
+      switch (action.type) {
+      case 'INCREMENT':
+        return state + 1
+      case 'DECREMENT':
+        return state - 1
+      default:
+        return state
+      }
+    }
+
+    var store = Redux.createStore(update);
+
+    function render() {
+      ReactDOM.render(<App store={store} />, document.body);
+    }
+
+    render();
+
+    store.subscribe(render);
+    ```
+
+    <p>
+      <a href="http://codepen.io/shybovycha/pen/RKmYVy" target="_blank" class="btn btn-md">Code</a>
+    </p>
+  </div>
+
+  <div class="col">
+    <p><a href="http://elm-lang.org" target="_blank">Elm</a></p>
+
+    ```haskell
+    import Html exposing (beginnerProgram, div, button, text)
+    import Html.Events exposing (onClick)
+
+
+    initialState = 0
+
+
+    view state =
+      div []
+        [ button [ onClick Increment ] [ text "Increment" ]
+        , button [ onClick Decrement ] [ text "Decrement" ]
+        , div [] [ text ("Counter:" ++ (toString state)) ]
+        ]
+
+
+    type Msg = Increment | Decrement
+
+
+    update msg state =
+      case msg of
+        Increment ->
+          state + 1
+
+        Decrement ->
+          state - 1
+
+
+    main =
+      beginnerProgram { model = initialState, view = view, update = update }
+    ```
+
+    <p>
+      <a href="http://codepen.io/shybovycha/pen/egaLXv" target="_blank" class="btn btn-md">Compiled code</a>
+    </p>
+  </div>
+
+  <div class="col">
+    <p><a href="http://mithril.js.org" target="_blank">Mithril</a></p>
+
+    ```js
+    var count$ = 0;
+
+    var App = {
+        view: function () {
+          return m('main', [
+            m('button', { class: 'decrement', onclick: function () { count$--; } }, 'Decrement'),
+            m('button', { class: 'increment', onclick: function () { count$++; } }, 'Increment'),
+            m('p', {}, 'Counter: ' + count$),
+          ]);
+        }
+    };
+
+    m.mount(document.body, App);
+    ```
+
+    <p>
+      <a href="http://codepen.io/shybovycha/pen/WRBgWv" target="_blank" class="btn btn-small">Code</a>
+    </p>
+  </div>
+
+  <div class="col">
+    <p><a href="https://cycle.js.org" target="_blank">Cycle</a></p>
+
+    ```js
+    var xs = xstream.default;
+    var { div, p, button, makeDOMDriver } = CycleDOM;
+
+    function App(sources) {
+      var decrement$ = sources.DOM
+        .select('.decrement')
+        .events('click')
+        .mapTo(-1);
+
+      var increment$ = sources.DOM
+        .select('.increment')
+        .events('click')
+        .mapTo(+1);
+
+      var action$ = xs.merge(decrement$, increment$);
+      var count$ = action$.fold(function (acc, v) { return acc + v; }, 0);
+
+      var vtree$ = count$.map(function (count) {
+        return div([
+          button('.decrement', 'Decrement'),
+          button('.increment', 'Increment'),
+          p('Counter: ' + count)
+        ])
+      });
+
+      return { DOM: vtree$ };
+    }
+
+    Cycle.run(App, { DOM: makeDOMDriver('body') });
+    ```
+
+    <p>
+      <a href="http://codepen.io/shybovycha/pen/XpOQvx" target="_blank" class="btn btn-small">Code</a>
+    </p>
+  </div>
+
+  <div class="col">
+    <p><a href="https://github.com/shybovycha/libc.js" target="_blank">libc</a></p>
+
+    ```js
+    var initialState = 0;
+
+    function update(state, message) {
+      if (message == 'INCREMENT')
+        return state + 1;
+
+      if (message == 'DECREMENT')
+        return state - 1;
+
+      return state;
+    };
+
+    function view(state, dispatch) {
+      return ['div', [
+        ['button', { click: () => dispatch('INCREMENT') }, 'Increment'],
+        ['button', { click: () => dispatch('DECREMENT') }, 'Decrement'],
+        ['div', `Count: ${ state }`]
+      ]];
+    };
+
+    var app = createApplication(initialState, update, view);
+
+    app.mount(document.body);
+    ```
+
+    <p>
+      <a href="http://codepen.io/shybovycha/pen/dNEgNa" target="_blank" class="btn btn-md">Code</a>
+    </p>
+  </div>
+</div>
+
+<h2>React + Redux</h2>
+
+<p>Let&#39;s start-off by writing a simple &quot;counter&quot; application with the well-known React + Redux bundle.</p>
+
+<h3>React</h3>
+
+<p>The purpose of Facebook&#39;s React is to provide an interface to a virtual DOM, which allows users to track updates to the <u>application views</u> and perform DOM operations to update views <strong>with a minimal operation overhead</strong>. In other words, we do not need to remove all the DOM nodes and create new ones from scratch when we can update a single property in a single DOM node. It might look like this:</p>
+<span class="kd">class</span> <span class="nx">App</span> <span class="kd">extends</span> <span class="nx">React</span><span class="p">.</span><span class="nx">Component</span> <span class="p">{</span>
+  <span class="kd">constructor</span><span class="p">(</span><span class="nx">props</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">super</span><span class="p">(</span><span class="nx">props</span><span class="p">);</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">state</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="nx">increment</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">setState</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">state</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="nx">decrement</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">setState</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">state</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="p">(</span>
+    <span class="o">&lt;</span><span class="nx">div</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{</span><span class="nx">increment</span><span class="p">}</span><span class="o">&gt;</span><span class="nx">Increment</span><span class="o">&lt;</span><span class="sr">/button</span><span class="err">&gt;
+</span>      <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{</span><span class="nx">decrement</span><span class="p">}</span><span class="o">&gt;</span><span class="nx">Decrement</span><span class="o">&lt;</span><span class="sr">/button</span><span class="err">&gt;
+</span>      <span class="o">&lt;</span><span class="nx">div</span><span class="o">&gt;</span><span class="nx">Counter</span><span class="p">:</span> <span class="p">{</span><span class="k">this</span><span class="p">.</span><span class="nx">state</span><span class="p">}</span><span class="o">&lt;</span><span class="sr">/div</span><span class="err">&gt;
+</span>    <span class="o">&lt;</span><span class="sr">/div</span><span class="err">&gt;
+</span>  <span class="p">);</span>
+<span class="p">}</span>
+
+<span class="nx">ReactDOM</span><span class="p">.</span><span class="nx">render</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">App</span> <span class="o">/&gt;</span><span class="p">,</span> <span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">);</span>
+
+<p><a href="http://codepen.io/shybovycha/pen/dNErOY" target="_blank" class="btn btn-md">Run this code</a></p>
+
+<h3>Redux</h3>
+
+<p>Redux is an ancestor of Facebook&#39;s Flux architecture and library. Flux&#39; main goal was to standardize the way application stores its state and handles state updates:</p>
+
+<ul>
+<li>application state is stored in stores</li>
+<li>to update application state, we dispatch messages to corresponding stores</li>
+<li>to reflect application state changes, we subscribe on the store state changes</li>
+</ul>
+
+<p>Than comes Redux and says <u>&quot;hey! we probably can do that with just a single store!&quot;</u>. And whilst Flux did not forbid state updates to modify the state objects themselves, Redux states clearly: <u>&quot;you may not change state directly - rather you just calculate a new value for it and I take care of everything else&quot;</u>.</p>
+<span class="kd">function</span> <span class="nx">App</span><span class="p">(</span><span class="nx">props</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">props</span><span class="p">.</span><span class="nx">store</span><span class="p">;</span>
+
+  <span class="k">return</span> <span class="p">(</span>
+    <span class="o">&lt;</span><span class="nx">div</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{()</span> <span class="o">=&gt;</span> <span class="nx">store</span><span class="p">.</span><span class="nx">dispatch</span><span class="p">({</span> <span class="na">type</span><span class="p">:</span> <span class="dl">'</span><span class="s1">INCREMENT</span><span class="dl">'</span> <span class="p">})}</span><span class="o">&gt;</span><span class="nx">Increment</span><span class="o">&lt;</span><span class="sr">/button</span><span class="err">&gt;
+</span>      <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">onClick</span><span class="o">=</span><span class="p">{()</span> <span class="o">=&gt;</span> <span class="nx">store</span><span class="p">.</span><span class="nx">dispatch</span><span class="p">({</span> <span class="na">type</span><span class="p">:</span> <span class="dl">'</span><span class="s1">DECREMENT</span><span class="dl">'</span> <span class="p">})}</span><span class="o">&gt;</span><span class="nx">Decrement</span><span class="o">&lt;</span><span class="sr">/button</span><span class="err">&gt;
+</span>      <span class="o">&lt;</span><span class="nx">div</span><span class="o">&gt;</span><span class="nx">Counter</span><span class="p">:</span> <span class="p">{</span><span class="nx">store</span><span class="p">.</span><span class="nx">getState</span><span class="p">()}</span><span class="o">&lt;</span><span class="sr">/div</span><span class="err">&gt;
+</span>    <span class="o">&lt;</span><span class="sr">/div</span><span class="err">&gt;
+</span>  <span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">update</span><span class="p">(</span><span class="nx">state</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">action</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">switch</span> <span class="p">(</span><span class="nx">action</span><span class="p">.</span><span class="nx">type</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">case</span> <span class="dl">'</span><span class="s1">INCREMENT</span><span class="dl">'</span><span class="p">:</span>
+    <span class="k">return</span> <span class="nx">state</span> <span class="o">+</span> <span class="mi">1</span>
+  <span class="k">case</span> <span class="dl">'</span><span class="s1">DECREMENT</span><span class="dl">'</span><span class="p">:</span>
+    <span class="k">return</span> <span class="nx">state</span> <span class="o">-</span> <span class="mi">1</span>
+  <span class="k">default</span><span class="p">:</span>
+    <span class="k">return</span> <span class="nx">state</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">var</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">Redux</span><span class="p">.</span><span class="nx">createStore</span><span class="p">(</span><span class="nx">update</span><span class="p">);</span>
+
+<span class="kd">function</span> <span class="nx">render</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">ReactDOM</span><span class="p">.</span><span class="nx">render</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">App</span> <span class="nx">store</span><span class="o">=</span><span class="p">{</span><span class="nx">store</span><span class="p">}</span> <span class="sr">/&gt;, document.body</span><span class="se">)</span><span class="err">;
+</span><span class="p">}</span>
+
+<span class="nx">render</span><span class="p">();</span>
+
+<span class="nx">store</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">render</span><span class="p">);</span>
+
+<p><a href="http://codepen.io/shybovycha/pen/RKmYVy" target="_blank" class="btn btn-md">Run this code</a></p>
+
+<h2>Elm</h2>
+
+<p>Elm is ML-like <u>(Haskell-like)</u> language, which compiles to JS, and provides developer with a runtime, allowing one to build web applications in a functional, strongly-typed language. Elm enforces its way of building web applications, where each web app is a combination of three entities:</p>
+
+<ol>
+<li><strong>model</strong>, which is basically just a structure of application state</li>
+<li><strong>update function</strong>, which takes current state and an event <u>(<strong>action</strong> in terms of Redux; <strong>message</strong> in terms of Elm; an object, representing user action or any other event)</u> and provides the new value for app state <u>(model)</u></li>
+<li><strong>view function</strong>, which converts current app state into a virtual DOM tree</li>
+</ol>
+
+<p><img src="/images/functional_web/elm_architecture.png" alt="Elm workflow"></p>
+
+<p>Elm runtime handles everything else - passing messages to the <code>update</code> function, comparing the actual DOM tree with the one, provided by a <code>view</code> function and performing all DOM tree manipulations.</p>
+
+<p>Elm can be compared to <code>React + Redux + ML-language</code> combination.</p>
+
+<p>Let&#39;s take a look at our sample application, written in Elm:</p>
+<span class="kr">import</span> <span class="nn">Html</span> <span class="n">exposing</span> <span class="p">(</span><span class="n">beginnerProgram</span><span class="p">,</span> <span class="n">div</span><span class="p">,</span> <span class="n">button</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+<span class="kr">import</span> <span class="nn">Html.Events</span> <span class="n">exposing</span> <span class="p">(</span><span class="n">onClick</span><span class="p">)</span>
+
+
+<span class="n">initialState</span> <span class="o">=</span> <span class="mi">0</span>
+
+
+<span class="n">view</span> <span class="n">state</span> <span class="o">=</span>
+  <span class="n">div</span> <span class="kt">[]</span>
+    <span class="p">[</span> <span class="n">button</span> <span class="p">[</span> <span class="n">onClick</span> <span class="kt">Increment</span> <span class="p">]</span> <span class="p">[</span> <span class="n">text</span> <span class="s">"Increment"</span> <span class="p">]</span>
+    <span class="p">,</span> <span class="n">button</span> <span class="p">[</span> <span class="n">onClick</span> <span class="kt">Decrement</span> <span class="p">]</span> <span class="p">[</span> <span class="n">text</span> <span class="s">"Decrement"</span> <span class="p">]</span>
+    <span class="p">,</span> <span class="n">div</span> <span class="kt">[]</span> <span class="p">[</span> <span class="n">text</span> <span class="p">(</span><span class="s">"Counter:"</span> <span class="o">++</span> <span class="p">(</span><span class="n">toString</span> <span class="n">state</span><span class="p">))</span> <span class="p">]</span>
+    <span class="p">]</span>
+
+
+<span class="kr">type</span> <span class="kt">Msg</span> <span class="o">=</span> <span class="kt">Increment</span> <span class="o">|</span> <span class="kt">Decrement</span>
+
+
+<span class="n">update</span> <span class="n">msg</span> <span class="n">state</span> <span class="o">=</span>
+  <span class="kr">case</span> <span class="n">msg</span> <span class="kr">of</span>
+    <span class="kt">Increment</span> <span class="o">-&gt;</span>
+      <span class="n">state</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="kt">Decrement</span> <span class="o">-&gt;</span>
+      <span class="n">state</span> <span class="o">-</span> <span class="mi">1</span>
+
+
+<span class="n">main</span> <span class="o">=</span>
+  <span class="n">beginnerProgram</span> <span class="p">{</span> <span class="n">model</span> <span class="o">=</span> <span class="n">initialState</span><span class="p">,</span> <span class="n">view</span> <span class="o">=</span> <span class="n">view</span><span class="p">,</span> <span class="n">update</span> <span class="o">=</span> <span class="n">update</span> <span class="p">}</span>
+
+<p><a href="http://codepen.io/shybovycha/pen/egaLXv" target="_blank" class="btn btn-md">Run compiled version of this code</a></p>
+
+<p>In this example, we first define initial application state, which is just integer number of zero.</p>
+
+<p>Then we describe the view of our application, how the application will display the current state in HTML. This is the battle field of a <code>view</code> function.</p>
+
+<p>After that we define possible actions <u>(or messages in terms of Elm)</u>. It would be either <code>Increment</code> or <code>Decrement</code> action with no additional parameters.</p>
+
+<p>Right after that we define how each message will affect application state. Since our application&#39; state is only an integer number, the <code>update</code> function will return the new state given the current state value and an action.</p>
+
+<p>Lastly we create our application, providing Elm with all the entities we defined above.</p>
+
+<p>I found this code to be more clear, than in case with React + Redux, since in case we&#39;d like to write something more complex, we don&#39;t need to use tons of mapping/reducing/selecting functions, split into a huge bunch of files. I&#39;ll cover more complex examples later on.</p>
+
+<h2>Mithril</h2>
+
+<p>Mithril is a tiny JS framework, whose main feature is virtual DOM. Just take a look at a sample application:</p>
+<span class="kd">var</span> <span class="nx">count$</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="kd">var</span> <span class="nx">App</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="na">view</span><span class="p">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">m</span><span class="p">(</span><span class="dl">'</span><span class="s1">main</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span>
+        <span class="nx">m</span><span class="p">(</span><span class="dl">'</span><span class="s1">button</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span> <span class="na">class</span><span class="p">:</span> <span class="dl">'</span><span class="s1">decrement</span><span class="dl">'</span><span class="p">,</span> <span class="na">onclick</span><span class="p">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span> <span class="nx">count$</span><span class="o">--</span><span class="p">;</span> <span class="p">}</span> <span class="p">},</span> <span class="dl">'</span><span class="s1">Decrement</span><span class="dl">'</span><span class="p">),</span>
+        <span class="nx">m</span><span class="p">(</span><span class="dl">'</span><span class="s1">button</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span> <span class="na">class</span><span class="p">:</span> <span class="dl">'</span><span class="s1">increment</span><span class="dl">'</span><span class="p">,</span> <span class="na">onclick</span><span class="p">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span> <span class="nx">count$</span><span class="o">++</span><span class="p">;</span> <span class="p">}</span> <span class="p">},</span> <span class="dl">'</span><span class="s1">Increment</span><span class="dl">'</span><span class="p">),</span>
+        <span class="nx">m</span><span class="p">(</span><span class="dl">'</span><span class="s1">p</span><span class="dl">'</span><span class="p">,</span> <span class="p">{},</span> <span class="dl">'</span><span class="s1">Counter: </span><span class="dl">'</span> <span class="o">+</span> <span class="nx">count$</span><span class="p">),</span>
+      <span class="p">]);</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="nx">m</span><span class="p">.</span><span class="nx">mount</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">,</span> <span class="nx">App</span><span class="p">);</span>
+
+<p><a href="http://codepen.io/shybovycha/pen/WRBgWv" target="_blank" class="btn btn-small">Run this code</a></p>
+
+<p>This is much less code than in case with React + Redux, isn&#39;t it?</p>
+
+<h2>Cycle</h2>
+
+<p>Cycle is a reactive framework; kind of React + Rx. This means an application is basically a view function, subscribed to all the events allowed in your application. An example straight from <a href="https://cycle.js.org/">cycle</a> website:</p>
+<span class="kd">var</span> <span class="nx">xs</span> <span class="o">=</span> <span class="nx">xstream</span><span class="p">.</span><span class="k">default</span><span class="p">;</span>
+<span class="kd">var</span> <span class="p">{</span> <span class="nx">div</span><span class="p">,</span> <span class="nx">p</span><span class="p">,</span> <span class="nx">button</span><span class="p">,</span> <span class="nx">makeDOMDriver</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">CycleDOM</span><span class="p">;</span>
+
+<span class="kd">function</span> <span class="nx">App</span><span class="p">(</span><span class="nx">sources</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">decrement$</span> <span class="o">=</span> <span class="nx">sources</span><span class="p">.</span><span class="nx">DOM</span>
+    <span class="p">.</span><span class="nx">select</span><span class="p">(</span><span class="dl">'</span><span class="s1">.decrement</span><span class="dl">'</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">events</span><span class="p">(</span><span class="dl">'</span><span class="s1">click</span><span class="dl">'</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">mapTo</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+
+  <span class="kd">var</span> <span class="nx">increment$</span> <span class="o">=</span> <span class="nx">sources</span><span class="p">.</span><span class="nx">DOM</span>
+    <span class="p">.</span><span class="nx">select</span><span class="p">(</span><span class="dl">'</span><span class="s1">.increment</span><span class="dl">'</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">events</span><span class="p">(</span><span class="dl">'</span><span class="s1">click</span><span class="dl">'</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">mapTo</span><span class="p">(</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
+
+  <span class="kd">var</span> <span class="nx">action$</span> <span class="o">=</span> <span class="nx">xs</span><span class="p">.</span><span class="nx">merge</span><span class="p">(</span><span class="nx">decrement$</span><span class="p">,</span> <span class="nx">increment$</span><span class="p">);</span>
+  <span class="kd">var</span> <span class="nx">count$</span> <span class="o">=</span> <span class="nx">action$</span><span class="p">.</span><span class="nx">fold</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">acc</span><span class="p">,</span> <span class="nx">v</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">acc</span> <span class="o">+</span> <span class="nx">v</span><span class="p">;</span> <span class="p">},</span> <span class="mi">0</span><span class="p">);</span>
+
+  <span class="kd">var</span> <span class="nx">vtree$</span> <span class="o">=</span> <span class="nx">count$</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">count</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">div</span><span class="p">([</span>
+      <span class="nx">button</span><span class="p">(</span><span class="dl">'</span><span class="s1">.decrement</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">Decrement</span><span class="dl">'</span><span class="p">),</span>
+      <span class="nx">button</span><span class="p">(</span><span class="dl">'</span><span class="s1">.increment</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">Increment</span><span class="dl">'</span><span class="p">),</span>
+      <span class="nx">p</span><span class="p">(</span><span class="dl">'</span><span class="s1">Counter: </span><span class="dl">'</span> <span class="o">+</span> <span class="nx">count</span><span class="p">)</span>
+    <span class="p">])</span>
+  <span class="p">});</span>
+
+  <span class="k">return</span> <span class="p">{</span> <span class="na">DOM</span><span class="p">:</span> <span class="nx">vtree$</span> <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="nx">Cycle</span><span class="p">.</span><span class="nx">run</span><span class="p">(</span><span class="nx">App</span><span class="p">,</span> <span class="p">{</span> <span class="na">DOM</span><span class="p">:</span> <span class="nx">makeDOMDriver</span><span class="p">(</span><span class="dl">'</span><span class="s1">body</span><span class="dl">'</span><span class="p">)</span> <span class="p">});</span>
+
+<p><a href="http://codepen.io/shybovycha/pen/XpOQvx" target="_blank" class="btn btn-small">Run this code</a></p>
+
+<p>Let me explain this source, since this might not be obvious.</p>
+
+<p>First, Cycle <u>(or, actually, <strong>RxJS</strong>)</u> operates on <strong>event streams</strong>. In this particular application there are two event streams: clicks on the &quot;Increment&quot; button and clicks on the &quot;Decrement&quot; button. So we first make all &quot;click&quot; events on the &quot;Decrement&quot; button (expressed by <code>sources.DOM.select(&#39;.decrement&#39;).events(&#39;click&#39;)</code>) to become just <code>-1</code> number (which is made by mapping each event to a value <code>-1</code>, <code>eventStream.map(-1)</code>). Then we do the similar thing to the clicks on the &quot;Increment&quot; button, but transform each event to <code>1</code> (positive) number.</p>
+
+<p>Now, we merge both streams into a single one (thus both &quot;Increment&quot; and &quot;Decrement&quot; clicks will come from a single event stream, namely <code>action$</code>).</p>
+
+<p>Then we transform our unified event stream <code>action$</code> into a stream of a single value by adding all the events (values) from <code>action$</code> stream.</p>
+
+<p>And lastly, we transform our single-value stream <code>count$</code> into a virtual DOM tree and update the real dom, if needed.</p>
+
+<h3>Event streams</h3>
+
+<p>Here&#39;s what should be explained regarding those event streams: a <strong>stream</strong> is a series of some values. That&#39;s it. Nothing more. When a value is added to a stream <u>(an event is fired)</u>, all the transformations are run as they are nothing but observers to the &quot;on value appeared&quot; event. Ans since all those transformations can be chained, we can imagine each transforming function is just a new event listener for that &quot;on value appeared&quot; event. And each transformation will provide us with a new stream, what allows us to add many different listeners to the same stream.</p>
+
+<p>Here&#39;s a diagram, showing all the transformations:</p>
+
+<p><img src="/images/functional_web/CycleJS_example-compressed.png" alt="Event transformations diagram"></p>
+
+<p>So once a click event <u>(on one of two buttons, of course)</u> appears, it is transformed to either <code>-1</code> or <code>1</code>, depending on the button which fired that event; then this number is added to the existing <u>(which might appear to be empty)</u> event stream <code>action$</code>; then the sum is calculated over all the numbers in that stream; then the sum is transformed into a virtual DOM tree; and lastly, the virtual DOM tree is returned from a view function and Cycle does its job to update the actual DOM. And since there always will be a different value of sum in our example, the DOM will always be updated.</p>
+
+<h2>libc</h2>
+
+<p>So far I&#39;ve covered four different implementations of a very simple yet <em>interactive</em> web application. Some of them require a whole bunch of libraries to be injected into a page (in case with React+Redux+whatever, Cycle), some of them introduce a whole new approach to create interactive applications (Cycle, Elm, Mithril). Based on that, I created my own micro library, which inherits most interesting features of frameworks discussed above.</p>
+
+<p>I called it <a href="https://github.com/shybovycha/libc.js">libc</a>.</p>
+
+<p>The same &quot;counter&quot; application, written in libc looks like this:</p>
+<span class="kd">var</span> <span class="nx">initialState</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="kd">function</span> <span class="nx">update</span><span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">message</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">message</span> <span class="o">==</span> <span class="dl">'</span><span class="s1">INCREMENT</span><span class="dl">'</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nx">state</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="nx">message</span> <span class="o">==</span> <span class="dl">'</span><span class="s1">DECREMENT</span><span class="dl">'</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nx">state</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+
+  <span class="k">return</span> <span class="nx">state</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="kd">function</span> <span class="nx">view</span><span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">dispatch</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">[</span><span class="dl">'</span><span class="s1">div</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span>
+    <span class="p">[</span><span class="dl">'</span><span class="s1">button</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span> <span class="na">click</span><span class="p">:</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">dispatch</span><span class="p">(</span><span class="dl">'</span><span class="s1">INCREMENT</span><span class="dl">'</span><span class="p">)</span> <span class="p">},</span> <span class="dl">'</span><span class="s1">Increment</span><span class="dl">'</span><span class="p">],</span>
+    <span class="p">[</span><span class="dl">'</span><span class="s1">button</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span> <span class="na">click</span><span class="p">:</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">dispatch</span><span class="p">(</span><span class="dl">'</span><span class="s1">DECREMENT</span><span class="dl">'</span><span class="p">)</span> <span class="p">},</span> <span class="dl">'</span><span class="s1">Decrement</span><span class="dl">'</span><span class="p">],</span>
+    <span class="p">[</span><span class="dl">'</span><span class="s1">div</span><span class="dl">'</span><span class="p">,</span> <span class="s2">`Count: </span><span class="p">${</span> <span class="nx">state</span> <span class="p">}</span><span class="s2">`</span><span class="p">]</span>
+  <span class="p">]];</span>
+<span class="p">};</span>
+
+<span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">createApplication</span><span class="p">(</span><span class="nx">initialState</span><span class="p">,</span> <span class="nx">update</span><span class="p">,</span> <span class="nx">view</span><span class="p">);</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nx">mount</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">);</span>
+
+<p><a href="http://codepen.io/shybovycha/pen/dNEgNa" target="_blank" class="btn btn-md">Run this code</a></p>
+
+<p>All the DOM nodes are created using the array returned, which should match pattern <code>[tag, {attributes}, (text | [children]))</code> <u>(just like Mithril uses <code>m()</code> function or Elm uses <code>div</code> and other helper functions)</u>. Originally, <code>libc</code> used <code>c()</code> helper function to do that <u>(similar to Mithril&#39;s <code>m()</code> function)</u>, and that&#39;s why it was called <code>libC</code>.</p>
+
+<p>The library makes use of a VirtualDOM approach to create a virtual DOM tree and chech which nodes/node properties need changes and reflect only the needed changes in a real DOM tree.</p>
+
+<p><code>libc</code> uses the <code>message -&gt; update -&gt; view</code> chain, just like Elm does. The inner application state is handled similarly to Redux - application has only one store, which contains application state. And the <code>update()</code> function just calculates the new value for a state, without actually assigning it. Library then checks whether state needs to be updated or not <u>(using <code>Object.deepEqual</code> method, exposed by a library)</u>. If the new state value is different from the existing one - the state is replaced with a new value and the <code>view()</code> function is being called with a new state value. <code>view</code> function returns the new value of a virtual DOM tree. Library then checks whether it needs to update actual DOM tree or not.</p>
+
+<p>There are however couple highlights regarding <code>libc</code>:</p>
+
+<ul>
+<li>it can create arbitrary tags <u>(DOM nodes)</u> within the <code>view()</code> function <u>(the first element in each array is tag name, which could be pretty much anything)</u>, so it&#39;s quite easy to use it in couple with other libraries <u>(such as Angular-material, React or Polymer, for instance)</u></li>
+<li>properties, whose value is a function are automatically mapped to event listeners; taking into account that property names could be arbitrary as well, you may add event listeners to your custom events</li>
+<li>again, property names could be arbitrary, so you can use even angular ones if you want: <code>[&#39;div&#39;, { &#39;ng-repeat&#39;: &#39;item in items&#39; }, &#39;&#39;]</code></li>
+<li>both <code>properties</code> and <code>children or text</code> arguments are optional; thus you can create empty DOM elements: <code>[&#39;hr&#39;]</code></li>
+<li>to enable communication with your applications from the outside, application instance, returned by the <code>createApplication()</code> function, has the <code>dispatch(message)</code> method</li>
+</ul>
+
+<p>In later posts I&#39;ll provide more examples of using <code>libc</code>.</p>

@@ -1,0 +1,95 @@
+<meta name="layout" content="post">
+<meta name="title" content="Erlang practice">
+<meta name="date" content="2015-01-28T15:29:00+01:00">
+<meta name="tags" content="rtfm,erlang,programming,tutorial">
+<meta name="tumblr_url" content="http://shybovycha.tumblr.com/post/109392787226/erlang-practice">
+<h2>Foreword</h2>
+
+<p>First time I faced functional programming, I was impressed. Just a bit. That was back in 2012. The second time, I was studying real functional programming at the university. Today was the final test.</p>
+
+<p>We were taught many interesting things about functional programming and lot of things about Haskell. But there were only two lectures and two practices on Erlang. And nothing was told about its distributed programming abilities.</p>
+
+<p>I was a bit disappointed by this fact. So, I turned on my girlfriend&#39;s laptop, installed Erlang and created this short intro to distributed programming in Erlang.</p>
+
+<!--more-->
+
+<h2>Requirements</h2>
+
+<p>This short intro does not include Erlang tutorial and requires you to have at least two machines - either Virtual or hardware, if you wish. Even that does not really matter!</p>
+
+<h2>How to get out of a train?</h2>
+
+<p><img src="https://31.media.tumblr.com/151302ca545100e6c298290f0d5827fe/tumblr_inline_niw5irzdiz1qh5oee.jpg" alt="Gordon Freeman trying to get out of a train"/></p>
+
+<p>The first thing I gonna tell you, is really handy tip.</p>
+
+<p><strong>There are three ways to exit Erlang&#39; shell:</strong></p>
+
+<ul>
+<li><strong>&quot;classic&quot;:</strong> hit <kbd>Ctrl + C</kbd>, then press <kbd>a</kbd> <u>(Abort)</u> and <kbd>Return</kbd></li>
+<li><strong>&quot;UNIX-way&quot;:</strong> two times hit <kbd>Ctrl + C</kbd></li>
+<li><strong>&quot;Erlang-way&quot;:</strong> simply type <code>q().</code> and hit <kbd>Return</kbd></li>
+</ul>
+
+<p>You&#39;ll be happy to know &#39;bout last two - they are just easier!</p>
+
+<h2>Rock&#39;n&#39;Roll!</h2>
+
+<p>So, let&#39;s just dive into distributed programming! First thing you&#39;ll gonna need - is to know your machines&#39; IP addresses. Then you&#39;ll gonna need to point each of them to the other one - just set each other&#39;s hostname in the <code>/etc/hosts</code> file <u>(for Windows it&#39;s <code>C:\Windows\system32\drivers\etc\hosts</code>)</u>s.</p>
+
+<p>I have had two laptops I named <code>moonode</code> <u>(my laptop)</u> and <code>foo</code> <u>(my girlfriend&#39;s laptop)</u>. So, on my Ubuntu, I added this line to <code>/etc/hosts</code>:</p>
+192.168.2.33    foonode
+
+<p>And in <code>C:\Windows\system32\drivers\etc\hosts</code> on my girlfriend&#39;s laptop I added this:</p>
+192.168.2.237   moonode
+
+<p><img src="https://31.media.tumblr.com/97da86d4a989b381e3b6be0069ebfdff/tumblr_inline_niw5kauPUD1qh5oee.png" alt="hosts in Windows"/></p>
+
+<p><strong>Note:</strong> I was sitting at home, so laptops were connected just to my home WiFi router. And that&#39;s great news for enyone, who wants to try that at home!</p>
+
+<p>Each Erlang instance was run with the corresponding shortname of machine: <code>erl -sname moo@moonode</code> and <code>erl -sname foo@foonode</code>.</p>
+
+<p>Both machines should have the same cookie to communicate. That&#39;s basic Erlang security, for your great good. Cookie is just a upper-cased word, stored in a <code>.erlang.cookie</code> file. For Windows, that file is in the <code>C:\Windows\</code> or <code>C:\Users\username\</code> directory. In Linux that&#39;s in <code>/home/username/</code> directory.</p>
+
+<h2>Wrapping-up</h2>
+
+<p>So, short summary on what you should have to run distributely in Erlang:</p>
+
+<ul>
+<li>hostname(-s) of other node(-s) in your <code>hosts</code> file</li>
+<li>same cookie for all your nodes in <code>.erlang.cookie</code> file</li>
+<li>running instances with corresponding shortnames and hosts</li>
+</ul>
+
+<h2>Running stuff</h2>
+
+<p>To show some code, I wrote this short module:</p>
+<span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">test</span><span class="p">).</span>
+<span class="p">-</span><span class="ni">export</span><span class="p">([</span> <span class="n">start</span><span class="o">/</span><span class="mi">0</span> <span class="p">]).</span>
+
+<span class="nf">start</span><span class="p">()</span> <span class="o">-&gt;</span>
+    <span class="k">receive</span>
+        <span class="p">{</span> <span class="n">msg</span><span class="p">,</span> <span class="nv">M</span> <span class="p">}</span> <span class="o">-&gt;</span>
+            <span class="nn">io</span><span class="p">:</span><span class="nf">format</span><span class="p">(</span><span class="s">"&gt;&gt; </span><span class="si">~s~n</span><span class="s">"</span><span class="p">,</span> <span class="p">[</span> <span class="nv">M</span> <span class="p">]),</span>
+            <span class="nf">start</span><span class="p">();</span>
+
+        <span class="n">finish</span> <span class="o">-&gt;</span>
+            <span class="nn">io</span><span class="p">:</span><span class="nf">format</span><span class="p">(</span><span class="s">"&lt; finish received &gt;</span><span class="si">~n</span><span class="s">"</span><span class="p">),</span>
+            <span class="n">ok</span>
+    <span class="k">end</span><span class="p">.</span>
+
+<p>Now, let&#39;s start that!</p>
+
+<p>First, I registered that process with some name on the <code>foo</code> node:</p>
+<span class="nf">c</span><span class="p">(</span><span class="n">test1</span><span class="p">).</span>
+<span class="nb">register</span><span class="p">(</span><span class="n">foo_pid</span><span class="p">,</span> <span class="nb">spawn</span><span class="p">(</span><span class="n">test1</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="p">[])).</span>
+
+<p>And then, the only thing I needed to do - is just send messages from node <code>moo</code>!</p>
+<span class="p">{</span> <span class="n">foo_pid</span><span class="p">,</span> <span class="n">foo</span><span class="p">@</span><span class="n">foonode</span> <span class="p">}</span> <span class="o">!</span> <span class="p">{</span> <span class="n">msg</span><span class="p">,</span> <span class="s">"Obey!"</span> <span class="p">}.</span>
+<span class="nf">flush</span><span class="p">().</span>
+
+<p><img src="https://31.media.tumblr.com/2e65bfca4e6815d4eced646bee021e5f/tumblr_inline_niw5l8tH3Y1qh5oee.png" alt="moonode"/></p>
+
+<p><img src="https://31.media.tumblr.com/36462ec965b63fc9183a216f4be73c8d/tumblr_inline_niw5lnNbgc1qh5oee.png" alt="foonode"/></p>
+
+<p>Much cooler than writing ping-pong programs, huh? =)</p>

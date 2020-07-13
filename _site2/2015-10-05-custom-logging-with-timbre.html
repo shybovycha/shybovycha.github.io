@@ -1,0 +1,169 @@
+<meta name="layout" content="post">
+<meta name="title" content="Custom logging with timbre">
+<meta name="categories" content="">
+<meta name="tags" content="">
+<meta name="published" content="true">
+<h2>Timbre?</h2>
+
+<p>At my job we recently started researching logging tools to make our RESTful API, written in Clojure,
+writing logs in JSON format. We were using <strong>Log4j</strong> already, but decided to use another tool for
+this task, making it less painful. So we felt into <strong>timbre</strong>. Is seemed so easy to use, but it is
+really undocumented.</p>
+
+<p>According to timbre&#39;s API, we needed to define our own <strong>appender</strong> for writing to a custom JSON file.
+And we found the <code>output-fn</code> option to configure this behaviour. But it is not documented at all,
+so we started looking for repositories, using timbre, examples and all the stuff. And finally,
+we ended up with our own solution.</p>
+
+<p>Underneath you will find description of our way to use timbre from scratch.</p>
+
+<!--more-->
+
+<h2>Getting started</h2>
+
+<p>First of all, you will need a <strong>Leiningen</strong> project. We already have one, but you may want to create
+a blank one for the test purpose. But beware, you&#39;d better generate it from an <code>app</code> template, so
+when you run it with <code>lein run</code>, you face not the problem I faced. The problem was an error I could
+not get rid of, saying <code>Cannot find anything to run for: my-ns</code>. So I just re-generated project from
+scratch and the problem gone. <em>I did no research deeper, but if I will, I&#39;ll write about it for sure</em>.</p>
+
+<p>Generating project from an <code>app</code> template is done really easily:</p>
+lein new app your-app-name
+
+<p>The process will be finished in seconds. Then you&#39;ll need to add a few dependencies in your <code>project.clj</code>:</p>
+<span class="p">(</span><span class="nf">defproject</span><span class="w"> </span><span class="n">your-app-name</span><span class="w">
+    </span><span class="c1">; ...</span><span class="w">
+    </span><span class="no">:dependencies</span><span class="w"> </span><span class="p">[[</span><span class="n">org.clojure/clojure</span><span class="w"> </span><span class="s">"1.6.0"</span><span class="p">]</span><span class="w">
+                 </span><span class="p">[</span><span class="n">com.taoensso/timbre</span><span class="w"> </span><span class="s">"4.1.4"</span><span class="p">]</span><span class="w">
+                 </span><span class="p">[</span><span class="n">org.clojure/data.json</span><span class="w"> </span><span class="s">"0.2.6"</span><span class="p">]]</span><span class="w">
+    </span><span class="c1">; ...</span><span class="w">
+</span><span class="p">)</span><span class="w">
+</span>
+<p>To install dependencies for your project, simply run <code>lein deps</code>.</p>
+
+<h2>Configuring timbre</h2>
+
+<p>To use timbre in your project all you need is to require it:</p>
+<span class="p">(</span><span class="nf">ns</span><span class="w"> </span><span class="n">timbre-test1.core</span><span class="w">
+  </span><span class="p">(</span><span class="no">:require</span><span class="w"> </span><span class="p">[</span><span class="n">taoensso.timbre</span><span class="w"> </span><span class="no">:as</span><span class="w"> </span><span class="n">timbre</span><span class="w"> </span><span class="no">:refer</span><span class="w"> </span><span class="p">(</span><span class="nf">log</span><span class="w"> </span><span class="n">info</span><span class="w"> </span><span class="n">warn</span><span class="w"> </span><span class="n">debug</span><span class="w"> </span><span class="n">error</span><span class="p">)]</span><span class="w">
+            </span><span class="p">[</span><span class="n">clojure.data.json</span><span class="w"> </span><span class="no">:as</span><span class="w"> </span><span class="n">json</span><span class="p">]))</span><span class="w">
+
+</span><span class="p">(</span><span class="k">defn</span><span class="w"> </span><span class="n">-main</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="w"> </span><span class="n">args</span><span class="p">]</span><span class="w">
+  </span><span class="p">(</span><span class="nf">info</span><span class="w"> </span><span class="p">{</span><span class="no">:moo</span><span class="w"> </span><span class="mf">-3.14</span><span class="p">}</span><span class="w"> </span><span class="p">{</span><span class="no">:foo</span><span class="w"> </span><span class="no">:bar</span><span class="p">})</span><span class="w">
+  </span><span class="p">(</span><span class="nf">info</span><span class="w"> </span><span class="p">{</span><span class="no">:some-complicated-hash</span><span class="w"> </span><span class="p">{</span><span class="no">:inner-hash</span><span class="w"> </span><span class="p">{</span><span class="no">:more-inner</span><span class="w"> </span><span class="p">[</span><span class="s">"value1"</span><span class="w"> </span><span class="s">"value2"</span><span class="p">]}}})</span><span class="w">
+  </span><span class="p">(</span><span class="nf">info</span><span class="w"> </span><span class="s">"Hello, World!"</span><span class="p">)</span><span class="w">
+  </span><span class="p">(</span><span class="nf">error</span><span class="w"> </span><span class="s">"SOMETHING WENT WELL"</span><span class="p">))</span><span class="w">
+</span>
+<p>This example shows one very important feature of timbre: <strong>it can log objects, other than strings and
+exceptions</strong>. This is really handy! Doing so, timbre is able to log a JSON object simply, almost
+out-of-the-box.</p>
+
+<h2>Custom configuration</h2>
+
+<p>Now the time has come for something non-trivial. We need to set up our own appender to force timbre
+log everything in JSON.</p>
+
+<p>There is a set of default appenders in timbre already. For instance, there is a <code>spit</code> appender,
+writing logs to a file. And the default timbre&#39;s appender, writing logs to <code>stdout</code>, is called
+<code>sample</code>. But there&#39;s a trick: each appender in timbre should be configured by its <strong>id</strong>, not
+by its <strong>type</strong>. So you may have two different <code>spit</code> appenders, for example, writing to different
+files.</p>
+
+<p>Timbre provides two methods of configuration:</p>
+
+<ul>
+<li><strong>merging</strong>, when you can override only some options of default config</li>
+<li><strong>setting</strong>, when you override all the default options at once</li>
+</ul>
+
+<p>We used the first way, because some of timbre&#39;s options were mystical to us - if we do not set them,
+we will get no output at all. And we have not researched which ones we need to set.</p>
+
+<p>At first, we wrote a simple config, forcing logging to be printed onto a screen with some JSON
+formatting:</p>
+<span class="p">(</span><span class="nf">ns</span><span class="w"> </span><span class="n">timbre-test1.core</span><span class="w">
+  </span><span class="p">(</span><span class="no">:require</span><span class="w"> </span><span class="p">[</span><span class="n">taoensso.timbre</span><span class="w"> </span><span class="no">:as</span><span class="w"> </span><span class="n">timbre</span><span class="w"> </span><span class="no">:refer</span><span class="w"> </span><span class="p">(</span><span class="nf">log</span><span class="w"> </span><span class="n">info</span><span class="w"> </span><span class="n">warn</span><span class="w"> </span><span class="n">debug</span><span class="w"> </span><span class="n">error</span><span class="p">)]</span><span class="w">
+            </span><span class="p">[</span><span class="n">clojure.data.json</span><span class="w"> </span><span class="no">:as</span><span class="w"> </span><span class="n">json</span><span class="p">]))</span><span class="w">
+
+
+</span><span class="p">(</span><span class="k">defn</span><span class="w"> </span><span class="n">json-output-fn</span><span class="w">
+  </span><span class="p">[{</span><span class="no">:keys</span><span class="w"> </span><span class="p">[</span><span class="n">vargs_</span><span class="w"> </span><span class="n">hostname_</span><span class="w"> </span><span class="n">timestamp_</span><span class="w"> </span><span class="n">level</span><span class="p">]</span><span class="w"> </span><span class="no">:as</span><span class="w"> </span><span class="n">args</span><span class="p">}]</span><span class="w">
+  </span><span class="p">(</span><span class="k">let</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="n">messages</span><span class="w"> </span><span class="p">(</span><span class="nb">map</span><span class="w"> </span><span class="p">(</span><span class="k">fn</span><span class="w"> </span><span class="p">[</span><span class="n">msg</span><span class="p">]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="no">:timestamp</span><span class="w"> </span><span class="o">@</span><span class="n">timestamp_</span><span class="w">
+                                  </span><span class="no">:level</span><span class="w">     </span><span class="n">level</span><span class="w">
+                                  </span><span class="no">:hostname</span><span class="w">  </span><span class="o">@</span><span class="n">hostname_</span><span class="w">
+                                  </span><span class="no">:message</span><span class="w">   </span><span class="n">msg</span><span class="w"> </span><span class="p">})</span><span class="w">
+                   </span><span class="o">@</span><span class="n">vargs_</span><span class="p">)</span><span class="w">
+        </span><span class="n">json-messages</span><span class="w"> </span><span class="p">(</span><span class="nb">map</span><span class="w"> </span><span class="o">#</span><span class="p">(</span><span class="nf">json/write-str</span><span class="w"> </span><span class="n">%</span><span class="p">)</span><span class="w"> </span><span class="n">messages</span><span class="p">)]</span><span class="w">
+    </span><span class="p">(</span><span class="nf">clojure.string/join</span><span class="w"> </span><span class="s">"\n"</span><span class="w"> </span><span class="n">json-messages</span><span class="p">)))</span><span class="w">
+
+
+</span><span class="p">(</span><span class="k">defn</span><span class="w"> </span><span class="n">-main</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="w"> </span><span class="n">args</span><span class="p">]</span><span class="w">
+  </span><span class="p">(</span><span class="nf">timbre/merge-config!</span><span class="w">
+    </span><span class="p">{</span><span class="no">:appenders</span><span class="w"> </span><span class="p">{</span><span class="w">
+                 </span><span class="no">:println</span><span class="w"> </span><span class="p">{</span><span class="w">
+                    </span><span class="no">:output-fn</span><span class="w"> </span><span class="n">json-output-fn</span><span class="w">
+                 </span><span class="p">}}})</span><span class="w">
+  </span><span class="p">(</span><span class="nf">info</span><span class="w"> </span><span class="p">{</span><span class="no">:moo</span><span class="w"> </span><span class="mf">-3.14</span><span class="p">}</span><span class="w"> </span><span class="p">{</span><span class="no">:foo</span><span class="w"> </span><span class="no">:bar</span><span class="p">})</span><span class="w">
+</span><span class="p">)</span><span class="w">
+</span>
+<p>Note the appender id: <code>println</code>. This code overrides <code>output-fn</code> for <code>println</code> appender <em>(e. g. the
+default one)</em>. The parameter for <code>output-fn</code> is a function, receiving a map with different keys. The
+most important ones are <code>vargs_</code>, <code>hostname_</code>, <code>timestamp_</code> and <code>level</code>. Those are enough to format
+the correct and full message with any format you might want.</p>
+
+<p>The <code>vargs_</code> variable contains all the arguments, passed to a logging call <em>(<code>info</code>, <code>warn</code>, <code>error</code> -
+any function from <code>timbre</code> namespace, which performs logging)</em>. And the <code>clojure.data.json/write-str</code>
+function converts its params to JSON and stringifies it, returning valid JSON as a string.</p>
+
+<p>A function should return a string, representing a message, which will be written to a screen or a file,
+depending on appender.</p>
+
+<p><code>level</code> argument is set by a macro, you are logging with. For example, <code>timbre/info</code> will set
+<code>level</code> to <code>&quot;info&quot;</code>, <code>timbre/error</code> - to <code>&quot;error&quot;</code> and so on.</p>
+
+<p><code>hostname_</code> and <code>timestamp_</code> are helper arguments, you might not need them in all the use cases.
+But the <code>timestamp_</code> one is really helpful. Always.</p>
+
+<p>Then we overrided the default file appender, extending it with our <code>json-output-fn</code>:</p>
+<span class="p">(</span><span class="nf">ns</span><span class="w"> </span><span class="n">timbre-test1.core</span><span class="w">
+  </span><span class="p">(</span><span class="no">:require</span><span class="w"> </span><span class="p">[</span><span class="n">taoensso.timbre</span><span class="w"> </span><span class="no">:as</span><span class="w"> </span><span class="n">timbre</span><span class="w"> </span><span class="no">:refer</span><span class="w"> </span><span class="p">(</span><span class="nf">log</span><span class="w"> </span><span class="n">info</span><span class="w"> </span><span class="n">warn</span><span class="w"> </span><span class="n">debug</span><span class="w"> </span><span class="n">error</span><span class="p">)]</span><span class="w">
+            </span><span class="p">[</span><span class="n">taoensso.timbre.appenders.core</span><span class="w"> </span><span class="no">:as</span><span class="w"> </span><span class="n">appenders</span><span class="p">]</span><span class="w">
+            </span><span class="p">[</span><span class="n">clojure.data.json</span><span class="w"> </span><span class="no">:as</span><span class="w"> </span><span class="n">json</span><span class="p">]))</span><span class="w">
+
+
+</span><span class="p">(</span><span class="k">defn</span><span class="w"> </span><span class="n">json-output-fn</span><span class="w">
+  </span><span class="p">[{</span><span class="no">:keys</span><span class="w"> </span><span class="p">[</span><span class="n">vargs_</span><span class="w"> </span><span class="n">hostname_</span><span class="w"> </span><span class="n">timestamp_</span><span class="w"> </span><span class="n">level</span><span class="p">]</span><span class="w"> </span><span class="no">:as</span><span class="w"> </span><span class="n">args</span><span class="p">}]</span><span class="w">
+  </span><span class="p">(</span><span class="k">let</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="n">messages</span><span class="w"> </span><span class="p">(</span><span class="nb">map</span><span class="w"> </span><span class="p">(</span><span class="k">fn</span><span class="w"> </span><span class="p">[</span><span class="n">msg</span><span class="p">]</span><span class="w"> </span><span class="p">{</span><span class="no">:timestamp</span><span class="w"> </span><span class="o">@</span><span class="n">timestamp_</span><span class="w">
+                                  </span><span class="no">:level</span><span class="w">     </span><span class="n">level</span><span class="w">
+                                  </span><span class="no">:hostname</span><span class="w">  </span><span class="o">@</span><span class="n">hostname_</span><span class="w">
+                                  </span><span class="no">:message</span><span class="w">   </span><span class="n">msg</span><span class="p">})</span><span class="w">
+                   </span><span class="o">@</span><span class="n">vargs_</span><span class="p">)</span><span class="w">
+        </span><span class="n">json-messages</span><span class="w"> </span><span class="p">(</span><span class="nb">map</span><span class="w"> </span><span class="o">#</span><span class="p">(</span><span class="nf">json/write-str</span><span class="w"> </span><span class="n">%</span><span class="p">)</span><span class="w"> </span><span class="n">messages</span><span class="p">)]</span><span class="w">
+    </span><span class="p">(</span><span class="nf">clojure.string/join</span><span class="w"> </span><span class="s">"\n"</span><span class="w"> </span><span class="n">json-messages</span><span class="p">)))</span><span class="w">
+
+
+</span><span class="p">(</span><span class="k">defn</span><span class="w"> </span><span class="n">-main</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="w"> </span><span class="n">args</span><span class="p">]</span><span class="w">
+  </span><span class="p">(</span><span class="nf">timbre/merge-config!</span><span class="w">
+    </span><span class="p">{</span><span class="no">:appenders</span><span class="w"> </span><span class="p">{</span><span class="w">
+                 </span><span class="no">:spit</span><span class="w"> </span><span class="p">(</span><span class="nb">merge</span><span class="w"> </span><span class="p">(</span><span class="nf">appenders/spit-appender</span><span class="w"> </span><span class="p">{</span><span class="no">:fname</span><span class="w"> </span><span class="s">"timbre.log"</span><span class="p">})</span><span class="w"> </span><span class="p">{</span><span class="no">:output-fn</span><span class="w"> </span><span class="n">json-output-fn</span><span class="p">})</span><span class="w">
+                 </span><span class="p">}})</span><span class="w">
+  </span><span class="p">(</span><span class="nf">info</span><span class="w"> </span><span class="p">{</span><span class="no">:moo</span><span class="w"> </span><span class="mf">-3.14</span><span class="p">}</span><span class="w"> </span><span class="p">{</span><span class="no">:foo</span><span class="w"> </span><span class="no">:bar</span><span class="p">})</span><span class="w">
+</span><span class="p">)</span><span class="w">
+</span>
+<p>Nothing new here, except of the appender used - now the application will log to both file and screen.
+To prevent logging to <code>stdout</code>, we disabled the <code>println</code> appender:</p>
+<span class="p">(</span><span class="k">defn</span><span class="w"> </span><span class="n">-main</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="w"> </span><span class="n">args</span><span class="p">]</span><span class="w">
+  </span><span class="p">(</span><span class="nf">timbre/merge-config!</span><span class="w">
+    </span><span class="p">{</span><span class="no">:appenders</span><span class="w"> </span><span class="p">{</span><span class="w">
+                 </span><span class="no">:println</span><span class="w"> </span><span class="p">{</span><span class="no">:enabled?</span><span class="w"> </span><span class="n">true</span><span class="p">}</span><span class="w">
+                 </span><span class="no">:spit</span><span class="w"> </span><span class="p">(</span><span class="nb">merge</span><span class="w"> </span><span class="p">(</span><span class="nf">appenders/spit-appender</span><span class="w"> </span><span class="p">{</span><span class="no">:fname</span><span class="w"> </span><span class="s">"timbre.log"</span><span class="p">})</span><span class="w"> </span><span class="p">{</span><span class="no">:output-fn</span><span class="w"> </span><span class="n">json-output-fn</span><span class="p">})</span><span class="w">
+                 </span><span class="p">}})</span><span class="w">
+  </span><span class="p">(</span><span class="nf">info</span><span class="w"> </span><span class="p">{</span><span class="no">:moo</span><span class="w"> </span><span class="mf">-3.14</span><span class="p">}</span><span class="w"> </span><span class="p">{</span><span class="no">:foo</span><span class="w"> </span><span class="no">:bar</span><span class="p">})</span><span class="w">
+</span><span class="p">)</span><span class="w">
+</span>
+<p>Here I should mention that we were not made to call our JSON appender <code>spit</code> - it was used for convention
+reasons only.</p>
+
+<p>And that&#39;s basically it - we made our logging to be written to a JSON file only.</p>

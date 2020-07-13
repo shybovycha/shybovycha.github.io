@@ -1,0 +1,18 @@
+<meta name="layout" content="post">
+<meta name="title" content="Installing deb package with dependencies">
+<meta name="date" content="2015-02-19T10:54:53+01:00">
+<meta name="tags" content="ubuntu,debian,rtfm">
+<meta name="tumblr_url" content="http://shybovycha.tumblr.com/post/111457648576/installing-deb-package-with-dependencies">
+<p>Often, installing packages on Debian-based systems like so</p>
+<span class="nb">sudo </span>dpkg <span class="nt">-i</span> package_file.deb
+
+<p>fails with messages like <code>dependency not satisfied</code>.</p>
+
+<p>To fix this, there are two ways:</p>
+
+<ol>
+<li><code>sudo dpkg -i package_file.deb &amp;&amp; sudo apt-get -f install</code></li>
+<li><code>sudo dpkg -i --force-depends package_file.deb</code></li>
+</ol>
+
+<p>Obviously, the second one is shorter =)</p>

@@ -1,0 +1,545 @@
+<meta name="layout" content="post">
+<meta name="title" content="Entanglement">
+<meta name="date" content="2017-03-13T11:42:24+02:00">
+<p><img data-src="/images/entanglement/ios-screen1_optimized.png" alt=""></p>
+
+<h1>Entanglement?</h1>
+
+<p>Some time ago there was a game popular over there, called Entanglement:</p>
+
+<p><img data-src="/images/entanglement/web-screen1.jpg" alt=""></p>
+
+<p>There are a few implementations of this game under Android:</p>
+
+<style>
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .row .col {
+    max-width: 48%;
+    margin: 0 1%;
+  }
+</style>
+
+<div class="row">
+    <div class="col">
+        <img data-src="/images/entanglement/android-screen1.jpg" alt="">
+    </div>
+    <div class="col">
+        <img data-src="/images/entanglement/android-screen2.jpg" alt="">
+    </div>
+</div>
+
+<p>But there was no such game for iOS. And as I pursued my second M. Sc. degree, I have had a course
+&quot;iOS development&quot;, where we were learning to use Swift and iOS platform.</p>
+
+<p>I decided to implement this game as my course project. In Swift. Originally the game was implemented
+in Swift 2 <u>(there was no Swift 3 back those days)</u>.</p>
+
+<p>And recently I decided to refactor the game a bit and update it to the most recent Swift version
+<u>(which is Swift 3 at the moment of writing this post)</u>.</p>
+
+<p>In this post I&#39;ll describe some interesting decisions I made while creating this game.</p>
+
+<!--more-->
+
+<h1>The game</h1>
+
+<p>The idea of the game is to prolong the line as much as possible by using the tiles with pieces
+of a path for a line. At the beginning of the game, a single tile is placed at the center of a
+hexagonal field and the line starts from that tile. You are also given a tile in the &quot;pocket&quot;,
+which you can swap with the currently active one. At each turn, a game will place a new tile
+at the end of the line and you have three actions available:</p>
+
+<ol>
+<li>rotate the current tile clockwise or counter-clockwise, as many times as you want</li>
+<li>swap the current tile with one in the pocket; you can repeat this action as many times as you want to</li>
+<li>place the tile; this action is performed once and can not be undone</li>
+</ol>
+
+<p>But the trick here is: each tile contains six line pieces. And by using one of them, be aware
+that other pieces might be used later as well.</p>
+
+<p>When you place a tile, you get one point for the first piece of the line, which prolongs it.
+You also get one point more for the next piece, if it prolongs the line too. For the third
+line piece, you&#39;ll get 3 points and so on. The point here is: the more pieces you connect in
+a single move - the more points you get.</p>
+
+<h1>Implementation</h1>
+
+<p>My implementation contains several core elements:</p>
+
+<ol>
+<li>tiles</li>
+<li>field</li>
+<li>tile renderer</li>
+<li>game itself</li>
+</ol>
+
+<p>Tiles contain information on the line pieces they contain and provide methods to rotate themselves
+and find connections with neighbor tiles.</p>
+
+<p>The field contains information on all the tiles on the field - where they are placed and how they are
+rotated.</p>
+
+<p>Tile renderer simply draws tiles into an image. Doing so allows having an animation for tile rotation.</p>
+
+<p>The game holds all the data on the game state - tile in the pocket, currently selected tile, line path
+done so far and a score.</p>
+
+<h1>Field</h1>
+
+<p>The core of the game is tiles. The tiles are hexagons. And the whole field is hexagonal.
+The problem was to handle the positions of all the tiles in a handy manner. Thus I decided
+to go from a standard Cartesian coordinate system, which has 90&deg; angle between axes
+and go for a one with 120&deg;:</p>
+
+<p><img data-src="/images/entanglement/120-deg-coordinate-system.png" alt=""></p>
+
+<p>Here, <code>u</code> and <code>v</code> vectors represent coordinate axes and <code>w</code> vector is a diagonal. So the tiles
+could now be allocated so their centers are at the points of the coordinate system with integer
+coordinates:</p>
+
+<p><img data-src="/images/entanglement/tiles-1.png" alt=""></p>
+
+<p>Now, there&#39;s a tricky thing regarding this coordinate system: how should we know, where to render
+the actual tile image on a screen? E. g. how can we convert coordinates in this system back to Cartesian?</p>
+
+<p>After doing some math on a piece of paper, I came up with this function:</p>
+<span class="kd">func</span> <span class="nf">uv2xy</span><span class="p">(</span><span class="n">_</span> <span class="nv">uv</span><span class="p">:</span> <span class="p">(</span><span class="kt">Int</span><span class="p">,</span> <span class="kt">Int</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="kt">Int</span><span class="p">,</span> <span class="kt">Int</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">u</span> <span class="o">=</span> <span class="n">uv</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">uv</span><span class="o">.</span><span class="mi">1</span>
+    <span class="k">let</span> <span class="nv">kx</span> <span class="o">=</span> <span class="kt">Float</span><span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="n">v</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">3.0</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>
+    <span class="k">let</span> <span class="nv">ky</span> <span class="o">=</span> <span class="kt">Float</span><span class="p">(</span><span class="n">u</span> <span class="o">+</span> <span class="n">v</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="nf">sqrt</span><span class="p">(</span><span class="mf">3.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>
+    <span class="k">let</span> <span class="nv">x</span> <span class="o">=</span> <span class="kt">Int</span><span class="p">(</span><span class="nf">ceil</span><span class="p">(</span><span class="n">kx</span> <span class="o">*</span> <span class="kt">Float</span><span class="p">(</span><span class="n">tileSideLength</span><span class="p">)))</span>
+    <span class="k">let</span> <span class="nv">y</span> <span class="o">=</span> <span class="kt">Int</span><span class="p">(</span><span class="nf">ceil</span><span class="p">(</span><span class="n">ky</span> <span class="o">*</span> <span class="kt">Float</span><span class="p">(</span><span class="n">tileSideLength</span><span class="p">)))</span>
+
+    <span class="k">let</span> <span class="nv">cx</span> <span class="o">=</span> <span class="mi">9</span> <span class="o">*</span> <span class="p">(</span><span class="n">tileSideLength</span><span class="p">)</span>
+    <span class="k">let</span> <span class="nv">cy</span> <span class="o">=</span> <span class="kt">Int</span><span class="p">(</span><span class="nf">ceil</span><span class="p">(</span><span class="mf">8.0</span> <span class="o">*</span> <span class="nf">sqrt</span><span class="p">(</span><span class="mf">3.0</span><span class="p">)</span> <span class="o">*</span> <span class="kt">Float</span><span class="p">(</span><span class="n">tileSideLength</span><span class="p">)))</span>
+
+    <span class="nf">return</span> <span class="p">(</span><span class="n">cx</span> <span class="o">+</span> <span class="n">x</span><span class="p">,</span> <span class="n">cy</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span>
+<span class="p">}</span>
+
+<p>What happens here is: since every tile is a regular hexagon, we can simply calculate the distance between the sides
+of neighbour tiles and, based on how the tiles are layed out relative to each other, multiply that by either taking
+one and a half of every coordinate system unit or <code>sqrt(3) / 2</code> of one unit. The <code>sqrt(3) / 2</code> comes from the length
+of a unit regular hexagon&#39;s height <u>(a line, perpendicular to any side of a hexagon, starting at its center)</u>. Every
+unit scales with the tile&#39; size.</p>
+
+<p>As you can see, it depends on tile side length. This is the major tile parameter. Since I render tiles
+based on that parameter.</p>
+
+<h1>Tiles</h1>
+
+<p>Each tile should have six lines. To do that, I created 12 <u>&quot;connection slots&quot;</u>, two on each
+side of a tile, as shown below:</p>
+
+<p><img data-src="/images/entanglement/tile-connections-1.png" alt=""></p>
+
+<p>Then, by generating six random pairs of integer numbers from the range <code>[1, 12]</code>, we can obtain actual
+connections inside a single tile. Note that none of the numbers should be used more than once and
+that none of the pairs should have a duplicate. Then a tile might look like this:</p>
+
+<p><img data-src="/images/entanglement/tile-sample.png" alt=""></p>
+
+<p>To display a tile, I&#39;ve developed a prototype tile in SVG:</p>
+<span class="nt">&lt;svg</span> <span class="na">height=</span><span class="s">"232"</span> <span class="na">width=</span><span class="s">"232"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;polygon</span> <span class="na">points=</span><span class="s">"55.0,5.0 155.0,5.0 205.0,92.0 155.0,178.0 55.0,178.0 5.0,92.0"</span> <span class="na">style=</span><span class="s">"fill:none;stroke:#000;stroke-width:2"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/svg&gt;</span>
+
+<p>And to make this template re-usable, I&#39;ve dropped in a <u>&quot;side length&quot;</u> parameter. Pre-calculating
+pins&#39; slots positions and hexagon&#39;s vertex positions and making it parametric <u>(with a side length
+parameter)</u>, I&#39;ve got this function, which generates a tile:</p>
+<span class="kd">class</span> <span class="kt">TileImageGenerator</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">vertices</span><span class="p">:</span> <span class="p">[(</span><span class="kt">Int</span><span class="p">,</span> <span class="kt">Int</span><span class="p">)]</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">87</span><span class="p">),</span> <span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">173</span><span class="p">),</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">173</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">87</span><span class="p">)]</span>
+
+    <span class="k">var</span> <span class="nv">width</span><span class="p">:</span> <span class="kt">Int</span>
+    <span class="k">var</span> <span class="nv">height</span><span class="p">:</span> <span class="kt">Int</span>
+    <span class="k">var</span> <span class="nv">scaleCoefficient</span><span class="p">:</span> <span class="kt">Float</span>
+    <span class="k">var</span> <span class="nv">centerX</span><span class="p">:</span> <span class="kt">Int</span>
+    <span class="k">var</span> <span class="nv">centerY</span><span class="p">:</span> <span class="kt">Int</span>
+
+    <span class="nf">init</span><span class="p">(</span><span class="nv">sideLength</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">scaleCoefficient</span> <span class="o">=</span> <span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">sideLength</span><span class="p">)</span> <span class="o">/</span> <span class="mf">100.0</span>
+
+        <span class="k">self</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="kt">Int</span><span class="p">(</span><span class="nf">ceil</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">sideLength</span><span class="p">)))</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="kt">Int</span><span class="p">(</span><span class="nf">ceil</span><span class="p">(</span><span class="mf">1.73</span> <span class="o">*</span> <span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">sideLength</span><span class="p">)))</span>
+
+        <span class="k">self</span><span class="o">.</span><span class="n">centerX</span> <span class="o">=</span> <span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">centerY</span> <span class="o">=</span> <span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="kd">func</span> <span class="nf">borderTile</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">UIImage</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="nv">size</span> <span class="o">=</span> <span class="kt">CGSize</span><span class="p">(</span><span class="nv">width</span><span class="p">:</span> <span class="k">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="nv">height</span><span class="p">:</span> <span class="k">self</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
+        <span class="k">let</span> <span class="nv">opaque</span> <span class="o">=</span> <span class="kc">false</span>
+        <span class="k">let</span> <span class="nv">scale</span><span class="p">:</span> <span class="kt">CGFloat</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="kt">UIGraphicsBeginImageContextWithOptions</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">opaque</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+        <span class="k">let</span> <span class="nv">context</span> <span class="o">=</span> <span class="kt">UIGraphicsGetCurrentContext</span><span class="p">()</span>
+
+        <span class="c1">// draw outer shape</span>
+        <span class="k">let</span> <span class="nv">shapePathRef</span><span class="p">:</span> <span class="kt">CGMutablePath</span> <span class="o">=</span> <span class="kt">CGMutablePath</span><span class="p">()</span>
+
+        <span class="n">context</span><span class="p">?</span><span class="o">.</span><span class="nf">setFillColor</span><span class="p">(</span><span class="kt">UIColor</span><span class="o">.</span><span class="n">black</span><span class="o">.</span><span class="n">cgColor</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">?</span><span class="o">.</span><span class="nf">setLineJoin</span><span class="p">(</span><span class="kt">CGLineJoin</span><span class="o">.</span><span class="n">round</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">...</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">vertices</span><span class="o">.</span><span class="n">count</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="nv">x1</span> <span class="o">=</span> <span class="kt">CGFloat</span><span class="p">(</span><span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="k">self</span><span class="o">.</span><span class="n">scaleCoefficient</span><span class="p">)</span>
+            <span class="k">let</span> <span class="nv">y1</span> <span class="o">=</span> <span class="kt">CGFloat</span><span class="p">(</span><span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="k">self</span><span class="o">.</span><span class="n">scaleCoefficient</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">{</span>
+                <span class="k">let</span> <span class="nv">x0</span> <span class="o">=</span> <span class="kt">CGFloat</span><span class="p">(</span><span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="k">self</span><span class="o">.</span><span class="n">scaleCoefficient</span><span class="p">)</span>
+                <span class="k">let</span> <span class="nv">y0</span> <span class="o">=</span> <span class="kt">CGFloat</span><span class="p">(</span><span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="k">self</span><span class="o">.</span><span class="n">scaleCoefficient</span><span class="p">)</span>
+
+                <span class="n">shapePathRef</span><span class="o">.</span><span class="nf">move</span><span class="p">(</span><span class="nv">to</span><span class="p">:</span> <span class="kt">CGPoint</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="n">x0</span><span class="p">,</span> <span class="nv">y</span><span class="p">:</span> <span class="n">y0</span><span class="p">))</span>
+            <span class="p">}</span>
+
+            <span class="n">shapePathRef</span><span class="o">.</span><span class="nf">addLine</span><span class="p">(</span><span class="nv">to</span><span class="p">:</span> <span class="kt">CGPoint</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="n">x1</span><span class="p">,</span> <span class="nv">y</span><span class="p">:</span> <span class="n">y1</span><span class="p">))</span>
+        <span class="p">}</span>
+
+        <span class="n">shapePathRef</span><span class="o">.</span><span class="nf">closeSubpath</span><span class="p">()</span>
+
+        <span class="n">context</span><span class="p">?</span><span class="o">.</span><span class="nf">addPath</span><span class="p">(</span><span class="n">shapePathRef</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">?</span><span class="o">.</span><span class="nf">fillPath</span><span class="p">()</span>
+
+        <span class="c1">// finish drawing</span>
+        <span class="k">let</span> <span class="nv">image</span> <span class="o">=</span> <span class="kt">UIGraphicsGetImageFromCurrentImageContext</span><span class="p">()</span>
+        <span class="kt">UIGraphicsEndImageContext</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">image</span><span class="o">!</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<p>Now, if I want to draw connection lines, I can just spicy that code with pre-calculated pin slots
+connections coordinates and, using some neat line stroke technique, draw tile exactly as shown above:</p>
+<span class="kd">class</span> <span class="kt">RenderingParams</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">sideLength</span><span class="p">:</span> <span class="kt">Int</span>
+    <span class="k">var</span> <span class="nv">stroke</span><span class="p">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">var</span> <span class="nv">pathStroke</span><span class="p">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="k">var</span> <span class="nv">strokeColor</span><span class="p">:</span> <span class="kt">UIColor</span>
+    <span class="k">var</span> <span class="nv">pathColor</span><span class="p">:</span> <span class="kt">UIColor</span>
+    <span class="k">var</span> <span class="nv">highlightPathColor</span><span class="p">:</span> <span class="kt">UIColor</span>
+    <span class="k">var</span> <span class="nv">markPathColor</span><span class="p">:</span> <span class="kt">UIColor</span>
+
+    <span class="nf">init</span><span class="p">(</span><span class="nv">sideLength</span><span class="p">:</span> <span class="kt">Int</span><span class="p">,</span>
+        <span class="nv">stroke</span><span class="p">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="nv">pathStroke</span><span class="p">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="nv">strokeColor</span><span class="p">:</span> <span class="kt">UIColor</span> <span class="o">=</span> <span class="kt">UIColor</span><span class="p">(</span><span class="nv">red</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="nv">green</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="nv">blue</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="nv">alpha</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">),</span>
+        <span class="nv">pathColor</span><span class="p">:</span> <span class="kt">UIColor</span> <span class="o">=</span> <span class="kt">UIColor</span><span class="o">.</span><span class="n">white</span><span class="p">,</span>
+        <span class="nv">highlightPathColor</span><span class="p">:</span> <span class="kt">UIColor</span> <span class="o">=</span> <span class="kt">UIColor</span><span class="p">(</span><span class="nv">red</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span> <span class="nv">green</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="nv">blue</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="nv">alpha</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">),</span>
+        <span class="nv">markPathColor</span><span class="p">:</span> <span class="kt">UIColor</span> <span class="o">=</span> <span class="kt">UIColor</span><span class="p">(</span><span class="nv">red</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span> <span class="nv">green</span><span class="p">:</span> <span class="mf">0.15</span><span class="p">,</span> <span class="nv">blue</span><span class="p">:</span> <span class="mf">0.15</span><span class="p">,</span> <span class="nv">alpha</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">))</span> <span class="p">{</span>
+            <span class="k">self</span><span class="o">.</span><span class="n">sideLength</span> <span class="o">=</span> <span class="n">sideLength</span>
+            <span class="k">self</span><span class="o">.</span><span class="n">stroke</span> <span class="o">=</span> <span class="n">stroke</span>
+            <span class="k">self</span><span class="o">.</span><span class="n">pathStroke</span> <span class="o">=</span> <span class="n">pathStroke</span>
+            <span class="k">self</span><span class="o">.</span><span class="n">strokeColor</span> <span class="o">=</span> <span class="n">strokeColor</span>
+            <span class="k">self</span><span class="o">.</span><span class="n">pathColor</span> <span class="o">=</span> <span class="n">pathColor</span>
+            <span class="k">self</span><span class="o">.</span><span class="n">highlightPathColor</span> <span class="o">=</span> <span class="n">highlightPathColor</span>
+            <span class="k">self</span><span class="o">.</span><span class="n">markPathColor</span> <span class="o">=</span> <span class="n">markPathColor</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">class</span> <span class="kt">TileImageGenerator</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">vertices</span><span class="p">:</span> <span class="p">[(</span><span class="kt">Int</span><span class="p">,</span> <span class="kt">Int</span><span class="p">)]</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">87</span><span class="p">),</span> <span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">173</span><span class="p">),</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">173</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">87</span><span class="p">)]</span>
+    <span class="k">let</span> <span class="nv">pins</span><span class="p">:</span> <span class="p">[(</span><span class="kt">Int</span><span class="p">,</span> <span class="kt">Int</span><span class="p">)]</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">83</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">116</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">166</span><span class="p">,</span> <span class="mi">29</span><span class="p">),</span> <span class="p">(</span><span class="mi">182</span><span class="p">,</span> <span class="mi">58</span><span class="p">),</span> <span class="p">(</span><span class="mi">182</span><span class="p">,</span> <span class="mi">116</span><span class="p">),</span> <span class="p">(</span><span class="mi">166</span><span class="p">,</span> <span class="mi">145</span><span class="p">),</span> <span class="p">(</span><span class="mi">116</span><span class="p">,</span> <span class="mi">173</span><span class="p">),</span> <span class="p">(</span><span class="mi">83</span><span class="p">,</span> <span class="mi">173</span><span class="p">),</span> <span class="p">(</span><span class="mi">34</span><span class="p">,</span> <span class="mi">145</span><span class="p">),</span> <span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">116</span><span class="p">),</span> <span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">58</span><span class="p">),</span> <span class="p">(</span><span class="mi">34</span><span class="p">,</span> <span class="mi">29</span><span class="p">)]</span>
+
+    <span class="k">var</span> <span class="nv">width</span><span class="p">:</span> <span class="kt">Int</span>
+    <span class="k">var</span> <span class="nv">height</span><span class="p">:</span> <span class="kt">Int</span>
+    <span class="k">var</span> <span class="nv">scaleCoefficient</span><span class="p">:</span> <span class="kt">Float</span>
+    <span class="k">var</span> <span class="nv">centerX</span><span class="p">:</span> <span class="kt">Int</span>
+    <span class="k">var</span> <span class="nv">centerY</span><span class="p">:</span> <span class="kt">Int</span>
+
+    <span class="k">var</span> <span class="nv">renderingParams</span><span class="p">:</span> <span class="kt">RenderingParams</span>
+
+    <span class="nf">init</span><span class="p">(</span><span class="nv">renderingParams</span><span class="p">:</span> <span class="kt">RenderingParams</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">renderingParams</span> <span class="o">=</span> <span class="n">renderingParams</span>
+
+        <span class="k">self</span><span class="o">.</span><span class="n">scaleCoefficient</span> <span class="o">=</span> <span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">sideLength</span><span class="p">)</span> <span class="o">/</span> <span class="mf">100.0</span>
+
+        <span class="k">self</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="kt">Int</span><span class="p">(</span><span class="nf">ceil</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">sideLength</span> <span class="o">+</span> <span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">renderingParams</span><span class="o">.</span><span class="n">stroke</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))))</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="kt">Int</span><span class="p">(</span><span class="nf">ceil</span><span class="p">(</span><span class="mf">1.73</span> <span class="o">*</span> <span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">sideLength</span> <span class="o">+</span> <span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">renderingParams</span><span class="o">.</span><span class="n">stroke</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))))</span>
+
+        <span class="k">self</span><span class="o">.</span><span class="n">centerX</span> <span class="o">=</span> <span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">centerY</span> <span class="o">=</span> <span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="kd">func</span> <span class="nf">nonEmptyTile</span><span class="p">(</span><span class="n">_</span> <span class="nv">tileParams</span><span class="p">:</span> <span class="kt">TileParams</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">UIImage</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="nv">size</span> <span class="o">=</span> <span class="kt">CGSize</span><span class="p">(</span><span class="nv">width</span><span class="p">:</span> <span class="k">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="nv">height</span><span class="p">:</span> <span class="k">self</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
+        <span class="k">let</span> <span class="nv">opaque</span> <span class="o">=</span> <span class="kc">false</span>
+        <span class="k">let</span> <span class="nv">scale</span><span class="p">:</span> <span class="kt">CGFloat</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="kt">UIGraphicsBeginImageContextWithOptions</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">opaque</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+        <span class="k">let</span> <span class="nv">context</span> <span class="o">=</span> <span class="kt">UIGraphicsGetCurrentContext</span><span class="p">()</span>
+
+        <span class="c1">// draw outer shape</span>
+        <span class="k">let</span> <span class="nv">shapePathRef</span><span class="p">:</span> <span class="kt">CGMutablePath</span> <span class="o">=</span> <span class="kt">CGMutablePath</span><span class="p">()</span>
+
+        <span class="n">context</span><span class="p">?</span><span class="o">.</span><span class="nf">setFillColor</span><span class="p">(</span><span class="kt">UIColor</span><span class="p">(</span><span class="nv">red</span><span class="p">:</span> <span class="mf">0.88</span><span class="p">,</span> <span class="nv">green</span><span class="p">:</span> <span class="mf">0.88</span><span class="p">,</span> <span class="nv">blue</span><span class="p">:</span> <span class="mf">0.88</span><span class="p">,</span> <span class="nv">alpha</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">cgColor</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">?</span><span class="o">.</span><span class="nf">setLineJoin</span><span class="p">(</span><span class="kt">CGLineJoin</span><span class="o">.</span><span class="n">round</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">...</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">vertices</span><span class="o">.</span><span class="n">count</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="nv">x1</span> <span class="o">=</span> <span class="kt">CGFloat</span><span class="p">(</span><span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="k">self</span><span class="o">.</span><span class="n">scaleCoefficient</span> <span class="o">+</span> <span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">renderingParams</span><span class="o">.</span><span class="n">stroke</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))</span>
+            <span class="k">let</span> <span class="nv">y1</span> <span class="o">=</span> <span class="kt">CGFloat</span><span class="p">(</span><span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="k">self</span><span class="o">.</span><span class="n">scaleCoefficient</span> <span class="o">+</span> <span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">renderingParams</span><span class="o">.</span><span class="n">stroke</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">{</span>
+                <span class="k">let</span> <span class="nv">x0</span> <span class="o">=</span> <span class="kt">CGFloat</span><span class="p">(</span><span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="k">self</span><span class="o">.</span><span class="n">scaleCoefficient</span> <span class="o">+</span> <span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">renderingParams</span><span class="o">.</span><span class="n">stroke</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))</span>
+                <span class="k">let</span> <span class="nv">y0</span> <span class="o">=</span> <span class="kt">CGFloat</span><span class="p">(</span><span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="k">self</span><span class="o">.</span><span class="n">scaleCoefficient</span> <span class="o">+</span> <span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">renderingParams</span><span class="o">.</span><span class="n">stroke</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))</span>
+
+                <span class="n">shapePathRef</span><span class="o">.</span><span class="nf">move</span><span class="p">(</span><span class="nv">to</span><span class="p">:</span> <span class="kt">CGPoint</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="n">x0</span><span class="p">,</span> <span class="nv">y</span><span class="p">:</span> <span class="n">y0</span><span class="p">))</span>
+            <span class="p">}</span>
+
+            <span class="n">shapePathRef</span><span class="o">.</span><span class="nf">addLine</span><span class="p">(</span><span class="nv">to</span><span class="p">:</span> <span class="kt">CGPoint</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="n">x1</span><span class="p">,</span> <span class="nv">y</span><span class="p">:</span> <span class="n">y1</span><span class="p">))</span>
+        <span class="p">}</span>
+
+        <span class="n">shapePathRef</span><span class="o">.</span><span class="nf">closeSubpath</span><span class="p">()</span>
+
+        <span class="n">context</span><span class="p">?</span><span class="o">.</span><span class="nf">addPath</span><span class="p">(</span><span class="n">shapePathRef</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">?</span><span class="o">.</span><span class="nf">fillPath</span><span class="p">()</span>
+
+        <span class="c1">// draw connections</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">c0</span><span class="p">,</span> <span class="n">c1</span><span class="p">)</span> <span class="k">in</span> <span class="n">tileParams</span><span class="o">.</span><span class="n">connections</span> <span class="p">{</span>
+            <span class="n">context</span><span class="p">?</span><span class="o">.</span><span class="nf">setLineWidth</span><span class="p">(</span><span class="kt">CGFloat</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">renderingParams</span><span class="o">.</span><span class="n">pathStroke</span><span class="p">))</span>
+
+            <span class="k">let</span> <span class="nv">connectionPathRef</span><span class="p">:</span> <span class="kt">CGMutablePath</span> <span class="o">=</span> <span class="kt">CGMutablePath</span><span class="p">()</span>
+            <span class="k">var</span> <span class="nv">pathColor</span><span class="p">:</span> <span class="kt">CGColor</span>
+
+            <span class="k">if</span> <span class="n">tileParams</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="nf">contains</span><span class="p">(</span><span class="nv">where</span><span class="p">:</span> <span class="p">{</span> <span class="p">(</span><span class="nv">$0</span><span class="o">.</span><span class="mi">0</span> <span class="o">==</span> <span class="n">c0</span> <span class="o">&amp;&amp;</span> <span class="nv">$0</span><span class="o">.</span><span class="mi">1</span> <span class="o">==</span> <span class="n">c1</span><span class="p">)</span> <span class="o">||</span> <span class="p">(</span><span class="nv">$0</span><span class="o">.</span><span class="mi">0</span> <span class="o">==</span> <span class="n">c1</span> <span class="o">&amp;&amp;</span> <span class="nv">$0</span><span class="o">.</span><span class="mi">1</span> <span class="o">==</span> <span class="n">c0</span><span class="p">)</span> <span class="p">})</span> <span class="p">{</span>
+                <span class="n">pathColor</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="n">markPathColor</span><span class="o">.</span><span class="n">cgColor</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="n">tileParams</span><span class="o">.</span><span class="n">highlight</span><span class="o">.</span><span class="nf">contains</span><span class="p">(</span><span class="nv">where</span><span class="p">:</span> <span class="p">{</span> <span class="p">(</span><span class="nv">$0</span><span class="o">.</span><span class="mi">0</span> <span class="o">==</span> <span class="n">c0</span> <span class="o">&amp;&amp;</span> <span class="nv">$0</span><span class="o">.</span><span class="mi">1</span> <span class="o">==</span> <span class="n">c1</span><span class="p">)</span> <span class="o">||</span> <span class="p">(</span><span class="nv">$0</span><span class="o">.</span><span class="mi">0</span> <span class="o">==</span> <span class="n">c1</span> <span class="o">&amp;&amp;</span> <span class="nv">$0</span><span class="o">.</span><span class="mi">1</span> <span class="o">==</span> <span class="n">c0</span><span class="p">)</span> <span class="p">})</span> <span class="p">{</span>
+                <span class="n">pathColor</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="n">renderingParams</span><span class="o">.</span><span class="n">highlightPathColor</span><span class="o">.</span><span class="n">cgColor</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="n">pathColor</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="n">renderingParams</span><span class="o">.</span><span class="n">pathColor</span><span class="o">.</span><span class="n">cgColor</span>
+            <span class="p">}</span>
+
+            <span class="k">let</span> <span class="nv">p0x</span> <span class="o">=</span> <span class="kt">CGFloat</span><span class="p">(</span><span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">pins</span><span class="p">[</span><span class="n">c0</span><span class="p">]</span><span class="o">.</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="k">self</span><span class="o">.</span><span class="n">scaleCoefficient</span> <span class="o">+</span> <span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">renderingParams</span><span class="o">.</span><span class="n">stroke</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))</span>
+            <span class="k">let</span> <span class="nv">p0y</span> <span class="o">=</span> <span class="kt">CGFloat</span><span class="p">(</span><span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">pins</span><span class="p">[</span><span class="n">c0</span><span class="p">]</span><span class="o">.</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="k">self</span><span class="o">.</span><span class="n">scaleCoefficient</span> <span class="o">+</span> <span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">renderingParams</span><span class="o">.</span><span class="n">stroke</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))</span>
+
+            <span class="k">let</span> <span class="nv">p1x</span> <span class="o">=</span> <span class="kt">CGFloat</span><span class="p">(</span><span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">pins</span><span class="p">[</span><span class="n">c1</span><span class="p">]</span><span class="o">.</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="k">self</span><span class="o">.</span><span class="n">scaleCoefficient</span> <span class="o">+</span> <span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">renderingParams</span><span class="o">.</span><span class="n">stroke</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))</span>
+            <span class="k">let</span> <span class="nv">p1y</span> <span class="o">=</span> <span class="kt">CGFloat</span><span class="p">(</span><span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">pins</span><span class="p">[</span><span class="n">c1</span><span class="p">]</span><span class="o">.</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="k">self</span><span class="o">.</span><span class="n">scaleCoefficient</span> <span class="o">+</span> <span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">renderingParams</span><span class="o">.</span><span class="n">stroke</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))</span>
+
+            <span class="n">connectionPathRef</span><span class="o">.</span><span class="nf">move</span><span class="p">(</span><span class="nv">to</span><span class="p">:</span> <span class="kt">CGPoint</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="n">p0x</span><span class="p">,</span> <span class="nv">y</span><span class="p">:</span> <span class="n">p0y</span><span class="p">))</span>
+            <span class="n">connectionPathRef</span><span class="o">.</span><span class="nf">addQuadCurve</span><span class="p">(</span><span class="nv">to</span><span class="p">:</span> <span class="kt">CGPoint</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="n">p1x</span><span class="p">,</span> <span class="nv">y</span><span class="p">:</span> <span class="n">p1y</span><span class="p">),</span> <span class="nv">control</span><span class="p">:</span> <span class="kt">CGPoint</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="k">self</span><span class="o">.</span><span class="n">centerX</span><span class="p">,</span> <span class="nv">y</span><span class="p">:</span> <span class="k">self</span><span class="o">.</span><span class="n">centerY</span><span class="p">))</span>
+
+            <span class="n">context</span><span class="p">?</span><span class="o">.</span><span class="nf">setLineWidth</span><span class="p">(</span><span class="kt">CGFloat</span><span class="p">(</span><span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">renderingParams</span><span class="o">.</span><span class="n">pathStroke</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.25</span><span class="p">))</span>
+            <span class="n">context</span><span class="p">?</span><span class="o">.</span><span class="nf">setStrokeColor</span><span class="p">(</span><span class="kt">UIColor</span><span class="o">.</span><span class="n">black</span><span class="o">.</span><span class="n">cgColor</span><span class="p">)</span>
+            <span class="n">context</span><span class="p">?</span><span class="o">.</span><span class="nf">addPath</span><span class="p">(</span><span class="n">connectionPathRef</span><span class="p">)</span>
+            <span class="n">context</span><span class="p">?</span><span class="o">.</span><span class="nf">strokePath</span><span class="p">()</span>
+
+            <span class="n">context</span><span class="p">?</span><span class="o">.</span><span class="nf">setLineWidth</span><span class="p">(</span><span class="kt">CGFloat</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">renderingParams</span><span class="o">.</span><span class="n">pathStroke</span><span class="p">))</span>
+            <span class="n">context</span><span class="p">?</span><span class="o">.</span><span class="nf">setStrokeColor</span><span class="p">(</span><span class="n">pathColor</span><span class="p">)</span>
+            <span class="n">context</span><span class="p">?</span><span class="o">.</span><span class="nf">addPath</span><span class="p">(</span><span class="n">connectionPathRef</span><span class="p">)</span>
+            <span class="n">context</span><span class="p">?</span><span class="o">.</span><span class="nf">strokePath</span><span class="p">()</span>
+        <span class="p">}</span>
+
+        <span class="c1">// stroke out the outer shape to cover the paths</span>
+        <span class="n">context</span><span class="p">?</span><span class="o">.</span><span class="nf">setStrokeColor</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">renderingParams</span><span class="o">.</span><span class="n">strokeColor</span><span class="o">.</span><span class="n">cgColor</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">?</span><span class="o">.</span><span class="nf">setLineWidth</span><span class="p">(</span><span class="kt">CGFloat</span><span class="p">(</span><span class="kt">Float</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">renderingParams</span><span class="o">.</span><span class="n">stroke</span><span class="p">)))</span>
+        <span class="n">context</span><span class="p">?</span><span class="o">.</span><span class="nf">addPath</span><span class="p">(</span><span class="n">shapePathRef</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">?</span><span class="o">.</span><span class="nf">strokePath</span><span class="p">()</span>
+
+        <span class="c1">// finish drawing</span>
+        <span class="k">let</span> <span class="nv">image</span> <span class="o">=</span> <span class="kt">UIGraphicsGetImageFromCurrentImageContext</span><span class="p">()</span>
+        <span class="kt">UIGraphicsEndImageContext</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">image</span><span class="o">!</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<p>As you can see, two major things happened here:</p>
+
+<ol>
+<li>I encapsulated all the parameters like line stroke width and line colors ina a separate class, <code>RenderingParams</code></li>
+<li>I added rendering lines using two-time rendering technique to emulate borders over connection lines; e. g. I first draw a thick line, filled with the stroke color, which should be applied, and then I render a thinner line with exactly the same coordinates, but different color; doing so, the bottom line becomes just a background for the top one</li>
+</ol>
+
+<p>Now, tiles should be rotated. To do that, two tricks have been applied:</p>
+
+<ol>
+<li>as we have our tiles drawn as <code>UIImage</code>, we can simply rotate that image around its center to create the visual effect of rotation</li>
+<li>as we have our connection pins as a plain array, we can just re-calculate the indices of connection&#39;s <u>&quot;input&quot;</u> and <u>&quot;output&quot;</u></li>
+</ol>
+
+<p>There are a couple of points, which should be described prior to the algorithm of a tile rotation.</p>
+
+<p>The tiles are connected using those connection pins. And based on the coordinates of a tile and its
+neighbor, we can tell, which pins of those two will be connected. And since our game goal is to prolong
+a single line, by keeping track of which connections of which tiles form a line, we may define a couple
+rules:</p>
+
+<ul>
+<li>given connected pins inside one tile, we may describe that connection in two pins&#39; indices, namely <u>&quot;input&quot;</u> and <u>&quot;output&quot;</u></li>
+<li>connections of a tile, not involved in forming a line, can be treated in either way - input and output could be named in a reversed order <u>(again, <strong>unless they are forming a line</strong>, otherwise it&#39;s essential to say where the line comes from and where it ends inside a given tile)</u></li>
+<li>the central tile will have only one output - the one, where the line starts its journey; let it be the connection pair <code>(0, 0)</code></li>
+<li>one can easily calculate the neighbor&#39;s output, given the last tile of a line path and its successor</li>
+</ul>
+
+<p>Let&#39;s define a class <code>Tile</code>:</p>
+<span class="kd">class</span> <span class="kt">Tile</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">connections</span><span class="p">:</span> <span class="p">[(</span><span class="kt">Int</span><span class="p">,</span> <span class="kt">Int</span><span class="p">)]</span>
+<span class="p">}</span>
+
+<p>Simple enough, right? Now let&#39;s assume our program will fill out <code>connections</code> list automatically and
+all the tiles will be assigned the correct list of connections. Given that, we may define two helper
+methods on a <code>Tile</code> class:</p>
+<span class="kd">class</span> <span class="kt">Tile</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">connections</span><span class="p">:</span> <span class="p">[(</span><span class="kt">Int</span><span class="p">,</span> <span class="kt">Int</span><span class="p">)]</span>
+
+    <span class="kd">func</span> <span class="nf">output</span><span class="p">(</span><span class="n">from</span> <span class="nv">input</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Int</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">inPin</span><span class="p">,</span> <span class="n">outPin</span><span class="p">)</span> <span class="k">in</span> <span class="k">self</span><span class="o">.</span><span class="n">connections</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">inPin</span> <span class="o">==</span> <span class="n">input</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="n">outPin</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="n">outPin</span> <span class="o">==</span> <span class="n">input</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="n">inPin</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="kd">func</span> <span class="nf">input</span><span class="p">(</span><span class="n">from</span> <span class="nv">output</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Int</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">output</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="nf">return</span> <span class="p">(</span><span class="n">output</span> <span class="o">+</span> <span class="mi">12</span> <span class="o">-</span> <span class="mi">5</span><span class="p">)</span> <span class="o">%</span> <span class="mi">12</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nf">return</span> <span class="p">(</span><span class="n">output</span> <span class="o">+</span> <span class="mi">12</span> <span class="o">+</span> <span class="mi">5</span><span class="p">)</span> <span class="o">%</span> <span class="mi">12</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<p>The first one, <code>output(from input: Int)</code> will return us the output index inside a given tile, where the line
+will come out from, when entering our tile from input with index <code>from</code>.</p>
+
+<p>So, for example, given a tile with connections</p>
+<span class="k">let</span> <span class="nv">t</span><span class="p">:</span> <span class="kt">Tile</span> <span class="o">=</span> <span class="kt">Tile</span><span class="p">()</span>
+<span class="n">t</span><span class="o">.</span><span class="n">connections</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">)]</span>
+
+<p>the call <code>t.output(from: 11)</code> will give us <code>8</code>, which could be easily found from the list of connections
+by hand.</p>
+
+<p>The second method will give us the input index inside the neighbor tile, which is connected to an output of
+the given tile.</p>
+
+<p>And for the example above, the call <code>t.input(from: 0)</code> will give us <code>7</code>. And here&#39;s an image to show why:</p>
+
+<p><img data-src="/images/entanglement/entanglement-tile-neighbours.png" alt=""></p>
+
+<p>Given we have a portion of a path layed out on a game plane already, there is only one way of correctly placing
+each next tile <u>(the path which is already present on a plane never changes and always comes to the same connection point)</u>.</p>
+
+<p>And now it&#39;s finally the time to explain the rotation of the tiles!</p>
+
+<p>After a tile has been assigned a set of connected pins, the rotation should preserve those connections.
+The rotation operation uses modulo operation, as with calculating neighbor tile&#39;s input pin index,
+but on a scale of each connection pair <u>(a pair of input and output)</u>:</p>
+<span class="kd">class</span> <span class="kt">Tile</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+
+    <span class="kd">func</span> <span class="nf">rotate</span><span class="p">(</span><span class="n">_</span> <span class="nv">direction</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">connections</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="n">connections</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="p">(</span><span class="nv">input</span><span class="p">:</span> <span class="kt">Int</span><span class="p">,</span> <span class="nv">output</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span> <span class="nf">in</span>
+            <span class="p">((</span><span class="n">input</span> <span class="o">+</span> <span class="p">(</span><span class="n">direction</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">12</span><span class="p">)</span> <span class="o">%</span> <span class="mi">12</span><span class="p">,</span> <span class="p">(</span><span class="n">output</span> <span class="o">+</span> <span class="p">(</span><span class="n">direction</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">12</span><span class="p">)</span> <span class="o">%</span> <span class="mi">12</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="c1">//...</span>
+<span class="p">}</span>
+
+<p>Here, <code>direction</code> is either <code>1</code> for clockwise rotation or <code>-1</code> for counter-clockwise rotation.</p>
+
+<h1>Path prediction</h1>
+
+<p>Finding a place where to put the next tile is an iterative process, which hardly depends on a current tile
+(its connections and position) and the tiles which are already placed on the field.</p>
+
+<p>At the very beginning of the game, the next place could be set as a constant and is always above the
+central tile <u>(so if the central tile has the position <code>(4, 4)</code>, then the next place would be <code>(5, 5)</code> - along with the diagonal in our coordinate system)</u>.</p>
+
+<p>To track the boundaries of a field and the beginning of the line <u>(in other words - the places, where the line cannot go)</u>, I inherited a <code>Tile</code> class with a set of other classes just to track if the game can
+continue or not: <code>ZeroTile</code> and <code>BorderTile</code> represent restricted bounds of a game field.</p>
+
+<p>Now, given the output of a current tile, which the line will use to continue through the tile,
+we can predict where the next tile should be put on a field:</p>
+<span class="kd">func</span> <span class="nf">findNextPlace</span><span class="p">(</span><span class="n">_</span> <span class="nv">path</span><span class="p">:</span> <span class="kt">Path</span><span class="p">,</span> <span class="nv">currentPosition</span><span class="p">:</span> <span class="p">(</span><span class="kt">Int</span><span class="p">,</span> <span class="kt">Int</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="kt">Int</span><span class="p">,</span> <span class="kt">Int</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">u</span><span class="p">:</span> <span class="kt">Int</span><span class="p">,</span> <span class="nv">v</span><span class="p">:</span> <span class="kt">Int</span>
+    <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">=</span> <span class="n">currentPosition</span>
+
+    <span class="k">let</span> <span class="nv">output</span><span class="p">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="nf">lastOutput</span><span class="p">()</span>
+
+    <span class="k">switch</span> <span class="n">output</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="nf">return</span> <span class="p">(</span><span class="n">u</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">v</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">case</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="nf">return</span> <span class="p">(</span><span class="n">u</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+    <span class="k">case</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="nf">return</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">case</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">:</span>
+        <span class="nf">return</span> <span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">v</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">case</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">:</span>
+        <span class="nf">return</span> <span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+    <span class="k">case</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">:</span>
+        <span class="nf">return</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">default</span><span class="p">:</span>
+        <span class="nf">return</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<p>If, however, there is a tile at the next place on the field, we should use its connections to determine
+the next position.</p>
+
+<p>Otherwise, if the next position is either the border of a field or an empty space - we stop the search.</p>
+
+<p>Search itself is just as simple as that:</p>
+<span class="kd">func</span> <span class="nf">findFuturePath</span><span class="p">(</span><span class="n">_</span> <span class="nv">tile</span><span class="p">:</span> <span class="kt">NonEmptyTile</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="kt">Path</span><span class="p">,</span> <span class="p">(</span><span class="kt">Int</span><span class="p">,</span> <span class="kt">Int</span><span class="p">))</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="k">self</span><span class="o">.</span><span class="nf">isPathFinished</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">throw</span> <span class="kt">GameError</span><span class="o">.</span><span class="n">gameOver</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="nv">tmpPath</span><span class="p">:</span> <span class="kt">Path</span> <span class="o">=</span> <span class="kt">Path</span><span class="p">()</span>
+    <span class="k">var</span> <span class="nv">tmpNextPlace</span><span class="p">:</span> <span class="p">(</span><span class="kt">Int</span><span class="p">,</span> <span class="kt">Int</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="n">nextPlace</span>
+    <span class="k">var</span> <span class="nv">u</span><span class="p">:</span> <span class="kt">Int</span><span class="p">,</span> <span class="nv">v</span><span class="p">:</span> <span class="kt">Int</span>
+
+    <span class="n">tmpPath</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="k">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">items</span><span class="o">.</span><span class="n">last</span><span class="o">!</span><span class="p">]</span>
+
+    <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">=</span> <span class="n">tmpNextPlace</span>
+
+    <span class="k">while</span> <span class="kc">true</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="nv">lastOutput</span><span class="p">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="n">tmpPath</span><span class="o">.</span><span class="nf">lastOutput</span><span class="p">()</span>
+        <span class="k">var</span> <span class="nv">nextTile</span><span class="p">:</span> <span class="kt">Tile</span>
+
+        <span class="k">if</span> <span class="n">u</span> <span class="o">==</span> <span class="k">self</span><span class="o">.</span><span class="n">nextPlace</span><span class="o">.</span><span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">v</span> <span class="o">==</span> <span class="k">self</span><span class="o">.</span><span class="n">nextPlace</span><span class="o">.</span><span class="mi">1</span> <span class="p">{</span>
+            <span class="n">nextTile</span> <span class="o">=</span> <span class="n">tile</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">nextTile</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="n">tiles</span><span class="p">[</span><span class="n">u</span><span class="p">][</span><span class="n">v</span><span class="p">]</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="o">!</span><span class="p">(</span><span class="n">nextTile</span> <span class="k">is</span> <span class="kt">NonEmptyTile</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">break</span>
+        <span class="p">}</span>
+
+        <span class="n">tmpPath</span><span class="o">.</span><span class="nf">expand</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="nv">v</span><span class="p">:</span> <span class="n">v</span><span class="p">,</span> <span class="nv">input</span><span class="p">:</span> <span class="n">nextTile</span><span class="o">.</span><span class="nf">input</span><span class="p">(</span><span class="nv">to</span><span class="p">:</span> <span class="n">lastOutput</span><span class="p">),</span> <span class="nv">output</span><span class="p">:</span> <span class="k">try</span> <span class="n">nextTile</span><span class="o">.</span><span class="nf">outputFromNeighbourOutput</span><span class="p">(</span><span class="nv">from</span><span class="p">:</span> <span class="n">lastOutput</span><span class="p">))</span>
+
+        <span class="n">tmpNextPlace</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="nf">findNextPlace</span><span class="p">(</span><span class="n">tmpPath</span><span class="p">,</span> <span class="nv">nextPlace</span><span class="p">:</span> <span class="n">tmpNextPlace</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">u</span> <span class="o">==</span> <span class="n">tmpNextPlace</span><span class="o">.</span><span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">v</span> <span class="o">==</span> <span class="n">tmpNextPlace</span><span class="o">.</span><span class="mi">1</span> <span class="p">{</span>
+            <span class="k">break</span>
+        <span class="p">}</span>
+
+        <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">=</span> <span class="n">tmpNextPlace</span>
+    <span class="p">}</span>
+
+    <span class="n">tmpPath</span><span class="o">.</span><span class="n">items</span><span class="o">.</span><span class="nf">removeFirst</span><span class="p">()</span>
+
+    <span class="nf">return</span> <span class="p">(</span><span class="n">tmpPath</span><span class="p">,</span> <span class="n">tmpNextPlace</span><span class="p">)</span>
+<span class="p">}</span>
+
+<h1>Counting points</h1>
+
+<p>This task is quite simple, compared to the others described above. When a user places a tile, we estimate
+the length of a predicted path and add numbers from <code>[1..L]</code> <u>(where <code>L</code> is the length of the predicted path)</u>
+to score. This could be expressed as a sum of a finite arithmetic sequence with a step of <code>1</code>:</p>
+
+<p><img data-src="/images/entanglement/score_equation.gif" alt=""></p>
+
+<h1>The end result</h1>
+
+<p>The end result of this coding exercise looks like exactly as the one at the very top of this post:</p>
+
+<p><img data-src="/images/entanglement/ios-screen1.png" alt=""></p>

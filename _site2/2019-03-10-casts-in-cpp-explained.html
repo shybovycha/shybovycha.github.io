@@ -1,0 +1,14 @@
+<meta name="layout" content="post">
+<meta name="title" content="Type casts in C++, explained">
+<meta name="date" content="2019-03-21T10:00:56+10:00">
+<meta name="tags" content="c++,programming">
+<p>As explained by my colleague, former professional C++ developer (now writes schwifty Java).
+Below is a quick explanation of four basic C++ type casts. Just for the matter of shorter post,
+consider each cast taking a template type <code>T</code> and a parameter value <code>v</code> like this: <code>const_cast&lt;T&gt;(v)</code>.</p>
+
+<ul>
+<li><code>const_cast</code> - removes the <code>const</code> from the type of <code>v</code> (think of casting <code>const char*</code> will produce <code>char*</code>)</li>
+<li><code>static_cast</code> - C-style, unchecked explicit type casting (just like in old 90s: <code>(int) 3.14</code>)</li>
+<li><code>reinterpret_cast</code> - hard low-level treating a block of memory as type <code>T</code>, no matter what resides in that memory</li>
+<li><code>dynamic_cast</code> - does the runtime checks of param type and template type</li>
+</ul>

@@ -1,0 +1,414 @@
+<meta name="layout" content="post">
+<meta name="title" content="A response to response to hello world">
+<meta name="date" content="2020-01-10T15:10:24+11:00">
+<meta name="tags" content="nasm,assembly,osx,go,performance">
+<p>Recently I&#39;ve received an email from StackOverflow newsletters with a link to a quite controversial (at first glance) blog, <a href="https://www.doxsey.net/blog/a-response-to-hello-world">A response to Hello World</a> by Caleb Doxsey. This blog is a response to another curious read, <a href="https://drewdevault.com/2020/01/04/Slow.html">Hello world</a> by Drew DeVault.</p>
+
+<p>In the former article, author compared the performance of a tiny &quot;Hello, World&quot; program in Assembly to the same program in Go.
+He then tried to optimize the program in Go to run faster and towards the end of an article comes up with a program that is faster than its Assembly counterpart.</p>
+
+<p><img alt="" data-src="/images/a-response-to-response-to-hello-world/hello-world-original-chart-min.png">
+<img alt="" data-src="/images/a-response-to-response-to-hello-world/hello-world-new-chart-min.png">
+<img alt="" data-src="/images/a-response-to-response-to-hello-world/hello-world-new-chart2-min.png"></p>
+
+<p>And this totally makes sense, since if you give it a good read, you will notice that author did optimize the program in Go but did not do that for the Assembly program.</p>
+
+<p>I have decided to burn few hours of my life and jump onto this topic, since, in my opinion, author did not do a fair comparison.</p>
+
+<!--more-->
+
+<p>The original code Caleb has used is (I have added the imports and package declaration required to run the program):</p>
+
+<h3>Go</h3>
+<span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="s">"strconv"</span>
+<span class="k">import</span> <span class="s">"os"</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">n</span><span class="p">,</span> <span class="n">_</span> <span class="o">:=</span> <span class="n">strconv</span><span class="o">.</span><span class="n">Atoi</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">Args</span><span class="p">[</span><span class="m">1</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="o">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span> <span class="p">{</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">Stdout</span><span class="o">.</span><span class="n">Write</span><span class="p">([]</span><span class="kt">byte</span><span class="p">(</span><span class="s">"hello world</span><span class="se">\n</span><span class="s">"</span><span class="p">))</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<h3>Assembly</h3>
+<span class="n">_start</span><span class="o">:</span>
+    <span class="k">mov</span> <span class="n">rdi</span><span class="p">,</span> <span class="err">[</span><span class="n">rsp</span> <span class="o">+</span> <span class="mi">16</span><span class="err">]</span>
+    <span class="k">call</span> <span class="n">atoi</span>
+
+    <span class="k">mov</span> <span class="n">r12</span><span class="p">,</span> <span class="n">rax</span>
+
+<span class="p">.</span><span class="n">helloloop</span><span class="o">:</span>
+    <span class="k">mov</span> <span class="n">rdx</span><span class="p">,</span> <span class="n">len</span>
+    <span class="k">mov</span> <span class="n">rsi</span><span class="p">,</span> <span class="n">msg</span>
+    <span class="k">mov</span> <span class="n">rdi</span><span class="p">,</span> <span class="mi">1</span>
+    <span class="k">mov</span> <span class="n">rax</span><span class="p">,</span> <span class="mi">1</span>
+    <span class="k">syscall</span>
+    <span class="k">dec</span> <span class="n">r12</span>
+    <span class="k">cmp</span> <span class="n">r12</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="k">jg</span> <span class="p">.</span><span class="n">helloloop</span>
+
+    <span class="k">mov</span> <span class="n">rdi</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="k">mov</span> <span class="n">rax</span><span class="p">,</span> <span class="mi">60</span>
+    <span class="k">syscall</span>
+
+<h3>Optimized Go</h3>
+<span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="s">"strconv"</span>
+<span class="k">import</span> <span class="s">"os"</span>
+<span class="k">import</span> <span class="s">"bufio"</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">n</span><span class="p">,</span> <span class="n">_</span> <span class="o">:=</span> <span class="n">strconv</span><span class="o">.</span><span class="n">Atoi</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">Args</span><span class="p">[</span><span class="m">1</span><span class="p">])</span>
+    <span class="n">w</span> <span class="o">:=</span> <span class="n">bufio</span><span class="o">.</span><span class="n">NewWriter</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">Stdout</span><span class="p">)</span>
+    <span class="k">defer</span> <span class="n">w</span><span class="o">.</span><span class="n">Flush</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="o">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span> <span class="p">{</span>
+        <span class="n">w</span><span class="o">.</span><span class="n">Write</span><span class="p">([]</span><span class="kt">byte</span><span class="p">(</span><span class="s">"hello world"</span><span class="p">))</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<p>What Caleb did was string concatenation in memory, creating a big string in memory and then calling the system function to print it out only once.
+Indeed this is way more performant than making an IO syscall every iteration.</p>
+
+<p>Since Caleb did not provide an equal program in Assembly, I decided to fill this gap.
+I have spent quite some time (predominantly because I am quite rusty with Assembly at the moment and I forgot that different OSes use <a href="https://en.wikipedia.org/wiki/X86_calling_conventions">different calling conventions</a>).
+I came up with the code in Assembly that does exactly the same - allocates the memory, fills it with the repeated <code>&quot;hello world&quot;</code> string and then makes a syscall to print it to the console.</p>
+
+<h3>My optimized Assembly</h3>
+<span class="c">;; compile me on OSX: nasm -fmacho64 helloworld.asm &amp;&amp; ld helloworld.o -lSystem -macosx_version_min 10.13</span>
+<span class="c">;; compile me on Linux: nasm -felf64 helloworld.asm &amp;&amp; ld helloworld.o # AND DO NOT FORGET TO ALIGN WITH THE SYSCALL CONVENTION BY USING STACK INSTEAD OF REGISTERS</span>
+
+<span class="kr">global</span> <span class="n">_main</span>
+
+<span class="kr">extern</span> <span class="n">_malloc</span><span class="p">,</span> <span class="n">_puts</span><span class="p">,</span> <span class="n">_atoi</span><span class="p">,</span> <span class="n">_free</span>
+
+<span class="kr">section</span> <span class="p">.</span><span class="n">text</span>
+
+<span class="n">_main</span><span class="o">:</span>
+<span class="p">.</span><span class="n">load_counter</span><span class="o">:</span>
+    <span class="k">cmp</span> <span class="n">rdi</span><span class="p">,</span> <span class="mi">2</span>
+    <span class="k">jne</span> <span class="p">.</span><span class="n">exit_failure</span>
+
+    <span class="k">mov</span> <span class="n">r12</span><span class="p">,</span> <span class="n">rdi</span>
+    <span class="k">mov</span> <span class="n">r13</span><span class="p">,</span> <span class="err">[</span><span class="n">rsi</span> <span class="o">+</span> <span class="mi">8</span><span class="err">]</span>
+
+    <span class="k">push</span> <span class="n">rdi</span>
+
+    <span class="k">mov</span> <span class="n">rdi</span><span class="p">,</span> <span class="n">r13</span>
+    <span class="k">call</span> <span class="n">_atoi</span>
+
+    <span class="k">mov</span> <span class="n">r13</span><span class="p">,</span> <span class="n">rax</span>
+
+    <span class="k">pop</span> <span class="n">rdi</span>
+
+<span class="p">.</span><span class="n">calculate_memory_length</span><span class="o">:</span>
+    <span class="k">mov</span> <span class="n">rdi</span><span class="p">,</span> <span class="n">r13</span>
+    <span class="k">mov</span> <span class="n">rax</span><span class="p">,</span> <span class="n">len</span>
+    <span class="k">imul</span> <span class="n">rdi</span><span class="p">,</span> <span class="n">rax</span>
+    <span class="k">inc</span> <span class="n">rdi</span>
+    <span class="k">mov</span> <span class="n">r12</span><span class="p">,</span> <span class="n">rdi</span>
+
+<span class="p">.</span><span class="n">allocate_memory</span><span class="o">:</span>
+    <span class="k">push</span> <span class="n">rax</span>
+
+    <span class="k">mov</span> <span class="n">rdi</span><span class="p">,</span> <span class="n">r12</span>
+    <span class="k">xor</span> <span class="n">rax</span><span class="p">,</span> <span class="n">rax</span>
+    <span class="k">call</span> <span class="n">_malloc</span>
+
+    <span class="k">test</span> <span class="n">rax</span><span class="p">,</span> <span class="n">rax</span>
+    <span class="k">jz</span> <span class="p">.</span><span class="n">exit_failure</span>
+
+    <span class="k">mov</span> <span class="n">r12</span><span class="p">,</span> <span class="n">rax</span>
+
+    <span class="k">pop</span> <span class="n">rax</span>
+
+<span class="p">.</span><span class="n">repeat_message</span><span class="o">:</span>
+    <span class="k">mov</span> <span class="n">rcx</span><span class="p">,</span> <span class="n">r13</span>
+    <span class="k">mov</span> <span class="n">rdi</span><span class="p">,</span> <span class="n">r12</span>
+
+<span class="p">.</span><span class="n">repeat_message_1</span><span class="o">:</span>
+    <span class="k">push</span> <span class="n">rcx</span>
+    <span class="k">lea</span> <span class="n">rsi</span><span class="p">,</span> <span class="err">[</span><span class="n">rel</span> <span class="n">msg</span><span class="err">]</span>
+    <span class="k">mov</span> <span class="n">rcx</span><span class="p">,</span> <span class="n">len</span>
+    <span class="k">cld</span>
+
+<span class="p">.</span><span class="n">copy_message</span><span class="o">:</span>
+    <span class="k">mov</span> <span class="n">rax</span><span class="p">,</span> <span class="p">[rsi]</span>
+    <span class="k">mov</span> <span class="p">[rdi],</span> <span class="n">rax</span>
+    <span class="k">inc</span> <span class="n">rsi</span>
+    <span class="k">inc</span> <span class="n">rdi</span>
+    <span class="k">dec</span> <span class="n">rcx</span>
+    <span class="k">jnz</span> <span class="p">.</span><span class="n">copy_message</span>
+
+<span class="p">.</span><span class="n">repeat_message_2</span><span class="o">:</span>
+    <span class="k">pop</span> <span class="n">rcx</span>
+    <span class="k">dec</span> <span class="n">rcx</span>
+    <span class="k">jnz</span> <span class="p">.</span><span class="n">repeat_message_1</span>
+
+    <span class="k">xor</span> <span class="n">rax</span><span class="p">,</span> <span class="n">rax</span>
+    <span class="k">mov</span> <span class="p">[rdi],</span> <span class="n">rax</span>
+
+<span class="p">.</span><span class="n">print_string_builder</span><span class="o">:</span>
+    <span class="k">push</span> <span class="n">rdi</span>
+
+    <span class="k">mov</span> <span class="n">rdi</span><span class="p">,</span> <span class="n">r12</span>
+    <span class="k">xor</span> <span class="n">rax</span><span class="p">,</span> <span class="n">rax</span>
+    <span class="k">call</span> <span class="n">_puts</span>
+
+    <span class="k">pop</span> <span class="n">rdi</span>
+
+<span class="p">.</span><span class="n">free_memory</span><span class="o">:</span>
+    <span class="k">push</span> <span class="n">rdi</span>
+
+    <span class="k">mov</span> <span class="n">rdi</span><span class="p">,</span> <span class="n">r12</span>
+    <span class="k">call</span> <span class="n">_free</span>
+
+    <span class="k">pop</span> <span class="n">rdi</span>
+
+<span class="p">.</span><span class="n">exit_success</span><span class="o">:</span>
+    <span class="k">xor</span> <span class="n">rdi</span><span class="p">,</span> <span class="n">rdi</span>
+    <span class="k">jmp</span> <span class="p">.</span><span class="n">exit</span>
+
+<span class="p">.</span><span class="n">exit_failure</span><span class="o">:</span>
+    <span class="k">mov</span> <span class="n">rdi</span><span class="p">,</span> <span class="mi">1</span>
+
+<span class="p">.</span><span class="n">exit</span><span class="o">:</span>
+    <span class="k">mov</span> <span class="n">rax</span><span class="p">,</span> <span class="mh">0x02000001</span>
+    <span class="k">syscall</span>
+
+<span class="kr">section</span> <span class="p">.</span><span class="n">data</span>
+
+<span class="n">msg</span><span class="o">:</span> <span class="kt">db</span> <span class="s">"Hello, world"</span><span class="p">,</span> <span class="mi">10</span>
+<span class="n">len</span> <span class="k">equ</span> <span class="err">$</span> <span class="o">-</span> <span class="n">msg</span>
+
+<h3>My version with logs</h3>
+
+<p>As Caleb highlights in his blog, a lot of &quot;burden&quot; introduced by many languages (referring to the original blog by Drew DeVault) is the debugging and safety related information.</p>
+
+<p>I went ahead and added few logs, memory deallocation and test for allocation success to the code in Assembly:</p>
+<span class="c">;; compile me on OSX: nasm -fmacho64 helloworld.asm &amp;&amp; ld helloworld.o -lSystem -macosx_version_min 10.13</span>
+<span class="c">;; compile me on Linux: nasm -felf64 helloworld.asm &amp;&amp; ld helloworld.o # AND DO NOT FORGET TO ALIGN WITH THE SYSCALL CONVENTION BY USING STACK INSTEAD OF REGISTERS</span>
+
+<span class="kr">global</span> <span class="n">_main</span> <span class="c">;; a function declaration - an entry point; use `_start` for Linux</span>
+
+<span class="kr">extern</span> <span class="n">_malloc</span><span class="p">,</span> <span class="n">_puts</span><span class="p">,</span> <span class="n">_atoi</span><span class="p">,</span> <span class="n">_printf</span>
+
+<span class="kr">section</span> <span class="p">.</span><span class="n">text</span>
+
+<span class="n">_main</span><span class="o">:</span>
+<span class="p">.</span><span class="n">load_counter</span><span class="o">:</span>
+    <span class="k">push</span> <span class="n">r12</span>
+    <span class="k">push</span> <span class="n">r13</span>
+
+    <span class="k">cmp</span> <span class="n">rdi</span><span class="p">,</span> <span class="mi">2</span> <span class="c">;; check ARGC - program takes exactly ONE argument, so checking if ARGC == 2 (first one being program name)</span>
+    <span class="k">jne</span> <span class="p">.</span><span class="n">exit_failure</span>
+
+<span class="c">;; log</span>
+    <span class="k">mov</span> <span class="n">r12</span><span class="p">,</span> <span class="n">rdi</span> <span class="c">;; store ARGC in R12</span>
+    <span class="k">mov</span> <span class="n">r13</span><span class="p">,</span> <span class="err">[</span><span class="n">rsi</span> <span class="o">+</span> <span class="mi">8</span><span class="err">]</span> <span class="c">;; store the ARGV[2] (by addressing it with *(ARGV + 1)) in R13</span>
+
+    <span class="k">push</span> <span class="n">rsi</span> <span class="c">;; preserve all the used registers on stack - required by OSX calling convention</span>
+    <span class="k">push</span> <span class="n">rdi</span>
+    <span class="k">push</span> <span class="n">rdx</span>
+
+    <span class="k">mov</span> <span class="n">rdi</span><span class="p">,</span> <span class="n">log1</span> <span class="c">;; copy format string to RDI</span>
+    <span class="k">mov</span> <span class="n">rsi</span><span class="p">,</span> <span class="n">r12</span> <span class="c">;; copy first argument for _printf to RSI</span>
+    <span class="k">mov</span> <span class="n">rdx</span><span class="p">,</span> <span class="n">r13</span> <span class="c">;; copy second argument for _printf to RDX</span>
+    <span class="k">xor</span> <span class="n">rax</span><span class="p">,</span> <span class="n">rax</span> <span class="c">;; zero out RAX to enable variable function arguments</span>
+
+    <span class="k">call</span> <span class="n">_printf</span> <span class="c">;; syscall to printf()</span>
+
+    <span class="k">pop</span> <span class="n">rdx</span> <span class="c">;; restore the registers' values</span>
+    <span class="k">pop</span> <span class="n">rdi</span>
+    <span class="k">pop</span> <span class="n">rsi</span>
+
+<span class="c">;; end log</span>
+
+    <span class="c">; mov r12, rsi ;; pointer to argv (which is a pointer on its own)</span>
+
+    <span class="k">push</span> <span class="n">rdi</span>
+
+    <span class="k">mov</span> <span class="n">rdi</span><span class="p">,</span> <span class="n">r13</span> <span class="c">;; move the address of argv[1] (r12 + 0 =&gt; argv[0], r12 + 8 =&gt; argv[1]) to rdi</span>
+    <span class="k">call</span> <span class="n">_atoi</span> <span class="c">;; convert char* argv[1] to int and store the result in rax</span>
+
+    <span class="k">mov</span> <span class="n">r13</span><span class="p">,</span> <span class="n">rax</span> <span class="c">;; store counter as int in r13</span>
+
+    <span class="k">pop</span> <span class="n">rdi</span>
+
+<span class="c">;; log</span>
+
+    <span class="k">push</span> <span class="n">rdi</span>
+    <span class="k">push</span> <span class="n">rsi</span>
+
+    <span class="k">mov</span> <span class="n">rdi</span><span class="p">,</span> <span class="n">log2</span>
+    <span class="k">mov</span> <span class="n">rsi</span><span class="p">,</span> <span class="n">r13</span>
+    <span class="k">xor</span> <span class="n">rax</span><span class="p">,</span> <span class="n">rax</span>
+    <span class="k">call</span> <span class="n">_printf</span>
+
+    <span class="k">pop</span> <span class="n">rsi</span>
+    <span class="k">pop</span> <span class="n">rdi</span>
+
+<span class="c">;; end log</span>
+
+<span class="p">.</span><span class="n">calculate_memory_length</span><span class="o">:</span>
+    <span class="c">;; rdi = counter * len</span>
+    <span class="k">mov</span> <span class="n">rdi</span><span class="p">,</span> <span class="n">r13</span>
+    <span class="k">mov</span> <span class="n">rax</span><span class="p">,</span> <span class="n">len</span>
+    <span class="k">imul</span> <span class="n">rdi</span><span class="p">,</span> <span class="n">rax</span>
+    <span class="k">inc</span> <span class="n">rdi</span> <span class="c">;; +1 for the terminal character (\0)</span>
+    <span class="k">mov</span> <span class="n">r12</span><span class="p">,</span> <span class="n">rdi</span> <span class="c">;; store total length in r12</span>
+
+<span class="p">.</span><span class="n">allocate_memory</span><span class="o">:</span>
+    <span class="k">push</span> <span class="n">rax</span>
+
+    <span class="k">mov</span> <span class="n">rdi</span><span class="p">,</span> <span class="n">r12</span> <span class="c">;; number of bytes to allocate</span>
+    <span class="k">xor</span> <span class="n">rax</span><span class="p">,</span> <span class="n">rax</span>
+    <span class="k">call</span> <span class="n">_malloc</span>
+
+    <span class="k">test</span> <span class="n">rax</span><span class="p">,</span> <span class="n">rax</span> <span class="c">;; test the return code of _malloc syscall</span>
+    <span class="k">jz</span> <span class="p">.</span><span class="n">exit_failure</span> <span class="c">;; if it is an error - go to exit(1)</span>
+
+    <span class="k">mov</span> <span class="n">r12</span><span class="p">,</span> <span class="n">rax</span> <span class="c">;; store address in r12</span>
+
+    <span class="k">pop</span> <span class="n">rax</span>
+
+<span class="p">.</span><span class="n">repeat_message</span><span class="o">:</span>
+    <span class="k">mov</span> <span class="n">rcx</span><span class="p">,</span> <span class="n">r13</span> <span class="c">;; set outer loop counter to COUNTER</span>
+    <span class="k">mov</span> <span class="n">rdi</span><span class="p">,</span> <span class="n">r12</span> <span class="c">;; set destination address to the stored address from malloc call</span>
+
+<span class="p">.</span><span class="n">repeat_message_1</span><span class="o">:</span>
+    <span class="k">push</span> <span class="n">rcx</span> <span class="c">;; push outer loop counter onto stack - we don't need it just yet, but will need it after the inner loop is done</span>
+    <span class="k">lea</span> <span class="n">rsi</span><span class="p">,</span> <span class="err">[</span><span class="n">rel</span> <span class="n">msg</span><span class="err">]</span> <span class="c">;; load address of our message to repeat into the source address</span>
+    <span class="k">mov</span> <span class="n">rcx</span><span class="p">,</span> <span class="n">len</span> <span class="c">;; set inner loop counter to the length of a message</span>
+    <span class="k">cld</span> <span class="c">;; reset the string copying direction flag</span>
+
+<span class="p">.</span><span class="n">copy_message</span><span class="o">:</span>
+    <span class="k">mov</span> <span class="n">rax</span><span class="p">,</span> <span class="p">[rsi]</span> <span class="c">;; load the next byte from the source memory</span>
+    <span class="k">mov</span> <span class="p">[rdi],</span> <span class="n">rax</span> <span class="c">;; copy the loaded byte to the destination memory</span>
+    <span class="k">inc</span> <span class="n">rsi</span> <span class="c">;; advance source pointer</span>
+    <span class="k">inc</span> <span class="n">rdi</span> <span class="c">;; advamce destimation pointer</span>
+    <span class="k">dec</span> <span class="n">rcx</span> <span class="c">;; decrease the inner loop counter</span>
+    <span class="k">jnz</span> <span class="p">.</span><span class="n">copy_message</span>
+
+<span class="p">.</span><span class="n">repeat_message_2</span><span class="o">:</span>
+    <span class="k">pop</span> <span class="n">rcx</span> <span class="c">;; restore the outer loop counter</span>
+    <span class="k">dec</span> <span class="n">rcx</span> <span class="c">;; decrement the outer loop counter</span>
+    <span class="k">jnz</span> <span class="p">.</span><span class="n">repeat_message_1</span>
+
+    <span class="k">xor</span> <span class="n">rax</span><span class="p">,</span> <span class="n">rax</span>
+    <span class="k">mov</span> <span class="p">[rdi],</span> <span class="n">rax</span> <span class="c">;; put \0 at current RDI</span>
+
+<span class="p">.</span><span class="n">print_string_builder</span><span class="o">:</span>
+    <span class="k">push</span> <span class="n">rdi</span>
+
+    <span class="k">mov</span> <span class="n">rdi</span><span class="p">,</span> <span class="n">r12</span> <span class="c">;; set first argument to the allocated memory start</span>
+    <span class="k">xor</span> <span class="n">rax</span><span class="p">,</span> <span class="n">rax</span>
+    <span class="k">call</span> <span class="n">_puts</span>
+
+    <span class="k">pop</span> <span class="n">rdi</span>
+
+<span class="p">.</span><span class="n">exit_success</span><span class="o">:</span>
+    <span class="k">xor</span> <span class="n">rdi</span><span class="p">,</span> <span class="n">rdi</span> <span class="c">;; exit argument - exit status - 0</span>
+    <span class="k">jmp</span> <span class="p">.</span><span class="n">exit</span>
+
+<span class="p">.</span><span class="n">exit_failure</span><span class="o">:</span>
+    <span class="k">mov</span> <span class="n">rdi</span><span class="p">,</span> <span class="mi">1</span>
+
+<span class="p">.</span><span class="n">exit</span><span class="o">:</span>
+    <span class="k">mov</span> <span class="n">rax</span><span class="p">,</span> <span class="mh">0x02000001</span> <span class="c">;; syscall id - exit; use `60` for Linux</span>
+    <span class="k">syscall</span>
+
+<span class="kr">section</span> <span class="p">.</span><span class="n">data</span>
+
+<span class="n">msg</span><span class="o">:</span> <span class="kt">db</span> <span class="s">"Hello, world"</span><span class="p">,</span> <span class="mi">10</span>
+<span class="n">len</span> <span class="k">equ</span> <span class="err">$</span> <span class="o">-</span> <span class="n">msg</span>
+
+<span class="n">log1</span><span class="o">:</span> <span class="kt">db</span> <span class="s">"argc = %d, argv[1] = %s"</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span>
+<span class="n">log2</span><span class="o">:</span> <span class="kt">db</span> <span class="s">"atoi = %d"</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span>
+
+<h2>Comparison</h2>
+
+<p>Finally, I ran the aforementioned programs with the following arguments: <code>1M</code>, <code>2.5M</code>, <code>5M</code>, <code>7.5M</code>, <code>10M</code>, <code>12.5M</code>, <code>15M</code> and <code>17.5M</code> (where <code>M</code> stands for &quot;million&quot;).</p>
+
+<p>The results became more reasonable:</p>
+
+<p><img alt="" data-src="/images/a-response-to-response-to-hello-world/go_vs_asm_hello_world-min.png"></p>
+
+<!--
+```
+[
+  [1000000, "./helloworld1", 0.85],
+  [1000000, "go run go/helloworld1.go", 1.135],
+  [1000000, "./helloworld3", 0.03],
+  [1000000, "go run go/helloworld2.go", 0.352],
+  [2500000, "./helloworld1", 2.074],
+  [2500000, "go run go/helloworld1.go", 2.419],
+  [2500000, "./helloworld3", 0.056],
+  [2500000, "go run go/helloworld2.go", 0.4],
+  [5000000, "./helloworld1", 4.376],
+  [5000000, "go run go/helloworld1.go", 4.516],
+  [5000000, "./helloworld3", 0.097],
+  [5000000, "go run go/helloworld2.go", 0.473],
+  [7500000, "./helloworld1", 6.274],
+  [7500000, "go run go/helloworld1.go", 6.535],
+  [7500000, "./helloworld3", 0.154],
+  [7500000, "go run go/helloworld2.go", 0.794],
+  [10000000, "./helloworld1", 8.352],
+  [10000000, "go run go/helloworld1.go", 8.693],
+  [10000000, "./helloworld3", 0.223],
+  [10000000, "go run go/helloworld2.go", 0.656],
+  [12500000, "./helloworld1", 10.567],
+  [12500000, "go run go/helloworld1.go", 10.883],
+  [12500000, "./helloworld3", 0.227],
+  [12500000, "go run go/helloworld2.go", 0.721],
+  [15000000, "./helloworld1", 12.529],
+  [15000000, "go run go/helloworld1.go", 13.844],
+  [15000000, "./helloworld3", 0.373],
+  [15000000, "go run go/helloworld2.go", 0.881],
+  [17500000, "./helloworld1", 16.307],
+  [17500000, "go run go/helloworld1.go", 15.158],
+  [17500000, "./helloworld3", 0.36],
+  [17500000, "go run go/helloworld2.go", 1.039]
+]
+```
+
+```
+[
+  [1000000, "./helloworld1", 0.837],
+  [1000000, "./go/helloworld1", 1.395],
+  [1000000, "./helloworld3", 0.03],
+  [1000000, "./go/helloworld2", 0.51],
+  [2500000, "./helloworld1", 2.1],
+  [2500000, "./go/helloworld1", 2.36],
+  [2500000, "./helloworld3", 0.062],
+  [2500000, "./go/helloworld2", 0.094],
+  [5000000, "./helloworld1", 4.203],
+  [5000000, "./go/helloworld1", 4.201],
+  [5000000, "./helloworld3", 0.113],
+  [5000000, "./go/helloworld2", 0.171],
+  [7500000, "./helloworld1", 6.238],
+  [7500000, "./go/helloworld1", 6.197],
+  [7500000, "./helloworld3", 0.17],
+  [7500000, "./go/helloworld2", 0.26],
+  [10000000, "./helloworld1", 8.226],
+  [10000000, "./go/helloworld1", 8.355],
+  [10000000, "./helloworld3", 0.219],
+  [10000000, "./go/helloworld2", 0.335],
+  [12500000, "./helloworld1", 10.359],
+  [12500000, "./go/helloworld1", 10.571],
+  [12500000, "./helloworld3", 0.258],
+  [12500000, "./go/helloworld2", 0.458],
+  [15000000, "./helloworld1", 13.388],
+  [15000000, "./go/helloworld1", 12.554],
+  [15000000, "./helloworld3", 0.319],
+  [15000000, "./go/helloworld2", 0.498],
+  [17500000, "./helloworld1", 14.625],
+  [17500000, "./go/helloworld1", 14.529],
+  [17500000, "./helloworld3", 0.347],
+  [17500000, "./go/helloworld2", 0.575]
+]
+```
+-->

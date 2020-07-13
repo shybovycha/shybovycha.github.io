@@ -1,0 +1,104 @@
+<meta name="layout" content="post">
+<meta name="title" content="Rails tips">
+<meta name="date" content="2015-02-09T10:09:30+01:00">
+<meta name="tags" content="rtfm,tutorial,rails,programming">
+<meta name="tumblr_url" content="http://shybovycha.tumblr.com/post/110527446781/rails-tips">
+<p>Found these on HabraHabr today. Here are some tricks I found usefull.</p>
+
+<h2>Private methods are not actually private</h2>
+
+<p>Let us have class:</p>
+<span class="k">class</span> <span class="nc">Moo</span>
+  <span class="kp">private</span>
+
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">foo</span>
+    <span class="nb">puts</span> <span class="s1">'foo'</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<p>Here, class method <code>foo</code> is not private:</p>
+<span class="no">Foo</span><span class="p">.</span><span class="nf">foo</span>
+<span class="o">=&gt;</span> <span class="s1">'foo'</span>
+
+<h2>Instance with params</h2>
+
+<p>Oftenly there is a need to create a class instance and set it some params (or, maybe, call some methods on it). It's done usually like this:</p>
+<span class="n">moo</span> <span class="o">=</span> <span class="no">Moo</span><span class="p">.</span><span class="nf">new</span>
+<span class="n">moo</span><span class="p">.</span><span class="nf">foo</span> <span class="o">=</span> <span class="s1">'foo'</span>
+<span class="n">moo</span><span class="p">.</span><span class="nf">bar</span>
+
+<p>This can be shortened with the use of `tap` method:</p>
+<span class="n">moo</span> <span class="o">=</span> <span class="no">Moo</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">tap</span> <span class="p">{</span> <span class="o">|</span><span class="n">a</span><span class="o">|</span> <span class="n">a</span><span class="p">.</span><span class="nf">foo</span> <span class="o">=</span> <span class="s1">'foo'</span><span class="p">;</span> <span class="n">a</span><span class="p">.</span><span class="nf">bar</span> <span class="p">}</span>
+
+<p>Yet, it is more ruby-convenient and ruby-style to do it with the initialization block:</p>
+<span class="k">class</span> <span class="nc">Moo</span>
+  <span class="nb">attr_accessor</span> <span class="ss">:foo</span>
+
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="k">yield</span> <span class="nb">self</span> <span class="k">if</span> <span class="nb">block_given?</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">bar</span>
+    <span class="nb">puts</span> <span class="s2">"bar!"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="n">moo</span> <span class="o">=</span> <span class="no">Moo</span><span class="p">.</span><span class="nf">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">a</span><span class="o">|</span>
+  <span class="n">a</span><span class="p">.</span><span class="nf">foo</span> <span class="o">=</span> <span class="s1">'foo'</span>
+  <span class="n">a</span><span class="p">.</span><span class="nf">bar</span>
+<span class="k">end</span>
+
+<span class="nb">puts</span> <span class="n">moo</span><span class="p">.</span><span class="nf">foo</span>
+
+<p>Or even like this:</p>
+<span class="k">class</span> <span class="nc">Moo</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="nb">instance_eval</span> <span class="o">&amp;</span><span class="n">block</span> <span class="k">if</span> <span class="nb">block_given?</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">moo</span><span class="p">(</span><span class="n">val</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">)</span>
+    <span class="vi">@moo</span> <span class="o">=</span> <span class="n">val</span> <span class="k">unless</span> <span class="n">val</span><span class="p">.</span><span class="nf">nil?</span>
+    <span class="vi">@moo</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">bar</span>
+    <span class="nb">puts</span> <span class="s2">"bar!"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="no">Moo</span><span class="p">.</span><span class="nf">new</span> <span class="k">do</span>
+  <span class="n">moo</span> <span class="s1">'moo~!'</span>
+  <span class="n">bar</span>
+<span class="k">end</span>
+
+<span class="nb">puts</span> <span class="n">a</span><span class="p">.</span><span class="nf">moo</span>
+
+<h2>Code-dependent migrations</h2>
+
+<p>When you have your migrations using your code, for example, like this:</p>
+<span class="k">class</span> <span class="nc">CreateDataVolumes</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">up</span>
+    <span class="no">Data</span><span class="o">::</span><span class="no">VOLUMES</span><span class="p">.</span><span class="nf">times</span> <span class="k">do</span> <span class="o">|</span><span class="n">volume</span><span class="o">|</span>
+      <span class="n">create_table</span> <span class="s2">"data_</span><span class="si">#{</span><span class="n">volume</span><span class="si">}</span><span class="s2">"</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+        <span class="c1"># ...</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<p>you then have a problem when updating your code. In our example, if you remove the constant <code>Data::VOLUMES</code>, you will have to either manually search for all the usages of this constant, or have a really <em>intelliJent</em> IDE ;)</p>
+
+<p>Rather than using your existing code, stub it and copy-and-paste all migration-dependent code to the stubbing class:</p>
+<span class="k">class</span> <span class="nc">CreateDataVolumes</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">class</span> <span class="nc">Data</span> <span class="o">&lt;</span> <span class="no">AR</span><span class="o">::</span><span class="no">Base</span>
+    <span class="no">VOLUMES</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">up</span>
+    <span class="no">Data</span><span class="o">::</span><span class="no">VOLUMES</span><span class="p">.</span><span class="nf">times</span> <span class="k">do</span> <span class="o">|</span><span class="n">volume</span><span class="o">|</span>
+      <span class="c1"># ...</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<p>Example with constant is rather stupid, whilst you may have some more critical code.</p>

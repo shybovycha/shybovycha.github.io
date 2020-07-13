@@ -1,0 +1,117 @@
+<meta name="layout" content="post">
+<meta name="title" content="Microsoft' error messages cipher">
+<meta name="date" content="2015-01-09T21:43:12+01:00">
+<meta name="tags" content="programming,rtfm,fun,sql">
+<meta name="tumblr_url" content="http://shybovycha.tumblr.com/post/107622125006/microsoft-error-messages-cipher">
+<p>I have a T-SQL trigger creation script, which runs OK:</p>
+<span class="k">CREATE</span> <span class="k">TRIGGER</span> <span class="n">data_modified</span> <span class="k">ON</span> <span class="n">Northwind</span><span class="p">.</span><span class="n">dbo</span><span class="p">.</span><span class="n">Customers</span> <span class="k">FOR</span> <span class="k">INSERT</span><span class="p">,</span> <span class="k">UPDATE</span><span class="p">,</span> <span class="k">DELETE</span>
+<span class="k">AS</span>
+
+<span class="k">declare</span> <span class="o">@</span><span class="k">rows</span> <span class="k">as</span> <span class="nb">int</span><span class="p">;</span>
+<span class="k">set</span> <span class="o">@</span><span class="k">rows</span> <span class="o">=</span> <span class="o">@@</span><span class="n">ROWCOUNT</span><span class="p">;</span>
+
+<span class="n">IF</span> <span class="o">@</span><span class="k">rows</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">BEGIN</span>
+    <span class="n">print</span> <span class="s1">'no rows were affected'</span><span class="p">;</span>
+    <span class="k">return</span><span class="p">;</span>
+<span class="k">end</span>
+
+<span class="n">if</span> <span class="k">exists</span><span class="p">(</span><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">inserted</span><span class="p">)</span>
+<span class="k">begin</span>
+    <span class="n">if</span> <span class="k">exists</span><span class="p">(</span><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">deleted</span><span class="p">)</span>
+    <span class="k">begin</span>
+        <span class="n">print</span> <span class="s1">'updated '</span> <span class="o">+</span> <span class="o">@</span><span class="k">rows</span> <span class="o">+</span> <span class="s1">' rows'</span><span class="p">;</span>
+    <span class="k">end</span>
+    <span class="k">else</span>
+    <span class="k">begin</span>
+        <span class="n">print</span> <span class="s1">'inserted '</span> <span class="o">+</span> <span class="o">@</span><span class="k">rows</span> <span class="o">+</span> <span class="s1">' rows'</span><span class="p">;</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+<span class="k">else</span>
+<span class="k">begin</span>
+    <span class="n">print</span> <span class="s1">'deleted '</span> <span class="o">+</span> <span class="o">@</span><span class="k">rows</span> <span class="o">+</span> <span class="s1">' rows'</span><span class="p">;</span>
+<span class="k">end</span>
+
+<p>Yet, when I run some <code>INSERT</code> query, I got an error saying:</p>
+<span class="n">Msg</span> <span class="mi">245</span><span class="p">,</span> <span class="k">Level</span> <span class="mi">16</span><span class="p">,</span> <span class="k">State</span> <span class="mi">1</span><span class="p">,</span> <span class="k">Procedure</span> <span class="n">data_modified</span><span class="p">,</span> <span class="n">Line</span> <span class="mi">21</span>
+<span class="k">Conversion</span> <span class="n">failed</span> <span class="k">when</span> <span class="n">converting</span> <span class="n">the</span> <span class="nb">varchar</span> <span class="n">value</span> <span class="s1">'inserted '</span> <span class="k">to</span> <span class="k">data</span> <span class="k">type</span> <span class="nb">int</span><span class="p">.</span>
+
+<p>Let&#39;s look onto the source of that trigger, at line 18:</p>
+<span class="n">USE</span> <span class="p">[</span><span class="n">Northwind</span><span class="p">]</span>
+<span class="k">GO</span>
+<span class="cm">/****** Object:  Trigger [dbo].[data_modified]    Script Date: 09.01.2015 18:18:14 ******/</span>
+<span class="k">SET</span> <span class="n">ANSI_NULLS</span> <span class="k">ON</span>
+<span class="k">GO</span>
+<span class="k">SET</span> <span class="n">QUOTED_IDENTIFIER</span> <span class="k">ON</span>
+<span class="k">GO</span>
+    <span class="k">ALTER</span> <span class="k">TRIGGER</span> <span class="p">[</span><span class="n">dbo</span><span class="p">].[</span><span class="n">data_modified</span><span class="p">]</span> <span class="k">ON</span> <span class="p">[</span><span class="n">Northwind</span><span class="p">].[</span><span class="n">dbo</span><span class="p">].[</span><span class="n">Customers</span><span class="p">]</span> <span class="k">FOR</span> <span class="k">INSERT</span><span class="p">,</span> <span class="k">UPDATE</span><span class="p">,</span> <span class="k">DELETE</span>
+    <span class="k">AS</span>
+
+    <span class="k">declare</span> <span class="o">@</span><span class="k">rows</span> <span class="k">as</span> <span class="nb">int</span><span class="p">;</span>
+    <span class="k">set</span> <span class="o">@</span><span class="k">rows</span> <span class="o">=</span> <span class="o">@@</span><span class="n">ROWCOUNT</span><span class="p">;</span>
+
+    <span class="n">IF</span> <span class="o">@</span><span class="k">rows</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">BEGIN</span>
+        <span class="n">print</span> <span class="s1">'no rows were affected'</span><span class="p">;</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="k">end</span>
+
+    <span class="n">if</span> <span class="k">exists</span><span class="p">(</span><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">inserted</span><span class="p">)</span>
+    <span class="k">begin</span>
+        <span class="n">if</span> <span class="k">exists</span><span class="p">(</span><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">deleted</span><span class="p">)</span>
+        <span class="k">begin</span>
+            <span class="n">print</span> <span class="s1">'updated '</span> <span class="o">+</span> <span class="o">@</span><span class="k">rows</span> <span class="o">+</span> <span class="s1">' rows'</span><span class="p">;</span>
+        <span class="k">end</span>
+        <span class="k">else</span>
+        <span class="k">begin</span>
+            <span class="n">print</span> <span class="s1">'inserted '</span> <span class="o">+</span> <span class="o">@</span><span class="k">rows</span> <span class="o">+</span> <span class="s1">' rows'</span><span class="p">;</span>
+        <span class="k">end</span>
+    <span class="k">end</span>
+    <span class="k">else</span>
+    <span class="k">begin</span>
+        <span class="n">print</span> <span class="s1">'deleted '</span> <span class="o">+</span> <span class="o">@</span><span class="k">rows</span> <span class="o">+</span> <span class="s1">' rows'</span><span class="p">;</span>
+    <span class="k">end</span>
+
+<p>Here&#39;s the error:</p>
+<span class="n">if</span> <span class="k">exists</span><span class="p">(</span><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">inserted</span><span class="p">)</span>
+
+<p>But wait, that can&#39;t be true!</p>
+
+<p>The problem is a bit deeper, with the <code>@rows</code> variable:</p>
+<span class="n">print</span> <span class="s1">'updated '</span> <span class="o">+</span> <span class="o">@</span><span class="k">rows</span> <span class="o">+</span> <span class="s1">' rows'</span><span class="p">;</span>
+
+<p>while being declared as:</p>
+<span class="k">declare</span> <span class="o">@</span><span class="k">rows</span> <span class="k">as</span> <span class="nb">int</span><span class="p">;</span>
+
+<p>It can not be printed right away, so it needs to be cast:</p>
+<span class="k">CREATE</span> <span class="k">TRIGGER</span> <span class="n">data_modified</span> <span class="k">ON</span> <span class="n">Northwind</span><span class="p">.</span><span class="n">dbo</span><span class="p">.</span><span class="n">Customers</span> <span class="k">FOR</span> <span class="k">INSERT</span><span class="p">,</span> <span class="k">UPDATE</span><span class="p">,</span> <span class="k">DELETE</span>
+<span class="k">AS</span>
+
+<span class="k">declare</span> <span class="o">@</span><span class="k">rows</span> <span class="k">as</span> <span class="nb">int</span><span class="p">;</span>
+<span class="k">declare</span> <span class="o">@</span><span class="n">rows_s</span> <span class="k">as</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
+<span class="k">set</span> <span class="o">@</span><span class="k">rows</span> <span class="o">=</span> <span class="o">@@</span><span class="n">ROWCOUNT</span><span class="p">;</span>
+<span class="k">set</span> <span class="o">@</span><span class="n">rows_s</span> <span class="o">=</span> <span class="k">cast</span><span class="p">(</span><span class="o">@</span><span class="k">rows</span> <span class="k">as</span> <span class="nb">varchar</span><span class="p">);</span>
+
+<span class="n">IF</span> <span class="o">@</span><span class="k">rows</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">BEGIN</span>
+    <span class="n">print</span> <span class="s1">'no rows were affected'</span><span class="p">;</span>
+    <span class="k">return</span><span class="p">;</span>
+<span class="k">end</span>
+
+<span class="n">if</span> <span class="k">exists</span><span class="p">(</span><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">inserted</span><span class="p">)</span>
+<span class="k">begin</span>
+    <span class="n">if</span> <span class="k">exists</span><span class="p">(</span><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">deleted</span><span class="p">)</span>
+    <span class="k">begin</span>
+        <span class="n">print</span> <span class="s1">'updated '</span> <span class="o">+</span> <span class="o">@</span><span class="n">rows_s</span> <span class="o">+</span> <span class="s1">' rows'</span><span class="p">;</span>
+    <span class="k">end</span>
+    <span class="k">else</span>
+    <span class="k">begin</span>
+        <span class="n">print</span> <span class="s1">'inserted '</span> <span class="o">+</span> <span class="o">@</span><span class="n">rows_s</span> <span class="o">+</span> <span class="s1">' rows'</span><span class="p">;</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+<span class="k">else</span>
+<span class="k">begin</span>
+    <span class="n">print</span> <span class="s1">'deleted '</span> <span class="o">+</span> <span class="o">@</span><span class="n">rows_s</span> <span class="o">+</span> <span class="s1">' rows'</span><span class="p">;</span>
+<span class="k">end</span>
+
+<p>Try to guess where&#39;s your mistake, using that error message! ;)</p>
