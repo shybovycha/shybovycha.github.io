@@ -267,4 +267,6 @@ if (nowOnScale >= xScale.range()[0] && nowOnScale <= xScale.range()[1]) {
 
 ## To be continued
 
+The source code of this implementation could be found on [Github](https://github.com/shybovycha/gantt-chart).
+
 I think that is enough for now, but it is not the end! There's still some work to be done in removing the D3 from this setup completely, so stay tuned!
