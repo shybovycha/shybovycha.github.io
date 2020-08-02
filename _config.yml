@@ -38,3 +38,4 @@ plugins:
 exclude:
   - _plugins
   - _data
+  - word_list.json

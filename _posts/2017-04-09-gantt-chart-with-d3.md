@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Gantt chart with D3.js
+title: Gantt chart with D3
 date: '2017-04-09T11:04:24+02:00'
 ---
 
@@ -25,7 +25,11 @@ Here's how the result looked like:
 
 <img data-src="/images/gantt_chart_with_d3/d3-gantt-chart_optimized.png" alt="">
 
-The full implementation code is under the cut.
+The implementation details are under the cut.
+
+## Update August 2020
+
+There are few updates to this original implementation coming up soon.
 
 <!--more-->
 
@@ -385,3 +389,9 @@ createGanttChart(document.querySelector('body'), data, {
   }
 });
 ```
+
+A lot of things are happening here. In short, here are few key points:
+
+* we have to render entities (milestones, lines, labels) in a specific "layered" order, to prevent one set of things covering the other
+* it is both good for performance and is kind of a requirement to calculate the data before rendering it
+
