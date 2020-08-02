@@ -23,10 +23,8 @@
 
     // defer loading images
     const images = Array.from(document.querySelectorAll('img[data-src]'));
-    let visibleImages = [];
-    let invisibleImages = [];
-
-    images.forEach(imgElt => (elementInViewport(imgElt) ? visibleImages : invisibleImages).push(imgElt));
+    let visibleImages = images.filter(img => elementInViewport(img));
+    let invisibleImages = images.filter(img => !elementInViewport(img));
 
     // immediately load visible images
     setTimeout(() => visibleImages.forEach(lazyLoadImage), 0);

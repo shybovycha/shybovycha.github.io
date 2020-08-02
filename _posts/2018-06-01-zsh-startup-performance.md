@@ -85,24 +85,28 @@ zsh -i -c exit  1.17s user 0.74s system 99% cpu 1.916 total
 
 If you follow this [simple instruction](http://www.growingwiththeweb.com/2018/01/slow-nvm-init.html) or just replace these two lines, initializing NVM in your `~/.zshrc` file:
 
-```
+```bash
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 ```
 
 with these lines:
 
-```
+```bash
 if [ -s "$HOME/.nvm/nvm.sh" ] && [ ! "$(type __init_nvm)" = function ]; then
  export NVM_DIR="$HOME/.nvm"
+
  [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+
  declare -a __node_commands=('nvm' 'node' 'npm' 'yarn' 'gulp' 'grunt' 'webpack')
+
  function __init_nvm() {
    for i in "${__node_commands[@]}"; do unalias $i; done
    . "$NVM_DIR"/nvm.sh
    unset __node_commands
    unset -f __init_nvm
  }
+
  for i in "${__node_commands[@]}"; do alias $i='__init_nvm && '$i; done
 fi
 ```

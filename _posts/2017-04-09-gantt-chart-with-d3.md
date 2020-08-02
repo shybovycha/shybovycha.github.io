@@ -48,9 +48,12 @@ The last piece of an algorithm is generating SVG. This is where D3 strikes in an
 The implementation is below and the live demo is [here](https://codepen.io/shybovycha/pen/vxdePv)
 
 ```js
+import * as d3 from 'd3';
+import moment from 'moment';
+
 const prepareDataElement = ({ id, label, startDate, endDate, duration, dependsOn }) => {
   if ((!startDate || !endDate) && !duration) {
-    throw new Exception('Wrong element format: should contain either startDate and duration, or endDate and duration or startDate and endDate');
+    throw new Error('Wrong element format: should contain either startDate and duration, or endDate and duration or startDate and endDate');
   }
 
   if (startDate) startDate = moment(startDate);
@@ -99,7 +102,7 @@ const findDateBoundaries = data => {
   };
 };
 
-const createDataCacheById = data => data.reduce((cache, elt) => Object.assign(cache, { [elt.id]: elt }), {});
+const createDataCacheById = data => data.reduce((cache, elt) => ({ ...cache, [elt.id]: elt }), {});
 
 const createChildrenCache = data => {
   const dataCache = createDataCacheById(data);
@@ -160,7 +163,7 @@ const createPolylineData = (rectangleData, elementHeight) => {
   const cachedData = createDataCacheById(rectangleData);
 
   // used to calculate offsets between elements later
-  const storedConnections = rectangleData.reduce((acc, e) => Object.assign(acc, { [e.id]: 0 }), {});
+  const storedConnections = rectangleData.reduce((acc, e) => ({ ...acc, [e.id]: 0 }), {});
 
   // create data describing connections' lines
   return rectangleData.flatMap(d =>
@@ -234,7 +237,7 @@ const createElementData = (data, elementHeight, xScale, fontSize) =>
     };
   });
 
-const createChartSVG = (data, placeholder, { svgWidth, svgHeight, elementHeight, scaleWidth, scaleHeight, fontSize, minStartDate, maxEndDate, margin, showRelations }) => {
+const createChartSVG = (data, placeholder, { svgWidth, svgHeight, elementHeight, scaleWidth, fontSize, minStartDate, maxEndDate, margin, showRelations }) => {
   // create container element for the whole chart
   const svg = d3.select(placeholder).append('svg').attr('width', svgWidth).attr('height', svgHeight);
 
@@ -245,15 +248,29 @@ const createChartSVG = (data, placeholder, { svgWidth, svgHeight, elementHeight,
   // prepare data for every data element
   const rectangleData = createElementData(data, elementHeight, xScale, fontSize);
 
-  // create data describing connections' lines
-  const polylineData = createPolylineData(rectangleData, elementHeight);
-
   const xAxis = d3.axisBottom(xScale);
 
   // create container for the data
   const g1 = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
-  const linesContainer = g1.append('g').attr('transform', `translate(0,${margin.top})`);
+  // add milestone relationship lines to the SVG
+  if (showRelations) {
+    // create data describing connections' lines
+    const polylineData = createPolylineData(rectangleData, elementHeight);
+
+    const linesContainer = g1.append('g').attr('transform', `translate(0,${margin.top})`);
+
+    linesContainer
+      .selectAll('polyline')
+      .data(polylineData)
+      .enter()
+      .append('polyline')
+      .style('fill', 'none')
+      .style('stroke', d => d.color)
+      .attr('points', d => d.points);
+  }
+
+  // append milestones only after we have rendered the connections to prevent lines overlapping the milestones
   const barsContainer = g1.append('g').attr('transform', `translate(0,${margin.top})`);
 
   g1.append('g').call(xAxis);
@@ -264,18 +281,6 @@ const createChartSVG = (data, placeholder, { svgWidth, svgHeight, elementHeight,
     .data(rectangleData)
     .enter()
     .append('g');
-
-  // add stuff to the SVG
-  if (showRelations) {
-    linesContainer
-      .selectAll('polyline')
-      .data(polylineData)
-      .enter()
-      .append('polyline')
-      .style('fill', 'none')
-      .style('stroke', d => d.color)
-      .attr('points', d => d.points);
-  }
 
   bars
     .append('rect')
@@ -301,7 +306,7 @@ const createChartSVG = (data, placeholder, { svgWidth, svgHeight, elementHeight,
     .text(d => d.tooltip);
 };
 
-const createGanttChart = (placeholder, data, { elementHeight, sortMode, showRelations, svgOptions }) => {
+export const createGanttChart = (placeholder, data, { elementHeight, sortMode = 'date', showRelations = true, svgOptions }) => {
   // prepare data
   const margin = (svgOptions && svgOptions.margin) || {
     top: elementHeight * 2,
@@ -315,10 +320,6 @@ const createGanttChart = (placeholder, data, { elementHeight, sortMode, showRela
   const svgHeight = scaleHeight + (margin.top * 2);
 
   const fontSize = (svgOptions && svgOptions.fontSize) || 12;
-
-  if (!sortMode) sortMode = 'date';
-
-  if (typeof(showRelations) === 'undefined') showRelations = true;
 
   data = parseUserData(data); // transform raw user data to valid values
   data = sortElements(data, sortMode);
@@ -336,37 +337,39 @@ const createGanttChart = (placeholder, data, { elementHeight, sortMode, showRela
 The data format is like follows
 
 ```js
-var data = [{
-  startDate: '2017-02-27',
-  endDate: '2017-03-04',
-  label: 'milestone 01',
-  id: 'm01',
-  dependsOn: []
-}, {
-  startDate: '2017-02-23',
-  endDate: '2017-03-01',
-  label: 'milestone 06',
-  id: 'm06',
-  dependsOn: ['m01']
-}, {
-  duration: [7, 'days'],
-  endDate: '2017-03-24',
-  label: 'milestone 02',
-  id: 'm02',
-  dependsOn: ['m04']
-}, {
-  startDate: '2017-02-27',
-  duration: [12, 'days'],
-  label: 'milestone 03',
-  id: 'm03',
-  dependsOn: ['m01']
-}, {
-  endDate: '2017-03-17',
-  duration: [5, 'days'],
-  label: 'milestone 04',
-  id: 'm04',
-  dependsOn: ['m01']
-}];
+const data = [
+  {
+    startDate: '2017-02-27',
+    endDate: '2017-03-04',
+    label: 'milestone 01',
+    id: 'm01',
+    dependsOn: []
+  }, {
+    startDate: '2017-02-23',
+    endDate: '2017-03-01',
+    label: 'milestone 06',
+    id: 'm06',
+    dependsOn: ['m01']
+  }, {
+    duration: [7, 'days'],
+    endDate: '2017-03-24',
+    label: 'milestone 02',
+    id: 'm02',
+    dependsOn: ['m04']
+  }, {
+    startDate: '2017-02-27',
+    duration: [12, 'days'],
+    label: 'milestone 03',
+    id: 'm03',
+    dependsOn: ['m01']
+  }, {
+    endDate: '2017-03-17',
+    duration: [5, 'days'],
+    label: 'milestone 04',
+    id: 'm04',
+    dependsOn: ['m01']
+  }
+];
 ```
 
 To create a chard on a page, you need to pass the reference to a valid existing DOM element where you want the diagram to appear, the data and the SVG options. These options define the looks of a chart - width, height of an element (rectangle), font size and so on. One more option is
