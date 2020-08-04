@@ -4,6 +4,13 @@ title: Floyd-Warshall algorithm
 date: '2017-09-04T11:38:24+11:00'
 ---
 
+<style>
+    table td {
+        padding: 0.25em 1em;
+        text-align: center;
+    }
+</style>
+
 ## The story behind this post
 
 Recently I've received `+10` karma on StackOverflow. I was curious for what question or answer and clicked to check this. It appeared
