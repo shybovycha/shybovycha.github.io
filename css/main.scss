@@ -4,6 +4,12 @@
 
 @import "syntax-highlighting";
 
+blockquote {
+  border-left: 4px solid #bebebe;
+  padding-left: 1em;
+  font-style: italic;
+}
+
 table {
   border-collapse: collapse;
   border: 1px solid black;

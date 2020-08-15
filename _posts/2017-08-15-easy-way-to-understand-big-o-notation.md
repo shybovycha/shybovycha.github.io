@@ -54,7 +54,7 @@ For part 4, it takes exactly `1` step to return. So the time complexity is `O(1)
 
 Then what is the total time complexity of the whole `fun(n)`? It is easy, we just need to add up the time complexity of all the 4 parts:
 
-```txt
+```
 O(1) + O(n) + O(n^2) + O(1)
 ```
 
@@ -74,7 +74,7 @@ So here is another rule: when we add up big O notation, the notation with slower
 
 From the above examples, we could summarize the following rule: for multiplying two O notations, `O(A)` and `O(B)`, the result is `O(A*B)`. For example:
 
-```txt
+```
 O(1) x O(n) = O(n).
 O(n) x O(n) = O(n^2).
 O(1) + O(n) = O(n).
@@ -84,7 +84,7 @@ O(1) + O(n) + O(n^2) = O(n^2).
 
 Here is the comparison of the increase speed of different O notations:
 
-```txt
+```
 O(1) < O(log(n)) < O(n) < O(n * log(n)) < O(n^2)
 ```
 
@@ -98,7 +98,7 @@ For example, there are two algorithms `f1(n)` and `f2(n)`. `f(1)` takes `100` st
 
 It is easier to understand using big O to estimate space complexity as it is more concrete. For example, in an algorithm, we need to create an array of size `n` to store the temporary results before getting the final result. If we assume that the size of the element in the array is a constant `C` which is independent of `n`, the space complexity of using the array is `C*n` which is
 
-```txt
+```
 O(n) x O(C) = O(n) x O(1) = O(n)
 ```
 

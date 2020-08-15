@@ -11,6 +11,12 @@ body {
   // background: $background-color;
 }
 
+blockquote {
+  border-left: 4px solid #bebebe;
+  padding-left: 1em;
+  font-style: italic;
+}
+
 img {
   &.rounded {
     border-radius: .25rem;
@@ -97,6 +103,7 @@ nav {
     background: $post-background-color;
     margin: 20px 0;
     padding: 30px 25px;
+    content-visibility: auto;
   }
 }
 

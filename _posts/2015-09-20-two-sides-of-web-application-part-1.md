@@ -4,7 +4,7 @@ title: "Two sides of web application. Part 1: the tools"
 date: '2015-09-20T20:18:39+01:00'
 ---
 
-<div class="row">
+<div class="row" style="justify-content: space-between">
     <div class="col-md-6 col-xs-12">
         {% include references/two-sides-of-web-application.html %}
     </div>

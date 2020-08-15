@@ -31,7 +31,7 @@ Belive it or not, but that's all!
 Unzip Irrlicht, go to the directory you unpacked and open the VisualStudio project _(depending on
 VisualStudio version, you might want to open a bit different file)_ in `source/Irrlicht`:
 
-```txt
+```
 Irrlicht10.0.sln
 Irrlicht11.0.sln
 Irrlicht8.0.sln
@@ -87,7 +87,7 @@ Phew! That's a damn bunch of commands, don't you think?
 By performing those steps, described above, you will end up with the compiled Irrlicht library file
 within the `lib/` directory, depending on your platform:
 
-```txt
+```
 Linux/libIrrlicht.a
 MacOSX/libIrrlicht.a
 Win32-visualstudio/Irrlicht.lib
@@ -646,7 +646,7 @@ but you will see the power of CMake in our later sessions.
 Before you run the application, copy the whole `media` directory from the Irrlicht
 dir to the parent dir of your project. You should end up with directory structure like this:
 
-```txt
+```
 .
 └── irrlicht_newton_tutorials
     ├── irrlicht_newton_game1
@@ -663,7 +663,7 @@ to pack your application as OSX application. This is easy, though: just create
 a directory tree `mkdir -p irrlicht_newton_game1.app/Contents/MacOS/` and move
 your binary file there:
 
-```txt
+```
 ├── irrlicht_newton_game1.app
 │   └── Contents
 │       └── MacOS

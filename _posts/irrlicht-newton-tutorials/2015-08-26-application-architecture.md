@@ -14,7 +14,7 @@ prevent suffering in the future.
 Well, there are number of application architecture' levels:
 
 <div class="row">
-    <div class="col">
+    <div class="col" style="margin-right: 1em;">
         <img data-src="/images/irrlicht-newton-tutorials/japan_feudal_system.jpg" />
     </div>
     <div class="col">
