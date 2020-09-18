@@ -17,7 +17,7 @@ Mosin-Nagant - under the magnifying glass you can see the blood.
 
 M16 - jams when dirty.
 AK-47 - works when dirty.
-Mosin-Nagant - was not clean since supplied in 1892.
+Mosin-Nagant - was not clean since issued back in 1892.
 
 M16 - Hundreds of small moving parts, held in place by dozens of bolts and nuts.
 AK-47 - few dozens of moving parts, held by a handful of rivets and ugly welds made by a drunken russian welder.
