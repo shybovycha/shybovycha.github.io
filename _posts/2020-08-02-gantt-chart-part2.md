@@ -4,7 +4,7 @@ title: Gantt chart with D3. Part 2
 date: '2020-08-02T15:04:24+10:00'
 ---
 
-This is a follow-up to the blog I wrote a bit over three years ago, [Gantt chart with D3]({% post_url 2017-04-09-gantt-chart-with-d3 %}])
+This is a follow-up to the blog I wrote a bit over three years ago, [Gantt chart with D3]({% post_url 2017-04-09-gantt-chart-with-d3 %})
 
 In the original blog I claimed to implement something like this:
 
