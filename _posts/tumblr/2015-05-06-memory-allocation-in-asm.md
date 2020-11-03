@@ -17,7 +17,7 @@ Currently I am working on a long arithmetic problem at the university. This prob
 <!--more-->
 Thus, I created this piece of snippet code:
 
-```
+```nasm
 ; void addition(int* x, int x_len, int* y, int y_len, int* &z, int* z_len);
 global _Z8additionPiiS_iRS_S_
 _Z8additionPiiS_iRS_S_:
@@ -113,17 +113,17 @@ Comments in the code describe those moments which are important.
 
 To compile these codes and link them into one executable, use these:
 
-```
-nasm -g -felf32 test.asm -o test_asm.o
-g++ -g test.cpp -c -m32 -o test_c.o
-g++ -g -m32 -o test test_asm.o test_c.o
+```bash
+$ nasm -g -felf32 test.asm -o test_asm.o
+$ g++ -g test.cpp -c -m32 -o test_c.o
+$ g++ -g -m32 -o test test_asm.o test_c.o
 ```
 
 Now, let&rsquo;s talk about name mangling. It is really important. I shall not cover all the depths of this, only the parts, related to this article.
 
 We see that our function,
 
-```
+```c
 void addition(int* x, int x_len, int* y, int y_len, int* &z, int* z_len);
 ```
 
