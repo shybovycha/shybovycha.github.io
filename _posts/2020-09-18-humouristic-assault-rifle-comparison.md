@@ -63,7 +63,7 @@ M16 - the weapon of defense.
 AK-47 - the weapon of attack.
 Mosin-Nagant - the weapon of victory!
 
-<blockquote>
+<blockquote><pre>
 М16 - Под лупой плавится приклад.
 АК-47 - Под лупой можно рассмотреть до сих пор работающую вместо смазки вьетнамскую грязь.
 Винтовка Мосина - Под лупой можно увидеть пропитавшую дерево кровищу.
@@ -115,4 +115,5 @@ Mosin-Nagant - the weapon of victory!
 М16 - Оружие обороны.
 АК-47 - Оружие нападения.
 Винтовка Мосина - Оружие Победы!!!
-</blockqote>
+</pre>
+</blockquote>
