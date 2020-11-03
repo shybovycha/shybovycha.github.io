@@ -20,6 +20,7 @@ public User GetUserByToken(string token) {
 ```
 
 Let's tear this example apart and check how really <del>performant</del> beautiful Linq is!
+<!--more-->
 
 The boilerplate code to make the thing not fall apart:
 
