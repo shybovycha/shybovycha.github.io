@@ -376,7 +376,6 @@ float sum(float *a, int n) {
 }
 ```
 
-
 Simple enough, huh? Now let’s use the SSE’s `_mm_add_ps` intrinsic. Running it on each pack of four elements will give us the summary vector of four floats:
 
 ```cpp
@@ -442,12 +441,115 @@ unsigned long long sum4(int *a, int n) {
 
 And, just to approve our assumption of speeding-up, here’s the benchmarking _(on one million of elements)_:
 
-```bash
+```
 Value-based: 0.00853100 (500245.28125000)
 SSE: 0.00319800 (500243.50000000)
 Value-based on integers: 0.00773100 (49453512)
 SSE on integers: 0.00274800 (49453512)
 ```
+
+Now here is a thing to think about: the assembly output of the `sum` function is much shorter than the one for the `sum_sse` function:
+
+```asm
+sum(float*, int):
+        push    rbp
+        mov     rbp, rsp
+        mov     QWORD PTR [rbp-24], rdi
+        mov     DWORD PTR [rbp-28], esi
+        pxor    xmm0, xmm0
+        movss   DWORD PTR [rbp-4], xmm0
+        mov     DWORD PTR [rbp-8], 0
+.L3:
+        mov     eax, DWORD PTR [rbp-8]
+        cmp     eax, DWORD PTR [rbp-28]
+        jge     .L2
+        mov     eax, DWORD PTR [rbp-8]
+        cdqe
+        lea     rdx, [0+rax*4]
+        mov     rax, QWORD PTR [rbp-24]
+        add     rax, rdx
+        movss   xmm0, DWORD PTR [rax]
+        movss   xmm1, DWORD PTR [rbp-4]
+        addss   xmm0, xmm1
+        movss   DWORD PTR [rbp-4], xmm0
+        add     DWORD PTR [rbp-8], 1
+        jmp     .L3
+.L2:
+        movss   xmm0, DWORD PTR [rbp-4]
+        pop     rbp
+        ret
+```
+
+vs
+
+```asm
+sum_sse(float*, int):
+        push    rbp
+        mov     rbp, rsp
+        sub     rsp, 72
+        mov     QWORD PTR [rbp-184], rdi
+        mov     DWORD PTR [rbp-188], esi
+        pxor    xmm0, xmm0
+        movss   DWORD PTR [rbp-164], xmm0
+        mov     rax, QWORD PTR [rbp-184]
+        mov     QWORD PTR [rbp-32], rax
+        pxor    xmm0, xmm0
+        movaps  XMMWORD PTR [rbp-16], xmm0
+        mov     DWORD PTR [rbp-20], 0
+.L5:
+        mov     eax, DWORD PTR [rbp-188]
+        lea     edx, [rax+3]
+        test    eax, eax
+        cmovs   eax, edx
+        sar     eax, 2
+        cmp     DWORD PTR [rbp-20], eax
+        jge     .L3
+        mov     eax, DWORD PTR [rbp-20]
+        cdqe
+        sal     rax, 4
+        mov     rdx, rax
+        mov     rax, QWORD PTR [rbp-32]
+        add     rax, rdx
+        movaps  xmm0, XMMWORD PTR [rax]
+        movaps  xmm1, XMMWORD PTR [rbp-16]
+        movaps  XMMWORD PTR [rbp-48], xmm1
+        movaps  XMMWORD PTR [rbp-64], xmm0
+        movaps  xmm0, XMMWORD PTR [rbp-48]
+        addps   xmm0, XMMWORD PTR [rbp-64]
+        movaps  XMMWORD PTR [rbp-16], xmm0
+        add     DWORD PTR [rbp-20], 1
+        jmp     .L5
+.L3:
+        movaps  xmm0, XMMWORD PTR [rbp-16]
+        movaps  XMMWORD PTR [rbp-80], xmm0
+        movaps  xmm0, XMMWORD PTR [rbp-16]
+        movaps  XMMWORD PTR [rbp-96], xmm0
+        movaps  xmm0, XMMWORD PTR [rbp-80]
+        haddps  xmm0, XMMWORD PTR [rbp-96]
+        nop
+        movaps  XMMWORD PTR [rbp-16], xmm0
+        movaps  xmm0, XMMWORD PTR [rbp-16]
+        movaps  XMMWORD PTR [rbp-112], xmm0
+        movaps  xmm0, XMMWORD PTR [rbp-16]
+        movaps  XMMWORD PTR [rbp-128], xmm0
+        movaps  xmm0, XMMWORD PTR [rbp-112]
+        haddps  xmm0, XMMWORD PTR [rbp-128]
+        nop
+        movaps  XMMWORD PTR [rbp-16], xmm0
+        lea     rax, [rbp-164]
+        mov     QWORD PTR [rbp-136], rax
+        movaps  xmm0, XMMWORD PTR [rbp-16]
+        movaps  XMMWORD PTR [rbp-160], xmm0
+        movss   xmm0, DWORD PTR [rbp-160]
+        mov     rax, QWORD PTR [rbp-136]
+        movss   DWORD PTR [rax], xmm0
+        nop
+        movss   xmm0, DWORD PTR [rbp-164]
+        leave
+        ret
+```
+
+And yet, the performance of that longer piece of code is still higher!
 
 ## Limitations?
 
