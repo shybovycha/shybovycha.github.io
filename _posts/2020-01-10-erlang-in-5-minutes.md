@@ -62,7 +62,7 @@ X = 5.
 % redefinition is prohibited
 X = 10. % exception
 
-% functions could also be constants
+% functions can also be constants
 PlusOne = fun(X) -> X + 1 end.
 
 % or, multiline
@@ -85,25 +85,41 @@ factorial(N) -> N * factorial(N - 1).
 
 % some return types
 string_fn() -> "hello, world!".
+
 list_fn() -> [ 1, "elements could be of different types too", -3.14, atom ].
+
 function_function() ->
   fun(X) -> X mod 2 end.
+
 dict_fn() -> #{ "key" => -3.14 }.
+
 tuple_fn() -> { elt1, elt2, "elt 3" }.
 
-%% note how complex_function/1 has different definition than complex_function/2
-complex_function(List) ->
-  complex_function(List, 0).
+%% note how overriden_function/1 has different definition than overriden_function/2
+overriden_function(List) ->
+  overriden_function(List, 0).
 
 % the power of pattern matching!
-complex_function([ Head ], Acc) -> Acc + Head;
+overriden_function([ Head ], Acc) -> Acc + Head;
 
-complex_function([ Head1 | Head2 ], Acc) -> Acc + Head1 + Head2;
+overriden_function([ Head1 | Head2 ], Acc) -> Acc + Head1 + Head2;
 
-complex_function([ Head | Tail ], Acc) ->
-  complex_function(Tail, Acc + Head);
+overriden_function([ Head | Tail ], Acc) ->
+  overriden_function(Tail, Acc + Head);
 
-complex_function([], Acc) -> Acc.
+overriden_function([], Acc) -> Acc.
+
+complex_function(A, B) when A =< B -> A;
+complex_function(A, B) when A > B -> B.
+
+complex_function(A, B, C) ->
+  X = complex_function(A, B),
+  complex_function(X, C);
+
+complex_function(A, B, C, D) ->
+  X = complex_function(A, B),
+  Y = complex_function(C, D),
+  complex_function(X, Y).
 
 fst({ First, _ }) -> First.
 
