@@ -13,17 +13,17 @@ tumblr_url: 'http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-progra
 
 ## Foreword
 
-Writing code in assembly language in 2015 seems stupid and meaningless. Yet, this subject has a few huge pros:
+Writing code in assembly language in 2015 seems stupid and meaningless. Yet, it has a few huge benefits:
 
-1. understanding how computers/compilers/programs work
-2. optimizations while writing a complex or performance-critical applications
-3. fun
+1. understanding how computers / compilers / programs work
+2. hardcore optimizations for performance-critical applications
+3. just for fun!
 
-Well, in real life, I’ve never met conditions of such performance requirements when I should be writing some parts of application in ASM. Except, maybe, **a few** ACM ICPC problems.
+Well, in real life, I’ve never met conditions of such performance requirements when I should be writing some parts of application in ASM. Except, maybe, a handful of ACM ICPC problems.
 
-So, we got two merely huge pros to write in assembly. Thus, if you are not getting fun of writing applications, you may be not interested in this topic.
+Those are two merely big benefits to write in assembly. Thus, if you are not getting fun out of coding, you may not be interested in this blog.
 
-This article is academical mostly. People who study something like _low-level programming_ at their universities may be interested.
+This blog is mostly for academical purposes. People who study something like _low-level programming_ at the university may be interested.
 
 <!--more-->
 
@@ -170,7 +170,7 @@ size(double*) = 8 bytes
 size(long double*) = 8 bytes
 ```
 
-But when run in **32-bit** mode, these numbers changed:
+But when run in **32-bit** mode, these numbers are different:
 
 ```
 size(char) = 1 bytes
@@ -191,7 +191,7 @@ size(double*) = 4 bytes
 size(long double*) = 4 bytes
 ```
 
-The difference in atomic types is really “ghostly”, namely <code>long</code> and <code>long double</code> are **4-byte longer** in 64-bit mode. But when it comes to pointer types, we have twice longer variables.
+The difference in atomic types seems really negligible, namely <code>long</code> and <code>long double</code> are **4-byte longer** in 64-bit mode. But when it comes to pointer types, we have twice longer variables.
 
 That is the first, may be not so notable, but really important difference between _32-bit_ and _64-bit_ modes. This will be handy when it comes to **arrays**. But that will be covered later.
 
@@ -670,7 +670,7 @@ extern void surface_and_volume(float a, float b, float c, float *v, float *s);
 int main() {
   float surface = 0, volume = 0;
 
-  surface_and_volume(4, 5, 6, &amp;volume, &amp;surface);
+  surface_and_volume(4, 5, 6, &volume, &surface);
 
   printf("volume: %0.3f surface: %0.3f\n", volume, surface);
 
