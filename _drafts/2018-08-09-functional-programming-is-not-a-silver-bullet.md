@@ -1,5 +1,5 @@
 ---
-title: 'Full text search in JavaScript'
+title: 'Functional programming is not a silver bullet'
 layout: post
 date: '2018-08-08T22:10:00+10:00'
 ---
@@ -2205,7 +2205,179 @@ typeinfo for main::$_0:
   .quad typeinfo name for main::$_0
 ```
 
-### Haskell
+### Haskell, recursion
+
+```hs
+sum' :: [Int] -> Int -> Int
+sum' [] acc = acc
+sum' (a : as) acc = sum' as (a + acc)
+
+sum :: [Int] -> Int
+sum a = sum' a 0
+```
+
+yields
+
+```asm
+rYy_bytes:
+        .asciz "main"
+rYS_closure:
+        .quad   ghczmprim_GHCziTypes_TrNameS_con_info
+        .quad   rYy_bytes
+rYT_bytes:
+        .asciz "Example"
+rYU_closure:
+        .quad   ghczmprim_GHCziTypes_TrNameS_con_info
+        .quad   rYT_bytes
+Example_$trModule_closure:
+        .quad   ghczmprim_GHCziTypes_Module_con_info
+        .quad   rYS_closure+1
+        .quad   rYU_closure+1
+        .quad   3
+Example_sum'_closure:
+        .quad   Example_sum'_info
+        .quad   0
+s19g_info:
+        leaq -40(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc19D
+        movq $stg_upd_frame_info,-16(%rbp)
+        movq %rbx,-8(%rbp)
+        movq 16(%rbx),%rax
+        movq 24(%rbx),%rbx
+        movl $base_GHCziNum_zdfNumInt_closure,%r14d
+        movq $stg_ap_pp_info,-40(%rbp)
+        movq %rbx,-32(%rbp)
+        movq %rax,-24(%rbp)
+        addq $-40,%rbp
+        jmp base_GHC.Num_+_info
+.Lc19D:
+        jmp *-16(%r13)
+Example_sum'_info:
+        leaq -16(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc19K
+        movq $c19s_info,-16(%rbp)
+        movq %r14,%rbx
+        movq %rsi,-8(%rbp)
+        addq $-16,%rbp
+        testb $7,%bl
+        jne .Lc19s
+        jmp *(%rbx)
+        .long   S19R_srt-(c19s_info)+0
+        .long   0
+        .quad   1
+        .quad   12884901918
+c19s_info:
+.Lc19s:
+        movq 8(%rbp),%rax
+        movq %rbx,%rcx
+        andl $7,%ecx
+        cmpq $1,%rcx
+        jne .Lc19H
+        movq %rax,%rbx
+        andq $-8,%rbx
+        addq $16,%rbp
+        jmp *(%rbx)
+.Lc19H:
+        addq $32,%r12
+        cmpq 856(%r13),%r12
+        ja .Lc19Q
+        movq 6(%rbx),%rcx
+        movq 14(%rbx),%rbx
+        movq $s19g_info,-24(%r12)
+        movq %rax,-8(%r12)
+        movq %rcx,(%r12)
+        leaq -24(%r12),%rax
+        movq %rax,%rsi
+        movq %rbx,%r14
+        addq $16,%rbp
+        jmp Example_sum'_info
+.Lc19K:
+        movl $Example_sum'_closure,%ebx
+        jmp *-8(%r13)
+.Lc19Q:
+        movq $32,904(%r13)
+        jmp stg_gc_unpt_r1
+Example_sum_closure:
+        .quad   Example_sum_info
+        .quad   0
+Example_sum_info:
+        movl $stg_INTLIKE_closure+257,%esi
+        jmp Example_sum'_info
+S19R_srt:
+        .quad   base_GHCziNum_zdfNumInt_closure
+        .quad   Example_sum'_closure
+```
+
+### Haskell, fold
+
+```hs
+sum :: [Int] -> Int
+sum a = foldl (+) 0 a
+```
+
+yields
+
+```asm
+r1qE_bytes:
+        .asciz "main"
+r1qP_closure:
+        .quad   ghczmprim_GHCziTypes_TrNameS_con_info
+        .quad   r1qE_bytes
+r1qQ_bytes:
+        .asciz "Example"
+r1qR_closure:
+        .quad   ghczmprim_GHCziTypes_TrNameS_con_info
+        .quad   r1qQ_bytes
+Example_$trModule_closure:
+        .quad   ghczmprim_GHCziTypes_Module_con_info
+        .quad   r1qP_closure+1
+        .quad   r1qR_closure+1
+        .quad   3
+Example_sum_closure:
+        .quad   Example_sum_info
+        .quad   0
+s1qU_info:
+        leaq -16(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc1ra
+        movq $stg_upd_frame_info,-16(%rbp)
+        movq %rbx,-8(%rbp)
+        movl $base_GHCziNum_zdfNumInt_closure,%r14d
+        addq $-16,%rbp
+        jmp base_GHC.Num_+_info
+.Lc1ra:
+        jmp *-16(%r13)
+Example_sum_info:
+        leaq -32(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc1rd
+        addq $16,%r12
+        cmpq 856(%r13),%r12
+        ja .Lc1rg
+        movq $s1qU_info,-8(%r12)
+        leaq -8(%r12),%rax
+        movq %r14,%rbx
+        movl $base_DataziFoldable_zdfFoldableZMZN_closure,%r14d
+        movq $stg_ap_ppp_info,-32(%rbp)
+        movq %rax,-24(%rbp)
+        movq $stg_INTLIKE_closure+257,-16(%rbp)
+        movq %rbx,-8(%rbp)
+        addq $-32,%rbp
+        jmp base_Data.Foldable_foldl_info
+.Lc1rg:
+        movq $16,904(%r13)
+.Lc1rd:
+        movl $Example_sum_closure,%ebx
+        jmp *-8(%r13)
+S1rh_srt:
+        .quad   base_GHCziNum_zdfNumInt_closure
+        .quad   Example_sum_closure
+        .quad   base_DataziFoldable_zdfFoldableZMZN_closure
+```
+
+### Haskell, manual reduce
 
 ```hs
 module Example where
@@ -2527,4 +2699,571 @@ int levenshtein(char *s1, int len1, char *s2, int len2) {
 
     return v0[len1];
 }
+```
+
+### Haskell, recursion
+
+```haskell
+levenshtein' :: String -> Int -> String -> Int -> Int
+levenshtein' s1 0 s2 j = j
+levenshtein' s1 i s2 0 = i
+levenshtein' s1 i s2 j = min (min d1 d2) d3
+    where
+        d1 = 1 + levenshtein' s1 (i - 1) s2 j
+        d2 = 1 + levenshtein' s1 i s2 (j - 1)
+        d3_delta = if (s1 !! (i - 1)) /= (s2 !! (j - 1)) then 1 else 0
+        d3 = d3_delta + levenshtein' s1 (i - 1) s2 (j - 1)
+
+levenshtein :: String -> String -> Int
+levenshtein s1 s2 = levenshtein' s1 (length s1) s2 (length s2)
+```
+
+Yields
+
+```asm
+r2wR_bytes:
+        .asciz "main"
+r2xp_closure:
+        .quad   ghczmprim_GHCziTypes_TrNameS_con_info
+        .quad   r2wR_bytes
+r2xq_bytes:
+        .asciz "Example"
+r2xr_closure:
+        .quad   ghczmprim_GHCziTypes_TrNameS_con_info
+        .quad   r2xq_bytes
+Example_$trModule_closure:
+        .quad   ghczmprim_GHCziTypes_Module_con_info
+        .quad   r2xp_closure+1
+        .quad   r2xr_closure+1
+        .quad   3
+Example_levenshtein'_closure:
+        .quad   Example_levenshtein'_info
+        .quad   0
+s2x_info:
+        leaq -40(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc2yG
+        movq $stg_upd_frame_info,-16(%rbp)
+        movq %rbx,-8(%rbp)
+        movq 16(%rbx),%rax
+        movl $base_GHCziNum_zdfNumInt_closure,%r14d
+        movq $stg_ap_pp_info,-40(%rbp)
+        movq %rax,-32(%rbp)
+        movq $stg_INTLIKE_closure+273,-24(%rbp)
+        addq $-40,%rbp
+        jmp base_GHCziNum_zm_info
+.Lc2yG:
+        jmp *-16(%r13)
+s2xX_info:
+        leaq -40(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc2yN
+        movq $stg_upd_frame_info,-16(%rbp)
+        movq %rbx,-8(%rbp)
+        movq 16(%rbx),%rax
+        movl $base_GHCziNum_zdfNumInt_closure,%r14d
+        movq $stg_ap_pp_info,-40(%rbp)
+        movq %rax,-32(%rbp)
+        movq $stg_INTLIKE_closure+273,-24(%rbp)
+        addq $-40,%rbp
+        jmp base_GHCziNum_zm_info
+.Lc2yN:
+        jmp *-16(%r13)
+s2y0_info:
+        leaq -16(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc2yQ
+        addq $48,%r12
+        cmpq 856(%r13),%r12
+        ja .Lc2yT
+        movq $stg_upd_frame_info,-16(%rbp)
+        movq %rbx,-8(%rbp)
+        movq 16(%rbx),%rax
+        movq 24(%rbx),%rcx
+        movq 32(%rbx),%rdx
+        movq 40(%rbx),%rbx
+        movq $s2x_info,-40(%r12)
+        movq %rbx,-24(%r12)
+        leaq -40(%r12),%rbx
+        movq $s2xX_info,-16(%r12)
+        movq %rdx,(%r12)
+        leaq -16(%r12),%rdx
+        movq %rbx,%r8
+        movq %rcx,%rdi
+        movq %rdx,%rsi
+        movq %rax,%r14
+        addq $-16,%rbp
+        jmp Example_levenshtein'_info
+.Lc2yT:
+        movq $48,904(%r13)
+.Lc2yQ:
+        jmp *-16(%r13)
+s2xS_info:
+        leaq -40(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc2z7
+        movq $stg_upd_frame_info,-16(%rbp)
+        movq %rbx,-8(%rbp)
+        movq 16(%rbx),%rax
+        movl $base_GHCziNum_zdfNumInt_closure,%r14d
+        movq $stg_ap_pp_info,-40(%rbp)
+        movq %rax,-32(%rbp)
+        movq $stg_INTLIKE_closure+273,-24(%rbp)
+        addq $-40,%rbp
+        jmp base_GHCziNum_zm_info
+.Lc2z7:
+        jmp *-16(%r13)
+s2xT_info:
+        leaq -16(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc2za
+        addq $24,%r12
+        cmpq 856(%r13),%r12
+        ja .Lc2zd
+        movq $stg_upd_frame_info,-16(%rbp)
+        movq %rbx,-8(%rbp)
+        movq 16(%rbx),%rax
+        movq 24(%rbx),%rbx
+        movq $s2xS_info,-16(%r12)
+        movq %rbx,(%r12)
+        leaq -16(%r12),%rbx
+        movq %rbx,%rsi
+        movq %rax,%r14
+        movl $base_GHCziList_znzn_closure,%ebx
+        addq $-16,%rbp
+        jmp stg_ap_pp_fast
+.Lc2zd:
+        movq $24,904(%r13)
+.Lc2za:
+        jmp *-16(%r13)
+s2xP_info:
+        leaq -40(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc2zn
+        movq $stg_upd_frame_info,-16(%rbp)
+        movq %rbx,-8(%rbp)
+        movq 16(%rbx),%rax
+        movl $base_GHCziNum_zdfNumInt_closure,%r14d
+        movq $stg_ap_pp_info,-40(%rbp)
+        movq %rax,-32(%rbp)
+        movq $stg_INTLIKE_closure+273,-24(%rbp)
+        addq $-40,%rbp
+        jmp base_GHCziNum_zm_info
+.Lc2zn:
+        jmp *-16(%r13)
+s2xQ_info:
+        leaq -16(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc2zq
+        addq $24,%r12
+        cmpq 856(%r13),%r12
+        ja .Lc2zt
+        movq $stg_upd_frame_info,-16(%rbp)
+        movq %rbx,-8(%rbp)
+        movq 16(%rbx),%rax
+        movq 24(%rbx),%rbx
+        movq $s2xP_info,-16(%r12)
+        movq %rbx,(%r12)
+        leaq -16(%r12),%rbx
+        movq %rbx,%rsi
+        movq %rax,%r14
+        movl $base_GHCziList_znzn_closure,%ebx
+        addq $-16,%rbp
+        jmp stg_ap_pp_fast
+.Lc2zt:
+        movq $24,904(%r13)
+.Lc2zq:
+        jmp *-16(%r13)
+s2xV_info:
+        leaq -48(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc2zB
+        addq $64,%r12
+        cmpq 856(%r13),%r12
+        ja .Lc2zE
+        movq $stg_upd_frame_info,-16(%rbp)
+        movq %rbx,-8(%rbp)
+        movq 16(%rbx),%rax
+        movq 24(%rbx),%rcx
+        movq 32(%rbx),%rdx
+        movq 40(%rbx),%rbx
+        movq $s2xT_info,-56(%r12)
+        movq %rcx,-40(%r12)
+        movq %rbx,-32(%r12)
+        leaq -56(%r12),%rbx
+        movq $s2xQ_info,-24(%r12)
+        movq %rax,-8(%r12)
+        movq %rdx,(%r12)
+        leaq -24(%r12),%rax
+        movq $c2__info,-24(%rbp)
+        movl $ghczmprim_GHCziClasses_zdfEqChar_closure,%r14d
+        movq $stg_ap_pp_info,-48(%rbp)
+        movq %rax,-40(%rbp)
+        movq %rbx,-32(%rbp)
+        addq $-48,%rbp
+        jmp ghczmprim_GHCziClasses_zsze_info
+        .quad   0
+        .quad   30
+c2__info:
+        andl $7,%ebx
+        cmpq $1,%rbx
+        jne .Lc2zy
+        movl $stg_INTLIKE_closure+257,%ebx
+        addq $8,%rbp
+        jmp *(%rbp)
+.Lc2zy:
+        movl $stg_INTLIKE_closure+273,%ebx
+        addq $8,%rbp
+        jmp *(%rbp)
+.Lc2zE:
+        movq $64,904(%r13)
+.Lc2zB:
+        jmp *-16(%r13)
+s2y1_info:
+        leaq -40(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc2zM
+        addq $96,%r12
+        cmpq 856(%r13),%r12
+        ja .Lc2zP
+        movq $stg_upd_frame_info,-16(%rbp)
+        movq %rbx,-8(%rbp)
+        movq 16(%rbx),%rax
+        movq 24(%rbx),%rcx
+        movq 32(%rbx),%rdx
+        movq 40(%rbx),%rbx
+        movq $s2y0_info,-88(%r12)
+        movq %rax,-72(%r12)
+        movq %rcx,-64(%r12)
+        movq %rdx,-56(%r12)
+        movq %rbx,-48(%r12)
+        leaq -88(%r12),%rsi
+        movq $s2xV_info,-40(%r12)
+        movq %rax,-24(%r12)
+        movq %rcx,-16(%r12)
+        movq %rdx,-8(%r12)
+        movq %rbx,(%r12)
+        leaq -40(%r12),%rax
+        movl $base_GHCziNum_zdfNumInt_closure,%r14d
+        movq $stg_ap_pp_info,-40(%rbp)
+        movq %rax,-32(%rbp)
+        movq %rsi,-24(%rbp)
+        addq $-40,%rbp
+        jmp base_GHCziNum_zp_info
+.Lc2zP:
+        movq $96,904(%r13)
+.Lc2zM:
+        jmp *-16(%r13)
+s2xK_info:
+        leaq -40(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc2A7
+        movq $stg_upd_frame_info,-16(%rbp)
+        movq %rbx,-8(%rbp)
+        movq 16(%rbx),%rax
+        movl $base_GHCziNum_zdfNumInt_closure,%r14d
+        movq $stg_ap_pp_info,-40(%rbp)
+        movq %rax,-32(%rbp)
+        movq $stg_INTLIKE_closure+273,-24(%rbp)
+        addq $-40,%rbp
+        jmp base_GHCziNum_zm_info
+.Lc2A7:
+        jmp *-16(%r13)
+s2xL_info:
+        leaq -16(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc2Aa
+        addq $24,%r12
+        cmpq 856(%r13),%r12
+        ja .Lc2Ad
+        movq $stg_upd_frame_info,-16(%rbp)
+        movq %rbx,-8(%rbp)
+        movq 16(%rbx),%rax
+        movq 24(%rbx),%rcx
+        movq 32(%rbx),%rdx
+        movq 40(%rbx),%rbx
+        movq $s2xK_info,-16(%r12)
+        movq %rbx,(%r12)
+        leaq -16(%r12),%rbx
+        movq %rbx,%r8
+        movq %rcx,%rdi
+        movq %rdx,%rsi
+        movq %rax,%r14
+        addq $-16,%rbp
+        jmp Example_levenshtein'_info
+.Lc2Ad:
+        movq $24,904(%r13)
+.Lc2Aa:
+        jmp *-16(%r13)
+s2xM_info:
+        leaq -40(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc2Af
+        addq $48,%r12
+        cmpq 856(%r13),%r12
+        ja .Lc2Ai
+        movq $stg_upd_frame_info,-16(%rbp)
+        movq %rbx,-8(%rbp)
+        movq 16(%rbx),%rax
+        movq 24(%rbx),%rcx
+        movq 32(%rbx),%rdx
+        movq 40(%rbx),%rbx
+        movq $s2xL_info,-40(%r12)
+        movq %rax,-24(%r12)
+        movq %rcx,-16(%r12)
+        movq %rdx,-8(%r12)
+        movq %rbx,(%r12)
+        leaq -40(%r12),%rax
+        movl $base_GHCziNum_zdfNumInt_closure,%r14d
+        movq $stg_ap_pp_info,-40(%rbp)
+        movq $stg_INTLIKE_closure+273,-32(%rbp)
+        movq %rax,-24(%rbp)
+        addq $-40,%rbp
+        jmp base_GHCziNum_zp_info
+.Lc2Ai:
+        movq $48,904(%r13)
+.Lc2Af:
+        jmp *-16(%r13)
+s2xF_info:
+        leaq -40(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc2Aw
+        movq $stg_upd_frame_info,-16(%rbp)
+        movq %rbx,-8(%rbp)
+        movq 16(%rbx),%rax
+        movl $base_GHCziNum_zdfNumInt_closure,%r14d
+        movq $stg_ap_pp_info,-40(%rbp)
+        movq %rax,-32(%rbp)
+        movq $stg_INTLIKE_closure+273,-24(%rbp)
+        addq $-40,%rbp
+        jmp base_GHCziNum_zm_info
+.Lc2Aw:
+        jmp *-16(%r13)
+s2xG_info:
+        leaq -16(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc2Az
+        addq $24,%r12
+        cmpq 856(%r13),%r12
+        ja .Lc2AC
+        movq $stg_upd_frame_info,-16(%rbp)
+        movq %rbx,-8(%rbp)
+        movq 16(%rbx),%rax
+        movq 24(%rbx),%rcx
+        movq 32(%rbx),%rdx
+        movq 40(%rbx),%rbx
+        movq $s2xF_info,-16(%r12)
+        movq %rdx,(%r12)
+        leaq -16(%r12),%rdx
+        movq %rbx,%r8
+        movq %rcx,%rdi
+        movq %rdx,%rsi
+        movq %rax,%r14
+        addq $-16,%rbp
+        jmp Example_levenshtein'_info
+.Lc2AC:
+        movq $24,904(%r13)
+.Lc2Az:
+        jmp *-16(%r13)
+s2xH_info:
+        leaq -40(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc2AE
+        addq $48,%r12
+        cmpq 856(%r13),%r12
+        ja .Lc2AH
+        movq $stg_upd_frame_info,-16(%rbp)
+        movq %rbx,-8(%rbp)
+        movq 16(%rbx),%rax
+        movq 24(%rbx),%rcx
+        movq 32(%rbx),%rdx
+        movq 40(%rbx),%rbx
+        movq $s2xG_info,-40(%r12)
+        movq %rax,-24(%r12)
+        movq %rcx,-16(%r12)
+        movq %rdx,-8(%r12)
+        movq %rbx,(%r12)
+        leaq -40(%r12),%rax
+        movl $base_GHCziNum_zdfNumInt_closure,%r14d
+        movq $stg_ap_pp_info,-40(%rbp)
+        movq $stg_INTLIKE_closure+273,-32(%rbp)
+        movq %rax,-24(%rbp)
+        addq $-40,%rbp
+        jmp base_GHCziNum_zp_info
+.Lc2AH:
+        movq $48,904(%r13)
+.Lc2AE:
+        jmp *-16(%r13)
+s2xN_info:
+        leaq -40(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc2AJ
+        addq $96,%r12
+        cmpq 856(%r13),%r12
+        ja .Lc2AM
+        movq $stg_upd_frame_info,-16(%rbp)
+        movq %rbx,-8(%rbp)
+        movq 16(%rbx),%rax
+        movq 24(%rbx),%rcx
+        movq 32(%rbx),%rdx
+        movq 40(%rbx),%rbx
+        movq $s2xM_info,-88(%r12)
+        movq %rax,-72(%r12)
+        movq %rcx,-64(%r12)
+        movq %rdx,-56(%r12)
+        movq %rbx,-48(%r12)
+        leaq -88(%r12),%rsi
+        movq $s2xH_info,-40(%r12)
+        movq %rax,-24(%r12)
+        movq %rcx,-16(%r12)
+        movq %rdx,-8(%r12)
+        movq %rbx,(%r12)
+        leaq -40(%r12),%rax
+        movl $ghczmprim_GHCziClasses_zdfOrdInt_closure,%r14d
+        movq $stg_ap_pp_info,-40(%rbp)
+        movq %rax,-32(%rbp)
+        movq %rsi,-24(%rbp)
+        addq $-40,%rbp
+        jmp ghczmprim_GHCziClasses_min_info
+.Lc2AM:
+        movq $96,904(%r13)
+.Lc2AJ:
+        jmp *-16(%r13)
+Example_levenshtein'_info:
+        leaq -32(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc2AO
+        movq $c2yf_info,-32(%rbp)
+        movq %rsi,%rbx
+        movq %r14,-24(%rbp)
+        movq %rdi,-16(%rbp)
+        movq %r8,-8(%rbp)
+        addq $-32,%rbp
+        testb $7,%bl
+        jne .Lc2yf
+        jmp *(%rbx)
+        .long   S2B0_srt-(c2yf_info)+0
+        .long   0
+        .quad   3
+        .quad   133143986206
+c2yf_info:
+.Lc2yf:
+        movq 24(%rbp),%rax
+        movq 7(%rbx),%rcx
+        testq %rcx,%rcx
+        jne .Lc2AS
+        movq %rax,%rbx
+        andq $-8,%rbx
+        addq $32,%rbp
+        jmp *(%rbx)
+.Lc2AS:
+        movq $c2ym_info,(%rbp)
+        movq %rbx,%rcx
+        movq %rax,%rbx
+        movq %rcx,24(%rbp)
+        testb $7,%bl
+        jne .Lc2ym
+        jmp *(%rbx)
+        .long   S2B0_srt-(c2ym_info)+0
+        .long   0
+        .quad   3
+        .quad   133143986206
+c2ym_info:
+.Lc2ym:
+        movq 8(%rbp),%rax
+        movq 16(%rbp),%rcx
+        movq 24(%rbp),%rdx
+        addq $96,%r12
+        cmpq 856(%r13),%r12
+        ja .Lc2AV
+        movq 7(%rbx),%rsi
+        testq %rsi,%rsi
+        jne .Lc2AX
+        addq $-96,%r12
+        movq %rdx,%rbx
+        andq $-8,%rbx
+        addq $32,%rbp
+        jmp *(%rbx)
+.Lc2AO:
+        movl $Example_levenshtein'_closure,%ebx
+        jmp *-8(%r13)
+.Lc2AV:
+        movq $96,904(%r13)
+        jmp stg_gc_unpt_r1
+.Lc2AX:
+        movq $s2y1_info,-88(%r12)
+        movq %rax,-72(%r12)
+        movq %rcx,-64(%r12)
+        movq %rdx,-56(%r12)
+        movq %rbx,-48(%r12)
+        leaq -88(%r12),%rsi
+        movq $s2xN_info,-40(%r12)
+        movq %rax,-24(%r12)
+        movq %rcx,-16(%r12)
+        movq %rdx,-8(%r12)
+        movq %rbx,(%r12)
+        leaq -40(%r12),%rax
+        movl $ghczmprim_GHCziClasses_zdfOrdInt_closure,%r14d
+        movq $stg_ap_pp_info,8(%rbp)
+        movq %rax,16(%rbp)
+        movq %rsi,24(%rbp)
+        addq $8,%rbp
+        jmp ghczmprim_GHCziClasses_min_info
+Example_levenshtein_closure:
+        .quad   Example_levenshtein_info
+        .quad   0
+s2y5_info:
+        leaq -32(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc2DP
+        movq $stg_upd_frame_info,-16(%rbp)
+        movq %rbx,-8(%rbp)
+        movq 16(%rbx),%rax
+        movl $base_DataziFoldable_zdfFoldableZMZN_closure,%r14d
+        movq $stg_ap_p_info,-32(%rbp)
+        movq %rax,-24(%rbp)
+        addq $-32,%rbp
+        jmp base_DataziFoldable_length_info
+.Lc2DP:
+        jmp *-16(%r13)
+s2y4_info:
+        leaq -32(%rbp),%rax
+        cmpq %r15,%rax
+        jb .Lc2DW
+        movq $stg_upd_frame_info,-16(%rbp)
+        movq %rbx,-8(%rbp)
+        movq 16(%rbx),%rax
+        movl $base_DataziFoldable_zdfFoldableZMZN_closure,%r14d
+        movq $stg_ap_p_info,-32(%rbp)
+        movq %rax,-24(%rbp)
+        addq $-32,%rbp
+        jmp base_DataziFoldable_length_info
+.Lc2DW:
+        jmp *-16(%r13)
+Example_levenshtein_info:
+        addq $48,%r12
+        cmpq 856(%r13),%r12
+        ja .Lc2E2
+        movq $s2y5_info,-40(%r12)
+        movq %rsi,-24(%r12)
+        leaq -40(%r12),%rax
+        movq $s2y4_info,-16(%r12)
+        movq %r14,(%r12)
+        leaq -16(%r12),%rbx
+        movq %rax,%r8
+        movq %rsi,%rdi
+        movq %rbx,%rsi
+        jmp Example_levenshtein'_info
+.Lc2E2:
+        movq $48,904(%r13)
+        movl $Example_levenshtein_closure,%ebx
+        jmp *-8(%r13)
+S2B0_srt:
+        .quad   base_GHCziNum_zdfNumInt_closure
+        .quad   Example_levenshtein'_closure
+        .quad   base_GHCziList_znzn_closure
+        .quad   ghczmprim_GHCziClasses_zdfEqChar_closure
+        .quad   ghczmprim_GHCziClasses_zdfOrdInt_closure
+        .quad   base_DataziFoldable_zdfFoldableZMZN_closure
+        .quad   Example_levenshtein_closure
 ```
