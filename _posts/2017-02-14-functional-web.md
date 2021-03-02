@@ -4,7 +4,7 @@ title: Functional web
 date: '2017-02-18T17:44:39+01:00'
 ---
 
-<img data-src="/images/functional_web/bicycle.jpg" class="img-responsive img-sm img-rounded pull-right">
+<img data-src="/images/functional_web/bicycle.webp" class="img-responsive img-sm img-rounded pull-right">
 
 In last couple of years the functional programming paradigm became very popular.
 A huge amount of libraries, tools, tutorials and blog posts appeared.
@@ -343,7 +343,7 @@ Elm is ML-like _(Haskell-like)_ language, which compiles to JS, and provides dev
 2. **update function**, which takes current state and an event _(**action** in terms of Redux; **message** in terms of Elm; an object, representing user action or any other event)_ and provides the new value for app state _(model)_
 3. **view function**, which converts current app state into a virtual DOM tree
 
-<img src="/images/functional_web/elm_architecture.png" alt="Elm workflow">
+<img src="/images/functional_web/elm_architecture.webp" alt="Elm workflow">
 
 Elm runtime handles everything else - passing messages to the `update` function, comparing the actual DOM tree with the one, provided by a `view` function and performing all DOM tree manipulations.
 
@@ -475,7 +475,7 @@ Here's what should be explained regarding those event streams: a **stream** is a
 
 Here's a diagram, showing all the transformations:
 
-<img src="/images/functional_web/CycleJS_example-compressed.png" alt="Event transformations diagram">
+<img src="/images/functional_web/CycleJS_example-compressed.webp" alt="Event transformations diagram">
 
 So once a click event _(on one of two buttons, of course)_ appears, it is transformed to either `-1` or `1`, depending on the button which fired that event; then this number is added to the existing _(which might appear to be empty)_ event stream `action$`; then the sum is calculated over all the numbers in that stream; then the sum is transformed into a virtual DOM tree; and lastly, the virtual DOM tree is returned from a view function and Cycle does its job to update the actual DOM. And since there always will be a different value of sum in our example, the DOM will always be updated.
 

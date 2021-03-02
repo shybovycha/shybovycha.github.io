@@ -9,7 +9,7 @@ date: '2016-02-11T14:47:39+01:00'
         {% include references/two-sides-of-web-application.html %}
     </div>
     <div class="col-md-6 col-xs-12 text-xs-center text-md-right">
-        <img data-src="/images/two-sides-of-web-application/a305-1-compressed.jpg" class="img-responsive" style="max-height: 150px" alt="Funny image" />
+        <img data-src="/images/two-sides-of-web-application/a305-1-compressed.webp" class="img-responsive" style="max-height: 150px" alt="Funny image" />
     </div>
 </div>
 

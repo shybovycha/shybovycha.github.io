@@ -44,7 +44,7 @@ But I will tell you how to overcome that restriction later.
 This article relies on JavaScript, so let's be kind and create an initial project structure for
 a typical JS project. Just like this:
 
-<img src="https://40.media.tumblr.com/963c862fc4d835d180a4bb6e5dfdfd9c/tumblr_inline_nrcgsc8eei1qh5oee_540.png" alt="Project structure"/>
+<img src="https://40.media.tumblr.com/963c862fc4d835d180a4bb6e5dfdfd9c/tumblr_inline_nrcgsc8eei1qh5oee_540.webp" alt="Project structure"/>
 
 This is always great to have a typical structure for a project so anyone new to the project will
 not get lost.

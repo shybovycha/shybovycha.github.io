@@ -26,7 +26,7 @@ This short intro does not include Erlang tutorial and requires you to have at le
 
 ## How to get out of a train?
 
-<img src="https://31.media.tumblr.com/151302ca545100e6c298290f0d5827fe/tumblr_inline_niw5irzdiz1qh5oee.jpg" alt="Gordon Freeman trying to get out of a train"/>
+<img src="https://31.media.tumblr.com/151302ca545100e6c298290f0d5827fe/tumblr_inline_niw5irzdiz1qh5oee.webp" alt="Gordon Freeman trying to get out of a train"/>
 
 The first thing I gonna tell you, is really handy tip.
 
@@ -54,7 +54,7 @@ And in `C:\Windows\system32\drivers\etc\hosts` on my girlfriend's laptop I added
 192.168.2.237   moonode
 ```
 
-<img src="https://31.media.tumblr.com/97da86d4a989b381e3b6be0069ebfdff/tumblr_inline_niw5kauPUD1qh5oee.png" alt="hosts in Windows"/>
+<img src="https://31.media.tumblr.com/97da86d4a989b381e3b6be0069ebfdff/tumblr_inline_niw5kauPUD1qh5oee.webp" alt="hosts in Windows"/>
 
 **Note:** I was sitting at home, so laptops were connected just to my home WiFi router. And that's great news for enyone, who wants to try that at home!
 
@@ -106,8 +106,8 @@ And then, the only thing I needed to do - is just send messages from node `moo`!
 flush().
 ```
 
-<img src="https://31.media.tumblr.com/2e65bfca4e6815d4eced646bee021e5f/tumblr_inline_niw5l8tH3Y1qh5oee.png" alt="moonode"/>
+<img src="https://31.media.tumblr.com/2e65bfca4e6815d4eced646bee021e5f/tumblr_inline_niw5l8tH3Y1qh5oee.webp" alt="moonode"/>
 
-<img src="https://31.media.tumblr.com/36462ec965b63fc9183a216f4be73c8d/tumblr_inline_niw5lnNbgc1qh5oee.png" alt="foonode"/>
+<img src="https://31.media.tumblr.com/36462ec965b63fc9183a216f4be73c8d/tumblr_inline_niw5lnNbgc1qh5oee.webp" alt="foonode"/>
 
 Much cooler than writing ping-pong programs, huh? =)

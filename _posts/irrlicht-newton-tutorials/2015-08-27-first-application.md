@@ -201,7 +201,7 @@ int main()
     if (node)
     {
         node->setPosition(core::vector3df(0,0,30));
-        node->setMaterialTexture(0, driver->getTexture("../../media/wall.bmp"));
+        node->setMaterialTexture(0, driver->getTexture("../../media/wall.webp"));
         node->setMaterialFlag(video::EMF_LIGHTING, false);
     }
 
@@ -218,7 +218,7 @@ int main()
 
     if (n)
     {
-        n->setMaterialTexture(0, driver->getTexture("../../media/t351sml.jpg"));
+        n->setMaterialTexture(0, driver->getTexture("../../media/t351sml.webp"));
         n->setMaterialFlag(video::EMF_LIGHTING, false);
         scene::ISceneNodeAnimator* anim =
             smgr->createFlyCircleAnimator(core::vector3df(0,0,30), 20.0f);
@@ -267,7 +267,7 @@ int main()
 
         anms->setScale(core::vector3df(2.f,2.f,2.f));
         anms->setRotation(core::vector3df(0,-90,0));
-//      anms->setMaterialTexture(0, driver->getTexture("../../media/sydney.bmp"));
+//      anms->setMaterialTexture(0, driver->getTexture("../../media/sydney.webp"));
 
     }
 
@@ -688,7 +688,7 @@ endif()
 
 You should see something like this:
 
-<img data-src="/images/04_movement_untouched.png">
+<img data-src="/images/04_movement_untouched.webp">
 
 To end the process you may consider switching to a terminal and running
 
@@ -742,7 +742,7 @@ in 3D forming a model, called **mesh**)_ but by its **position**, **rotation** a
     around. E. g., `vector3df(45, 90, 0)` sets the rotation by `45 deg` around `X axis`, `90 deg` around `Y axis`
     and no rotation aroung `Z axis`. All those axes are relative to the node itself.
 
-  <img data-src="/images/irrlicht-newton-tutorials/euler_angles.jpg">
+  <img data-src="/images/irrlicht-newton-tutorials/euler_angles.webp">
 
 * Graphics User Interface' _(GUI)_ widgets for information output are labels; they are created with
 **GUI Manager**:

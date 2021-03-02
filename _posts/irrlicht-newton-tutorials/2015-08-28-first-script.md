@@ -244,7 +244,7 @@ Given those, we have our API and are able to create and run our first Lua script
 Add one in the `media/scripts/` directory:
 
 ```lua
-createSphere("sphere1", "media/textures/wall.bmp")
+createSphere("sphere1", "media/textures/wall.webp")
 ```
 
 **Note:** paths in the script will be used by C++ core, relatively to the binary file, which
@@ -262,7 +262,7 @@ scriptMgr->loadScript("media/scripts/test1.lua");
 Now you may remove the code, creating sphere in the `main()` function. And run the code.
 You should see exactly the same picture as before:
 
-<img data-src="/images/04_movement_untouched.png">
+<img data-src="/images/04_movement_untouched.webp">
 
 ## Homework
 
@@ -418,13 +418,13 @@ function handleFrame()
 end
 
 function main()
-    createSphere("sphere1", "media/textures/wall.bmp")
+    createSphere("sphere1", "media/textures/wall.webp")
     setPosition("sphere1", { x = 0, y = 0, z = 30 })
 
-    createCube("cube1", "media/textures/t351sml.jpg")
+    createCube("cube1", "media/textures/t351sml.webp")
     addCircleAnimator("cube1", { x = 0, y = 0, z = 30 }, 20.0)
 
-    createAnimatedMesh("ninja", "media/models/ninja.b3d", "media/textures/nskinbl.jpg", 0, 13, 15)
+    createAnimatedMesh("ninja", "media/models/ninja.b3d", "media/textures/nskinbl.webp", 0, 13, 15)
     setRotation("ninja", { x = 0, y = -90, z = 0 })
     setScale("ninja", { x = 2, y = 2, z = 2 })
     addForwardAnimator("ninja", { x = 100, y = 0, z = 60 }, { x = -100, y = 0, z = 60 }, 3500, true)
@@ -434,6 +434,6 @@ end
 If you run our application *now*, you should be able to control sphere with <kbd>w</kbd> and
 <kbd>s</kbd> keys:
 
-<img data-src="/images/irrlicht-newton-tutorials/lua_script_with_kbd_handling.png">
+<img data-src="/images/irrlicht-newton-tutorials/lua_script_with_kbd_handling.webp">
 
 <a href="/{% post_url irrlicht-newton-tutorials/2015-08-29-prepare-to-add-some-newtonianity %}" class="btn btn-success">Next chapter</a>

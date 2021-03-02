@@ -10,7 +10,7 @@ tags:
 tumblr_url: http://shybovycha.tumblr.com/post/102644483371/speeding-up-with-ruby-native-extensions
 ---
 
-<img alt="" src="https://31.media.tumblr.com/5c826c2ac8e6d86d2aa4b21715002736/tumblr_inline_nf1y0xXwtM1qh5oee.jpg"/>
+<img alt="" src="https://31.media.tumblr.com/5c826c2ac8e6d86d2aa4b21715002736/tumblr_inline_nf1y0xXwtM1qh5oee.webp"/>
 
 ## Foreword
 
@@ -50,7 +50,7 @@ That was more than **ten times** slower than Ruby version!
 
 So, I started optimizing for speed.
 
-<img alt="" src="https://31.media.tumblr.com/69082ba5dc2c74b2e5d9059a05a3b07a/tumblr_inline_nf1xzoyiAa1qh5oee.jpg"/>
+<img alt="" src="https://31.media.tumblr.com/69082ba5dc2c74b2e5d9059a05a3b07a/tumblr_inline_nf1xzoyiAa1qh5oee.webp"/>
 
 <!--more-->
 
@@ -192,7 +192,7 @@ Building a Ruby Gem containing native extension is a little different than build
 
 First way is for dummies. That’s it, you will probably want your code ran on different platforms than your own machine. So, you will not want your gem to fail with a segfault like _this architecture differs from what the library was built on_. Thus, we will concentrate on a second way.
 
-<img alt="" src="https://31.media.tumblr.com/fa991a97c370065b424f4e58f57fa947/tumblr_inline_nf1y1oTQRp1qh5oee.jpg"/>
+<img alt="" src="https://31.media.tumblr.com/fa991a97c370065b424f4e58f57fa947/tumblr_inline_nf1y1oTQRp1qh5oee.webp"/>
 
 First, we will need a correct directory structure:
 
