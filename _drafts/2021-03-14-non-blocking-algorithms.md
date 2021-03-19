@@ -297,8 +297,8 @@ private:
 public:
   Queue() : head(nullptr), tail(nullptr) {}
 
-  void push(T value) {
-    Entry<T>* newHead = new Entry<T>(&value);
+  void push(T* value) {
+    Entry<T>* newHead = new Entry<T>(value);
 
     if (head == nullptr) {
       head = newHead;
@@ -309,12 +309,12 @@ public:
     }
   }
 
-  T poll() {
+  T* poll() {
     if (tail == nullptr) {
       return nullptr;
     }
 
-    T value = *(tail->getValue());
+    T* value = tail->getValue();
 
     if (head == tail) {
       head = nullptr;
@@ -341,84 +341,88 @@ As you can see, now it does not need to iterate at all to remove an element. Ins
 Although this optimization is really nice to have, it would actually make the example down below more complex to explain at first, so I will start with
 the first implementation of the queue.
 
-## Non-demonstrative example
+Simple, single-threaded queue usage could look like this:
 
 ```cpp
-#include <iostream>
-#include <string>
-#include <sstream>
+for (int i = 0; i < 10; ++i) {
+  std::ostringstream ss;
+
+  ss << i;
+
+  std::string* s = new std::string(ss.str());
+
+  queue.push(s);
+}
+
+while (!queue.isEmpty()) {
+  std::string* ptr = queue.poll();
+
+  if (ptr != nullptr) {
+    std::cout << *ptr << "\n";
+  }
+}
+```
+
+It does push and pull the elements in order and prints them to the console.
+
+Now, let's throw in some threads: one thread will be pushing elements to the queue ("producer") and the other one will be pulling elements from the queue ("consumer").
+
+This is a very widely used pattern, in general - there is a queue where some data to be processed (like from the user actions) is stored, and there are multiple (usually)
+workers, that pull the data from the queue and process it, not blocking the main application thread (user thread). This makes data processing asynchronous, but it
+greatly improves the responsiveness of the system, when data processing is a long-lasting process.
+
+```cpp
 #include <thread>
 
-template <class T>
-class Entry {
-private:
-  T* value;
-  Entry<T>* next;
+int main() {
+  Queue<std::string> queue;
 
-public:
-  Entry(T* value) : value(value) {}
+  Consumer consumer(&queue);
+  std::thread consumerThread(consumer);
 
-  T* getValue() const {
-    return value;
-  }
+  // needed, since consumer is an endless loop and we don't want to wait for it to finish before termination
+  consumerThread.detach();
 
-  Entry* getNext() const {
-    return next;
-  }
+  Producer producer(&queue, 0, 10);
+  std::thread producerThread(producer);
 
-  void setNext(Entry* next) {
-    this->next = next;
-  }
-};
+  producerThread.join();
 
-template <class T>
-class Queue {
-private:
-  Entry<T>* head;
+  std::cout << "done\n";
 
-public:
-  Queue() : head(nullptr) {}
+  return 0;
+}
+```
 
-  void push(T* value) {
-    Entry<T>* newHead = new Entry<T>(value);
+<img data-src="/images/non-blocking-algorithms/queue-threads-0.png" alt="Queue usage with one producer thread and one consumer thread">
 
-    if (head == nullptr) {
-      head = newHead;
-    } else {
-      newHead->setNext(head);
-      head = newHead;
-    }
-  }
+<!-- TODO: convert images to WEBP -->
 
-  T* poll() {
-    Entry<T>* previous = nullptr;
-    Entry<T>* current = head;
+Now, let's make it more realistic: have one producer (simulating user events) and multiple consumers (2 would be enough to highlight the idea, but 
+something like 10 would be more obvious):
 
-    while (current != nullptr && current->getNext() != nullptr) {
-      previous = current;
-      current = current->getNext();
-    }
+```cpp
+for (int i = 0; i < 10; ++i) {
+  Consumer consumer(&queue);
+  std::thread consumerThread(consumer);
 
-    if (current == nullptr) {
-      return nullptr;
-    }
+  // needed, since consumer is an endless loop and we don't want to wait for it to finish before termination
+  consumerThread.detach();
+}
 
-    T* value = current->getValue();
+Producer producer(&queue, 0, 10);
+std::thread producerThread(producer);
 
-    if (previous == nullptr) {
-      head = nullptr;
-    } else {
-      previous->setNext(nullptr);
-    }
+producerThread.join();
+```
 
-    return value;
-  }
+This makes things weird:
 
-  bool isEmpty() const {
-    return head == nullptr;
-  }
-};
+<img data-src="/images/non-blocking-algorithms/queue-threads-1.png" alt="Queue usage with one producer thread and 10 consumer thread">
 
+For more visibility, let's make both producer and consumer print out what they are working with (did not want to do this, since IO is quite a heavyweight process):
+
+```cpp
 class Producer {
 private:
   Queue<std::string>* queue;
@@ -432,10 +436,12 @@ public:
     while (value < maxValue) {
       std::ostringstream ostream;
       ostream << ++value;
-      
-      std::string *str = new std::string(ostream.str());
+
+      std::string* str = new std::string(ostream.str());
 
       queue->push(str);
+
+      std::cout << "<- " << ostream.str() << "\n";
     }
   }
 };
@@ -443,9 +449,10 @@ public:
 class Consumer {
 private:
   Queue<std::string>* queue;
+  int id;
 
 public:
-  Consumer(Queue<std::string>* queue) : queue(queue) {}
+  Consumer(Queue<std::string>* queue, int id) : queue(queue), id(id) {}
 
   void operator() () {
     while (true) {
@@ -455,7 +462,7 @@ public:
 
       std::string str = *(queue->poll());
 
-      std::cout << "->" << str << "\n";
+      std::cout << "[" << id << "] -> " << str << "\n";
     }
   }
 };
@@ -463,76 +470,206 @@ public:
 int main() {
   Queue<std::string> queue;
 
-  Producer producer(&queue, 0, 1000);
+  for (int i = 0; i < 10; ++i) {
+    Consumer consumer(&queue, i);
+    std::thread consumerThread(consumer);
+
+    // needed, since consumer is an endless loop and we don't want to wait for it to finish before termination
+    consumerThread.detach();
+  }
+
+  Producer producer(&queue, 0, 10);
   std::thread producerThread(producer);
 
-  Consumer consumer1(&queue);
-  std::thread consumerThread1(consumer1);
-
-  Consumer consumer2(&queue);
-  std::thread consumerThread2(consumer2);
-
-  Consumer consumer3(&queue);
-  std::thread consumerThread3(consumer3);
-
-  Consumer consumer4(&queue);
-  std::thread consumerThread4(consumer4);
-
   producerThread.join();
-  consumerThread1.join();
-  consumerThread2.join();
-  consumerThread3.join();
-  consumerThread4.join();
+
+  std::cout << "done\n";
 
   return 0;
 }
 ```
 
-https://replit.com/@ArtemShoobovych/SlipperyColdMinimalsystem#main.cpp
+<img data-src="/images/non-blocking-algorithms/queue-threads-3.png" alt="Debugging info">
 
-## Simple example
+One can see, producer indeed pushes numbers from 1 to 10 to the queue, in order, one by one.
+
+But consumers, on the other hand, sometimes pull out same element or the elements that should have been removed already.
+
+This is a simple example of race condition. Usually it is solved using locks or mutexes, which we will try out now.
+
+## Preventing race condition
+
+The issue happens when one thread is trying to access the same portion of memory as the other thread is currently using.
+
+An easy solution would be to wrap the whole `poll` and `push` methods with `mutex.lock()` and `mutex.unlock()` calls.
+This would prevent all other threads from accessing the same section of the code.
+
+But that would essentially draw the concurrency useless in this applicaiton - only one consumer thread out of 10 would be utilized:
+
+<img data-src="/images/non-blocking-algorithms/queue-threads-lock-2.png" alt="Thread utilization with locks">
+
+This might be caused by the queue implementation itself - the amount of time any thread is waiting for lock whilst some other thread
+is occupying it is ridiculous.
+
+Consider the double-linked list implementation: its `poll` operation is much faster than the one with single-linked-list. Wrapping it with the `mutex`:
 
 ```cpp
-#include <iostream>
-#include <thread>
-
-class Producer {
+template <class T>
+class Queue {
 private:
-    int* value;
-    int maxValue;
+    Entry<T>* head;
+    Entry<T>* tail;
+    std::mutex lock;
 
 public:
-    Producer(int* value, int maxValue = 10) : value(value), maxValue(maxValue) {}
+    Queue() : head(nullptr), tail(nullptr) {}
 
-    void operator() () {
-        for (int i = 0; i < maxValue; ++i) {
-            *value += 1;
+    void push(T* value) {
+        lock.lock();
+
+        Entry<T>* newHead = new Entry<T>(value);
+
+        if (head == nullptr) {
+            head = newHead;
+            tail = head;
         }
+        else {
+            newHead->setNext(head);
+            head = newHead;
+        }
+
+        lock.unlock();
+    }
+
+    T* poll() {
+        lock.lock();
+
+        if (tail == nullptr) {
+            lock.unlock();
+
+            return nullptr;
+        }
+
+
+        T* value = tail->getValue();
+
+        if (head == tail) {
+            head = nullptr;
+            tail = nullptr;
+        }
+        else {
+            Entry<T>* previous = tail->getPrevious();
+
+            previous->setNext(nullptr);
+            tail = previous;
+        }
+
+        lock.unlock();
+
+        return value;
+    }
+
+    bool isEmpty() {
+        lock.lock();
+
+        bool result = head == nullptr;
+
+        lock.unlock();
+
+        return result;
     }
 };
+```
 
-int main() {
-    int accumulator = 0;
+<img data-src="/images/non-blocking-algorithms/queue-double-linked-list-threads-lock-3.png" alt="Double-linked list with lock">
 
-    Producer p1(&accumulator, 1000);
-    std::thread t1(p1);
+<img data-src="/images/non-blocking-algorithms/queue-double-linked-list-threads-lock-2.png" alt="Double-linked list with lock">
 
-    Producer p2(&accumulator, 1000);
-    std::thread t2(p2);
+Much better - now more than one thread is actually doing some work. But now instead of synchronization and sleeping, threads
+are mostly busy actively waiting for lock to unlock.
 
-    Producer p3(&accumulator, 1000);
-    std::thread t3(p3);
+Long story short, locks do the trick.
+But the article is called "non-blocking algorithms" and using locks in the example above is a perfect example of a **blocking** algorithm.
 
-    Producer p4(&accumulator, 1000);
-    std::thread t4(p4);
+## Analyzing the issue
 
-    t1.join();
-    t2.join();
-    t3.join();
-    t4.join();
+First, we have to determine what is the issue that locks are solving here. Let's look at two examples of how threads are abusing our program without locks.
 
-    std::cout << accumulator << "\n";
+### Polling head and pushing to queue
 
-    return 0;
+Assume queue consists of just one element:
+
+```
+head: { value: 42, next: nullptr, previous: nullptr }
+tail: { value: 42, next: nullptr, previous: nullptr }
+
+tail = head
+```
+
+One thread `t1` is polling the queue and removes the only existing element.
+At the same time, another thread `t2` is kicking in and tries to add an element to the queue.
+
+<div class="row">
+  <div class="col">
+
+```cpp
+if (tail == nullptr) {
+  return nullptr;
+}
+
+T* value = tail->getValue();
+
+if (head == tail) {
+  head = nullptr;
+  tail = nullptr;
+} else {
+  Entry<T>* previous = tail->getPrevious();
+
+  previous->setNext(nullptr);
+  tail = previous;
 }
 ```
+
+  </div>
+  <div class="col">
+
+```cpp
+// this line is not essential for this analysis
+// Entry<T>* newHead = new Entry<T>(value);
+
+if (head == nullptr) {
+  head = newHead;
+  tail = head;
+} else {
+  newHead->setNext(head);
+  head = newHead;
+}
+```
+
+  </div>
+</div>
+
+What can potentially go wrong here (trollface)? Given we have no locks in place?
+Well, numerous combinations. Literally. Let's consider simple cases first:
+
+1. `t1` reads `tail` value first (when executing `tail == nullptr` at line `1` or `tail->getValue()` at line `5` of first code snippet)
+2. `t1` reads `head` value first (when executing `head == tail` at line `7` of first code snippet)
+3. `t1` writes `head` value first (when executing `head = nullptr` at line `8` of first code snippet)
+4. `t1` writes `tail` value first (when executing `tail = nullptr` at line `9` of first code snippet)
+5. `t2` reads `head` value first (when executing `head == nullptr` at line `4` of second code snippet)
+6. `t2` writes `head` value first (when executing `head = newHead` at line `9` of second code snippet)
+
+<!-- 4. `t2` writes `head` value first (when executing `head = newHead` at line `5` of second code snippet)
+5. `t2` writes `tail` value first (when executing `tail = head` at line `6` of second code snippet) -->
+
+These are few examples of how processor might execute the program (in what order). They bring various consequences to how other thread might be executed,
+and that's why I did not list (yet) the other `if` branch of each code snipped.
+
+All those situations above come down to four possible situations:
+
+1. `t1` reads `head` value and immediately after that `t2` writes `head` value
+2. `t1` reads `tail` value and immediately after that `t2` writes `tail` value
+3. `t2` reads `head` value and immediately after that `t1` writes `head` value
+4. `t2` reads `tail` value and immediately after that `t1` writes `tail` value
+
+This issue comes from the concurrent nature of the program itself.
