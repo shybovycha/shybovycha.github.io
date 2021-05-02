@@ -15,16 +15,4 @@ comments: true
       {{ content }}
     </article>
   </main>
-
-  {% if page.tags.size > 0 %}
-      <aside>
-        <div class="nav-content">
-          Tags
-
-          {% for tag in page.tags %}
-            <a href="/tag.html?tag={{ tag }}">{{ tag }}</a>
-          {% endfor %}
-        </div>
-      </aside>
-  {% endif %}
 </div>
