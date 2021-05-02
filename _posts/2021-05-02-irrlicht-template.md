@@ -435,7 +435,7 @@ to a font map (PNG + XML file combo, consumable by Irrlicht) with the out-of-the
 the maximum available file dimensions, reasonable font size (`18px` in my case) and **enabling the alpha** for the font map (otherwise
 all the GUI elements will have ugly black background):
 
-<img data-src="images/irrlicht-template/fonttool.png" alt="FontTool configuration">
+<img data-src="/images/irrlicht-template/fonttool.png" alt="FontTool configuration">
 
 Then the `resetFont` method of the `ApplicationDelegate` uses the new font for the whole application:
 
@@ -450,11 +450,11 @@ It makes a significant difference in the looks of an application:
 
 Before:
 
-<img data-src="images/irrlicht-template/old-font-look.png" alt="FontTool configuration">
+<img data-src="/images/irrlicht-template/old-font-look.png" alt="FontTool configuration">
 
 After:
 
-<img data-src="images/irrlicht-template/new-font-look.png" alt="FontTool configuration">
+<img data-src="/images/irrlicht-template/new-font-look.png" alt="FontTool configuration">
 
 ### `IrrlichtEventReceiver.h`
 
