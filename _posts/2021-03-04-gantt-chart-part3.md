@@ -10,7 +10,7 @@ It all started with this ([blog]({% post_url 2017-04-09-gantt-chart-with-d3 %}))
 
 <img data-src="/images/gantt_chart_part3/gantt-chart-v1.webp" alt="First revision of Gantt chart">
 
-Then I added few features ([blog]({% post_url 2020-08-02-gantt-chart-part-2 %})):
+Then I added few features ([blog]({% post_url 2020-08-02-gantt-chart-part2 %})):
 
 <img data-src="/images/gantt_chart_part3/gantt-chart-v2.webp" alt="Second revision of Gantt chart">
 
