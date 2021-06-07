@@ -205,6 +205,8 @@ For fair comparison, the implementation is kept same (no platform-specific code,
 The test checks both the result and the assumes no exception is thrown, even when the input is incorrect.
 For the interest sake, the exceptions thrown as well as bundle sizes will be listed below.
 
+<!--more-->
+
 ### The test
 
 ```js

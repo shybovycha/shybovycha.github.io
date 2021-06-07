@@ -84,6 +84,8 @@ main = container >>= render ui
     return $ htmlElementToElement elt
 ```
 
+<!--more-->
+
 Immediately the flaws of the infrastructure come out:
 
 ```

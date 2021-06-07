@@ -60,6 +60,8 @@ Program.mkProgram init update view
 
 One can easily see the similarities to Elm (or so I think).
 
+<!--more-->
+
 Rewriting it to the application from above should not be a problem, right?
 
 ```fsharp

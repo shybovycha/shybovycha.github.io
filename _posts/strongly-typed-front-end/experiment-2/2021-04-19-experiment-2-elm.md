@@ -102,6 +102,8 @@ But the type annotation on `init` says it should be:
     Model
 ```
 
+<!--more-->
+
 You can’t have a default value for a type (the way enums are implemented in Elm / Haskell / ML-like languages) that is outside of the type values' range. You have to either use a valid value or stick to something like `Maybe`:
 
 ```haskell

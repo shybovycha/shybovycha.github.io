@@ -70,6 +70,8 @@ let make = (~name) => {
 };
 ```
 
+<!--more-->
+
 And getting hit by another error:
 
 ```
