@@ -1,45 +1,33 @@
-<script async>
+<script>
   window.addEventListener('load', () => {
-    const lazyLoadImage = (imgElt) => {
-      const src = imgElt.getAttribute('data-src');
+    const onIntersect = (entries) => entries.forEach(entry => {
+      if (!entry.isIntersecting || !entry.target.dataset.src) {
+        return;
+      }
+
+      const elt = entry.target;
+      const src = elt.dataset.src;
       const img = new Image();
 
       img.onload = () => {
-        if (!!imgElt.parent) {
-          imgElt.parent.replaceChild(img, imgElt);
+        if (!!elt.parent) {
+          elt.parent.replaceChild(img, elt);
         } else {
-          imgElt.src = src;
+          elt.src = src;
         }
       };
 
       img.src = src;
-    };
-
-    const elementInViewport = (elt) => {
-      const rect = elt.getBoundingClientRect();
-
-      return (rect.top >= 0 && rect.left >= 0 && rect.top <= (window.innerHeight * 3 || document.documentElement.clientHeight * 3));
-    };
-
-    // defer loading images
-    const images = Array.from(document.querySelectorAll('img[data-src]'));
-    let visibleImages = images.filter(img => elementInViewport(img));
-    let invisibleImages = images.filter(img => !elementInViewport(img));
-
-    // immediately load visible images
-    setTimeout(() => visibleImages.forEach(lazyLoadImage), 0);
-
-    // defer invisible images to be lazy-loaded
-    window.addEventListener('scroll', () => {
-      invisibleImages = invisibleImages.filter((imgElt) => {
-        if (elementInViewport(imgElt)) {
-          lazyLoadImage(imgElt);
-          return false;
-        } else {
-          return true;
-        }
-      });
     });
+
+    const observer = new IntersectionObserver(onIntersect, {
+      margin: '40px 0',
+      threshold: 0.01,
+    });
+
+    const images = Array.from(document.querySelectorAll('img[data-src]'));
+
+    images.forEach(image => observer.observe(image));
 
     // defer main.css
     const head = document.querySelector('head');
@@ -56,13 +44,10 @@
 
     setTimeout(() => {
       // load heavy body background
-      let bgSrc = '/images/background2-compressed.jpg';
+      const ua = navigator.userAgent;
+      const bgSrc = (ua.includes('Chrome') || ua.includes('Firefox')) ? '/images/background2-compressed.webp' : '/images/background2-compressed.jpg';
 
-      if (navigator.userAgent.indexOf('Chrome') !== -1 || navigator.userAgent.indexOf('Firefox') !== -1) {
-        bgSrc = '/images/background2-compressed.webp';
-      }
-
-      document.body.style['background'] = 'url(' + bgSrc + ') no-repeat top left fixed';
+      document.body.style['background'] = `url(${bgSrc}) no-repeat top left fixed`;
     }, 0);
   });
 </script>
