@@ -295,7 +295,7 @@ Sspecifically the neccesity to specify every single texture for every single obj
 
 It is just an OBJ file with every material specified:
 
-```obj
+```
 mtllib chicken.mtl
 
 # 262 vertex positions
