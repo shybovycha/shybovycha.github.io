@@ -1,20 +1,19 @@
 {% if paginator.page %}
   <footer>
-    <div class="align-container">
+    <nav>
       {% if paginator.previous_page %}
-        <a href="{{ paginator.previous_page_path }}">&larr; Previous page</a>
-      {% else %}
-        <span></span>
+        <div class="prev">
+          <a href="{{ paginator.previous_page_path }}" class="prev">&larr; Previous page</a>
+        </div>
       {% endif %}
 
-      <span>Page #{{ paginator.page }} of {{ paginator.total_pages }}</span>
+      <div class="current">Page #{{ paginator.page }} of {{ paginator.total_pages }}</div>
 
       {% if paginator.next_page %}
-        <a href="{{ paginator.next_page_path }}">Next page &rarr;</a>
-      {% else %}
-        <span></span>
+        <div class="next">
+          <a href="{{ paginator.next_page_path }}" class="next">Next page &rarr;</a>
+        </div>
       {% endif %}
-    </div>
-    <aside></aside>
+    </nav>
   </footer>
 {% endif %}

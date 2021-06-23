@@ -1,21 +1,17 @@
-<div class="content">
-  <main>
-    {% for post in paginator.posts %}
-      <article>
-        <h1><a href="{{ post.url }}">{{ post.title }}</a></h1>
+{% for post in paginator.posts %}
+  <article>
+    <h1><a href="{{ post.url }}">{{ post.title }}</a></h1>
 
-        <span class="timestamp">
-          {{ post.date | date: "%b %-d, %Y" }}
-        </span>
+    <span class="timestamp">
+      {{ post.date | date: "%b %-d, %Y" }}
+    </span>
 
-        {{ post.excerpt }}
+    {{ post.excerpt }}
 
-        {% if post.content != post.excerpt %}
-          <div>
-            <a class="btn btn-md btn-primary read-more" href="{{ post.url }}">Read more</a>
-          </div>
-        {% endif %}
-      </article>
-    {% endfor %}
-  </main>
-</div>
+    {% if post.content != post.excerpt %}
+      <div>
+        <a class="btn btn-md btn-primary read-more" href="{{ post.url }}">Read more</a>
+      </div>
+    {% endif %}
+  </article>
+{% endfor %}
