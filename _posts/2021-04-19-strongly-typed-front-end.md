@@ -4,7 +4,7 @@ title: 'Strongly-typed front-end'
 date: '2021-04-19T10:35:15+09:00'
 ---
 
-<img data-src="/images/strongly-typed-front-end/serial_experiments_lain.gif" {% imagesize "/images/strongly-typed-front-end/serial_experiments_lain.gif":props %} alt="Serial experiments Lain">
+<img data-src="/images/strongly-typed-front-end/serial_experiments_lain.gif" alt="Serial experiments Lain">
 
 In this little research project I describe my journey through a series of experiments trying out a number of technologies and clashing them against each other.
 

@@ -35,7 +35,7 @@ And so we went non-functional way first... We wrote a Java class, having two met
 words recursively. The idea was, to make a new word by appending it with each letter, then appending
 each of the alphabet' letters to this word and so on, until we get all the words of `N` characters.
 
-<img data-src="/images/looong-tasks-with-clojure/collaborative-java.webp" {% imagesize "/images/looong-tasks-with-clojure/collaborative-java.webp":props %} class="img-responsive" style="max-height: 150px" />
+<img data-src="/images/looong-tasks-with-clojure/collaborative-java.webp" class="img-responsive" style="max-height: 150px" />
 
 When our pretty class was created and working *(for some cases)*, we decided to do it more
 Java-correct and created two more classes, implementing a single interface, doing the same thing

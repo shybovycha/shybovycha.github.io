@@ -251,4 +251,4 @@ Program.mkProgram init update view
 
 TL;DR:
 
-<img data-src="/images/strongly-typed-front-end/not-bad.png" {% imagesize "/images/strongly-typed-front-end/not-bad.png":props %} alt="Not bad">
+<img data-src="/images/strongly-typed-front-end/not-bad.png" alt="Not bad">

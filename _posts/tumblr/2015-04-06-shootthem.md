@@ -24,9 +24,9 @@ Yet, it was and still it **is** a starting point for me 😁
 Here are some of game screenshots:
 
 <div style="display:flex; flex-direction:column; align-content:center;">
-<div><img data-src="https://40.media.tumblr.com/95ddd7383427489e1c49686529772b12/tumblr_inline_nmea8sxPPW1qh5oee_540.webp" {% imagesize "https://40.media.tumblr.com/95ddd7383427489e1c49686529772b12/tumblr_inline_nmea8sxPPW1qh5oee_540.webp":props %} data-orig-height="768" data-orig-width="1366"/></div>
-<div><img data-src="https://40.media.tumblr.com/3c7f02ed76fb4cd8990e92a95d6130bb/tumblr_inline_nmea966kmi1qh5oee_540.webp" {% imagesize "https://40.media.tumblr.com/3c7f02ed76fb4cd8990e92a95d6130bb/tumblr_inline_nmea966kmi1qh5oee_540.webp":props %} data-orig-height="768" data-orig-width="1366"/></div>
-<div><img data-src="https://40.media.tumblr.com/008359ef9bdbe0f5bd2c86c943e538d0/tumblr_inline_nmea9pD5Nj1qh5oee_540.webp" {% imagesize "https://40.media.tumblr.com/008359ef9bdbe0f5bd2c86c943e538d0/tumblr_inline_nmea9pD5Nj1qh5oee_540.webp":props %} data-orig-height="768" data-orig-width="1366"/></div>
-<div><img data-src="https://40.media.tumblr.com/bd88e4fa345121c06a850e82a2b4805b/tumblr_inline_nmeaa4oVAD1qh5oee_540.webp" {% imagesize "https://40.media.tumblr.com/bd88e4fa345121c06a850e82a2b4805b/tumblr_inline_nmeaa4oVAD1qh5oee_540.webp":props %} data-orig-height="768" data-orig-width="1366"/></div>
-<div><img data-src="https://41.media.tumblr.com/441f9207f3eda4d1454202b15666055d/tumblr_inline_nmeaaiOKq51qh5oee_540.webp" {% imagesize "https://41.media.tumblr.com/441f9207f3eda4d1454202b15666055d/tumblr_inline_nmeaaiOKq51qh5oee_540.webp":props %} data-orig-height="768" data-orig-width="1366"/></div>
+<div><img data-src="https://40.media.tumblr.com/95ddd7383427489e1c49686529772b12/tumblr_inline_nmea8sxPPW1qh5oee_540.webp" data-orig-height="768" data-orig-width="1366"/></div>
+<div><img data-src="https://40.media.tumblr.com/3c7f02ed76fb4cd8990e92a95d6130bb/tumblr_inline_nmea966kmi1qh5oee_540.webp" data-orig-height="768" data-orig-width="1366"/></div>
+<div><img data-src="https://40.media.tumblr.com/008359ef9bdbe0f5bd2c86c943e538d0/tumblr_inline_nmea9pD5Nj1qh5oee_540.webp" data-orig-height="768" data-orig-width="1366"/></div>
+<div><img data-src="https://40.media.tumblr.com/bd88e4fa345121c06a850e82a2b4805b/tumblr_inline_nmeaa4oVAD1qh5oee_540.webp" data-orig-height="768" data-orig-width="1366"/></div>
+<div><img data-src="https://41.media.tumblr.com/441f9207f3eda4d1454202b15666055d/tumblr_inline_nmeaaiOKq51qh5oee_540.webp" data-orig-height="768" data-orig-width="1366"/></div>
 </div>

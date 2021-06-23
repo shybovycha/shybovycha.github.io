@@ -10,11 +10,11 @@ This is a follow-up to the blog I wrote a bit over three years ago, [Gantt chart
 
 In the original blog I claimed to implement something like this:
 
-<img data-src="/images/gantt_chart_with_d3/gantt-sample_optimized.webp" {% imagesize "/images/gantt_chart_with_d3/gantt-sample_optimized.webp":props %} alt="">
+<img data-src="/images/gantt_chart_with_d3/gantt-sample_optimized.webp" alt="">
 
 Yet I ended up implementing something more like this:
 
-<img data-src="/images/gantt_chart_with_d3/d3-gantt-chart_optimized.webp" {% imagesize "/images/gantt_chart_with_d3/d3-gantt-chart_optimized.webp":props %} alt="">
+<img data-src="/images/gantt_chart_with_d3/d3-gantt-chart_optimized.webp" alt="">
 
 Does not look quite same, right? It also does not work quite same and lacks few quite important features too.
 
@@ -22,7 +22,7 @@ Don't get me wrong, the original implementation did serve project needs, but it 
 
 Hence I came up with these complaints about the implementation:
 
-<img data-src="/images/gantt_chart_with_d3_part2/complaints-min.webp" {% imagesize "/images/gantt_chart_with_d3_part2/complaints-min.webp":props %} alt="">
+<img data-src="/images/gantt_chart_with_d3_part2/complaints-min.webp" alt="">
 
 Namely, there are three main issues that I see:
 
@@ -37,7 +37,7 @@ Apart from that, there are few technical challenges preventing his whole thing f
 
 Now I want to revise the original implementation and make it a bit more usable, just like this:
 
-<img data-src="/images/gantt_chart_with_d3_part2/chart_with_current_date-min.webp" {% imagesize "/images/gantt_chart_with_d3_part2/chart_with_current_date-min.webp":props %} alt="">
+<img data-src="/images/gantt_chart_with_d3_part2/chart_with_current_date-min.webp" alt="">
 
 <!--more-->
 
@@ -69,7 +69,7 @@ Although the package declares the dependencies, it does not really use them. Wel
 
 D3 itself is a heavy package. Same applies to moment.js. If you bundle the library with anything (I have used Parcel to do it quickly), you'll see that this relatively small library builds into a 500kB bundle.
 
-<img data-src="/images/gantt_chart_with_d3_part2/bundle_size1-min.webp" {% imagesize "/images/gantt_chart_with_d3_part2/bundle_size1-min.webp":props %} alt="">
+<img data-src="/images/gantt_chart_with_d3_part2/bundle_size1-min.webp" alt="">
 
 I think that is quite ridiculous, so here are few considerations:
 
@@ -102,7 +102,7 @@ import { select } from 'd3-selection';
 
 By just using these three imports (and using these functions instead of their `d3.` counterparts), we can half the size of the bundle:
 
-<img data-src="/images/gantt_chart_with_d3_part2/bundle_size2-min.webp" {% imagesize "/images/gantt_chart_with_d3_part2/bundle_size2-min.webp":props %} alt="">
+<img data-src="/images/gantt_chart_with_d3_part2/bundle_size2-min.webp" alt="">
 
 Some of the features (like drawing text) are actually just methods on the `selection`, provided by `d3-select` or the `path` object, provided by `d3-path`.
 
@@ -126,7 +126,7 @@ moment(string); // => new Date(string)
 
 By doing so, we have cut another 60 kB off the bundle!
 
-<img data-src="/images/gantt_chart_with_d3_part2/bundle_size3-min.webp" {% imagesize "/images/gantt_chart_with_d3_part2/bundle_size3-min.webp":props %} alt="">
+<img data-src="/images/gantt_chart_with_d3_part2/bundle_size3-min.webp" alt="">
 
 Before we do hardcore optimizations (getting rid of D3 itself), let us do a bit of feature work first.
 
@@ -169,7 +169,7 @@ linesContainer
   .attr('points', d => d.points);
 ```
 
-<img data-src="/images/gantt_chart_with_d3_part2/chart_with_errors1-min.webp" {% imagesize "/images/gantt_chart_with_d3_part2/chart_with_errors1-min.webp":props %} alt="">
+<img data-src="/images/gantt_chart_with_d3_part2/chart_with_errors1-min.webp" alt="">
 
 For milestones themselves we can add a `pattern` and make it striped:
 
@@ -197,7 +197,7 @@ bars
   .style('stroke', 'black');
 ```
 
-<img data-src="/images/gantt_chart_with_d3_part2/chart_with_errors2-min.webp" {% imagesize "/images/gantt_chart_with_d3_part2/chart_with_errors2-min.webp":props %} alt="">
+<img data-src="/images/gantt_chart_with_d3_part2/chart_with_errors2-min.webp" alt="">
 
 ## Displaying days on a background
 
@@ -226,7 +226,7 @@ grid
 
 As you can see, the width of a rectangle is being calculated based on the total width of an `svg` container and the amount of scale's `ticks`.
 
-<img data-src="/images/gantt_chart_with_d3_part2/chart_with_days1-min.webp" {% imagesize "/images/gantt_chart_with_d3_part2/chart_with_days1-min.webp":props %} alt="">
+<img data-src="/images/gantt_chart_with_d3_part2/chart_with_days1-min.webp" alt="">
 
 One little change to this implementation that I would like to see is alteration in rectangles' colors:
 
@@ -244,7 +244,7 @@ grid
   .style('fill', (d, i) => i % 2 ? '#dedede30' : '#dedede00');
 ```
 
-<img data-src="/images/gantt_chart_with_d3_part2/chart_with_days2-min.webp" {% imagesize "/images/gantt_chart_with_d3_part2/chart_with_days2-min.webp":props %} alt="">
+<img data-src="/images/gantt_chart_with_d3_part2/chart_with_days2-min.webp" alt="">
 
 ## Highlighting the current date
 
@@ -265,7 +265,7 @@ if (nowOnScale >= xScale.range()[0] && nowOnScale <= xScale.range()[1]) {
 }
 ```
 
-<img data-src="/images/gantt_chart_with_d3_part2/chart_with_current_date-min.webp" {% imagesize "/images/gantt_chart_with_d3_part2/chart_with_current_date-min.webp":props %} alt="">
+<img data-src="/images/gantt_chart_with_d3_part2/chart_with_current_date-min.webp" alt="">
 
 ## To be continued
 

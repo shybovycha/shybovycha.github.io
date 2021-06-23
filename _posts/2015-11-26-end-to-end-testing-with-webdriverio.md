@@ -197,9 +197,9 @@ the `describe()` block, then this function (`beforeAll()`) will be run before al
 Assume our application is a simple webshop - it has three pages: `/#/products`, `/#/billing-details`
 and `/#/order-summary`. Rather simple webshop:
 
-<img data-src="/images/e2e-testing-with-webdriverio/webshop1.webp" {% imagesize "/images/e2e-testing-with-webdriverio/webshop1.webp":props %} alt="">
-<img data-src="/images/e2e-testing-with-webdriverio/webshop2.webp" {% imagesize "/images/e2e-testing-with-webdriverio/webshop2.webp":props %} alt="">
-<img data-src="/images/e2e-testing-with-webdriverio/webshop3.webp" {% imagesize "/images/e2e-testing-with-webdriverio/webshop3.webp":props %} alt="">
+<img data-src="/images/e2e-testing-with-webdriverio/webshop1.webp" alt="">
+<img data-src="/images/e2e-testing-with-webdriverio/webshop2.webp" alt="">
+<img data-src="/images/e2e-testing-with-webdriverio/webshop3.webp" alt="">
 
 And here is our first scenario: user selects the iPhone, clicks *"Buy"*, fills in
 his billing details and waits for his brand-new iPhone to come.

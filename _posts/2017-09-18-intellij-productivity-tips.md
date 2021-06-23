@@ -135,7 +135,7 @@ You may disagree with me or find these recommendations useless for yourself, but
     <div>Disable tabs</div>
     <div><kbd>Cmd+Shift+A</kbd> and search for <em>tabs placement</em></div>
     <div>
-        <img data-src="/images/intellij-performance-tips/intellij-disable-tabs-optimized.webp" {% imagesize "/images/intellij-performance-tips/intellij-disable-tabs-optimized.webp":props %} alt="" />
+        <img data-src="/images/intellij-performance-tips/intellij-disable-tabs-optimized.webp" alt="" />
     </div>
 </section>
 

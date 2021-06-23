@@ -9,7 +9,7 @@ date: '2016-02-11T13:47:39+01:00'
         {% include references/two-sides-of-web-application.html %}
     </div>
     <div class="col-md-6 col-xs-12 text-xs-center text-md-right">
-        <img data-src="/images/two-sides-of-web-application/Gyroscopic-Navigational-Footwear-compressed.webp" {% imagesize "/images/two-sides-of-web-application/Gyroscopic-Navigational-Footwear-compressed.webp":props %} class="img-responsive" style="max-height: 150px" alt="Funny image" />
+        <img data-src="/images/two-sides-of-web-application/Gyroscopic-Navigational-Footwear-compressed.webp" class="img-responsive" style="max-height: 150px" alt="Funny image" />
     </div>
 </div>
 
@@ -30,25 +30,25 @@ Now, let’s decide what pages will our application have and what will they look
 <div class="row">
     <div class="col-xs-12 col-md-3">
         <a href="/images/two-sides-of-web-application/part1/screen1.webp">
-            <img data-src="/images/two-sides-of-web-application/part1/screen1.webp" {% imagesize "/images/two-sides-of-web-application/part1/screen1.webp":props %} alt="page 1" class="image-responsive">
+            <img data-src="/images/two-sides-of-web-application/part1/screen1.webp" alt="page 1" class="image-responsive">
         </a>
     </div>
 
     <div class="col-xs-12 col-md-3">
         <a href="/images/two-sides-of-web-application/part1/screen2.webp">
-            <img data-src="/images/two-sides-of-web-application/part1/screen2.webp" {% imagesize "/images/two-sides-of-web-application/part1/screen2.webp":props %} alt="page 2" class="image-responsive">
+            <img data-src="/images/two-sides-of-web-application/part1/screen2.webp" alt="page 2" class="image-responsive">
         </a>
     </div>
 
     <div class="col-xs-12 col-md-3">
         <a href="/images/two-sides-of-web-application/part1/screen3.webp">
-            <img data-src="/images/two-sides-of-web-application/part1/screen3.webp" {% imagesize "/images/two-sides-of-web-application/part1/screen3.webp":props %} alt="page 3" class="image-responsive">
+            <img data-src="/images/two-sides-of-web-application/part1/screen3.webp" alt="page 3" class="image-responsive">
         </a>
     </div>
 
     <div class="col-xs-12 col-md-3">
         <a href="/images/two-sides-of-web-application/part1/screen4.webp">
-            <img data-src="/images/two-sides-of-web-application/part1/screen4.webp" {% imagesize "/images/two-sides-of-web-application/part1/screen4.webp":props %} alt="page 4" class="image-responsive">
+            <img data-src="/images/two-sides-of-web-application/part1/screen4.webp" alt="page 4" class="image-responsive">
         </a>
     </div>
 </div>
