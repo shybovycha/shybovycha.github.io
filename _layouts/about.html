@@ -1,32 +1,11 @@
 ---
-layout: compress
+layout: default
 ---
 
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    {% include head.html %}
+<main>
+  <article>
+    <h1>{{ page.title }}</h1>
 
-    <link rel="stylesheet" href="/css/new-look.css">
-    <link rel="stylesheet" href="/css/about.css">
-  </head>
-
-  <body>
-    {% include header.html %}
-
-    <div class="content">
-      <main>
-        <article>
-          <h1>{{ page.title }}</h1>
-
-          {{ content }}
-        </article>
-      </main>
-    </div>
-
-    {% include analytics.html %}
-    {% include optimizations.html %}
-
-    <script async src="/js/about.js"></script>
-  </body>
-</html>
+    {{ content }}
+  </article>
+</main>
