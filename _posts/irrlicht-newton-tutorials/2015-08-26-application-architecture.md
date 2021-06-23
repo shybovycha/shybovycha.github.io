@@ -15,7 +15,7 @@ Well, there are number of application architecture' levels:
 
 <div class="row">
     <div class="col" style="margin-right: 1em;">
-        <img data-src="/images/irrlicht-newton-tutorials/japan_feudal_system.webp" />
+        <img data-src="/images/irrlicht-newton-tutorials/japan_feudal_system.webp" {% imagesize "/images/irrlicht-newton-tutorials/japan_feudal_system.webp":props %} />
     </div>
     <div class="col">
         <p>

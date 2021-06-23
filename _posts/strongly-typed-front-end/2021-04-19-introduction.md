@@ -330,9 +330,9 @@ Recently I had to use both Cypress and Jest in a project of mine. Cypress was us
 
 And apparently their definitions are different and are clashing, since my VSCode looks like this:
 
-<img data-src="/images/strongly-typed-front-end/ts-vscode-integration-1.png" alt="TS definitions errors in VSCode">
+<img data-src="/images/strongly-typed-front-end/ts-vscode-integration-1.png" {% imagesize "/images/strongly-typed-front-end/ts-vscode-integration-1.png":props %} alt="TS definitions errors in VSCode">
 
-<img data-src="/images/strongly-typed-front-end/ts-vscode-integration-2.png" alt="TS definitions errors in VSCode">
+<img data-src="/images/strongly-typed-front-end/ts-vscode-integration-2.png" {% imagesize "/images/strongly-typed-front-end/ts-vscode-integration-2.png":props %} alt="TS definitions errors in VSCode">
 
 Apparently, I needed two separate `tsconfig.json` files, for each specific set of tests to even compile the thing. Which is still not recognized by VSCode.
 

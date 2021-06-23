@@ -19,7 +19,7 @@ In essence, processor consists of these main blocks:
 
 To best illustrate our examples, consider this much simplified processor model:
 
-<img data-src="/images/software-engineering-101/simplified-processor-architecture.webp" alt="">
+<img data-src="/images/software-engineering-101/simplified-processor-architecture.webp" {% imagesize "/images/software-engineering-101/simplified-processor-architecture.webp":props %} alt="">
 
 It has only three registers, ALU and data/address buses. I will explain all the examples below in reference to this processor.
 
@@ -294,7 +294,7 @@ by another one - it can be run on a different core or processor to speed up the 
 That's why our program will not contain programmer-defined commands only. Let's have a look at the
 standard Windows executable file (PE32) structure:
 
-<img data-src="/images/functional-programming-in-a-real-world/pe32-diagram.webp" alt="">
+<img data-src="/images/functional-programming-in-a-real-world/pe32-diagram.webp" {% imagesize "/images/functional-programming-in-a-real-world/pe32-diagram.webp":props %} alt="">
 
 You can see it has lots of *headers*, which describe different aspects of a program and
 two major *sections* - **text** (containing the code itself) and **data** (containing all
@@ -461,7 +461,7 @@ electronic impulse is sent over all the processor's schematic to enforce its sta
 Remember I have mentioned optimization a while ago? Here's a sample table of how many clocks do some processor
 instructions take (in average):
 
-<img data-src="/images/functional-programming-in-a-real-world/cpu-operations-cost.webp" alt="">
+<img data-src="/images/functional-programming-in-a-real-world/cpu-operations-cost.webp" {% imagesize "/images/functional-programming-in-a-real-world/cpu-operations-cost.webp":props %} alt="">
 
 With this knowledge we can easily talk about more high-level things.
 

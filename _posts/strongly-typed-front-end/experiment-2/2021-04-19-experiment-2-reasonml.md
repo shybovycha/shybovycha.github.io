@@ -462,4 +462,4 @@ module Counter = {
 
 TL;DR:
 
-<img data-src="/images/strongly-typed-front-end/one-can-not-simply.png" alt="One can't simply...">
+<img data-src="/images/strongly-typed-front-end/one-can-not-simply.png" {% imagesize "/images/strongly-typed-front-end/one-can-not-simply.png":props %} alt="One can't simply...">

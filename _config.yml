@@ -34,6 +34,7 @@ plugins:
   - jekyll-paginate
   - jekyll-sitemap
   - jemoji
+  - jekyll-image-size
 
 exclude:
   - _plugins

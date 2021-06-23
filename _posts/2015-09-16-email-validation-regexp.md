@@ -7,7 +7,7 @@ published: True
 
 ---
 
-<img data-src="/images/regex-compressed.webp" class="img-responsive img-sm img-rounded pull-right">
+<img data-src="/images/regex-compressed.webp" {% imagesize "/images/regex-compressed.webp":props %} class="img-responsive img-sm img-rounded pull-right">
 
 At my work we've lately been having a discussions on email validation. I recalled a post on
 [habrahabr](http://habrahabr.ru/post/55820/), showing
