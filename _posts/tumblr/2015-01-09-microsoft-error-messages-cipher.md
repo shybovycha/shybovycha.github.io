@@ -8,7 +8,8 @@ tags:
 - fun
 tumblr_url: http://shybovycha.tumblr.com/post/107622125006/microsoft-error-messages-cipher
 ---
-<p>I have a T-SQL trigger creation script, which runs OK:</p>
+
+I have a T-SQL trigger creation script, which runs OK:
 
 ```sql
 CREATE TRIGGER data_modified ON Northwind.dbo.Customers FOR INSERT, UPDATE, DELETE
@@ -40,14 +41,18 @@ begin
 end
 ```
 
-<p>Yet, when I run some <code>INSERT</code> query, I got an error saying:</p>
+Yet, when I run some `INSERT` query, I got an error saying:
 
-```sql
+```
 Msg 245, Level 16, State 1, Procedure data_modified, Line 21
 Conversion failed when converting the varchar value 'inserted ' to data type int.
 ```
 
-<p>Let&rsquo;s look onto the source of that trigger, at line 18:</p>
+Mysterious, isn't it? Let's dig in, shall we?
+
+<!--more-->
+
+Let's look onto the source of that trigger, at line 18:
 
 ```sql
 USE [Northwind]
@@ -86,27 +91,27 @@ GO
     end
 ```
 
-<p>Here&rsquo;s the error:</p>
+Here's the error:
 
 ```sql
 if exists(select * from inserted)
 ```
 
-<p>But wait, that can&rsquo;t be true!</p>
+But wait, that can't be true!
 
-<p>The problem is a bit deeper, with the <code>@rows</code> variable:</p>
+The problem is a bit deeper, with the `@rows` variable:
 
 ```sql
 print 'updated ' + @rows + ' rows';
 ```
 
-<p>while being declared as:</p>
+while being declared as:
 
 ```sql
 declare @rows as int;
 ```
 
-<p>It can not be printed right away, so it needs to be cast:</p>
+It can not be printed right away, so it needs to be cast:
 
 ```sql
 CREATE TRIGGER data_modified ON Northwind.dbo.Customers FOR INSERT, UPDATE, DELETE
@@ -140,4 +145,4 @@ begin
 end
 ```
 
-<p>Try to guess where&rsquo;s your mistake, using that error message! ;)</p>
+Try to guess where's your mistake, using that error message! 😉
