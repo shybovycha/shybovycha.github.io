@@ -9,4 +9,4 @@ tumblr_url: http://shybovycha.tumblr.com/post/109305586966/robo-created-in-a-cin
 
 This is a 3D model of a robot (called him Robo) which I made in Cinema4D some two and a half years ago.
 
-<img src="/tumblr_files/tumblr_niufk6p7gs1qio88bo1_1280.png" alt="Robot model" />
+<img src="/tumblr_files/tumblr_niufk6p7gs1qio88bo1_1280.jpg" alt="Robot model" />
