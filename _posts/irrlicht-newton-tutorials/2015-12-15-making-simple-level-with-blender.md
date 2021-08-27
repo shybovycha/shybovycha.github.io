@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Making simple level with Blender
+title: "Irrlicht Newton GD tutorial: making simple level with Blender"
 date: '2015-12-15T18:06:00+01:00'
 ---
 

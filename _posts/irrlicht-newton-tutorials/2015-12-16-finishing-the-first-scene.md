@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Finishing the first scene
+title: Irrlicht Newton GD tutorial: finishing the first scene"
 date: '2015-12-16T18:00:00+01:00'
 ---
 

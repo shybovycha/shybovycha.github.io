@@ -1,6 +1,6 @@
 ---
 layout: post
-title: First script
+title: "Irrlicht Newton GD tutorial: first script"
 date: '2015-08-28T18:10:00+01:00'
 ---
 

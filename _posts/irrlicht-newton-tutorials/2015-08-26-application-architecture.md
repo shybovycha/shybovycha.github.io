@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Application architecture
+title: "Irrlicht Newton GD tutorial: application architecture"
 date: '2015-08-26T21:50:00+01:00'
 ---
 

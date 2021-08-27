@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Prepare to add some Newtonianity
+title: "Irrlicht Newton GD tutorial: prepare to add some Newtonianity"
 date: '2015-08-29T18:06:00+01:00'
 ---
 
