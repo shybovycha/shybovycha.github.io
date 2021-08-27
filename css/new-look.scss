@@ -35,7 +35,7 @@ img {
 }
 
 pre {
-    overflow: scroll;
+    overflow: auto;
 
     &.highlight {
       padding: 0.5em;
