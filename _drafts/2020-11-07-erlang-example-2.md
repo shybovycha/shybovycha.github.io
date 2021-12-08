@@ -9,14 +9,14 @@ Quite some time ago I've published a <a href="{% post_url tumblr/2015-01-28-erla
 In this post I would like to elaborate more on the topic of Erlang, for a number of reasons:
 
 * it is a pretty simple language itself
-* the distributed systems topic disturbs me more and more these days
+* the distributed systems topic gets more and more of my attention these days
 * when I was looking at Erlang, I would love to see a more advanced tutorial myself _(more practical things and more Erlang platform features showcased)_
 
 <!--more-->
 
 ## Language features
 
-Kicking off with the language features itself, let's discover few data structures available out of the box.
+Kicking off with the language features, let's discover few data structures available out of the box.
 
 I was thinking for few a while about what could be showcased in Erlang. I think the system we'll develop closer to the end of this blog
 is quite nice.
@@ -268,7 +268,7 @@ Let's start with few simple but practical examples.
 
 ### Web-server
 
-Erlang comes packed with features. One of them is bundled web-server. Some time ago I've published a post about a very simple Tetris game, which I've crafted one evening. The thing is: that game is nothing more than a single HTML page. What we can do now is start a web server, which will listen for connections on `8080` port and serve them a static file with the game.
+Erlang comes packed with a lot of features. One of them is bundled web-server. Some time ago I've published a post about a very simple Tetris game, which I've crafted one evening. The thing is: that game is nothing more than a single HTML page. What we can do now is start a web server, which will listen for connections on `8080` port and serve them a static file with the game.
 
 The code is pretty simple:
 
@@ -284,6 +284,46 @@ run_server() ->
 stop_server(Pid) ->
   inets:stop(httpd, Pid).
 ```
+
+But modern web applications require a server that will have some sort of an API. Take REST for example - when a URL of a specific format with specific HTTP method (`GET`, `PUT`, `POST`, `DELETE`, etc.) is hit on the server, some behaviour is expected. For instance, `curl -X GET http://server.address/posts` request is expected to return a list of all `Post` entities (whatever that means in the context of an application), whereas `curl -X PUT http://server.address/posts -d '{ "title": "post #1", "content": "blah" }' -H "Content-Type: application/json"` is expected to create a `Post` entity with fields `title` and `content` from the request.
+
+The bundled Erlang HTTP server, `httpd` kind of allows for that, except the URLs will be in a format `cgi-bin/erl/mymodule:mymethod`, which is not exactly what we want.
+But just for the sake of example, here's how it would look like implemented with httpd:
+
+```erlang
+-module(posts).
+
+-export([get/3, all/3, create/3]).
+
+get(SessionID, Env, Input) ->
+  mod_esi:deliver(SessionID, "Content-Type:application/json\r\n\r\n"),
+  mod_esi:deliver(SessionID, do_get(Input)).
+
+do_get(Input) ->
+  QueryParams = uri_string:dissect_query(Input),
+
+  { _IdParamName, Id } = lists:search(fun({ Key, _Value }) -> Key == "id" end),
+
+  ["{\"id\":1,\"title\": \"post 1\", \"content\": \"blah\"}"].
+
+all(SessionID, Env, Input) ->
+  mod_esi:deliver(SessionID, "Content-Type:application/json\r\n\r\n"),
+  mod_esi:deliver(SessionID, do_all()).
+
+do_all() ->
+  ["[{\"title\": \"post 1\", \"content\": \"blah\"}]"].
+
+create(SessionID, Env, Input) ->
+  mod_esi:deliver(SessionID, "Content-Type:application/json\r\n\r\n"),
+  mod_esi:deliver(SessionID, do_create(Input)).
+
+do_create(Input) ->
+  % here the Input variable will contain the POST request' body, which will most likely be a JSON, which we also will need to parse
+  ["Status: 204 No Content"].
+```
+
+As you can see, this is a pretty complex example, since the API of `httpd` module is rather low-level - we have to explicitly form a HTTP response and send it back to clients.
+Although not impossible, it is just not so pleasant development experience as it could be. Read on to see how it could be significantly improved.
 
 ### Mnesia
 
@@ -374,8 +414,112 @@ find_account_by_email(Email) ->
 
 ## Ecosystem
 
-Using [Hex](https://hex.pm/) (or `rebar3`) is relatively easy. Yet it opens access to thousands of packages available out there.
+Using [Rebar 3](https://hex.pm/) (or `Hex` for Elixir) is relatively easy. Yet it opens access to thousands of packages available out there.
 
-### CouchDB
+### Creating a project
+
+To create a project with rebar3 support, you can now use `rebar3 new <template> <app-name>`. For just an application, you can use `app` template name. 
+For libraries - use `lib`. Simple!
+
+To add a dependency, edit the `rebar.config` file in the application directory and change the `deps` dictionary:
+
+```erlang
+{deps, [
+  {epsql, "~> 4.6.0"} % PostgreSQL package
+]}.
+```
+
+Then, since a single project can have multiple applications, one needs to add the dependency to each application which requires that dependency. This
+is done in the `*.app.src` file in the *application* root directory (for instance, `myapp/appname/appname.app.src`):
+
+```erlang
+{application, appname,
+ [{description, ""},
+  {registered, []},
+  {modules, []},
+  {applications, [kernel,
+                  stdlib,
+                  epsql]},
+  {mod, {appname_app, []}},
+  {env, []}
+ ]}.
+```
+
+Building the project with dependencies is then done using the `rebar3 compile` command from the *project* root directory (following the example above, `myapp/`).
+
+To run an application, use the `rebar3 shell --apps <comma-separated-app-names>` from the *project* root directory (e.g. `rebar3 shell --apps appname`).
 
 ### PostgreSQL
+
+Working with PostgreSQL in Erlang is possible through one of many libraries available in [rebar3 repository](https://hex.pm/packages).
+In this blog I will use [`epsql`](https://github.com/epgsql/epgsql) library.
+
+For the most part, when working with the database, you only need a handful of features from the database library:
+
+* connecting to the database with specific parameters (connection pool size, security options, timeouts, etc.)
+* executing prepared statements (allowing the DB communication layer - the library - to safely inject query parameters, preventing the SQL injection)
+* support for `SELECT`, `INSERT`, `UPDATE` and `DELETE` statements (with very few exceptions, these form 95% of all the use cases, in my experience)
+* retrieve query results (as list of dictionaries of sorts)
+
+epsql library provides all of these with the following functions:
+
+* `epgsql:connect/1` (and its variations) in combination with `epgsql:close/1` to close the connection, if ever needed; `epgsql:connect/1` takes a dictionary of options, including
+  * `host`
+  * `username` and `password`; optionally - `ssl` and `ssl_opts` for secure connections
+  * `database`
+  * `timeout` - for limiting the connection time
+* `epgsql:squery/2` and `epgsql:equery/3` to query the database
+  * `epgsql:squery/2` will execute a simple query (takes connection and a query string as parameters, returns a tuple of status - `ok` or `error`, list of columns and list of rows)
+  * `epgsql:equery/3` will create an unnamed prepared statement (yes, you can have named prepared statements for future reuse), safely inject the query parameters (specified as `$1`, `$2`, `$3` and so on in query string, the second argument) passed as the third argument (a list of parameters) and execute the statement on a database connection (passed as the first argument)
+
+Here are few simple examples of the above functions:
+
+```erlang
+connect_to_blog_db() -> 
+  { ok, C } = epsql:connect(#{ host => "localhost", username => "root", password => "****", database => "blog" }),
+  
+  C.
+
+create_blog(Title, Content) ->
+  C = connect_to_blog_db(),
+
+  { ok, Count } = epsql:equery(C, "INSERT INTO posts (title, content) VALUES ($1, $2)", [ Title, Content ]),
+
+  Count == 1.
+
+get_blogs() ->
+  C = connect_to_blog_db(),
+
+  { ok, Columns, Rows } = epsql:squery(C, "SELECT title, content FROM posts"),
+
+  Rows.
+```
+
+### Cowboy HTTP server
+
+As shown above, the default HTTP server bundled with Erlang standard library (OTP) is rather low-level.
+There are few options in rebar3 package repository which significantly improve the situation. One of them is [`cowboy`](https://ninenines.eu/docs/en/cowboy/).
+
+The web server with Cowboy could look like this (similarly to the one described above with `httpd`):
+
+```erlang
+start(_Type, _Args) ->
+  Dispatch = cowboy_router:compile([
+    %% {HostMatch, list({PathMatch, Handler, InitialState})}
+    { '_', [
+      { "/posts", all_posts, [] },
+      { "/posts/:id", get_post, [] } ] }
+  ]),
+  
+  %% Name, NbAcceptors, TransOpts, ProtoOpts
+  {ok, _} = cowboy:start_clear(my_http_listener,
+    [{port, 8080}],
+    #{env => #{dispatch => Dispatch}}
+  ),
+
+  hello_erlang_sup:start_link().
+```
+
+## More realistic example
+
+Let's take a look at a practical example of using Erlang - we'll build a small web application with the database.

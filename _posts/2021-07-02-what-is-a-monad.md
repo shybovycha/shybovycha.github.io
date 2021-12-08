@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Monads"
+title: "What is a Monad?"
 ---
 
 ## What is a monad?
@@ -98,7 +98,7 @@ Where are monads on this? Monads are basically just wrappers around other values
 For example, reading from STDIN would be something like `IO<String>` - a monad, whose value will be provided eventually. So your program will be defined as a function something like
 
 ```scala
-main(IO[String] input): IO[String] =
+def main(IO[String] input): IO[String] =
   input.map { name -> printLn("Hello, ${name}") }
 ```
 
