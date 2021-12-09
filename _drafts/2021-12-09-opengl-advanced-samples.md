@@ -523,21 +523,41 @@ That sounds easy on paper, but how does it actually detect the edges? The algori
 
 ### Screen-space ambient occlusion
 
-_TBD_
+As you might know, rendering big and complex scenes is expensive in both time, memory and computational resources. It is not always desirable or even possible to render all effects like reflections and shadows for each and every polygon of the scene.
+
+To address this issue, techniques like ambient occlusion (specifically, screen-space ambient occlusion, in that they only work in screen space, combined with deferred rendering, as a post-processing step) exist. This technique in particular allows simulating the shadow cast by the objects by darkening the pixels which are occluded by other objects from the perspective of light.
+
+Sounds very much like shadow mapping, doesn't it? But the big difference here is that in shadow mapping you need to render an entire scene from the perspective of each light source. Even if you trim the scene to only the objects visible by the light (which is a quite nice optimization, but for the most part it is also expensive), you will still have to render every polygon.
+
+In contrast, ambient occlusion is calculated for a fixed number of samples around a given pixel. On top of that, the pixels we analyze are only in screen space. On top of that, we do not need to render all the geometry around a given pixel - we re-use the position information rendered as one of the attributes in first pass of a deferred rendering. To reduce the cost of this algorithm even further, you do not need to render anything from the light perspective - you just calculate the sample rays of light for each light, knowing its position and direction.
+
+You will need to store the position of each fragment in camera space (yes, camera space, not light space). Then, for each pixel, you iterate each source of light to calculate the direction of light and samples for a given pixel' position in camera space. You assume you have a sphere of a given constant radius around the pixel' position and you generate a certain constant number of random samples within that sphere. Since the samples are also in the camera space, you can use these positions as-is. Given the information about positions of neighbour pixels in camera space, you then compare those positions to the samples within the sphere - if the sample's position is further from the camera than the neighbour pixel's position - this sample is occluded by some polygon. You then calculate the ratio of occluded samples to the non-occluded ones and based on that give the original pixel its shadow value.
 
 ### Horizon-based ambient occlusion
 
-_TBD_
+Screen-space ambient occlusion algorithm (aka SSAO) is fine, but it can use even further improvement. Instead of calculating random samples inside imaginary sphere, you can be a little smarter about those samples and only generate them in a hemisphere, oriented towards the camera. Then, instead of checking the camera-space positions of samples and pixels, you can use the "horizon" of a current pixel and calculate the "horizion" for each of the samples. You can then use the angle difference between those two "horizons" to see if pixels are potentially occluded by some other polygon.
+
+This technique gives better results for corners and edges than conventional SSAO technique.
 
 ### Raymarching
 
-_TBD_
+Have you ever seen those beautiful rays of light passing through the clouds and becoming actually visible _rays_? There are lots of these in games too. They are also known as "god rays". They are actually tiny particles (presumingly dust) hanging in the air and reflecting the light.
+
+The technique which allows to achieve such an effect (and tons of others) is called "raymarching".
+
+The idea is that you store the pixels' depth and position information in both light space and camera space and then you cast an imaginary ray from the camera towards each pixel rendered. You then split this ray into a constant number of parts and project the resulting points into light space. You then compare the position of the point on the ray in light space to the depth value stored in the light space, and if the depth value stored is greater than the position on the ray - the point on the ray is visible from the perspective of a light, so you make the pixel on the screen a bit brighter. The more parts of the ray are visible by the light - the brighter the pixel will be.
 
 ## Common rendering techniques
 
+There are few simpler effects and techniques, which are more widely known (in that more tutorials on the Internet discuss these to some degree), but I feel like describing them as well.
+
 ### Bloom
 
-_TBD_
+Bloom is a relatively simple effect, but it looks really nice.
+
+The idea is that you render the scene to a framebuffer, storing the light emitting value per pixel. You then blur the resulting image (using Gaussian blur, for instance) and blend the original scene image with the blurred one.
+
+The only complex part here is Gaussian blur.
 
 ### Particle systems
 
@@ -545,15 +565,21 @@ Particle simulation is not really a technique in itself - it is a very big topic
 
 ### Skybox
 
-_TBD_
+Sky can really add atmosphere to your game. Rendering it might be as simple as rendering an inverted cube with texture on the insides of its faces and moving it along with the camera (or rather rendering it in camera space, not world space).
+
+The skybox can use normal textures or it could use cubemaps - literally a cube with textures on each of its six sides. Cubemaps allow you to calculate the texture coordinates by only having a vector from the center of the cube in the direction of view.
 
 ### Point lighting
 
-_TBD_
+When people are talking about point light sources, they usually mean light attenuation (light intensity fading with the distance from the light source) and object shading calculation for each light source around a given polygon (you calculate the Blinn-Phong shading considering each light source and light attenuation).
+
+A bit more interesting here is the shadow casting technique. Instead of rendering shadow map as a simple 2D texture, you will need to utilize the cubemap, rendering an entire scene for each light source six times. But bear in mind: this is a very calculation-intensive technique, so refrain from doing so on the large landscapes. Alternatively, you should limit the light sources to the ones that are visible (or whose shadows are visible) in the camera space.
 
 ### Reflections
 
-_TBD_
+Reflections on the water surface are relatively simple to implement - for each pixel you calculate the direction to the camera upside-down (simply create a new view matrix with "up" vector pointing down) and then use the GLSL function `reflect()` to calculate the reflected vector. You then render take the color at the reflected position and add it (multiplied by some transparency factor) to the original pixel' color.
+
+The concept of cubemaps is not only useful for skyboxes, but could also be used to calculate reflections on the objects. For each reflective object you render the scene from its position to the cubemap texture (so you will have to render the scene six times, which is huge overhead in itself) and when rendering the object, you reflect the camera view vector (vector from the pixel in world space to camera position) and sample the cubemap with that vector. You then add the sampled color to the source pixel color to receive a nice reflective surface effect.
 
 ## References
 
