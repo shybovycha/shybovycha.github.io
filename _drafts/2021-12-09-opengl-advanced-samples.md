@@ -484,7 +484,11 @@ The simplest idea of shadow mapping is: you render a scene depths (each pixel re
 
 ### Percentage-close filtering
 
-Percentage-close filtering, or PCF, is a technique of smoothing out those hard-edge shadows. The idea is that you do not calculate whether the pixel (say, on a surface) will be in shadow or not, but rather calculate the probability of that pixel being in shadow. If the probability is high enough - you treat it as if it was in the shadow. This allows you to get somewhat soft shadows.
+Percentage-close filtering, or PCF, is a technique of smoothing out those hard-edge shadows. Instead of calculating whether the pixel (say, on a surface) is in shadow or not you calculate the median of all the neighbours of an are around that pixel (say, 5x5 pixels).
+
+### Variance shadow mapping
+
+Variance shadow mapping is yet another technique of smoothing hard shadows. Unlike PCF, it has constant computation time. The idea is that you calculate the probability of a pixel being in shadow. If the probability is high enough - you treat it as if it was in the shadow. For the calculations, the two numbers (called "moments") are calculated during the shadow mapping, essentially being a function of the pixel depth (in light space) and a function of the same depth, squared. During the final scene rendering, you substitute the values in Chebyshev's inequality to get the probability.
 
 ### Cascaded shadow mapping
 
@@ -492,13 +496,30 @@ This is rather quality- and performance-optimization technique. It could also be
 
 Thus, you "divide" your camera space into few sections (aka "cascades") and render shadows for each of those cascade separately, using the same size of the shadow map texture. The trick is that the cascade closest to the camera is the smallest, so the shadows have very high level of detail. The section of a camera space a bit further away is larger, but since the shadow map has the same size - the quality of shadows is lower. The furthest section of the camera space has the largest size, so the quality of the shadows in the same size of the shadow map will be the worst. But since the objects in that section are also furthest away from the camera - they don't have to have the most detailed shadows. In fact, you can go even further and only split half of camera space into three (or more, if you will) cascades, leaving the other half, the furthest one from the camera, completely out of the shadow mapping process. This way the objects far away won't even have any shadows at all.
 
+### Anti-aliasing
+
+You might have noticed that rendering scene from the framebuffer results in most lines looking like stairs, with very distinct hard edges around every shape.
+This is most obvious during the deferred rendering.
+
+In order to prevent (or rather somewhat mitigate) this issue, the technique called "anti-aliasing" is used. It softens the pixels around those hard edges so they gradually change color instead of hard jump.
+
 ### Multi-sampled anti-aliasing
 
-_TBD_
+I have never understood the concept of multi-resolution pyramid (even when working on my second M.Sc. thesis) until I got myself into all this OpenGL stuff.
+The way you can soften the rapid change of a color in neighbour pixels is to upscale the image image few times and then downscale it back. This way you will loose a lot of detail, getting an average color value for each scaling level.
+OpenGL actually comes bundled with the multi-sampled rendering feature - when you create a framebuffer you can specify the number of samples for texture.
 
 ### Fast-approximation anti-aliasing
 
-_TBD_
+Multi-sampled rendering is fine, but usually it comes at a cost of higher memory consumption - for each multi-sampled texture you have to allocate memory.
+The more multi-sampled textures you have - the more memory your application consumes.
+
+Fast approximation works at constant time and memory and thus is one of the most popular anti-aliasing algorithms used.
+It is also quite easy to implement, which makes it all more appealing.
+
+The algorithm actually detects the edges on the image and then blends the colors in the direction perpendicular to the edge.
+
+That sounds easy on paper, but how does it actually detect the edges? The algorithm calculates the luminance of the pixels surrounding a given central pixel by calculating a dot product of each pixel' color and a constant luminance vector. It then compares the luminance in two directions vertically and two directions horizontally to find the edge' direction.
 
 ### Screen-space ambient occlusion
 
@@ -533,3 +554,8 @@ _TBD_
 ### Reflections
 
 _TBD_
+
+## References
+
+https://on-demand.gputechconf.com/gtc/2014/video/S4379-opengl-44-scene-rendering-techniques.mp4
+https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-8-summed-area-variance-shadow-maps
