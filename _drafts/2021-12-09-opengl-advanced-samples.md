@@ -32,7 +32,6 @@ I also have implemented a sample of using [imgui](https://github.com/ocornut/img
 
 Again, to get this out of the way and not go into too much detail on these topics, few words on how I approached OpenGL from my very much outdated background (think OpenGL ver. 1).
 
-
 ### Getting started with SFML
 
 Creating a window and handling user input pretty much remained the same:
@@ -476,30 +475,66 @@ You can combine rendering multiple different geometries with instanced rendering
 
 Top it up with the fact that you can store the draw commands in a buffer and you can generate this buffer using compute shaders (not covered yet) and you can have a rendering engine which works almost entirely on the GPU, saving you a lot of synchronization and communication between CPU and GPU.
 
+Read more:
+
+[1](https://on-demand.gputechconf.com/gtc/2014/video/S4379-opengl-44-scene-rendering-techniques.mp4)
+
 ## Rendering techniques
 
 ### Simple shadow mapping
 
 The simplest idea of shadow mapping is: you render a scene depths (each pixel represents a distance from camera to the object) from the perspective of a light source to a separate render target. Then you render your scene normally from the perspective of a camera and for each pixel you compare its distance to the light source (take position of a pixel and subtract position of a light source from it) - if scene pixel is further from the light than the same pixel' depth in the light space - there's some other thing blocking the light, so this pixel is in the shadow.
 
+This technique, however, introduces a number of artifacts.
+
+The simplest and easily solved issue is the rough edge of the shadow where there should be none, caused by the bounds of the light projection matrix. One can simply add a check in the shader to see if the pixel is out of the shadow map bounds and light those pixels by default.
+
+Shadow aliasing - when you are trying to render a whole lot of objects on a small texture, shadow edges have stair-like shape instead of smooth lines. The bigger the shadow map, the more cube-like shadows will become. These artifacts are addressed by a number of different techniques, like cascaded shadow maps (aka parallel-slice aka parallel-split shadow mapping).
+
+<img data-src="/images/opengl-advanced-samples/sample-09-shadow-mapping-issue-aliasing.png">
+
+Sometimes you might see lines of shadows where there should be none. This is caused by the lack of precision of the shadow map - the depth values simply do not have enough data to represent that half-of-a-pixel depth. This could be somewhat mitigated by adding a small factor to the depth sampled from a shadow map. But such a solution presents a yet new artifact - peter-panning, when the objects rendered "fly" over a surface beneath them.
+
+There are other algorithms addressing the above artifacts - PCF and variance shadow mapping.
+
 ### Percentage-close filtering
 
 Percentage-close filtering, or PCF, is a technique of smoothing out those hard-edge shadows. Instead of calculating whether the pixel (say, on a surface) is in shadow or not you calculate the median of all the neighbours of an are around that pixel (say, 5x5 pixels).
 
+<img data-src="/images/opengl-advanced-samples/sample-09-shadow-mapping-pcf.png">
+
 ### Variance shadow mapping
 
-Variance shadow mapping is yet another technique of smoothing hard shadows. Unlike PCF, it has constant computation time. The idea is that you calculate the probability of a pixel being in shadow. If the probability is high enough - you treat it as if it was in the shadow. For the calculations, the two numbers (called "moments") are calculated during the shadow mapping, essentially being a function of the pixel depth (in light space) and a function of the same depth, squared. During the final scene rendering, you substitute the values in Chebyshev's inequality to get the probability.
+[Variance shadow mapping](https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-8-summed-area-variance-shadow-maps) is yet another technique of smoothing hard shadows. Unlike PCF, it has constant computation time. The idea is that you calculate the probability of a pixel being in shadow. If the probability is high enough - you treat it as if it was in the shadow. For the calculations, the two numbers (called "moments") are calculated during the shadow mapping, essentially being a function of the pixel depth (in light space) and a function of the same depth, squared. During the final scene rendering, you substitute the values in Chebyshev's inequality to get the probability.
+
+<img data-src="/images/opengl-advanced-samples/sample-09-shadow-mapping-vsm.png">
 
 ### Cascaded shadow mapping
 
 This is rather quality- and performance-optimization technique. It could also be used for not just shadow mapping, but for various objects rendering (like rendering grass, small terrain details, terrain itself, etc.). The idea is that there is no need to render high-detailed shadows further from the camera. Assume you have a large landscape. If you render detailed shadows for an entire landscape to rather limited texture - you will end up having each object have big pixelated shadow. Whilst you want objects closer to the camera look sharp and nice. And the trees in the distance - well, there is no need for them to have that nice shadows.
 
+<img data-src="/images/opengl-advanced-samples/sample-12-cascade-shadow-mapping-1.png">
+<img data-src="/images/opengl-advanced-samples/sample-12-cascade-shadow-mapping-2.png">
+<img data-src="/images/opengl-advanced-samples/sample-12-cascade-shadow-mapping-3.png">
+
 Thus, you "divide" your camera space into few sections (aka "cascades") and render shadows for each of those cascade separately, using the same size of the shadow map texture. The trick is that the cascade closest to the camera is the smallest, so the shadows have very high level of detail. The section of a camera space a bit further away is larger, but since the shadow map has the same size - the quality of shadows is lower. The furthest section of the camera space has the largest size, so the quality of the shadows in the same size of the shadow map will be the worst. But since the objects in that section are also furthest away from the camera - they don't have to have the most detailed shadows. In fact, you can go even further and only split half of camera space into three (or more, if you will) cascades, leaving the other half, the furthest one from the camera, completely out of the shadow mapping process. This way the objects far away won't even have any shadows at all.
+
+<img data-src="/images/opengl-advanced-samples/Screen Shot 2021-07-05 at 1.28.47 pm.png">
+
+Read more:
+
+[1](https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-10-parallel-split-shadow-maps-programmable-gpus)
+[2](https://sudonull.com/post/110380-Shadow-Rendering-Using-Parallel-Split-Shadow-Mapping)
+[3](https://docs.microsoft.com/en-us/windows/win32/dxtecharts/cascaded-shadow-maps)
+[4](https://ogldev.org/www/tutorial49/tutorial49.html)
 
 ### Anti-aliasing
 
 You might have noticed that rendering scene from the framebuffer results in most lines looking like stairs, with very distinct hard edges around every shape.
 This is most obvious during the deferred rendering.
+
+<img data-src="/images/opengl-advanced-samples/sample-16-anti-aliasing-2.png">
+<img data-src="/images/opengl-advanced-samples/sample-16-anti-aliasing-3.png">
 
 In order to prevent (or rather somewhat mitigate) this issue, the technique called "anti-aliasing" is used. It softens the pixels around those hard edges so they gradually change color instead of hard jump.
 
@@ -521,6 +556,9 @@ The algorithm actually detects the edges on the image and then blends the colors
 
 That sounds easy on paper, but how does it actually detect the edges? The algorithm calculates the luminance of the pixels surrounding a given central pixel by calculating a dot product of each pixel' color and a constant luminance vector. It then compares the luminance in two directions vertically and two directions horizontally to find the edge' direction.
 
+<img data-src="/images/opengl-advanced-samples/sample-22-fxaa-0.png">
+<img data-src="/images/opengl-advanced-samples/sample-22-fxaa-1.png">
+
 ### Screen-space ambient occlusion
 
 As you might know, rendering big and complex scenes is expensive in both time, memory and computational resources. It is not always desirable or even possible to render all effects like reflections and shadows for each and every polygon of the scene.
@@ -533,19 +571,39 @@ In contrast, ambient occlusion is calculated for a fixed number of samples aroun
 
 You will need to store the position of each fragment in camera space (yes, camera space, not light space). Then, for each pixel, you iterate each source of light to calculate the direction of light and samples for a given pixel' position in camera space. You assume you have a sphere of a given constant radius around the pixel' position and you generate a certain constant number of random samples within that sphere. Since the samples are also in the camera space, you can use these positions as-is. Given the information about positions of neighbour pixels in camera space, you then compare those positions to the samples within the sphere - if the sample's position is further from the camera than the neighbour pixel's position - this sample is occluded by some polygon. You then calculate the ratio of occluded samples to the non-occluded ones and based on that give the original pixel its shadow value.
 
+<img data-src="/images/opengl-advanced-samples/sample-24-ssao-1.png">
+<img data-src="/images/opengl-advanced-samples/sample-24-ssao-6.png">
+
+Read more:
+
+[1](https://learnopengl.com/Advanced-Lighting/SSAO)
+
 ### Horizon-based ambient occlusion
 
 Screen-space ambient occlusion algorithm (aka SSAO) is fine, but it can use even further improvement. Instead of calculating random samples inside imaginary sphere, you can be a little smarter about those samples and only generate them in a hemisphere, oriented towards the camera. Then, instead of checking the camera-space positions of samples and pixels, you can use the "horizon" of a current pixel and calculate the "horizion" for each of the samples. You can then use the angle difference between those two "horizons" to see if pixels are potentially occluded by some other polygon.
 
 This technique gives better results for corners and edges than conventional SSAO technique.
 
-### Raymarching
+<img data-src="/images/opengl-advanced-samples/sample-25-hbao-1.png">
+<img data-src="/images/opengl-advanced-samples/sample-25-hbao-2.png">
+
+Read more:
+
+[1](https://developer.download.nvidia.com/presentations/2008/SIGGRAPH/HBAO_SIG08b.pdf)
+
+### Volumetric lighting
 
 Have you ever seen those beautiful rays of light passing through the clouds and becoming actually visible _rays_? There are lots of these in games too. They are also known as "god rays". They are actually tiny particles (presumingly dust) hanging in the air and reflecting the light.
 
 The technique which allows to achieve such an effect (and tons of others) is called "raymarching".
 
 The idea is that you store the pixels' depth and position information in both light space and camera space and then you cast an imaginary ray from the camera towards each pixel rendered. You then split this ray into a constant number of parts and project the resulting points into light space. You then compare the position of the point on the ray in light space to the depth value stored in the light space, and if the depth value stored is greater than the position on the ray - the point on the ray is visible from the perspective of a light, so you make the pixel on the screen a bit brighter. The more parts of the ray are visible by the light - the brighter the pixel will be.
+
+Read more:
+
+[1](https://developer.nvidia.com/volumetriclighting)
+[2](https://www.alexandre-pestana.com/volumetric-lights/)
+[3](https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-13-volumetric-light-scattering-post-process)
 
 ## Common rendering techniques
 
@@ -559,15 +617,26 @@ The idea is that you render the scene to a framebuffer, storing the light emitti
 
 The only complex part here is Gaussian blur.
 
+<img data-src="/images/opengl-advanced-samples/sample-15-bloom-2.png">
+
 ### Particle systems
 
 Particle simulation is not really a technique in itself - it is a very big topic (how you design it from the code perspective, how do you simulate particles optimally - concurrent programming, SIMD, calculations on the GPU, etc.). But the way you render bunch of particles could be qualified as a rendering technique. It is mostly about instanced rendering.
+
+Read more:
+
+[1](https://learnopengl.com/In-Practice/2D-Game/Particles)
+[2](http://www.opengl-tutorial.org/intermediate-tutorials/billboards-particles/particles-instancing/)
 
 ### Skybox
 
 Sky can really add atmosphere to your game. Rendering it might be as simple as rendering an inverted cube with texture on the insides of its faces and moving it along with the camera (or rather rendering it in camera space, not world space).
 
 The skybox can use normal textures or it could use cubemaps - literally a cube with textures on each of its six sides. Cubemaps allow you to calculate the texture coordinates by only having a vector from the center of the cube in the direction of view.
+
+Read more:
+
+[1](https://learnopengl.com/Advanced-OpenGL/Cubemaps)
 
 ### Point lighting
 
@@ -580,8 +649,3 @@ A bit more interesting here is the shadow casting technique. Instead of renderin
 Reflections on the water surface are relatively simple to implement - for each pixel you calculate the direction to the camera upside-down (simply create a new view matrix with "up" vector pointing down) and then use the GLSL function `reflect()` to calculate the reflected vector. You then render take the color at the reflected position and add it (multiplied by some transparency factor) to the original pixel' color.
 
 The concept of cubemaps is not only useful for skyboxes, but could also be used to calculate reflections on the objects. For each reflective object you render the scene from its position to the cubemap texture (so you will have to render the scene six times, which is huge overhead in itself) and when rendering the object, you reflect the camera view vector (vector from the pixel in world space to camera position) and sample the cubemap with that vector. You then add the sampled color to the source pixel color to receive a nice reflective surface effect.
-
-## References
-
-https://on-demand.gputechconf.com/gtc/2014/video/S4379-opengl-44-scene-rendering-techniques.mp4
-https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-8-summed-area-variance-shadow-maps
