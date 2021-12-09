@@ -475,9 +475,210 @@ You can combine rendering multiple different geometries with instanced rendering
 
 Top it up with the fact that you can store the draw commands in a buffer and you can generate this buffer using compute shaders (not covered yet) and you can have a rendering engine which works almost entirely on the GPU, saving you a lot of synchronization and communication between CPU and GPU.
 
+To understand how the `glMultiDrawElementsIndirect` works, one must understand the concept of a draw command and how it works in DirectX 12 and Vulkan.
+The idea is that you prepare all the geometry and the supporting data, store it in video memory and then only tell GPU to render all that mess in a specific order.
+This way you don't need to send huge chunks of data from CPU to GPU every frame - this spares computer quite some work.
+
+The draw command describes which chunks of data that are already stored in video memory to use for rendering and how to render them.
+
+A typical draw command is represented as the following C++ structure:
+
+```cpp
+struct StaticGeometryDrawCommand
+{
+    unsigned int elementCount; // number of elements (triangles) to be rendered for this object
+    unsigned int instanceCount; // number of object instances
+    unsigned int firstIndex; // offset into GL_ELEMENT_ARRAY_BUFFER
+    unsigned int baseVertex; // offset of the first object' vertex in the uber-static-object-buffer
+    unsigned int baseInstance; // offset of the first instance' per-instance-vertex-attributes; attribute index is calculated as: (gl_InstanceID / glVertexAttribDivisor()) + baseInstance
+};
+```
+
+The issue with this approach is: how to pass the per-instance data? Since all the data used by `glDrawMulti*` is per-vertex.
+SSBOs to the rescue!
+
+```cpp
+struct alignas(16) StaticObjectData
+{
+    glm::vec2 albedoTextureSize;
+    glm::vec2 normalTextureSize;
+    glm::vec2 emissionTextureSize;
+    unsigned int instanceDataOffset;
+};
+
+struct alignas(16) StaticObjectInstanceData
+{
+    glm::mat4 transformation;
+};
+```
+
+_TBD_
+
 Read more:
 
 [1](https://on-demand.gputechconf.com/gtc/2014/video/S4379-opengl-44-scene-rendering-techniques.mp4)
+
+### Texture handles
+
+This optimization allows you to spare those `glActivateTexture` and referring textures by some magical numbers. You create a texture once and freeze its params by using the handles (so you can not change texture params once you have started using its handle), but what you gain is one handle, stored as a 64-bit number (roughly: texture address in GPU memory) which you can then pass to multiple shaders without bothering with those texture IDs.
+
+### Rendering to different textures in geometry shader
+
+A neat trick to render scene multiple times to different textures (for instance, rendering into cubemap) is to use geometry shader - you simply bind multi-layer texture (cubemap or a texture array) and use the `gl_Layer` output variable in the geometry shader to write to a specific texture layer:
+
+C++ program:
+
+```cpp
+struct alignas(16) PointLightData
+{
+    glm::vec3 lightPosition;
+    float farPlane;
+    std::array<glm::mat4, 6> projectionViewMatrices;
+};
+
+int main()
+{
+    // prepare the shader program with vertex, geometry and fragment shaders
+    auto pointShadowMappingVertexSource = globjects::Shader::sourceFromFile("media/shadow-mapping-point.vert");
+    auto pointShadowMappingVertexShaderTemplate = globjects::Shader::applyGlobalReplacements(pointShadowMappingVertexSource.get());
+    auto pointShadowMappingVertexShader = std::make_unique<globjects::Shader>(static_cast<gl::GLenum>(GL_VERTEX_SHADER), pointShadowMappingVertexShaderTemplate.get());
+
+    if (!pointShadowMappingVertexShader->compile())
+    {
+        std::cerr << "[ERROR] Can not compile point shadow mapping vertex shader" << std::endl;
+        return 1;
+    }
+
+    auto pointShadowMappingGeometrySource = globjects::Shader::sourceFromFile("media/shadow-mapping-point.geom");
+    auto pointShadowMappingGeometryShaderTemplate = globjects::Shader::applyGlobalReplacements(pointShadowMappingGeometrySource.get());
+    auto pointShadowMappingGeometryShader = std::make_unique<globjects::Shader>(static_cast<gl::GLenum>(GL_GEOMETRY_SHADER), pointShadowMappingGeometryShaderTemplate.get());
+
+    if (!pointShadowMappingGeometryShader->compile())
+    {
+        std::cerr << "[ERROR] Can not compile point shadow mapping fragment shader" << std::endl;
+        return 1;
+    }
+
+    auto pointShadowMappingFragmentSource = globjects::Shader::sourceFromFile("media/shadow-mapping-point.frag");
+    auto pointShadowMappingFragmentShaderTemplate = globjects::Shader::applyGlobalReplacements(pointShadowMappingFragmentSource.get());
+    auto pointShadowMappingFragmentShader = std::make_unique<globjects::Shader>(static_cast<gl::GLenum>(GL_FRAGMENT_SHADER), pointShadowMappingFragmentShaderTemplate.get());
+
+    if (!pointShadowMappingFragmentShader->compile())
+    {
+        std::cerr << "[ERROR] Can not compile point shadow mapping fragment shader" << std::endl;
+        return 1;
+    }
+
+    auto pointShadowMappingProgram = std::make_unique<globjects::Program>();
+    pointShadowMappingProgram->attach(pointShadowMappingVertexShader.get(), pointShadowMappingGeometryShader.get(), pointShadowMappingFragmentShader.get());
+
+    // prepare the cubemap texture
+
+    auto pointShadowMapTexture = std::make_unique<globjects::Texture>(static_cast<gl::GLenum>(GL_TEXTURE_CUBE_MAP));
+
+    pointShadowMapTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MIN_FILTER), static_cast<gl::GLenum>(GL_LINEAR));
+    pointShadowMapTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MAG_FILTER), static_cast<gl::GLenum>(GL_LINEAR));
+
+    pointShadowMapTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_WRAP_S), static_cast<gl::GLenum>(GL_CLAMP_TO_BORDER));
+    pointShadowMapTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_WRAP_T), static_cast<gl::GLenum>(GL_CLAMP_TO_BORDER));
+    pointShadowMapTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_WRAP_R), static_cast<gl::GLenum>(GL_CLAMP_TO_BORDER));
+
+    pointShadowMapTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_BORDER_COLOR), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+    pointShadowMapTexture->bind();
+
+    const auto shadowMapSize = 2048;
+
+    for (auto i = 0; i < 6; ++i)
+    {
+        ::glTexImage2D(
+            static_cast<::GLenum>(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i),
+            0,
+            GL_DEPTH_COMPONENT,
+            shadowMapSize,
+            shadowMapSize,
+            0,
+            GL_DEPTH_COMPONENT,
+            GL_FLOAT,
+            nullptr);
+    }
+
+    pointShadowMapTexture->unbind();
+
+    // prepare the framebuffer
+
+    auto pointShadowMappingFramebuffer = std::make_unique<globjects::Framebuffer>();
+    pointShadowMappingFramebuffer->attachTexture(static_cast<gl::GLenum>(GL_DEPTH_ATTACHMENT), pointShadowMapTexture.get());
+
+    // prepare a list of six view projection matrices
+
+    glm::mat4 cameraProjection = glm::perspective(glm::radians(fov), (float)window.getSize().x / (float)window.getSize().y, 0.1f, 100.0f);
+
+    glm::mat4 cameraView = glm::lookAt(
+        cameraPos,
+        cameraPos + cameraForward,
+        cameraUp);
+
+    const float nearPlane = 0.1f;
+    const float farPlane = 10.0f;
+
+    glm::mat4 pointLightProjection = glm::perspective(glm::radians(90.0f), static_cast<float>(shadowMapSize / shadowMapSize), nearPlane, farPlane);
+
+    std::array<glm::mat4, 6> pointLightProjectionViewMatrices{
+        pointLightProjection * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
+        pointLightProjection * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
+        pointLightProjection * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+        pointLightProjection * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)),
+        pointLightProjection * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
+        pointLightProjection * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
+    };
+
+    PointLightData pointLightData{ pointLightPosition, farPlane, pointLightProjectionViewMatrices };
+
+    // store the view projection matrices in SSBO
+
+    auto pointLightDataBuffer = std::make_unique<globjects::Buffer>();
+
+    pointLightDataBuffer->setData(pointLightData, static_cast<gl::GLenum>(GL_DYNAMIC_COPY));
+
+    // ...
+
+    // bind framebuffer and shared stored buffer object with parameters
+
+    pointLightDataBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 5);
+
+    pointShadowMappingFramebuffer->bind();
+
+    pointShadowMappingProgram->use();
+
+    // render entire scene
+
+    pointShadowMappingProgram->release();
+
+    pointShadowMappingFramebuffer->unbind();
+}
+```
+
+geometry shader:
+
+```glsl
+void main()
+{
+    for (int face = 0; face < 6; ++face)
+    {
+        gl_Layer = face;
+
+        for (int vertex = 0; vertex < 3; ++vertex)
+        {
+            fragmentPosition = gl_in[vertex].gl_Position;
+            gl_Position = pointLight.projectionViewMatrices[face] * fragmentPosition;
+            EmitVertex();
+        }
+
+        EndPrimitive();
+    }
+}
+```
 
 ## Rendering techniques
 
