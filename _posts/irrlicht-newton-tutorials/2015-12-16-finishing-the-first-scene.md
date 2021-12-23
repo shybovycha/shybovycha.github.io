@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Irrlicht Newton GD tutorial: finishing the first scene"
-date: '2015-12-16T18:00:00+01:00'
+date: '16-12-2015T18:00:00+10:00'
 ---
 
 If you remember, we ended our coding excercises at place, where we almost created our first
