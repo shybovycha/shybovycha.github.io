@@ -4,7 +4,7 @@ title: About
 permalink: /about/
 ---
 
-<img src="/images/about/photo-large-compressed.webp" alt="photo-large">
+<img src="/images/about/photo-large-compressed-2.webp" alt="photo-large" width="300">
 
 Hello! My name is Artem, and this is my blog!
 
@@ -32,10 +32,12 @@ Hardcore interviewer:
 * [Star realms](https://boardgamegeek.com/boardgame/147020/star-realms)
 * [u2i softwar](https://softwar.u2i.com/)
 * [7th continent](https://boardgamegeek.com/boardgame/180263/7th-continent)
+* [Robinson Crusoe](https://boardgamegeek.com/boardgame/121921/robinson-crusoe-adventures-cursed-island)
 * [Tiny epic galaxies](https://boardgamegeek.com/boardgame/163967/tiny-epic-galaxies)
 * [Patchwork](https://boardgamegeek.com/boardgame/163412/patchwork)
 * [Pixel Tactics 1](https://boardgamegeek.com/boardgame/125548/pixel-tactics) & [Pixel Tactics 2](https://boardgamegeek.com/boardgame/137423/pixel-tactics-2) & [Pixel Tactics 3](https://boardgamegeek.com/boardgame/152899/pixel-tactics-3)
 * [Avocado smash](https://boardgamegeek.com/boardgame/261831/avocado-smash)
+* [Munchkin](https://boardgamegeek.com/boardgame/1927/munchkin)
 * [Machi Koro](https://boardgamegeek.com/boardgame/143884/machi-koro) (🇵🇱)
 * [Caverna: Cave vs Cave](https://boardgamegeek.com/boardgame/220520/caverna-cave-vs-cave) (🇵🇱)
 * [Bohnanza](https://boardgamegeek.com/boardgame/11/bohnanza) (🇵🇱)
