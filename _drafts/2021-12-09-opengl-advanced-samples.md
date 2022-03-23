@@ -327,7 +327,11 @@ int main()
             cameraPos += glm::normalize(glm::cross(cameraForward, cameraUp)) * cameraMoveSpeed * deltaTime;
         }
 
-        glm::mat4 projection = glm::perspective(glm::radians(fov), (float) window.getSize().x / (float) window.getSize().y, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(
+            glm::radians(fov), 
+            (float) window.getSize().x / (float) window.getSize().y, 
+            0.1f, 
+            100.0f);
 
         glm::mat4 view = glm::lookAt(
             cameraPos,
@@ -413,7 +417,9 @@ int main()
 {
     // ...
 
-    std::vector<PointLightDescriptor> pointLights{ { glm::vec3(-1.75f, 3.85f, -0.75f), 0.5f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) } };
+    std::vector<PointLightDescriptor> pointLights{ 
+        { glm::vec3(-1.75f, 3.85f, -0.75f), 0.5f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) } 
+    };
 
     auto pointLightDataBuffer = std::make_unique<globjects::Buffer>();
 
@@ -660,7 +666,12 @@ objectInstanceDataBuffer->bindBase(static_cast<gl::GLenum>(GL_SHADER_STORAGE_BUF
 
 vao->bind();
 
-vao->multiDrawElementsIndirect(static_cast<gl::GLenum>(GL_TRIANGLES), static_cast<gl::GLenum>(GL_UNSIGNED_INT), 0, m_drawCommands.size(), 0);
+vao->multiDrawElementsIndirect(
+    static_cast<gl::GLenum>(GL_TRIANGLES), 
+    static_cast<gl::GLenum>(GL_UNSIGNED_INT), 
+    0, 
+    m_drawCommands.size(), 
+    0);
 
 simpleProgram->release();
 
@@ -1260,7 +1271,6 @@ float shadowCalculation(vec3 normal, vec3 lightDirection)
 The implementation is as simple as having the following shadow mapping fragment shader:
 
 ```glsl
-
 float linearizeDepth(float depth)
 {
     float nearPlane = 1.0;
