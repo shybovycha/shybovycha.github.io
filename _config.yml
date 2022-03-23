@@ -14,6 +14,10 @@ highlighter: rouge
 # Build settings
 markdown: kramdown
 
+kramdown:
+  math_engine: mathjax
+  syntax_highlighter: rouge
+
 sass:
   style: compressed
 
