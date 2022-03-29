@@ -418,7 +418,7 @@ Using [Rebar 3](https://hex.pm/) (or `Hex` for Elixir) is relatively easy. Yet i
 
 ### Creating a project
 
-To create a project with rebar3 support, you can now use `rebar3 new <template> <app-name>`. For just an application, you can use `app` template name. 
+To create a project with rebar3 support, you can now use `rebar3 new <template> <app-name>`. For just an application, you can use `app` template name.
 For libraries - use `lib`. Simple!
 
 To add a dependency, edit the `rebar.config` file in the application directory and change the `deps` dictionary:
@@ -475,9 +475,9 @@ epsql library provides all of these with the following functions:
 Here are few simple examples of the above functions:
 
 ```erlang
-connect_to_blog_db() -> 
+connect_to_blog_db() ->
   { ok, C } = epsql:connect(#{ host => "localhost", username => "root", password => "****", database => "blog" }),
-  
+
   C.
 
 create_blog(Title, Content) ->
@@ -495,31 +495,135 @@ get_blogs() ->
   Rows.
 ```
 
-### Cowboy HTTP server
+### Mochi HTTP server
 
 As shown above, the default HTTP server bundled with Erlang standard library (OTP) is rather low-level.
-There are few options in rebar3 package repository which significantly improve the situation. One of them is [`cowboy`](https://ninenines.eu/docs/en/cowboy/).
+There are few options in rebar3 package repository which significantly improve the situation. One of them is [`mochiweb`](https://github.com/mochi/mochiweb/).
 
-The web server with Cowboy could look like this (similarly to the one described above with `httpd`):
+The web server with Mochi could look like this (slightly more complex than the one described above with `httpd`):
 
-```erlang
-start(_Type, _Args) ->
-  Dispatch = cowboy_router:compile([
-    %% {HostMatch, list({PathMatch, Handler, InitialState})}
-    { '_', [
-      { "/posts", all_posts, [] },
-      { "/posts/:id", get_post, [] } ] }
-  ]),
-  
-  %% Name, NbAcceptors, TransOpts, ProtoOpts
-  {ok, _} = cowboy:start_clear(my_http_listener,
-    [{port, 8080}],
-    #{env => #{dispatch => Dispatch}}
-  ),
+```erl
+-module(http_sample).
 
-  hello_erlang_sup:start_link().
+-export([ dispatch/1, loop/1, start/0, stop/0 ]).
+
+-define(HTTP_OPTS,
+  [ { loop, {?MODULE, dispatch} },
+    { port, 4000 },
+    { name, http_4000 } ]).
+
+start() ->
+  { ok, Http } = mochiweb_http:start(?HTTP_OPTS),
+
+  Pid = spawn_link(fun () -> loop(Http) end),
+
+  register(http_sample, Pid),
+
+  ok.
+
+stop() ->
+  http_sample ! stop,
+
+  ok.
+
+dispatch(Req) ->
+  case mochiweb_request:get(method, Req) of
+    'GET' -> get_resource(Req);
+
+    'PUT' -> put_resource(Req);
+
+    _ -> method_not_allowed(Req)
+  end.
+
+get_resource(Req) ->
+  Path = mochiweb_request:get(path, Req),
+
+  % note: io:format(FmtString, Params) would print to STDOUT
+  % whereas io_lib:format(FmtString, Params) will return a formatted string
+  Body = io_lib:format("Hello, Resource '~s'\r\n", [ Path ]),
+
+  Headers = [{ "Content-Type", "text/plain" }],
+
+  mochiweb_request:respond({ 200, Headers, Body }, Req),
+
+  ok.
+
+put_resource(Req) ->
+  ContentType = mochiweb_request:get_header_value("Content-Type", Req),
+
+  ReqBody = mochiweb_request:recv_body(Req),
+
+  mochiweb_request:respond({ 201, [], "201 Created\r\n" }, Req),
+
+  ok.
+
+method_not_allowed(Req) ->
+  Path = mochiweb_request:get(path, Req),
+  Method = mochiweb_request:get(method, Req),
+
+  Body = io_lib:format("Method ~s on path ~s is not supported", [ Method, Path ]),
+
+  mochiweb_request:respond({ 405, [], Body }, Req),
+
+  ok.
+
+loop(Http) ->
+  receive
+    stop ->
+      ok = mochiweb_http:stop(Http),
+      exit(normal);
+
+    _ -> ignore
+  end,
+
+  (?MODULE):loop(Http).
 ```
 
-## More realistic example
+For this code to run, you should do few little extra steps. First, creating the new application with `rebar3` - I prefer `escript` template for something this simple.
 
-Let's take a look at a practical example of using Erlang - we'll build a small web application with the database.
+Then, add a new dependency to the `rebar.config` file:
+
+```erl
+{erl_opts, [debug_info]}.
+{deps, [
+  {mochiweb, "2.22.0"} % <---- here
+]}.
+
+{shell, [
+  % {config, "config/sys.config"},
+    {apps, [http_sample]}
+]}.
+```
+
+Then, put the code from above under `src/http_server.erl` file.
+
+Finally, run the interactive shell in the context of the application: `rebar3 shell` and start server by calling `http_server:start().`.
+
+Then you should be able to communicate with this rather simple server by using `curl`, for example:
+
+```sh
+curl http://localhost:4000/my/resource -X PUT -d '{ "name": "message", "value": "my message" }'
+```
+
+## A more complex distributed system
+
+This might sound super ambitious, but let us build a distributed database. For sake of simplicity, let's make it a reduced
+version of Redis - a key-value distributed in-memory storage. Essentially, an over-engineered hashmap.
+
+To draw some boundaries around this, let's focus on these key features:
+
+* simple CRUD actions - get, set and delete a value; this should operate on REST-ish API through HTTP:
+  * `GET /{key}` - get key value
+  * `PUT /{key}` - use request body for value and associate the value with the key
+  * `DELETE /{key}` - remove the key from the storage
+* running on multiple nodes (machines)
+* synchronizing the data between the nodes; this should support:
+  * ability to rotate the nodes in the cluster (switch off nodes and add new ones randomly) without the loss of data
+  * distributing the operations across the nodes to keep the data in sync
+
+Sounds unbelievable, but with Erlang this is actually pretty simple.
+
+We will need a "main" process, which will take the requests from the users (REST-ish API) and pass them to the nodes.
+Each node will store its own copy of the data in memory. On startup, each new node will receive the copy of the data
+from the first available node. If no nodes are available - that means the cluster is fresh and we can safely assume
+the data is empty.
