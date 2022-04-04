@@ -502,7 +502,7 @@ There are few options in rebar3 package repository which significantly improve t
 
 The web server with Mochi could look like this (slightly more complex than the one described above with `httpd`):
 
-```erl
+```erlang
 -module(http_sample).
 
 -export([ dispatch/1, loop/1, start/0, stop/0 ]).
@@ -583,7 +583,7 @@ For this code to run, you should do few little extra steps. First, creating the 
 
 Then, add a new dependency to the `rebar.config` file:
 
-```erl
+```erlang
 {erl_opts, [debug_info]}.
 {deps, [
   {mochiweb, "2.22.0"} % <---- here
@@ -607,7 +607,7 @@ erl -pa _build/default/lib/http_sample3/ebin/ -pa _build/default/lib/mochiweb/eb
 
 This, however, will immediately stop the execution of a program once the `http_sample3:main/0` finishes, so you might want to change the source a bit:
 
-```erl
+```erlang
 main() ->
     main([]).
 
