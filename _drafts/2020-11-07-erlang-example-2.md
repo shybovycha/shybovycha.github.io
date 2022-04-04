@@ -599,31 +599,44 @@ Then, put the code from above under `src/http_server.erl` file.
 
 Finally, run the interactive shell in the context of the application: `rebar3 shell` and start server by calling `http_server:start().`.
 
-Then you should be able to communicate with this rather simple server by using `curl`, for example:
+Alternatively, you can compile the program to a binary file using `rebar3 compile` and then run the program using `erl` command:
+
+```sh
+erl -pa _build/default/lib/http_sample3/ebin/ -pa _build/default/lib/mochiweb/ebin/ -noshell -s http_sample3 main
+```
+
+This, however, will immediately stop the execution of a program once the `http_sample3:main/0` finishes, so you might want to change the source a bit:
+
+```erl
+main() ->
+    main([]).
+
+main(Args) ->
+    io:format("Hello, server!~n", []),
+
+    http_server:start(),
+
+    receive
+        stop -> http_server:stop()
+
+    end,
+
+    done.
+```
+
+This way, the `http_sample3:main/1` will be called and will wait for the `stop` signal to be sent to the process.
+Or until the main `erl` process is terminated.
+
+Finally you should be able to communicate with this rather simple server by using `curl`, for example:
 
 ```sh
 curl http://localhost:4000/my/resource -X PUT -d '{ "name": "message", "value": "my message" }'
 ```
 
-## A more complex distributed system
+## Summary
 
-This might sound super ambitious, but let us build a distributed database. For sake of simplicity, let's make it a reduced
-version of Redis - a key-value distributed in-memory storage. Essentially, an over-engineered hashmap.
+This blog was supposed to show Erlang from a slighly different perspective, as opposed to how it was presented to me
+in uni. I guess you could treat this as a "Practical Erlang" blog.
 
-To draw some boundaries around this, let's focus on these key features:
-
-* simple CRUD actions - get, set and delete a value; this should operate on REST-ish API through HTTP:
-  * `GET /{key}` - get key value
-  * `PUT /{key}` - use request body for value and associate the value with the key
-  * `DELETE /{key}` - remove the key from the storage
-* running on multiple nodes (machines)
-* synchronizing the data between the nodes; this should support:
-  * ability to rotate the nodes in the cluster (switch off nodes and add new ones randomly) without the loss of data
-  * distributing the operations across the nodes to keep the data in sync
-
-Sounds unbelievable, but with Erlang this is actually pretty simple.
-
-We will need a "main" process, which will take the requests from the users (REST-ish API) and pass them to the nodes.
-Each node will store its own copy of the data in memory. On startup, each new node will receive the copy of the data
-from the first available node. If no nodes are available - that means the cluster is fresh and we can safely assume
-the data is empty.
+This post was supposed to be released in mid-2020, but it took me quite a while to polish it. In the next blog I will
+build this on to provide a much more exciting application sample with Erlang.
