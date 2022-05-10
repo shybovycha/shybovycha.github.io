@@ -33,6 +33,102 @@ Few lessons learned:
 * Thrift library is super outdated, failed immediately trying to convert message to buffer with `TypeError: rw.byteLength is not a function`
 * Protobuf and Avro provide by far the most compact output (because of schema provided)
 * Protobuf library (protobufjs), unlike Avro, can't handle enumerations (Protobufjs requires raw integer values to be used whereas Avro supports semantic, string values)
+* Cap'n'Proto seems outdated and its JS plugin did not get any support for few years now, have to check the TS version
+* FlatBuffers is quite low-level and tricky to use (much more effort than those other tools)
+
+### FlatBuffers
+
+For a somewhat nested schema like this:
+
+```
+namespace testpackage;
+
+table TimeframeValues {
+    category1: float32;
+    category2: float32;
+    category3: float32;
+}
+
+table Timeframe {
+    timestamp: int64;
+    values: TimeframeValues;
+}
+
+table TimeframeData {
+    dataPoints: [Timeframe];
+}
+
+root_type TimeframeData;
+```
+
+one might think this is how to encode an object with FlatBuffers:
+
+```js
+const builder = new flatbuffers.Builder(0);
+
+FlatbuffersTimeframeData.TimeframeData.startTimeframeData(builder);
+FlatbuffersTimeframeData.TimeframeData.startDataPointsVector(builder, dataPoints.length);
+
+dataPoints.forEach(({ timestamp, values: { category1, category2, category3 } }) => {
+    FlatbuffersTimeframe.Timeframe.startTimeframe(builder);
+
+        FlatbuffersTimeframe.Timeframe.addTimestamp(timestamp);
+
+        FlatbuffersTimeframeValues.TimeframeValues.startTimeframeValues(builder);
+
+            FlatbuffersTimeframeValues.TimeframeValues.addCategory1(builder, category1);
+            FlatbuffersTimeframeValues.TimeframeValues.addCategory2(builder, category2);
+            FlatbuffersTimeframeValues.TimeframeValues.addCategory3(builder, category3);
+
+            // alternatively: FlatbuffersTimeframeValues.TimeframeValues.createTimeframeValues(builder, category1, category2, category3);
+
+        const vs = FlatbuffersTimeframeValues.TimeframeValues.endTimeframeValues(builder);
+
+        FlatbuffersTimeframe.Timeframe.addValues(builder, vs);
+
+    const tf = FlatbuffersTimeframe.Timeframe.endTimeframe();
+
+    FlatbuffersTimeframeData.TimeframeData.addDataPoints(builder, tf);
+});
+
+FlatbuffersTimeframeData.TimeframeData.endTimeframeData(builder);
+
+return builder.asUint8Array();
+```
+
+But this won't do - the error would be thrown:
+
+```
+Uncaught Error: FlatBuffers: object serialization must not be nested.
+```
+
+With FlatBuffers serialization is like managing the memory in C98 - you first allocate the memory, then you fill it with data, then you use it elsewhere:
+
+```js
+const builder = new flatbuffers.Builder(0);
+
+const tfs = dataPoints.map(({ timestamp, values: { category1, category2, category3 } }) => {
+    const vs = FlatbuffersTimeframeValues.TimeframeValues.createTimeframeValues(builder, category1, category2, category3);
+
+    FlatbuffersTimeframe.Timeframe.startTimeframe(builder);
+
+        FlatbuffersTimeframe.Timeframe.addTimestamp(builder, timestamp);
+        FlatbuffersTimeframe.Timeframe.addValues(builder, vs);
+
+    return FlatbuffersTimeframe.Timeframe.endTimeframe(builder);
+});
+
+const dps = FlatbuffersTimeframeData.TimeframeData.createDataPointsVector(builder, tfs);
+
+FlatbuffersTimeframeData.TimeframeData.startTimeframeData(builder);
+FlatbuffersTimeframeData.TimeframeData.addDataPoints(builder, dps);
+FlatbuffersTimeframeData.TimeframeData.endTimeframeData(builder);
+
+return builder.asUint8Array();
+```
+
+This aspect makes FlatBuffers not so friendly to use. Meaning if you decide to incorporate it in your project, not only will you need to compile the schemas separately, but
+the effort to implement serialization might become a decisive factor against it, compared to other tools in this review.
 
 ## Raw results
 
@@ -305,6 +401,10 @@ $ yarn pbjs -t static-module -w commonjs -o test5/test5-protobuf-compiled-proto.
 $ node_modules\.bin\pbjs -t static-module -w commonjs -o test5/test5-protobuf-compiled-proto.js test5/test5.proto
 
   test5\test5-protobuf-compiled.bundle.js  30.0kb
+
+$ C:\dev\forks\webapp-payload-binary-protocols\node_modules\.bin\tsc ./test5/test5-flatbuffers-compiled-proto/testpackage/timeframe-data.ts --target es6 --moduleResolution node
+
+  test5\test5-flatbuffers-compiled.bundle.js  3.1kb
 ```
 
 And timings:
