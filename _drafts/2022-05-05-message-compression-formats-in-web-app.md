@@ -30,7 +30,7 @@ Things to compare:
 
 Few lessons learned:
 
-* Thrift library is super outdated, failed immediately trying to convert message to buffer with `TypeError: rw.byteLength is not a function`
+* Thrift is quite slow and not that straightforward to use (after all, it was designed to provide entire communication layer for an application), but provides decent compression rate
 * Protobuf and Avro provide by far the most compact output (because of schema provided)
 * Protobuf library (protobufjs), unlike Avro, can't handle enumerations (Protobufjs requires raw integer values to be used whereas Avro supports semantic, string values)
 * Cap'n'Proto seems outdated and its JS plugin did not get any support for few years now, have to check the TS version
@@ -91,7 +91,9 @@ dataPoints.forEach(({ timestamp, values: { category1, category2, category3 } }) 
     FlatbuffersTimeframeData.TimeframeData.addDataPoints(builder, tf);
 });
 
-FlatbuffersTimeframeData.TimeframeData.endTimeframeData(builder);
+const offset = FlatbuffersTimeframeData.TimeframeData.endTimeframeData(builder);
+
+builder.finish(offset);
 
 return builder.asUint8Array();
 ```
@@ -122,13 +124,88 @@ const dps = FlatbuffersTimeframeData.TimeframeData.createDataPointsVector(builde
 
 FlatbuffersTimeframeData.TimeframeData.startTimeframeData(builder);
 FlatbuffersTimeframeData.TimeframeData.addDataPoints(builder, dps);
-FlatbuffersTimeframeData.TimeframeData.endTimeframeData(builder);
+
+const offset = FlatbuffersTimeframeData.TimeframeData.endTimeframeData(builder);
+
+builder.finish(offset);
 
 return builder.asUint8Array();
 ```
 
+Deserializing objects is also not all that similar with the other tech in this list - accessing each property is done via methods provided by the generated proto classes:
+
+```js
+const buf = new flatbuffers.ByteBuffer(data);
+
+const timeframeData = FlatbuffersTimeframeData.TimeframeData.getRootAsTimeframeData(buf);
+
+// accessing dataPoints: timeframeData.dataPoints(timeframeData.dataPointsLength() - 1).values().category1()
+```
+
 This aspect makes FlatBuffers not so friendly to use. Meaning if you decide to incorporate it in your project, not only will you need to compile the schemas separately, but
 the effort to implement serialization might become a decisive factor against it, compared to other tools in this review.
+
+### Thrift
+
+Thrift, similarly to FlatBuffers is a bit tricky to get running. First, it needs a _protocol_ and a _transport_ to operate.
+There are two protocols, `TBinaryProtocol`, which provides some level of compression and `TCompactProtocol`, which offers more compression.
+Then, similarly to FlatBuffers, the nested objects have to be serialized first.
+And finally, the API is not all that user friendly - one might think using the constructors is sufficient, but in fact one has to rely on callbacks:
+
+This won't do:
+
+```js
+const buf = new Buffer();
+const thriftTransport = new thrift.TBufferedTransport(buf);
+const binaryThriftProtocol = new thrift.TCompactProtocol(thriftTransport);
+
+const obj = new ThriftType.TimeframeData(data);
+
+obj.write(binaryThriftProtocol);
+
+binaryThriftProtocol.flush();
+
+return buf;
+```
+
+Instead, one should use callback API and serialize nested objects first:
+
+```js
+let thriftBuffer = null;
+
+const thriftTransport = new thrift.TBufferedTransport(null, res => thriftBuffer = res);
+const binaryThriftProtocol = new thrift.TCompactProtocol(thriftTransport);
+
+const dataPoints = data.dataPoints.map(dp => {
+  const vs = new ThriftType.TimeframeValues(dp.values);
+
+  return new ThriftType.Timeframe({ timestamp: dp.timestamp, values: vs });
+});
+
+const obj = new ThriftType.TimeframeData({ dataPoints });
+
+obj.write(binaryThriftProtocol);
+
+binaryThriftProtocol.flush();
+
+return thriftBuffer;
+```
+
+Deserialization is also messed up by these APIs:
+
+```js
+let obj = null;
+
+const tr = thrift.TBufferedTransport.receiver(transport => {
+  const protocol = new thrift.TCompactProtocol(transport);
+
+  obj = ThriftType.TimeframeData.read(protocol);
+});
+
+tr(Buffer.from(data));
+
+return obj;
+```
 
 ## Raw results
 
@@ -410,23 +487,14 @@ $ C:\dev\forks\webapp-payload-binary-protocols\node_modules\.bin\tsc ./test5/tes
 And timings:
 
 ```
-Chrome 101
----
-Serializer|Encoding time|Decoding time
----
-Avro	1ms	1ms
-BSON	2ms	1ms
-CBOR	1ms	1ms
-MessagePack	1ms	1ms
-Protobuf	5ms	0ms
-Protobuf, compiled	0ms	0ms
----
-Firefox 100
----
-Avro 	3ms 	0ms
-BSON 	2ms 	1ms
-CBOR 	1ms 	0ms
-MessagePack 	1ms 	1ms
-Protobuf 	4ms 	1ms
-Protobuf, compiled 	0ms 	0ms
+Serializer 	Encoding time 	Decoding time 	Encoded data size (byte array) 	Data saving 	Encoded data size (base-64 utf-8 encoded)
+Avro 	12ms 	4ms 	30003 	77.16% 	40004
+BSON 	10ms 	11ms 	98912 	24.71% 	131884
+CBOR 	3ms 	4ms 	89017 	32.24% 	118692
+MessagePack 	3ms 	3ms 	89017 	32.24% 	118692
+Protobuf 	13ms 	3ms 	38000 	71.07% 	50668
+Protobuf, compiled 	6ms 	1ms 	38000 	71.07% 	50668
+Flatbuffers 	9ms 	3ms 	32052 	75.60% 	42736
+Thrift (binary) 	42ms 	6ms 	45009 	65.74% 	60012
+Thrift (compact) 	33ms 	11ms 	36005 	72.59% 	48008
 ```

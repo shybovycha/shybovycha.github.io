@@ -56,7 +56,7 @@ $ git check-ignore --verbose node_modules
 
 No output means the path (in this case - `node_modules`) will **not** be ignored. Which should not be the case - there's a rule as the first line of the `.gitignore` file, right?!
 
-The issue seems to be somewhat hidden - the file was saved in the `UTF16-LE` encoding (for whatever reason, VS Code):
+The issue seems to be somewhat hidden - the file was saved in the `UTF16-LE` encoding, since I have used PowerShell to initialize the file with `echo 'node_modules' >> .gitignore`:
 
 <img data-src="/images/gitignore-not-ignoring/Screenshot 2022-05-11 093618.webp">
 
