@@ -24,3 +24,251 @@
 > also, check out PureScript (Haskell) and Elm (simplified Haskell) 😉
 >
 > i think the blog might actually be a very good idea! 👍
+
+## What are side-effects?
+
+Let's introduce few definitions first.
+
+Talking about functions in functional programming, here are few things to consider:
+
+1. a function is **pure** when it always produces the same output for the same input and it has all possible outputs defined (no undefined behaviour)
+2. we can always inline a function call or extract it out (because it will always give the same result); we can always substitute a variable for the expression it is bound to or introduce a new variable to extract the common sub-expressions; this is called **referential transparency** of an expression
+
+Programs in functional programming are nothing but expressions (functions or combinations of functions). Running a function (or a functional program, for that matter) means we are evaluating an expression.
+
+Every expression (in general) is either referentially transparent or it is a side-effect.
+
+Let's have few examples (by Rob Norris): try guessing if the following programs are same
+
+```scala
+val a = 42
+
+(a, a)
+```
+
+and
+
+```scala
+(42, 42)
+```
+
+They apparently are.
+
+How about this?
+
+```scala
+val a = println("hello")
+
+(a, a)
+```
+
+and
+
+```scala
+(println("hello"), println("hello"))
+```
+
+They are not - one prints `hello` once, while the other prints it twice.
+To make this last example more vivid, try replacing `print("hello")` with something like `UsersTable.insert(name = "hello")`
+
+A slightly simpler example:
+
+```scala
+val a = iterator.next()
+
+(a, a)
+```
+
+and
+
+```scala
+(iterator.next(), iterator.next())
+```
+
+These are not the same - the first one will advance iterator once, while the second one will advance iterator twice.
+
+Those programs which are not the same after we have inlined some expressions are not referentially transparent and hence are said to have side effects.
+
+Functional programming sounds reasonably simple with the information presented so far.
+
+Yet, in real world, we have few issues with functional programming:
+
+* what about functions that not always have to return a value? like returning a `null` or `void`? (partiality)
+* how to handle exceptions?
+* what if a function can return different outputs from the same inputs? like `Math.random()` or `DateTime.now()`? (nondeterminism)
+* what about dependency injection and inversion of control?
+* how about logging?
+* how about mutable state?
+
+The way we deal with those and claim back the features which we have lost by using functional programming?
+
+We use effects. They are different from side-effects - effects are good, side-effects are the reason for bugs.
+
+## Some basic effects
+
+Consider these few effects which solve few aspects of the expressiveness we lose with functional programming as opposed to imperative programming.
+
+* `Option` - solves the issue of partiality, when a function _always_ returns a value (of type `Option`)
+* `Either` - the easiest way to handle exceptions and errors (by returning `Left(error)` or `Right(result)`)
+* `Reader` - allows to retrieve data from some _outer world_ (from a program' perspective); this solves the dependency injection issue
+* `Writer` - allows to pass some data to the _outer world_; this solves issues like logging, for instance
+* `State` - takes a (_previous_ or _initial_) state, computes the result and a _new_ state; this solves the mutable state issue
+
+### Reader
+
+Reader allows user to describe a computation of a value which is not _yet_ present.\
+Essentially, you define a program of _some_ input parameter (which is not present just _yet_) and when you execute this program, you have to provide this value - then will you be able to get the result.
+
+Example:
+
+```scala
+case class Reader[E, A](run: E => A)
+
+type Host = String
+
+def path(s: String): Reader[Host, String] =
+    Reader { host => s"https://$host/$s" }
+
+val p = path("foo/bar")
+p.run("google.com") // https://google.com/foo/bar
+```
+
+### Writer
+
+_TODO_
+
+### State
+
+```scala
+case class State[S, A](run: S => (A, S))
+
+type Counter = Int
+
+def greet(name: String): State[Counter, String] =
+    State { count => (s"Hello, $name, you are visitor #$count", count + 1) }
+
+val x = greet("Bob")
+
+x.run(1) // (Hello, Bob, you are visitor #1", 2)
+x.run(42) // ("Hello, Bob, you are visitor #42", 43)
+```
+
+## What is effect and how is it different to side-effect?
+
+The effects presented above have one thing in common: they all compute some "answer" (or "result", or "output") when you evaluate them, but alongside the "answer" they do a little bit extra. This is what we call an "effect".
+
+If you look closely, all these effects have same _shape_, `F[A]`:
+
+```scala
+type F[A] = Option[A]
+type F[A] = Either[E, A]
+type F[A] = Reader[E, A]
+type F[A] = Writer[W, A]
+type F[A] = State[S, A]
+```
+
+An _effect_ in this case is whatever distinguishes `F[A]` from `A`. Think of it as "program of `F` that computes a value of type `A`".
+
+Issue is: these effects do not compose well - you can't easily compose a program of `Option[Char]` with a program of `Option[Int]`:
+
+```scala
+// get 10th character of an input string
+val char10: String => Option[Char] =
+    s => s.lift(10)
+
+val letter: Char => Option[Int] =
+    c => if (c.isLetter) Some(c.toInt) else None
+
+char10 andThen letter
+// error: type mismatch
+```
+
+## Composing effects
+
+You know the famous function composition diagram, right?
+
+```
+A (id[A]: A => A) ---- f: A => B ---> B
+ \                                    |
+  \                                   |
+   \                                  |
+  (f andThen g): A => C            g: B => C
+     \                                |
+      \                               |
+       \                              v
+           C
+```
+
+This diageram shows how function composition looks like: given a function (which has an argument) of type `A` (and returns a value) to type `B`, `f: A => B`, and another function of `B` to `C`, `g: B => C`, a composition of those two functions, expressed in Scala as `(f andThen g)`, will be a function
+of `A` to `C`: `(f andThen g): A => C`.
+
+With effects, this becomes invalid: a function of `A` to `F[B]` can not be composed with a function of `B` to `F[C]` and produce a function of `A` to `F[C]`.
+
+Let us pretend for a second that there _is_ a way to compose those effects so that the diagram holds: instead of `andThen` we will use the operation `>=>`. It is also known as Kleisli operator. We will also call a function `id` (identity) which used to be `id[A]: A => A` will become `pure[A]: A => F[A]`.
+
+This is a bit funky looking in Scala (a much more clean implementation is, surprisingly, Haskell):
+
+```scala
+trait Fishy[F[_]] {
+    def pure[A](a: A): F[A]
+
+    // the fishy operator, >=>
+    def flatMap[A, B](fa: F[A])(f: A => F[B]): F[B]
+}
+
+// define fishy operator, >=>, as an infix operator using a syntax class
+// we are wrapping a function f: A => B and adding a method of B => F[C] given the evidence that there is an instance of Fishy[F], we delegate to that instance and get a function A => F[C]
+implicit class FishyFunctionOps[F[_], A, B](f: A => B) {
+    def >=>[C](g: B => F[C])(implicit ev: Fishy[F]): A => F[C] =
+        a => ev.flatMap(f(a))(g)
+}
+```
+
+But that needs an instance of this `Fishy` class for each of the effect classes that we want to use:
+
+```scala
+implicit val FishyOption: Fishy[Option] =
+    new Fishy[Option] {
+        def pure[A](a: A) = Some(a)
+
+        def flatMap[A, B](fa: Option[A])(f: A => Option[B]) = fa.flatMap(f)
+    }
+```
+
+Now the functions `char10` and `letter` we defined before can be composed with `>=>` instead of `andThen`:
+
+```scala
+char10 >=> letter
+// String => Option[Int]
+```
+
+This `Fishy` trait that we have developed is also commonly known as a `Monad`.
+
+## Simple examples
+
+Consider a `Reader` effect as a solution for dependency injection.
+
+```scala
+type Host = String
+
+def path(p: String): Reader[Host, String] =
+    Reader(host => s"https://$host/$p")
+
+val hostLength: Reader[Host, Int] =
+    Reader(host => host.length)
+
+val program = for {
+    a <- path("foo/bar")
+    b <- hostLength
+} yield s"Path is $a and its length is $b"
+```
+
+Now this program does not return a result - this is just a few functions, composed together.
+It will only produce a result once you _run_ it:
+
+```scala
+program.run("google.com")
+// "Path is https://google.com/foo/bar and its length is 11"
+```
+
+Essentially, the string you pass to the `program.run()` function is the "environment", which will be available to all the parts of the program.
