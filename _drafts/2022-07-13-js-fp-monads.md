@@ -27,6 +27,8 @@
 
 ## What are side-effects?
 
+Very roughly, any function that returns `void` or `Unit` is a side-effect - most likely it relies on a certain state of the system and it changes the state of the system. That fact makes that function very hard to reason about (test, refactor the code using the function, expect defined behaviour of the program using that function).
+
 Let's introduce few definitions first.
 
 Talking about functions in functional programming, here are few things to consider:
@@ -109,10 +111,11 @@ We use effects. They are different from side-effects - effects are good, side-ef
 Consider these few effects which solve few aspects of the expressiveness we lose with functional programming as opposed to imperative programming.
 
 * `Option` - solves the issue of partiality, when a function _always_ returns a value (of type `Option`)
-* `Either` - the easiest way to handle exceptions and errors (by returning `Left(error)` or `Right(result)`)
+* `Either` - the easiest way to handle exceptions and errors by returning either `Left(error)` or `Right(result)`
 * `Reader` - allows to retrieve data from some _outer world_ (from a program' perspective); this solves the dependency injection issue
 * `Writer` - allows to pass some data to the _outer world_; this solves issues like logging, for instance
 * `State` - takes a (_previous_ or _initial_) state, computes the result and a _new_ state; this solves the mutable state issue
+* `IO` - produces a value, fails or never terminates
 
 ### Reader
 
@@ -246,6 +249,8 @@ This `Fishy` trait that we have developed is also commonly known as a `Monad`.
 
 ## Simple examples
 
+### Reader
+
 Consider a `Reader` effect as a solution for dependency injection.
 
 ```scala
@@ -272,3 +277,87 @@ program.run("google.com")
 ```
 
 Essentially, the string you pass to the `program.run()` function is the "environment", which will be available to all the parts of the program.
+
+### IO
+
+In Cats Effects, an `IO` effect describes _an intention to run a side-effect_. It does not actually run it, hence it is composable and gives referentially transparent expressions once composed.
+
+Consider the following program (example from Gabriel Volpe talk):
+
+```scala
+val program: IO[Unit] =
+    for {
+        _ <- IO(println("Enter your name:"))
+        name <- IO(readLine)
+        _ <- IO(println(s"Hello, $name"))
+    } yield ()
+```
+
+It is referentially transparent and is just a composition of pure effects (no side-effects).
+This misleads many padavans of functional programming to think that by wrapping all the logic in `IO` they could get functional programs
+with referential transparency (hence safe to run, refactor and test).
+
+Ah, yes, testing - think about how would you test such a program (without changing it). I can't think of a better way other than running it (potentially in some sort of sandbox environment) and checking the output (STDOUT).
+
+Yet there is a better way to utilize the `IO` effect in this example, by using something called tagless final.
+The idea is to provide that sandbox environment at compile time by extracting the `IO` part into its own effect.
+
+```scala
+trait MyEnvironment[F[_]] {
+    def println(str: String): F[Unit]
+
+    def readLine: F[String]
+}
+
+def program[F[_]: Monad](implicit E: MyEnvironment[F]): F[Unit] =
+    for {
+        _ <- C.println("Enter your name:")
+        name <- C.readLine
+        _ <- C.println(s"Hello, $name")
+    } yield ()
+```
+
+This program abstracts over the instance of `MyEnvironment`, which is a monad (so that you can utilize `flatMap`, which is the underline of `for` expression) and provides two methods - `println` and `readLine`.
+
+The `MyEnvironment`, which abstracts over _some_ type `F[_]` (a wrapper around some other type), is called "algebra". The instance (which we are about to implement) is called an "interpreter".
+
+For instance, an instance that utilizes the `Sync` monad from Cats Effects might look like this:
+
+```scala
+class StdioEnvironment[F[_]: Sync] extends MyEnvironment[F] {
+    def println(str: String) = Sync[F].delay(println(str))
+
+    def readLine = Sync[F].delay(readLine)
+}
+```
+
+Alternatively, for testing purposes, you can have an interpreter which keeps track of the results in a list:
+
+```scala
+class TestEnvironment[F[_]: Applicative](state: Ref[F, List[String]]) extends MyEnvironment[F] {
+    def println(str: String): F[Unit] = state.update(_ :+ str)
+
+    def readLine: F[String] = "testName".pure[F]
+}
+```
+
+Then, a test for the program above would look something like this:
+
+```scala
+test("program") {
+    val spec =
+        for {
+            state <- Ref.of[IO, List[String]](List.empty[String])
+            algebra(e: MyEnvironment[IO]) = new TestEnvironment[IO](state)
+            _ <- program[IO]
+            log <- state.get
+            testResult <- IO { assert(log == List("Enter your name:", "Hello, testName")) }
+        } yield testResult
+
+    spec.unsafeToFuture()
+}
+```
+
+In this test, we instantiate the `MyEnvironment[IO]` implicit (required by `program`) with `TestEnvironment`, which, in turn, is initialized with a state (`Ref` in Cats Effects) holding an empty list of strings.
+
+We then describe a test as a sequence of executing the program and returning an `IO` effect of the assertion comparing the output of `program` with a certain expected value (`List("Enter your name:", "Hello, testName")`).
