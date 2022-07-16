@@ -1,3 +1,86 @@
+# Jargon-free functional programming
+
+## Basics
+
+Let me introduce you functional programming with as few jargonisms and buzz-words as possible.
+
+Shall we start with a simple problem to solve: get a random board game from top-10 games on BoardGamesGeek website and print out its rank and title.
+
+In JavaScript the solution of this problem might look something like this:
+
+```js
+fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`)
+    .then(response => response.text())
+    .then(data => new DOMParser().parseFromString(data, "text/xml"))
+    .then(doc => {
+        const items = Array.from(doc.querySelectorAll('items item'));
+
+        return items.map(item => {
+            const rank = item.getAttribute('rank');
+            const name = item.querySelector('name').getAttribute('value');
+
+            return { rank, name };
+        });
+    })
+    .then(games => {
+        const randomRank = Math.floor((Math.random() * 100) % 10);
+
+        return games[randomRank];
+    })
+    .then(randomTop10Game => {
+        const log = `#${randomTop10Game.rank}: ${randomTop10Game.name}`;
+
+        console.log(log);
+    });
+```
+
+Quick and easy, quite easy to understand - seems good enough.
+
+How about we write some tests for it? Oh, now it becomes a little bit clunky - we need to mock `fetch` call (Fetch API) and the `Math.random`. Oh, and the `DOMParser` with its `querySelector` and `querySelectorAll` calls too. Probably even `console.log` method as well. Okay, we will probably need to modify the original code to make testing easier (if even possible). How about we split the program into separate blocks of code?
+
+```js
+const fetchAPIResponse = () =>
+    fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`);
+
+const getResponseXML = (response) =>
+    response
+        .then(r => r.text())
+        .then(data => new DOMParser().parseFromString(data, "text/xml"));
+
+const extractGames = (doc) => {
+    const items = Array.from(doc.querySelectorAll('items item'));
+
+    return items.map(item => {
+        const rank = item.getAttribute('rank');
+        const name = item.querySelector('name').getAttribute('value');
+
+        return { rank, name };
+    });
+};
+
+const getRandomTop10Game = (games) => {
+    const randomRank = Math.floor((Math.random() * 100) % 10);
+
+    return games[randomRank];
+};
+
+const printGame = (game) => {
+    const log = `#${game.rank}: ${game.name}`;
+
+    console.log(log);
+};
+
+fetchAPIResponse()
+    .then(r => getResponseXML(r))
+    .then(doc => extractGames(doc))
+    .then(games => getRandomTop10Game(games))
+    .then(game => printGame(game));
+```
+
+Okay, now we can test some of the bits of the program without _too much_ of a hassle - we could test that every call of `getRandomGame` returns a different value (which might not be true) but within the given list of values. We could test the `extractGames` function on a mock XML document and verify it extracts all the `<item>` nodes and its `<name>` child. Testing `fetchAPIResponse` and `getResponseXML` and `printGame` functions, though, would be a bit tricky without either mocking the `fetch`, `console.log` and `DOMParser` or actually calling those functions.
+
+----
+
 > Hooks do not add side effects. They are kind of composing the components. component => props => state => hooks => return ...
 
 > Yeah but, we implement any side effects in useEffect which is a hook
