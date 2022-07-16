@@ -361,3 +361,15 @@ test("program") {
 In this test, we instantiate the `MyEnvironment[IO]` implicit (required by `program`) with `TestEnvironment`, which, in turn, is initialized with a state (`Ref` in Cats Effects) holding an empty list of strings.
 
 We then describe a test as a sequence of executing the program and returning an `IO` effect of the assertion comparing the output of `program` with a certain expected value (`List("Enter your name:", "Hello, testName")`).
+
+The issue with tagless final approach is more obvious with more complex programs when a program requires multiple behaviours to be implemented in order to perform computation.
+
+Think of a user service that requires database, caching, logging and some other behaviours to be implemented before being able to create or update a user entity.
+
+This issue can't really be solved by a `Reader` monad, as one might think, since the program would need to constantly perform computations of that reader monad and, most importantly, return the reader monad upon each operation.
+
+One might think `ReaderT` (monad transformer) comes to the rescue. But monad transformers are known to be heavy and not "stack-safe" - that is, some monads in Scala do not really implement tail recursion but rely on non-tail recursion instead. That effectively means each recursive call is being pushed onto stack so that deep transformations (or long transformations, like `sum(List(20000)(1))`) can cause `StackOverflowException`, surprisingly.
+
+Hence there is a need for some new monad, which would remind of `Either` where `Left` would be a failure (`IO`-like behaviour), `Right` would be a result of a successful computation and there should be one more param, the `Reader` monad.
+
+In Cats Effects there is no `Reader` or `ReaderT` monad. Instead, it utilizes the [Kleisli](https://typelevel.org/cats/datatypes/kleisli.html#configuration) monad.
