@@ -79,6 +79,129 @@ fetchAPIResponse()
 
 Okay, now we can test some of the bits of the program without _too much_ of a hassle - we could test that every call of `getRandomGame` returns a different value (which might not be true) but within the given list of values. We could test the `extractGames` function on a mock XML document and verify it extracts all the `<item>` nodes and its `<name>` child. Testing `fetchAPIResponse` and `getResponseXML` and `printGame` functions, though, would be a bit tricky without either mocking the `fetch`, `console.log` and `DOMParser` or actually calling those functions.
 
+The ideas of functional programming might actually help us solve those aforementioned issues.
+See, in functional programming the assumption is that every function only operates on the arguments
+it has been passed and nothing else. It can not change the "outer world" - it can have values
+temporarily assigned to internal constants, nothing more - take it as there are no variables.
+A function should always return the same result for the same arguments, so functions are
+always predictable, no matter how many times you call them.
+
+That sounds good and nice, but how does that solve the issues of the above problem, you might ask.
+For the most part the functions we have extracted already comply with the ideas of
+functional programming - do they not?
+
+Well, not really. For once, fetching the data from the API is a big questionmark on how it fits into the picture of functional programming. Leaving the fetching aside, we have a random call in the middle.
+We also log some output to the console (and thus change the "outer world", outside the `printGame` function).
+
+For a lot of things like those, functional programming tries to separate the "pure functional operations" and "impure operations".
+
+See, in functional programming you operate these "pure functions", which only use constants and inputs to produce their outputs. So a program would be nothing but a chain of function calls. With "simple" functions, returning the values which the next function in the chain can take as an input argument, this is quite easy.
+
+Take the code above as an example:
+
+```js
+fetchAPIResponse()
+    .then(r => getResponseXML(r))
+    .then(doc => extractGames(doc))
+    .then(games => getRandomTop10Game(games))
+    .then(game => printGame(game));
+```
+
+This could have been written as
+
+```js
+fetchAPIResponse()
+    .then(r =>
+        printGame(
+            getRandomTop10Game(
+                extractGames(
+                    getResponseXML(r)
+                )
+            )
+        )
+    );
+```
+
+In other languages and some libraries there are operators to combine functions into one big function:
+
+```js
+fetchAPIResponse()
+    .then(r =>
+        _.flow([ getResponseXML, extractGames, getRandomTop10Game, printGame ])(r)
+    );
+```
+
+or
+
+```java
+fetchAPIResponse()
+    .then(r ->
+        getResponseXML.andThen(extractGames).andThen(getRandomTop10Game).andThen(printGame).aplly(r)
+    );
+```
+
+There are also functions which need to interact with the outer world. In that case, functional programming suggests that we wrap them in specific constructions and do not run them immediately.
+Instead, we weave them into the program, describing what would happen to the result of the wrapped function call when we get one. This makes programs again, "pure functional", "safe" (as in not operating outside of the boundaries of the program itself, all is contained in the function call chains). Then, once we run the program, we enter the world of "unsafe" and execute all those wrapped functions and run the rest of the code once we get the results in place.
+
+Sounds a bit hard to comprehend.
+
+Let me rephrase this with few bits of code.
+
+For the problem above, we are trying to get the response of an API somewhere in the outer world.
+This is said to be an "unsafe" operation, since the data lives outside of the program, so we need to wrap this operation in a "safe" manner. Essentially, we will create an _object_ which describes _an intention to run the fetch call_ and then write our program around this object to describe how this data will be processed down the line, when we actually run the program (and the fetch request together with it).
+
+See it in the code:
+
+```js
+class IO {
+    constructor(intentionFunc) {
+        this.intentionFunc = intentionFunc;
+    }
+
+    andThen(func) {
+        return new IO(() => func(this.intentionFunc()));
+    }
+
+    unsafeRun() {
+        this.intentionFunc();
+    }
+}
+```
+
+Essentially, we save the function we intend to run in the `intentionFunc` member of an `IO` class.
+When we want to describe what would happen to the result of the data, we return a new `IO` object with a new function - a combination of a function we will call around the call to the function we saved. This is important to understand why we return a new object: so that we do not mutate the original object.
+
+You might see this new `IO` thing is very similar to the `Promise` available in JS runtime already.
+The similarities are obvious: we also have this chaining with the `then` method. The call to the `then` method also returns a new object.
+
+But the main issue with `Promise` is that they start running the code you passed in the constructor immediately. And that is exactly the issue we are trying to resolve.
+
+Now, back to the business, let us see how we would use this new `IO` class in the original problem:
+
+```js
+new IO(() => fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`))
+```
+
+That would not work, however, since `fetch` call will return a `Promise`. So we need to somehow work with `Promise` instances instead.
+
+Off-topic:
+
+> Let's pretend `fetch` is synchronous? Or shall we say FK it JS you suck?
+> I honestly tried implementing an `unpromisify` helper for three damn hours only to figure out
+> promises start executing NOT immediately, but once you leave the context of a running function.
+> So having that endless `while` loop, waiting for a promise to get resolved has ZERO freaking effect
+> since this loop will be running until the end of days, but unless you exit the function beforehand,
+> the promise won't start executing because JS is a single threaded hot garbage you idiot and the queue/event loop or whatever they call it prevents you from running the promise immediately.
+
+----
+
+Tips:
+
+having a proper functional programming in JS/TS world requires both automatic checks and strict
+discipline so you do not create mutating code or changing the environment or relying on some magic
+from the outer world in your functions. also, you can not really use standard library anymore -
+welcome to the world of endless custom-made classes for immutability and monads.
+
 ----
 
 > Hooks do not add side effects. They are kind of composing the components. component => props => state => hooks => return ...
