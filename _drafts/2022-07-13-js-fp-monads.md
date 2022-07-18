@@ -11,7 +11,7 @@ In JavaScript the solution of this problem might look something like this:
 ```js
 fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`)
     .then(response => response.text())
-    .then(data => new DOMParser().parseFromString(data, "text/xml"))
+    .then(response => new DOMParser().parseFromString(response, "text/xml"))
     .then(doc => {
         const items = Array.from(doc.querySelectorAll('items item'));
 
@@ -40,12 +40,11 @@ How about we write some tests for it? Oh, now it becomes a little bit clunky - w
 
 ```js
 const fetchAPIResponse = () =>
-    fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`);
+    fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`)
+        .then(response => response.text());
 
 const getResponseXML = (response) =>
-    response
-        .then(r => r.text())
-        .then(data => new DOMParser().parseFromString(data, "text/xml"));
+    new DOMParser().parseFromString(response, "text/xml");
 
 const extractGames = (doc) => {
     const items = Array.from(doc.querySelectorAll('items item'));
@@ -71,7 +70,7 @@ const printGame = (game) => {
 };
 
 fetchAPIResponse()
-    .then(r => getResponseXML(r))
+    .then(response => getResponseXML(response))
     .then(doc => extractGames(doc))
     .then(games => getRandomTop10Game(games))
     .then(game => printGame(game));
@@ -91,18 +90,16 @@ Consider this refactoring:
 
 ```js
 const fetchAPIResponse = () =>
-    fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`);
+    fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`)
+        .then(response => response.text());
 
-const getResponseXML = (response) =>
-    response
-        .then(r => r.text())
-        .then(data => {
-            try {
-                return new DOMParser().parseFromString(data, "text/xml");
-            } catch {
-                return null;
-            }
-        });
+const getResponseXML = (response) => {
+    try {
+        return new DOMParser().parseFromString(response, "text/xml");
+    } catch {
+        return null;
+    }
+};
 
 const extractGames = (doc) => {
     if (!doc) {
@@ -144,7 +141,7 @@ const printGame = (game) => {
 };
 
 fetchAPIResponse()
-    .then(r => getResponseXML(r))
+    .then(response => getResponseXML(response))
     .then(doc => extractGames(doc))
     .then(games => getRandomTop10Game(games))
     .then(game => printGame(game));
@@ -154,18 +151,16 @@ In case you don't want to bother with `null` values or want to have a better log
 
 ```js
 const fetchAPIResponse = () =>
-    fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`);
+    fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`)
+        .then(response => response.text());
 
-const getResponseXML = (response) =>
-    response
-        .then(r => r.text())
-        .then(data => {
-            try {
-                return new DOMParser().parseFromString(data, "text/xml");
-            } catch {
-                throw 'Received invalid XML';
-            }
-        });
+const getResponseXML = (response) => {
+    try {
+        return new DOMParser().parseFromString(response, "text/xml");
+    } catch {
+        throw 'Received invalid XML';
+    }
+};
 
 const extractGames = (doc) => {
     const items = Array.from(doc.querySelectorAll('items item'));
@@ -203,7 +198,7 @@ const printGame = (game) => {
 };
 
 fetchAPIResponse()
-    .then(r => getResponseXML(r))
+    .then(response => getResponseXML(response))
     .then(doc => extractGames(doc))
     .then(games => getRandomTop10Game(games))
     .then(game => printGame(game))
@@ -214,18 +209,16 @@ Alternatively, since an entire program is a chain of promises, you could just re
 
 ```js
 const fetchAPIResponse = () =>
-    fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`);
+    fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`)
+        .then(response => response.text());
 
-const getResponseXML = (response) =>
-    response
-        .then(r => r.text())
-        .then(data => {
-            try {
-                return new DOMParser().parseFromString(data, "text/xml");
-            } catch {
-                return Promise.reject('Received invalid XML');
-            }
-        });
+const getResponseXML = (response) => {
+    try {
+        return new DOMParser().parseFromString(response, "text/xml");
+    } catch {
+        return Promise.reject('Received invalid XML');
+    }
+};
 
 const extractGames = (doc) => {
     const items = Array.from(doc.querySelectorAll('items item'));
@@ -263,7 +256,7 @@ const printGame = (game) => {
 };
 
 fetchAPIResponse()
-    .then(r => getResponseXML(r))
+    .then(response => getResponseXML(response))
     .then(doc => extractGames(doc))
     .then(games => getRandomTop10Game(games))
     .then(game => printGame(game))
@@ -294,7 +287,7 @@ Take the code above as an example:
 
 ```js
 fetchAPIResponse()
-    .then(r => getResponseXML(r))
+    .then(response => getResponseXML(response))
     .then(doc => extractGames(doc))
     .then(games => getRandomTop10Game(games))
     .then(game => printGame(game));
@@ -304,11 +297,11 @@ This could have been written as
 
 ```js
 fetchAPIResponse()
-    .then(r =>
+    .then(response =>
         printGame(
             getRandomTop10Game(
                 extractGames(
-                    getResponseXML(r)
+                    getResponseXML(response)
                 )
             )
         )
@@ -319,8 +312,8 @@ In other languages and some libraries there are operators to combine functions i
 
 ```js
 fetchAPIResponse()
-    .then(r =>
-        _.flow([ getResponseXML, extractGames, getRandomTop10Game, printGame ])(r)
+    .then(response =>
+        _.flow([ getResponseXML, extractGames, getRandomTop10Game, printGame ])(response)
     );
 ```
 
@@ -328,8 +321,8 @@ or
 
 ```java
 fetchAPIResponse()
-    .then(r ->
-        getResponseXML.andThen(extractGames).andThen(getRandomTop10Game).andThen(printGame).aplly(r)
+    .then(response ->
+        getResponseXML.andThen(extractGames).andThen(getRandomTop10Game).andThen(printGame).aplly(response)
     );
 ```
 
