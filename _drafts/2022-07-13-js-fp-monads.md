@@ -78,6 +78,214 @@ fetchAPIResponse()
 
 Okay, now we can test some of the bits of the program without _too much_ of a hassle - we could test that every call of `getRandomGame` returns a different value (which might not be true) but within the given list of values. We could test the `extractGames` function on a mock XML document and verify it extracts all the `<item>` nodes and its `<name>` child. Testing `fetchAPIResponse` and `getResponseXML` and `printGame` functions, though, would be a bit tricky without either mocking the `fetch`, `console.log` and `DOMParser` or actually calling those functions.
 
+```js
+import {
+  fetchAPIResponse,
+  getResponseXML,
+  extractGames,
+  getRandomTop10Game,
+  printGame
+} from "./index";
+
+describe("fetchAPIResponse", () => {
+  describe("bad response", () => {
+    beforeEach(() => {
+      global.fetch = jest.fn(() => Promise.reject("404 Not Found"));
+    });
+
+    it("returns rejected promise", () => {
+      expect(fetchAPIResponse()).rejects.toBe("404 Not Found");
+    });
+  });
+
+  describe("ok response", () => {
+    beforeEach(() => {
+      global.fetch = jest.fn(() =>
+        Promise.resolve({
+          text() {
+            return `<?xml version="1.0" encoding="utf-8"?><items><item rank="1"><name value="Beyond the Sun"/></item></items>`;
+          }
+        })
+      );
+    });
+
+    it("returns rejected promise", () => {
+      expect(fetchAPIResponse()).resolves.toBe(
+        `<?xml version="1.0" encoding="utf-8"?><items><item rank="1"><name value="Beyond the Sun"/></item></items>`
+      );
+    });
+  });
+});
+
+describe("getResponseXML", () => {
+  describe("null passed", () => {
+    it("returns no <item> nodes", () => {
+      const doc = getResponseXML(null);
+
+      const items = Array.from(doc.querySelectorAll("item"));
+
+      expect(items).toHaveLength(0);
+    });
+  });
+
+  describe("invalid text passed", () => {
+    it("returns no <item> nodes", () => {
+      const doc = getResponseXML("404 not found");
+
+      const items = Array.from(doc.querySelectorAll("item"));
+
+      expect(items).toHaveLength(0);
+    });
+  });
+
+  describe("blank document passed", () => {
+    it("returns no <item> nodes", () => {
+      const doc = getResponseXML('<?xml version="1.0" encoding="utf-8"?>');
+
+      const items = Array.from(doc.querySelectorAll("item"));
+
+      expect(items).toHaveLength(0);
+    });
+  });
+
+  describe("valid document passed", () => {
+    it("returns <item> nodes", () => {
+      const doc = getResponseXML(
+        '<?xml version="1.0" encoding="utf-8"?><items><item rank="1"><name value="Beyond the Sun"/></item></items>'
+      );
+
+      const items = Array.from(doc.querySelectorAll("item"));
+
+      expect(items).toHaveLength(1);
+    });
+  });
+});
+
+describe("extractGames", () => {
+  describe("null document", () => {
+    it("throws an exception", () => {
+      expect(() => extractGames(null)).toThrow();
+    });
+  });
+
+  describe("empty document", () => {
+    it("returns empty array", () => {
+      const doc = new DOMParser().parseFromString("", "text/xml");
+      expect(extractGames(doc)).toStrictEqual([]);
+    });
+  });
+
+  describe("valid document", () => {
+    it("returns an array of games", () => {
+      const doc = new DOMParser().parseFromString(
+        `<?xml version="1.0" encoding="utf-8"?><items><item rank="3"><name value="Beyond the Sun"/></item></items>`,
+        "text/xml"
+      );
+
+      expect(extractGames(doc)).toStrictEqual([
+        { name: "Beyond the Sun", rank: "3" }
+      ]);
+    });
+  });
+});
+
+describe("getRandomTop10Game", () => {
+  describe("null passed", () => {
+    it("throws an exception", () => {
+      expect(() => getRandomTop10Game(null)).toThrow();
+    });
+  });
+
+  describe("empty array passed", () => {
+    it("returns undefined", () => {
+      expect(getRandomTop10Game([])).toStrictEqual(undefined);
+    });
+  });
+
+  describe("less than 10 element array passed", () => {
+    it("returns undefined", () => {
+      const games = [
+        { name: "game1", rank: 1 },
+        { name: "game2", rank: 2 }
+      ];
+      const randomGames = [...new Array(100)].map(() =>
+        getRandomTop10Game(games)
+      );
+
+      expect(randomGames).toContain(undefined);
+    });
+  });
+
+  describe("10 or more element array passed", () => {
+    it("never returns undefined", () => {
+      const games = [
+        { name: "game1", rank: 1 },
+        { name: "game2", rank: 2 },
+        { name: "game3", rank: 3 },
+        { name: "game4", rank: 4 },
+        { name: "game5", rank: 5 },
+        { name: "game6", rank: 6 },
+        { name: "game7", rank: 7 },
+        { name: "game8", rank: 8 },
+        { name: "game9", rank: 9 },
+        { name: "game10", rank: 10 }
+      ];
+
+      const randomGames = [...new Array(100)].map(() =>
+        getRandomTop10Game(games)
+      );
+
+      expect(randomGames).not.toContain(undefined);
+    });
+
+    it("returns an instance of each game", () => {
+      const games = [
+        { name: "game1", rank: "1" },
+        { name: "game2", rank: "2" },
+        { name: "game3", rank: "3" },
+        { name: "game4", rank: "4" },
+        { name: "game5", rank: "5" },
+        { name: "game6", rank: "6" },
+        { name: "game7", rank: "7" },
+        { name: "game8", rank: "8" },
+        { name: "game9", rank: "9" },
+        { name: "game10", rank: "10" }
+      ];
+
+      const randomGames = [...new Array(100)].map(() =>
+        getRandomTop10Game(games)
+      );
+
+      expect(randomGames).toStrictEqual(expect.arrayContaining(games));
+    });
+  });
+});
+
+describe("printGame", () => {
+  describe("null passed", () => {
+    it("throws an exception", () => {
+      expect(() => printGame(null)).toThrow();
+    });
+  });
+
+  describe("game passed", () => {
+    const mockLogFn = jest.fn();
+
+    beforeEach(() => {
+      console.log = mockLogFn;
+    });
+
+    it("prints it to console", () => {
+      printGame({ name: "game 42", rank: "42" });
+
+      expect(mockLogFn).toHaveBeenCalledWith("#42: game 42");
+    });
+  });
+});
+```
+
+In a lot of ways, I personally find these tests quite... hacky. But they seem to cover most of the functionality.
+
 Let us talk about corner cases. As in, what would happen if the API does not return the result? Or what would happen if the result is not a valid XML (like `404 Not Found` text)? Or what would happen if the XML is valid, but it does not contain any `items` or `item[rank]>name[value]` nodes? Or what if it only returns `5` results (or any number of results less than `10`, for that matter)?
 
 In most of the cases, the promise will get rejected (since an entire program is a chain of `Promise.then` calls). So you might think this is just fine and rely on the rejection logic handling (maybe even using `Promise.catch`).
@@ -263,10 +471,102 @@ fetchAPIResponse()
     .catch(error => console.error('Failed', error));
 ```
 
-----
+That's all good and nice and we seem to have covered most of the edge case scenarios (at least those we could think of).
+Now, what if I tell you the program is still not entirely correct? See those `querySelector` calls? They might return `null` if the node
+or the attribute is not present. And we do not want those empty objects in our program' output. This might be tricky to catch immediately
+while developing the code.
 
-The ideas of functional programming might actually help us solve those aforementioned issues.
-See, in functional programming the assumption is that every function only operates on the arguments
+One might even argue that most of those errors would have been caught by the compiler, if we have used something like TypeScript.
+And they might be right - for the most part:
+
+```ts
+interface Game {
+    name: string;
+    rank: string;
+}
+
+const fetchAPIResponse = () =>
+    fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`)
+        .then(response => response.text());
+
+const getResponseXML = (response: string) => {
+    try {
+        return new DOMParser().parseFromString(response, "text/xml");
+    } catch {
+        throw 'Received invalid XML';
+    }
+};
+
+const extractGames = (doc: XMLDocument) => {
+    const items = Array.from(doc.querySelectorAll('items item'));
+
+    return items.map(item => {
+        const rank = item.getAttribute('rank') ?? '';
+        const name = item.querySelector('name')?.getAttribute('value') ?? '';
+
+        return { rank, name };
+    });
+};
+
+const getRandomTop10Game = (games: Array<Game>) => {
+    if (!games) {
+        throw 'No games found';
+    }
+
+    if (games.length < 10) {
+        throw 'Less than 10 games received';
+    }
+
+    const randomRank = Math.floor((Math.random() * 100) % 10);
+
+    return games[randomRank];
+};
+
+const printGame = (game: Game) => {
+    if (!game) {
+        throw 'No game provided';
+    }
+
+    const log = `#${game.rank}: ${game.name}`;
+
+    console.log(log);
+};
+
+fetchAPIResponse()
+    .then(r => getResponseXML(r))
+    .then(doc => extractGames(doc))
+    .then(games => getRandomTop10Game(games))
+    .then(game => printGame(game))
+    .catch(error => console.error('Failed', error));
+```
+
+Not too many changes, but those pesky little errors were caught at development time, pretty much.
+The testing is still a challenge, though.
+
+There is a application design approach which might be able to solve quite a bit of the aforementioned issues.
+Let me introduce you to the world of functional programming without a ton of buzzwords and overwhelming terminology.
+
+## Disclaimer
+
+A big disclaimer before diving too deep: I am going to introduce all of the concepts without relying on any frameworks,
+libraries, specific programming languages and whatnot - just sticking to the hand-written TypeScript. This might seem like
+a lot of boilerplate and overhead for little benefit, but (with notes of a philosophy) the biggest benefit is in the cost of
+detecting and fixing errors in the code:
+
+* IDE highlighting an error (and maybe even suggesting a fix) - mere seconds of developer's time
+* Local build (compiling the code locally, before pushing the code to the repository) - minutes, maybe tens of minutes
+* CI server build, running all the tests possible - around an hour
+* Pre-production environment (manual testing on dedicated QA / staging environment or even testing on production) - around few hours, may involve other people
+* Production - measured in days or months and risking the reputation with the customers
+
+_TODO: add a diagram_
+
+Hence if we could detect the errors while writing the code the first time - we could potentially save ourselves a fortune measured in both time and money.
+
+## Fancy-less introduction to functional programming
+
+The ideas of functional programming are quite simple.
+In functional programming the assumption is that every function only operates on the arguments
 it has been passed and nothing else. It can not change the "outer world" - it can have values
 temporarily assigned to internal constants, nothing more - take it as there are no variables.
 A function should always return the same result for the same arguments, so functions are
@@ -308,6 +608,9 @@ fetchAPIResponse()
     );
 ```
 
+Since each next function in the chain accepts exactly the type the previous function has returned, they all combine quite well.
+
+<jfyi>
 In other languages and some libraries there are operators to combine functions into one big function:
 
 ```js
@@ -325,6 +628,9 @@ fetchAPIResponse()
         getResponseXML.andThen(extractGames).andThen(getRandomTop10Game).andThen(printGame).aplly(response)
     );
 ```
+</jfyi>
+
+You will understand why this matters in a minute.
 
 There are also functions which need to interact with the outer world. In that case, functional programming suggests that we wrap them in specific constructions and do not run them immediately.
 Instead, we weave them into the program, describing what would happen to the result of the wrapped function call when we get one. This makes programs again, "pure functional", "safe" (as in not operating outside of the boundaries of the program itself, all is contained in the function call chains). Then, once we run the program, we enter the world of "unsafe" and execute all those wrapped functions and run the rest of the code once we get the results in place.
@@ -338,13 +644,15 @@ This is said to be an "unsafe" operation, since the data lives outside of the pr
 
 See it in the code:
 
-```js
+```ts
 class IO {
-    constructor(intentionFunc) {
-        this.intentionFunc = intentionFunc;
+    private intentionFunc: Function;
+
+    constructor(func: Function) {
+        this.intentionFunc = func;
     }
 
-    andThen(func) {
+    andThen(func: Function) {
         return new IO(() => func(this.intentionFunc()));
     }
 
@@ -362,7 +670,7 @@ The similarities are obvious: we also have this chaining with the `then` method.
 
 But the main issue with `Promise` is that they start running the code you passed in the constructor immediately. And that is exactly the issue we are trying to resolve.
 
-Now, back to the business, let us see how we would use this new `IO` class in the original problem:
+Now, let us see how we would use this new `IO` class in the original problem:
 
 ```js
 new IO(() => fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`))
@@ -371,16 +679,494 @@ new IO(() => fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`))
 That would not work, however, since `fetch` call will return a `Promise`. So we need to somehow work with `Promise` instances instead.
 Let me postpone this discussion for a short while.
 
-----
+<spoiler>
+We could have tried implementing an `unpromisify` helper which would make the `fetch` call synchronous, but promises start executing not immediately,
+but once you leave the context of a currently running function. So having that endless `while` loop, waiting for a promise to get resolved has zero effect
+since this loop will be running until the end of days, but unless you exit the function beforehand, the promise won't start executing because JS is single threaded
+and the execution queue / event loop prevents you from running the promise immediately.
+</spoiler>
 
-Off-topic:
+For now, let us pretend this code would magically work, so we can talk about one important matter.
+As I mentioned above, simple functions combine easily if one function accepts the same argument type the previous function returns.
+Think `extractGames` and `getRandomTop10Game` - `getRandomTop10Game` accepts an argument of type `Array<Game>` while `extractGames` returns just that - `Array<Game>`.
+But with this new construct of ours, `IO`, combining anything would be tricky:
 
-> Let's pretend `fetch` is synchronous? Or shall we say FK it JS you suck?
-> I honestly tried implementing an `unpromisify` helper for three damn hours only to figure out
-> promises start executing NOT immediately, but once you leave the context of a running function.
-> So having that endless `while` loop, waiting for a promise to get resolved has ZERO freaking effect
-> since this loop will be running until the end of days, but unless you exit the function beforehand,
-> the promise won't start executing because JS is a single threaded hot garbage you idiot and the queue/event loop or whatever they call it prevents you from running the promise immediately.
+```ts
+// since Function is not a typed interface in TypeScript
+// I have extracted a simple 1-argument function type
+type Func <A, B> = (_: A) => B;
+
+class IO <A, B> {
+    private intentionFunc: Func<A, B>;
+
+    constructor(func: Func<A, B>) {
+        this.intentionFunc = func;
+    }
+
+    andThen<C>(func: Func<B, C>) {
+        return new IO<A, C>((arg: A) => func(this.intentionFunc(arg)));
+    }
+
+    unsafeRun(arg: A) {
+        this.intentionFunc(arg);
+    }
+}
+
+interface Game {
+    name: string;
+    rank: string;
+}
+
+const fetchAPIResponse = () =>
+    new IO(() => fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`).then(response => response.text()));
+
+const getResponseXML = (response: string) => {
+    try {
+        return new DOMParser().parseFromString(response, "text/xml");
+    } catch {
+        throw 'Received invalid XML';
+    }
+};
+
+const extractGames = (doc: XMLDocument) => {
+    const items = Array.from(doc.querySelectorAll('items item'));
+
+    return items.map(item => {
+        const rank = item.getAttribute('rank') ?? '';
+        const name = item.querySelector('name')?.getAttribute('value') ?? '';
+
+        return { rank, name };
+    });
+};
+
+const getRandomTop10Game = (games: Array<Game>) => {
+    if (!games) {
+        throw 'No games found';
+    }
+
+    if (games.length < 10) {
+        throw 'Less than 10 games received';
+    }
+
+    const randomRank = Math.floor((Math.random() * 100) % 10);
+
+    return games[randomRank];
+};
+
+const printGame = (game: Game) => {
+    if (!game) {
+        throw 'No game provided';
+    }
+
+    const log = `#${game.rank}: ${game.name}`;
+
+    console.log(log);
+};
+
+fetchAPIResponse()
+    .andThen(r => getResponseXML(r))
+    .andThen(doc => extractGames(doc))
+    .andThen(games => getRandomTop10Game(games))
+    .andThen(game => printGame(game))
+    .unsafeRun(undefined); // needed as `fetchAPIResponse`, the initial `IO` object in the chain, does not take any arguments
+```
+
+Except for a tricky class declaration to support strong types by TypeScript, not much is different, huh?
+
+The one big issue with almost any of the functions we have is that they not always produce results.
+And that is an issue, since functional programming dictates a function must always produce one.
+
+The way we deal with this situation in functional programming is by using few helper classes, which describe the presence or abscence of a result.
+You might actually know them by heart: `T?` also known as `T | null`, `T1 | T2` - TypeScript has it all:
+
+```ts
+const getRandomTop10Game = (games: Array<Game> | undefiend): Game | undefined => {
+    return games?.[Math.random() * 100 % 10];
+};
+
+const printGame = (game: Game | undefined): void => {
+    console.log(`#${game?.rank ?? ''}: ${game?.name ?? ''}`);
+};
+```
+
+Whereas with the former, optional values, you can do chaining to some extent, this becomes a burden with alternate types:
+
+```ts
+const extractGames3 = (doc: Either<Error, XMLDocument>): Either<Error, Array<Game>> => {
+    return doc.andThen((d: XMLDocument) => {
+        const items = Array.from(d.querySelectorAll('items item'));
+
+        return items.map(item => {
+            const rank = item.getAttribute('rank') ?? '';
+            const name = item.querySelector('name')?.getAttribute('value') ?? '';
+
+            return { rank, name };
+        });
+    });
+};
+
+const getRandomTop10Game3 = (games: Either<Error, Array<Game>>): Either<Error, Game> => {
+    return games.andThen(gs => gs[Math.random() * 100 % 10]);
+};
+
+const printGame3 = (game: Either<Error, Game>): void => {
+    game.andThen(g => console.log(`#${g.rank}: ${g.name}`));
+};
+```
+
+Observe how all those `instanceof` checks and questionmarks and pipes infested the code.
+
+Let us have more conscise wrappers, very similar to what other functional programming technologies have:
+
+```ts
+abstract class Maybe <A> {
+    abstract andThen <B>(func: Func<A, B>): Maybe<B>;
+
+    abstract andThenWrap <B>(func: Func<A, Maybe<B>>): Maybe<B>;
+
+    static option <A>(value: A | null | undefined): Maybe<A> {
+        return (!value) ? Maybe.none<A>() : Maybe.some<A>(value);
+    }
+
+    static some <A>(value: A): Some<A> {
+        return new Some<A>(value);
+    }
+
+    static none <A>(): None<A> {
+        return new None<A>();
+    }
+}
+
+class Some <A> extends Maybe <A> {
+    private value: A;
+
+    constructor(value: A) {
+        super();
+
+        this.value = value;
+    }
+
+    override andThen <B>(func: Func<A, B>): Maybe<B> {
+        return new Some(func(this.value));
+    }
+
+    override andThenWrap <B>(func: Func<A, Maybe<B>>): Maybe<B> {
+        return func(this.value);
+    }
+}
+
+class None <A> extends Maybe <A> {
+    constructor() {
+        super();
+    }
+
+    override andThen <B>(_: Func<A, B>): Maybe<B> {
+        return new None<B>();
+    }
+
+    override andThenWrap <B>(_: Func<A, Maybe<B>>): Maybe<B> {
+        return new None<B>();
+    }
+}
+```
+
+The simplest (yet not entirely helpful) way to handle exceptions in functional programming world would be using a wrapper like this:
+
+```ts
+abstract class Either <A, B> {
+    abstract andThen <C>(func: Func<B, C>): Either<A, C>;
+
+    abstract andThenWrap <C>(func: Func<B, Either<A, C>>): Either<A, C>;
+
+    static left <A, B>(value: A): Either<A, B> {
+        return new Left<A, B>(value);
+    }
+
+    static right <A, B>(value: B): Either<A, B> {
+        return new Right<A, B>(value);
+    }
+}
+
+class Left <A, B> extends Either <A, B> {
+    private value: A;
+
+    constructor(value: A) {
+        super();
+
+        this.value = value;
+    }
+
+    override andThen <C>(_: Func<B, C>): Either<A, C> {
+        return new Left<A, C>(this.value);
+    }
+
+    override andThenWrap <C>(func: Func<B, Either<A, C>>): Either<A, C> {
+        return new Left<A, C>(this.value);
+    }
+}
+
+class Right <A, B> extends Either <A, B> {
+    private value: B;
+
+    constructor(value: B) {
+        super();
+
+        this.value = value;
+    }
+
+    override andThen <C>(func: Func<B, C>): Either<A, C> {
+        return new Right(func(this.value));
+    }
+
+    override andThenWrap <C>(func: Func<B, Either<A, C>>): Either<A, C> {
+        return func(this.value);
+    }
+}
+```
+
+This might not look as simplistic or clean when defined, but see how it changes the code:
+
+```ts
+const extractGames = (doc: Either<Error, XMLDocument>): Either<Error, Array<Game>> => {
+    return doc.andThen((d: XMLDocument) => {
+        const items = Array.from(d.querySelectorAll('items item'));
+
+        return items.map(item => {
+            const rank = item.getAttribute('rank') ?? '';
+            const name = item.querySelector('name')?.getAttribute('value') ?? '';
+
+            return { rank, name };
+        });
+    });
+};
+
+const getRandomTop10Game = (games: Either<Error, Array<Game>>): Either<Error, Game> => {
+    return games.andThen(gs => gs[Math.random() * 100 % 10]);
+};
+
+const printGame = (game: Either<Error, Game>): void => {
+    game.andThen(g => console.log(`#${g.rank}: ${g.name}`));
+};
+```
+
+Now, there are two parts where we still have those ugly questionmarks:
+
+```ts
+const extractGames = (doc: Either<Error, XMLDocument>): Either<Error, Array<Game>> => {
+    return doc.andThen((d: XMLDocument) => {
+        const items = Array.from(d.querySelectorAll('items item'));
+
+        return items.map(item => {
+            const rank = item.getAttribute('rank') ?? '';
+            const name = item.querySelector('name')?.getAttribute('value') ?? '';
+
+            return { rank, name };
+        });
+    });
+};
+```
+
+Let's see if we can utilize the new helper classes to beautify this:
+
+```ts
+const createGame = (item: Element): Maybe<Game> => {
+    const rank = Maybe.maybe(item.getAttribute('rank'));
+    const name = Maybe.maybe(item.querySelector('name')).andThen(name => name.getAttribute('value'));
+
+    return rank.andThenWrap(r =>
+        name.andThen(n => ({ name: n, rank: r } as Game))
+    );
+};
+```
+
+Now the issue is: the `createGame` function takes an `Element` and returns a `Maybe<Game>`, but the `extractGames` function should return an `Either<Error, Array<Game>>`.
+So we can't just write something like this and expect it to work:
+
+```ts
+const extractGames = (doc: Either<Error, XMLDocument>): Either<Error, Array<Game>> => {
+    return doc.andThen((d: XMLDocument) => {
+        const items = Array.from(d.querySelectorAll('items item'));
+
+        return items.map(item => createGame(item));
+    });
+};
+```
+
+There simply is no constructor to convert from `Maybe<T>` to `Either<A, B>` both technically, in the code, and logically - what would be the `Left` and what would be the `Right` then? One might argue, for `None` we could return `Left<?>` and for `Some<A>` we could return `Right<A>`. That would be the closest to truth, but we still need to come up with a type for `Left`.
+
+This might actually be a good time to consider if these two types have something in common and, potentially, extract few interfaces.
+
+```ts
+abstract class Wrappable <A> {
+    abstract wrap(value: A): Wrappable<A>;
+
+    abstract andThen <B>(func: Func<A, B>): Wrappable<B>;
+
+    abstract andThenWrap <B>(func: Func<A, Wrappable<B>>): Wrappable<B>;
+}
+```
+
+```ts
+abstract class Maybe <A> extends Wrappable <A> {
+    override wrap <A>(value: A): Maybe<A> {
+        return Maybe.some<A>(value);
+    }
+
+    abstract override andThen <B>(func: Func<A, B>): Maybe<B>;
+
+    abstract override andThenWrap <B>(func: Func<A, Maybe<B>>): Maybe<B>;
+
+    abstract toEither<B>(func: () => B): Either<B, A>;
+
+    static option <A>(value: A | null | undefined): Maybe<A> {
+        return (!value) ? Maybe.none<A>() : Maybe.some<A>(value);
+    }
+
+    static some <A>(value: A): Some<A> {
+        return new Some<A>(value);
+    }
+
+    static none <A>(): None<A> {
+        return new None<A>();
+    }
+}
+
+class Some <A> extends Maybe <A> {
+    private value: A;
+
+    constructor(value: A) {
+        super();
+
+        this.value = value;
+    }
+
+    override andThen <B>(func: Func<A, B>): Maybe<B> {
+        return new Some(func(this.value));
+    }
+
+    override andThenWrap <B>(func: Func<A, Maybe<B>>): Maybe<B> {
+        return func(this.value);
+    }
+
+    override toEither<B>(_: () => B): Either<B, A> {
+        return Either.right<B, A>(this.value);
+    }
+}
+
+class None <A> extends Maybe <A> {
+    constructor() {
+        super();
+    }
+
+    override andThen <B>(_: Func<A, B>): Maybe<B> {
+        return new None<B>();
+    }
+
+    override andThenWrap <B>(_: Func<A, Maybe<B>>): Maybe<B> {
+        return new None<B>();
+    }
+
+    override toEither<B>(func: () => B): Either<B, A> {
+        return Either.left<B, A>(func());
+    }
+}
+```
+
+```ts
+abstract class Either <A, B> extends Wrappable<B> {
+    override wrap <A, B>(value: B): Either<A, B> {
+        return Either.right<A, B>(value);
+    }
+
+    abstract override andThen <C>(func: Func<B, C>): Either<A, C>;
+
+    abstract override andThenWrap <C>(func: Func<B, Either<A, C>>): Either<A, C>;
+
+    abstract leftToMaybe(): Maybe<A>;
+
+    abstract rightToMaybe(): Maybe<B>;
+
+    static left <A, B>(value: A): Either<A, B> {
+        return new Left<A, B>(value);
+    }
+
+    static right <A, B>(value: B): Either<A, B> {
+        return new Right<A, B>(value);
+    }
+}
+
+class Left <A, B> extends Either <A, B> {
+    private value: A;
+
+    constructor(value: A) {
+        super();
+
+        this.value = value;
+    }
+
+    override andThen <C>(_: Func<B, C>): Either<A, C> {
+        return new Left<A, C>(this.value);
+    }
+
+    override andThenWrap <C>(func: Func<B, Either<A, C>>): Either<A, C> {
+        return new Left<A, C>(this.value);
+    }
+
+    leftToMaybe(): Maybe<A> {
+        return Maybe.some(this.value);
+    }
+
+    rightToMaybe(): Maybe<B> {
+        return Maybe.none<B>();
+    }
+}
+
+class Right <A, B> extends Either <A, B> {
+    private value: B;
+
+    constructor(value: B) {
+        super();
+
+        this.value = value;
+    }
+
+    override andThen <C>(func: Func<B, C>): Either<A, C> {
+        return new Right(func(this.value));
+    }
+
+    override andThenWrap <C>(func: Func<B, Either<A, C>>): Either<A, C> {
+        return func(this.value);
+    }
+
+    leftToMaybe(): Maybe<A> {
+        return Maybe.none<A>();
+    }
+
+    rightToMaybe(): Maybe<B> {
+        return Maybe.some(this.value);
+    }
+}
+```
+
+```ts
+const createGame = (item: Element): Maybe<Game> => {
+    const rank = Maybe.option(item.getAttribute('rank'));
+    const name = Maybe.option(item.querySelector('name')).andThen(name => name.getAttribute('value'));
+
+    return rank.andThenWrap(r =>
+        name.andThen(n => ({ name: n, rank: r } as Game))
+    );
+};
+
+const extractGames3 = (doc: Either<Error, XMLDocument>): Either<Error, Array<Game>> => {
+    // TODO: flatten
+    return doc.andThen((d: XMLDocument) => {
+        const items = Array.from(d.querySelectorAll('items item'));
+
+        return items.map(item => createGame(item).toEither(() => new Error('bad item')));
+    });
+};
+```
 
 ----
 
