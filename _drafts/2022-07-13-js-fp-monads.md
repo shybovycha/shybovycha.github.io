@@ -183,6 +183,200 @@ new IO(() => fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`))
 ```
 
 That would not work, however, since `fetch` call will return a `Promise`. So we need to somehow work with `Promise` instances instead.
+Let me postpone this discussion for a short while.
+
+Instead, let us talk about corner cases. As in, what would happen if the API does not return the result? Or what would happen if the result is not a valid XML (like `404 Not Found` text)? Or what would happen if the XML is valid, but it does not contain any `items` or `item[rank]>name[value]` nodes? Or what if it only returns `5` results (or any number of results less than `10`, for that matter)?
+
+In most of the cases, the promise will get rejected (since an entire program is a chain of `Promise.then` calls). So you might think this is just fine and rely on the rejection logic handling (maybe even using `Promise.catch`).
+
+If you want to be smart about these error cases, you would need to introduce the checks to each and every step of the chain.
+
+In "classic" JS or TS you might want to return `null` (or, less likely, use Java-style approach, throwing an exception) when the error occurs.
+This, however, comes with the need to introduce the `null` checks all over the place.
+Consider this refactoring:
+
+```js
+const fetchAPIResponse = () =>
+    fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`);
+
+const getResponseXML = (response) =>
+    response
+        .then(r => r.text())
+        .then(data => {
+            try {
+                return new DOMParser().parseFromString(data, "text/xml");
+            } catch {
+                return null;
+            }
+        });
+
+const extractGames = (doc) => {
+    if (!doc) {
+        return null;
+    }
+
+    const items = Array.from(doc.querySelectorAll('items item'));
+
+    return items.map(item => {
+        const rank = item.getAttribute('rank');
+        const name = item.querySelector('name').getAttribute('value');
+
+        return { rank, name };
+    });
+};
+
+const getRandomTop10Game = (games) => {
+    if (!games) {
+        return null;
+    }
+
+    if (games.length < 10) {
+        return null;
+    }
+
+    const randomRank = Math.floor((Math.random() * 100) % 10);
+
+    return games[randomRank];
+};
+
+const printGame = (game) => {
+    if (!game) {
+        return null;
+    }
+
+    const log = `#${game.rank}: ${game.name}`;
+
+    console.log(log);
+};
+
+fetchAPIResponse()
+    .then(r => getResponseXML(r))
+    .then(doc => extractGames(doc))
+    .then(games => getRandomTop10Game(games))
+    .then(game => printGame(game));
+```
+
+In case you don't want to bother with `null` values or want to have a better logging (not necessarily error handling), you can straight away throw an exception:
+
+```js
+const fetchAPIResponse = () =>
+    fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`);
+
+const getResponseXML = (response) =>
+    response
+        .then(r => r.text())
+        .then(data => {
+            try {
+                return new DOMParser().parseFromString(data, "text/xml");
+            } catch {
+                throw 'Received invalid XML';
+            }
+        });
+
+const extractGames = (doc) => {
+    const items = Array.from(doc.querySelectorAll('items item'));
+
+    return items.map(item => {
+        const rank = item.getAttribute('rank');
+        const name = item.querySelector('name').getAttribute('value');
+
+        return { rank, name };
+    });
+};
+
+const getRandomTop10Game = (games) => {
+    if (!games) {
+        throw 'No games found';
+    }
+
+    if (games.length < 10) {
+        throw 'Less than 10 games received';
+    }
+
+    const randomRank = Math.floor((Math.random() * 100) % 10);
+
+    return games[randomRank];
+};
+
+const printGame = (game) => {
+    if (!game) {
+        throw 'No game provided';
+    }
+
+    const log = `#${game.rank}: ${game.name}`;
+
+    console.log(log);
+};
+
+fetchAPIResponse()
+    .then(r => getResponseXML(r))
+    .then(doc => extractGames(doc))
+    .then(games => getRandomTop10Game(games))
+    .then(game => printGame(game))
+    .catch(error => console.error('Failed', error));
+```
+
+Alternatively, since an entire program is a chain of promises, you could just return a rejected promise:
+
+```js
+const fetchAPIResponse = () =>
+    fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`);
+
+const getResponseXML = (response) =>
+    response
+        .then(r => r.text())
+        .then(data => {
+            try {
+                return new DOMParser().parseFromString(data, "text/xml");
+            } catch {
+                return Promise.reject('Received invalid XML');
+            }
+        });
+
+const extractGames = (doc) => {
+    const items = Array.from(doc.querySelectorAll('items item'));
+
+    return items.map(item => {
+        const rank = item.getAttribute('rank');
+        const name = item.querySelector('name').getAttribute('value');
+
+        return { rank, name };
+    });
+};
+
+const getRandomTop10Game = (games) => {
+    if (!games) {
+        return Promise.reject('No games found');
+    }
+
+    if (games.length < 10) {
+        return Promise.reject('Less than 10 games received');
+    }
+
+    const randomRank = Math.floor((Math.random() * 100) % 10);
+
+    return games[randomRank];
+};
+
+const printGame = (game) => {
+    if (!game) {
+        return Promise.reject('No game provided');
+    }
+
+    const log = `#${game.rank}: ${game.name}`;
+
+    console.log(log);
+};
+
+fetchAPIResponse()
+    .then(r => getResponseXML(r))
+    .then(doc => extractGames(doc))
+    .then(games => getRandomTop10Game(games))
+    .then(game => printGame(game))
+    .catch(error => console.error('Failed', error));
+```
+
+----
 
 Off-topic:
 
