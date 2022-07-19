@@ -1158,14 +1158,89 @@ const createGame = (item: Element): Maybe<Game> => {
     );
 };
 
-const extractGames3 = (doc: Either<Error, XMLDocument>): Either<Error, Array<Game>> => {
+const extractGames = (doc: Either<Error, XMLDocument>): Either<Error, Array<Game>> => {
     // TODO: flatten
-    return doc.andThen((d: XMLDocument) => {
+    return doc.andThenWrap((d: XMLDocument) => {
         const items = Array.from(d.querySelectorAll('items item'));
 
         return items.map(item => createGame(item).toEither(() => new Error('bad item')));
     });
 };
+```
+
+```ts
+const extractGames = (doc: Either<Error, XMLDocument>): Either<Error, Array<Game>> => {
+    return doc.andThenWrap((d: XMLDocument) => {
+        const items = Array.from(d.querySelectorAll('items item'));
+
+        return items.reduce((accEither, item) =>
+            accEither.andThenWrap(acc =>
+                createGame(item)
+                    .toEither(() => new Error('bad item'))
+                    .andThen(game => [...acc, game])
+            ),
+            Either.right<Error, Array<Game>>([])
+        );
+    });
+};
+```
+
+----
+
+```ts
+abstract class ExceptionWrapper <E, T, W extends Wrappable<Either<E, T>>> extends Wrappable<W> {
+    // private wrappedFunc: Func<A, ExceptionWrapper<E, T>>;
+
+    // private constructor(func: Func<A, ExceptionWrapper<E, T>>) {
+    //     this.wrappedFunc = func;
+    // }
+
+    private value: Either<E, T>;
+
+    private constructor(value: ExceptionWrapper<E, T>) {
+        this.value = value;
+    }
+
+    static run <E, T, W extends >(func: Func<Void, ExceptionWrapper<E, T>>): ExceptionWrapper<E, T> {
+        return new ExceptionWrapper<A, E, T>(func);
+    }
+
+    static throwError <E, T>(error: E): ExceptionWrapper<E, T> {
+        return new ExceptionWrapper<E, T>(Either.left<E, T>(error));
+    }
+
+    static catchError <E, T>(func: Func<E, ExceptionWrapper<E, T>>) {
+        return new ExceptionWrapper<E, T>
+    }
+}
+```
+
+----
+
+```ts
+class WrapperTransformer <A, W extends Wrappable<A>> extends Wrappable<W> {
+    private value: W<A>;
+
+    private constructor(value: W<A>) {
+        this.value = value;
+    }
+
+    override wrap <A>(value: A): WrapperTransformer<W<A>> {
+        return new WrapperTransformer(W.wrap<A>(value));
+    }
+
+    abstract override andThen <B>(func: Func<A, W<B>>): WrapperTransformer<W<B>> {
+        return new WrapperTransformer(this.value.andThen(func));
+    }
+
+    abstract override andThenWrap <B>(func: Func<A, WrapperTransformer<W<B>>>): WrapperTransformer<W<B>> {
+        return this.value.andThen(func);
+    }
+
+    run(): W<A> {
+        return this.value;
+    }
+}
 ```
 
 ----
