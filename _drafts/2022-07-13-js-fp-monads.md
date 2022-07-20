@@ -1812,3 +1812,4 @@ Resources:
 * https://github.com/JordanMartinez/pure-conf-talk/blob/master/slides/Cheatsheet.md
 * https://gcanti.github.io/fp-ts/learning-resources/
 * https://dev.to/gcanti/functional-design-tagless-final-332k
+* https://stackoverflow.com/questions/6647852/haskell-actual-io-monad-implementation-in-different-language
