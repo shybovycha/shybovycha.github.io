@@ -1201,31 +1201,31 @@ interface Monad <A> extends Functor <A> {
     flatMap<B>(func: Func<A, Monad<B>>): Monad<B>;
 }
 
-abstract class Optional<A> implements Monad<A> {
-    abstract map<B>(_: Func<A, B>): Optional<B>;
+abstract class Maybe<A> implements Monad<A> {
+    abstract map<B>(_: Func<A, B>): Maybe<B>;
 
-    abstract flatMap<B>(_: Func<A, Optional<B>>): Optional<B>;
+    abstract flatMap<B>(_: Func<A, Maybe<B>>): Maybe<B>;
 
     abstract toEither<E>(_: Func0<E>): Either<E, A>;
 
-    pure(value: A): Optional<A> {
+    pure(value: A): Maybe<A> {
         return new Just<A>(value);
     }
 
-    static optional<A>(value: A | undefined | null): Optional<A> {
+    static maybe<A>(value: A | undefined | null): Maybe<A> {
         return (!value) ? new Nothing<A>() : new Just<A>(value);
     }
 
-    static just<A>(value: A): Optional<A> {
+    static just<A>(value: A): Maybe<A> {
         return new Just<A>(value);
     }
 
-    static nothing<A>(): Optional<A> {
+    static nothing<A>(): Maybe<A> {
         return new Nothing<A>();
     }
 }
 
-class Just<A> extends Optional<A> {
+class Just<A> extends Maybe<A> {
     private readonly value: A;
 
     constructor(readonly v: A) {
@@ -1234,11 +1234,11 @@ class Just<A> extends Optional<A> {
         this.value = v;
     }
 
-    override map<B>(func: Func<A, B>): Optional<B> {
+    override map<B>(func: Func<A, B>): Maybe<B> {
         return new Just<B>(func(this.value));
     }
 
-    override flatMap<B>(func: Func<A, Optional<B>>): Optional<B> {
+    override flatMap<B>(func: Func<A, Maybe<B>>): Maybe<B> {
         return func(this.value);
     }
 
@@ -1247,16 +1247,16 @@ class Just<A> extends Optional<A> {
     }
 }
 
-class Nothing<A> extends Optional<A> {
+class Nothing<A> extends Maybe<A> {
     constructor() {
         super();
     }
 
-    override map<B>(_: Func<A, B>): Optional<B> {
+    override map<B>(_: Func<A, B>): Maybe<B> {
         return new Nothing<B>();
     }
 
-    override flatMap<B>(_: Func<A, Optional<B>>): Optional<B> {
+    override flatMap<B>(_: Func<A, Maybe<B>>): Maybe<B> {
         return new Nothing<B>();
     }
 
@@ -1270,7 +1270,7 @@ abstract class Either<E, A> implements Monad<A> {
 
     abstract flatMap<B>(_: Func<A, Either<E, B>>): Either<E, B>;
 
-    abstract toOptional(): Optional<A>;
+    abstract toMaybe(): Maybe<A>;
 
     pure(value: A): Either<E, A> {
         return new Right<E, A>(value);
@@ -1302,7 +1302,7 @@ class Right<E, A> extends Either<E, A> {
         return func(this.value);
     }
 
-    override toOptional(): Optional<A> {
+    override toMaybe(): Maybe<A> {
         return new Just<A>(this.value);
     }
 }
@@ -1324,7 +1324,7 @@ class Left<E, A> extends Either<E, A> {
         return new Left<E, B>(this.value);
     }
 
-    override toOptional(): Optional<A> {
+    override toMaybe(): Maybe<A> {
         return new Nothing<A>();
     }
 }
@@ -1357,6 +1357,181 @@ class IO<A> implements Monad<A> {
     }
 }
 ```
+
+```ts
+class PromiseIO <A> implements Monad<A> {
+    private task: Func0<Promise<A>>;
+
+    constructor(readonly t: Func0<Promise<A>>) {
+        this.task = t;
+    }
+
+    pure(value: A): PromiseIO<A> {
+        return new PromiseIO<A>(() => Promise.resolve(value));
+    }
+
+    map<B>(func: Func<A, B>): PromiseIO<B> {
+        return new PromiseIO<B>(() => this.unsafeRun().then(func));
+    }
+
+    flatMap<B>(func: Func<A, PromiseIO<B>>): PromiseIO<B> {
+        return PromiseIO.join(new PromiseIO<PromiseIO<B>>(() => this.unsafeRun().then(func)));
+    }
+
+    unsafeRun(): Promise<A> {
+        return this.task();
+    }
+
+    static join<A>(m: PromiseIO<PromiseIO<A>>): PromiseIO<A> {
+        return new PromiseIO<A>(() => m.unsafeRun().then(p => p.unsafeRun()));
+    }
+}
+```
+
+```ts
+const getResponseXML = (response: string): Either<Error, XMLDocument> => {
+    try {
+        return Either<Error, XMLDocument>.right(new DOMParser().parseFromString(response, "text/xml"));
+    } catch {
+        return Either<Error, XMLDocument>.left('Received invalid XML');
+    }
+};
+```
+
+```ts
+const fetchAPIResponse = () =>
+    new PromiseIO(() => fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`).then(response => response.text()));
+```
+
+```ts
+const program = fetchAPIResponse()
+    .map(r => getResponseXML(r))
+    .map(doc => extractGames(doc))
+    .map(games => getRandomTop10Game(games))
+    .map(game => printGame(game))
+    .unsafeRun(); 
+```
+
+But we can do better than this: we can get rid of all those `Either` and `Maybe` in functions which do not throw an error:
+
+```ts
+const createGame = (item: Element): Maybe<Game> => {
+    const rank = Maybe.maybe(item.getAttribute('rank'));
+    const name = Maybe.maybe(item.querySelector('name')).map(name => name.getAttribute('value'));
+
+    return rank.flatMap(r =>
+        name.map(n => ({ name: n, rank: r } as Game))
+    );
+};
+
+const getResponseXML = (response: string): Either<Error, XMLDocument> => {
+    try {
+        return Either<Error, XMLDocument>.right(new DOMParser().parseFromString(response, "text/xml"));
+    } catch {
+        return Either<Error, XMLDocument>.left('Received invalid XML');
+    }
+};
+
+const extractGames = (doc: XMLDocument): Either<Error, Array<Game>> => {
+    const items = Array.from(doc.querySelectorAll('items item'));
+
+    return items.reduce((accEither, item) =>
+        accEither.flatMap(acc =>
+            createGame(item)
+                .toEither(() => new Error('bad item'))
+                .map(game => [...acc, game])
+        ),
+        Either.right<Error, Array<Game>>([])
+    );
+};
+
+const getRandomTop10Game = (games: Array<Game>): Either<Error, Game> => {
+    if (games.length < 10) {
+        return Either<Error, Game>.left(new Error('Not enough games'));
+    }
+
+    return Either<Error, Game>.right(games[Math.random() * 100 % 10]);
+};
+
+const printGame = (game: Game): void => {
+    console.log(`#${game.rank}: ${game.name}`);
+};
+```
+
+Now if we try to compose the program, we would get quite a few "type mismatch" errors:
+
+```ts
+
+const program = fetchAPIResponse()
+    .map(r => getResponseXML(r))
+    .map(doc => extractGames(doc))
+    .map(games => getRandomTop10Game(games))
+    .map(game => printGame(game))
+    .unsafeRun();
+```
+
+yielding
+
+```
+Argument of type 'Either<Error, XMLDocument>' is not assignable to parameter of type 'XMLDocument'.
+    Type 'Either<Error, XMLDocument>' is missing the following properties from type 'XMLDocument': addEventListener, removeEventListener, URL, alinkColor, and 247 more.
+
+Argument of type 'Either<Error, Game[]>' is not assignable to parameter of type 'Game[]'.
+    Type 'Either<Error, Game[]>' is missing the following properties from type 'Game[]': length, pop, push, concat, and 25 more.
+
+Argument of type 'Either<Error, Game>' is not assignable to parameter of type 'Game'.
+    Type 'Either<Error, Game>' is missing the following properties from type 'Game': name, rank
+```
+
+Let us follow the types being passed around:
+
+```ts
+const program = fetchAPIResponse() // () ~> PromiseIO<string>
+    .map(r => getResponseXML(r)) // r: string -> getResponseXML(XMLDocument): Either<Error, XMLDocument> ~> PromiseIO<Either<Error, XMLDocument>>
+    .map(doc => extractGames(doc)) // doc: Either<Error, XMLDocument> -> extractGames(Array<Game>): Either<Error, Array<Game>> ~> PromiseIO<Either<Error, Array<Game>>>
+    .map(games => getRandomTop10Game(games)) // games: Either<Error, Array<Game>> -> getRandomTop10Game(Array<Game>): Either<Error, Game> ~> PromiseIO<Either<Error, Game>>
+    .map(game => printGame(game)) // game: Either<Error, Game> -> printGame(Game): void ~> PromiseIO<void>
+    .unsafeRun(); // () ~> void
+```
+
+The issues begin when we try to call `map` on `PromiseIO<Either<Error, XMLDocument>>`:
+
+```ts
+fetchAPIResponse().map(r => getResponseXML(r)) // => PromiseIO<Either<Error, XMLDocument>>
+```
+
+Let's recall how the method `map` on `PromiseIO<A>` looks like:
+
+```ts
+class PromiseIO<A> {
+    map<B>(func: Func<A, B>): PromiseIO<B>;
+}
+```
+
+So it expects a function which takes the type which `PromiseIO` wraps and returns a new type to be wrapped in `PromiseIO`.
+But the type current `PromiseIO` wraps is `Either<Error, XMLDocument>`.
+While the function we pass, `extractGames` looks like this:
+
+```ts
+const extractGames = (doc: XMLDocument): Either<Error, Array<Game>>;
+```
+
+See the issue?
+
+We could have fixed it by adding few more nested functions, like this:
+
+```ts
+const program = fetchAPIResponse()
+    .map(r => getResponseXML(r))
+    .map(docE => docE.flatMap(doc => extractGames(doc)))
+    .map(gamesE => gamesE.flatMap(games => getRandomTop10Game(games)))
+    .map(gameE => gameE.map(game => printGame(game)))
+    .unsafeRun(); 
+```
+
+Or by changing the signature of the functions to take `Either<Error, ?>` instead.
+
+But there is a more neat way to handle cases like this in functional programming:
 
 ----
 
