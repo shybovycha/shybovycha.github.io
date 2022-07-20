@@ -1188,6 +1188,179 @@ const extractGames = (doc: Either<Error, XMLDocument>): Either<Error, Array<Game
 ----
 
 ```ts
+type Func0 <A> = () => A;
+type Func <A, B> = (_: A) => B;
+
+interface Functor <A> {
+    pure(value: A): Functor<A>;
+
+    map<B>(func: Func<A, B>): Functor<B>;
+}
+
+interface Monad <A> extends Functor <A> {
+    flatMap<B>(func: Func<A, Monad<B>>): Monad<B>;
+}
+
+abstract class Optional<A> implements Monad<A> {
+    abstract map<B>(_: Func<A, B>): Optional<B>;
+
+    abstract flatMap<B>(_: Func<A, Optional<B>>): Optional<B>;
+
+    abstract toEither<E>(_: Func0<E>): Either<E, A>;
+
+    pure(value: A): Optional<A> {
+        return new Just<A>(value);
+    }
+
+    static optional<A>(value: A | undefined | null): Optional<A> {
+        return (!value) ? new Nothing<A>() : new Just<A>(value);
+    }
+
+    static just<A>(value: A): Optional<A> {
+        return new Just<A>(value);
+    }
+
+    static nothing<A>(): Optional<A> {
+        return new Nothing<A>();
+    }
+}
+
+class Just<A> extends Optional<A> {
+    private readonly value: A;
+
+    constructor(readonly v: A) {
+        super();
+
+        this.value = v;
+    }
+
+    override map<B>(func: Func<A, B>): Optional<B> {
+        return new Just<B>(func(this.value));
+    }
+
+    override flatMap<B>(func: Func<A, Optional<B>>): Optional<B> {
+        return func(this.value);
+    }
+
+    override toEither<E>(_: Func0<E>): Either<E, A> {
+        return new Right(this.value);
+    }
+}
+
+class Nothing<A> extends Optional<A> {
+    constructor() {
+        super();
+    }
+
+    override map<B>(_: Func<A, B>): Optional<B> {
+        return new Nothing<B>();
+    }
+
+    override flatMap<B>(_: Func<A, Optional<B>>): Optional<B> {
+        return new Nothing<B>();
+    }
+
+    override toEither<E>(leftProvider: Func0<E>): Either<E, A> {
+        return new Left<E, A>(leftProvider());
+    }
+}
+
+abstract class Either<E, A> implements Monad<A> {
+    abstract map<B>(_: Func<A, B>): Either<E, B>;
+
+    abstract flatMap<B>(_: Func<A, Either<E, B>>): Either<E, B>;
+
+    abstract toOptional(): Optional<A>;
+
+    pure(value: A): Either<E, A> {
+        return new Right<E, A>(value);
+    }
+
+    static left<E, A>(value: E): Either<E, A> {
+        return new Left<E, A>(value);
+    }
+
+    static right<E, A>(value: A): Either<E, A> {
+        return new Right<E, A>(value);
+    }
+}
+
+class Right<E, A> extends Either<E, A> {
+    private readonly value: A;
+
+    constructor(readonly v: A) {
+        super();
+
+        this.value = v;
+    }
+
+    override map<B>(func: Func<A, B>): Either<E, B> {
+        return new Right<E, B>(func(this.value));
+    }
+
+    override flatMap<B>(func: Func<A, Either<E, B>>): Either<E, B> {
+        return func(this.value);
+    }
+
+    override toOptional(): Optional<A> {
+        return new Just<A>(this.value);
+    }
+}
+
+class Left<E, A> extends Either<E, A> {
+    private readonly value: E;
+
+    constructor(readonly v: E) {
+        super();
+
+        this.value = v;
+    }
+
+    override map<B>(_: Func<A, B>): Either<E, B> {
+        return new Left<E, B>(this.value);
+    }
+
+    override flatMap<B>(_: Func<A, Either<E, B>>): Either<E, B> {
+        return new Left<E, B>(this.value);
+    }
+
+    override toOptional(): Optional<A> {
+        return new Nothing<A>();
+    }
+}
+
+class IO<A> implements Monad<A> {
+    private task: Func0<A>;
+
+    constructor(readonly t: Func0<A>) {
+        this.task = t;
+    }
+
+    pure(value: A): IO<A> {
+        return new IO<A>(() => value);
+    }
+
+    map<B>(func: Func<A, B>): IO<B> {
+        return new IO<B>(() => func(this.task()));
+    }
+
+    flatMap<B>(func: Func<A, IO<B>>): IO<B> {
+        return IO.join(new IO<IO<B>>(() => func(this.task())));
+    }
+
+    unsafeRun(): A {
+        return this.task();
+    }
+
+    static join<A>(m: IO<IO<A>>): IO<A> {
+        return new IO<A>(() => m.unsafeRun().unsafeRun());
+    }
+}
+```
+
+----
+
+```ts
 abstract class ExceptionWrapper <E, T, W extends Wrappable<Either<E, T>>> extends Wrappable<W> {
     // private wrappedFunc: Func<A, ExceptionWrapper<E, T>>;
 
@@ -1629,3 +1802,13 @@ One might think `ReaderT` (monad transformer) comes to the rescue. But monad tra
 Hence there is a need for some new monad, which would remind of `Either` where `Left` would be a failure (`IO`-like behaviour), `Right` would be a result of a successful computation and there should be one more param, the `Reader` monad.
 
 In Cats Effects there is no `Reader` or `ReaderT` monad. Instead, it utilizes the [Kleisli](https://typelevel.org/cats/datatypes/kleisli.html#configuration) monad.
+
+----
+
+Resources:
+
+* https://blog.tmorris.net/posts/monads-do-not-compose/
+* https://mmhaskell.com/monads/transformers
+* https://github.com/JordanMartinez/pure-conf-talk/blob/master/slides/Cheatsheet.md
+* https://gcanti.github.io/fp-ts/learning-resources/
+* https://dev.to/gcanti/functional-design-tagless-final-332k
