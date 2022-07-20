@@ -1593,6 +1593,480 @@ class WrapperTransformer <A, W extends Wrappable<A>> extends Wrappable<W> {
 
 ----
 
+```ts
+type Func0 <A> = () => A;
+
+type Func <A, B> = (_: A) => B;
+
+// interface Functor <A> {
+interface Monad <A> {
+    pure(value: A): Monad<A>;
+
+    map<B>(func: Func<A, B>): Monad<B>;
+
+    flatMap<B>(func: Func<A, Monad<B>>): Monad<B>;
+}
+
+abstract class Maybe<A> implements Monad<A> {
+    abstract map<B>(_: Func<A, B>): Maybe<B>;
+
+    abstract flatMap<B>(_: Func<A, Maybe<B>>): Maybe<B>;
+
+    abstract bimap<B>(nothingFunc: Func0<B>, justFunc: Func<A, B>): B;
+
+    toEither<E>(func: Func0<E>): Either<E, A> {
+        return new Left<E, A>(func());
+    }
+
+    pure(value: A): Maybe<A> {
+        return new Just<A>(value);
+    }
+
+    static maybe<A>(value: A | undefined | null): Maybe<A> {
+        return (!value) ? new Nothing<A>() : new Just<A>(value);
+    }
+
+    static just<A>(value: A): Maybe<A> {
+        return new Just<A>(value);
+    }
+
+    static nothing<A>(): Maybe<A> {
+        return new Nothing<A>();
+    }
+
+    // static join<A>(maybe: Maybe<Maybe<A>>): Maybe<A> {
+    //     return maybe.flatMap(x => x);
+    // }
+}
+
+class Just<A> extends Maybe<A> {
+    constructor(readonly value: A) {
+        super();
+    }
+
+    override map<B>(func: Func<A, B>): Maybe<B> {
+        return new Just<B>(func(this.value));
+    }
+
+    override flatMap<B>(func: Func<A, Maybe<B>>): Maybe<B> {
+        return func(this.value);
+    }
+
+    override bimap<B>(_: Func0<B>, justFunc: Func<A, B>): B {
+        return justFunc(this.value);
+    }
+
+    override toEither<E>(_: Func0<E>): Either<E, A> {
+        return new Right(this.value);
+    }
+}
+
+class Nothing<A> extends Maybe<A> {
+    constructor() {
+        super();
+    }
+
+    override map<B>(_: Func<A, B>): Maybe<B> {
+        return new Nothing<B>();
+    }
+
+    override flatMap<B>(_: Func<A, Maybe<B>>): Maybe<B> {
+        return new Nothing<B>();
+    }
+
+    override bimap<B>(nothingFunc: Func0<B>, _: Func<A, B>): B {
+        return nothingFunc();
+    }
+
+    override toEither<E>(leftProvider: Func0<E>): Either<E, A> {
+        return new Left<E, A>(leftProvider());
+    }
+}
+
+abstract class Either<E, A> implements Monad<A> {
+    abstract map<B>(_: Func<A, B>): Either<E, B>;
+
+    abstract flatMap<B>(_: Func<A, Either<E, B>>): Either<E, B>;
+
+    abstract bimap<B>(leftFunc: Func<E, B>, rightFunc: Func<A, B>): B;
+
+    abstract toMaybe(): Maybe<A>;
+
+    pure(value: A): Either<E, A> {
+        return new Right<E, A>(value);
+    }
+
+    static left<E, A>(value: E): Either<E, A> {
+        return new Left<E, A>(value);
+    }
+
+    static right<E, A>(value: A): Either<E, A> {
+        return new Right<E, A>(value);
+    }
+}
+
+class Right<E, A> extends Either<E, A> {
+    constructor(readonly value: A) {
+        super();
+    }
+
+    override map<B>(func: Func<A, B>): Either<E, B> {
+        return new Right<E, B>(func(this.value));
+    }
+
+    override flatMap<B>(func: Func<A, Either<E, B>>): Either<E, B> {
+        return func(this.value);
+    }
+
+    override bimap<B>(_: Func<E, B>, rightFunc: Func<A, B>): B {
+        return rightFunc(this.value);
+    }
+
+    override toMaybe(): Maybe<A> {
+        return new Just<A>(this.value);
+    }
+}
+
+class Left<E, A> extends Either<E, A> {
+    constructor(private readonly value: E) {
+        super();
+    }
+
+    override map<B>(_: Func<A, B>): Either<E, B> {
+        return new Left<E, B>(this.value);
+    }
+
+    override flatMap<B>(_: Func<A, Either<E, B>>): Either<E, B> {
+        return new Left<E, B>(this.value);
+    }
+
+    override bimap<B>(leftFunc: Func<E, B>, _: Func<A, B>): B {
+        return leftFunc(this.value);
+    }
+
+    override toMaybe(): Maybe<A> {
+        return new Nothing<A>();
+    }
+}
+
+class IO<A> implements Monad<A> {
+    constructor(private readonly task: Func0<A>) {
+    }
+
+    pure(value: A): IO<A> {
+        return new IO<A>(() => value);
+    }
+
+    map<B>(func: Func<A, B>): IO<B> {
+        return new IO<B>(() => func(this.unsafeRun()));
+    }
+
+    flatMap<B>(func: Func<A, IO<B>>): IO<B> {
+        return IO.join(new IO<IO<B>>(() => func(this.unsafeRun())));
+    }
+
+    unsafeRun(): A {
+        return this.task();
+    }
+
+    static join<A>(m: IO<IO<A>>): IO<A> {
+        return new IO<A>(() => m.unsafeRun().unsafeRun());
+    }
+}
+
+// ---
+
+class PromiseIO <A> implements Monad<A> {
+    constructor(private readonly task: Func0<Promise<A>>) {
+    }
+
+    pure(value: A): PromiseIO<A> {
+        return new PromiseIO<A>(() => Promise.resolve(value));
+    }
+
+    map<B>(func: Func<A, B>): PromiseIO<B> {
+        return new PromiseIO<B>(() => this.unsafeRun().then(func));
+    }
+
+    flatMap<B>(func: Func<A, PromiseIO<B>>): PromiseIO<B> {
+        return PromiseIO.join(new PromiseIO<PromiseIO<B>>(() => this.unsafeRun().then(func)));
+    }
+
+    unsafeRun(): Promise<A> {
+        return this.task();
+    }
+
+    static join<A>(m: PromiseIO<PromiseIO<A>>): PromiseIO<A> {
+        return new PromiseIO<A>(() => m.unsafeRun().then(p => p.unsafeRun()));
+    }
+}
+
+// ---
+
+class MaybeT <A, M extends Monad<Maybe<A>>> {
+    constructor(private readonly value: Monad<Maybe<A>>) {
+    }
+
+    pure(value: A): MaybeT<A, M> {
+        return new MaybeT<A, M>(this.value.pure(Maybe<A>.just(value)));
+    }
+
+    map<B, N extends Monad<Maybe<B>>>(func: Func<A, B>): MaybeT<B, N> {
+        return new MaybeT<B, N>(this.value.map(a => a.map(func)));
+    }
+
+    flatMap<B, N extends Monad<Maybe<B>>>(func: Func<A, MaybeT<B, N>>): MaybeT<B, N> {
+        return new MaybeT<B, N>(this.value.flatMap(
+            (ma: Maybe<A>): Monad<Maybe<B>> => {
+                return ma.bimap(
+                    () => this.value.map(_ => Maybe<B>.nothing()),
+                    (a: A) => func(a).runMaybeT()
+                );
+
+                // if (ma instanceof Nothing) {
+                //     const mmb: Monad<Maybe<B>> = this.value.map(_ => Maybe<B>.nothing());
+
+                //     return mmb;
+                // }
+
+                // const x: Maybe<Monad<Maybe<B>>> = ma.map(a => func(a).runMaybeT());
+
+                // if (x instanceof Just<Monad<Maybe<B>>>) {
+                //     return x.value;
+                // }
+
+                // return this.value.map(_ => Maybe<B>.nothing());
+
+                // return func((ma as Just<A>).value).runMaybeT();
+            })
+        );
+    }
+
+    // flatMap1<B, N extends Monad<Maybe<B>>>(func: Func<A, Maybe<B>>): MaybeT<B, N> {
+    //     return new MaybeT<B, N>(this.value.flatMap(
+    //         (v: Maybe<A>): Monad<Maybe<B>> => v.map(func))
+    //     );
+    // }
+
+    runMaybeT(): Monad<Maybe<A>> {
+        return this.value;
+    }
+}
+
+// ---
+
+class EitherT <E, A, M extends Monad<Either<E, A>>> {
+    constructor(private readonly value: Monad<Either<E, A>>) {
+    }
+
+    pure(value: A): EitherT<E, A, M> {
+        return new EitherT<E, A, M>(this.value.pure(Either<E, A>.right(value)));
+    }
+
+    map<B, N extends Monad<Either<E, B>>>(func: Func<A, B>): EitherT<E, B, N> {
+        return new EitherT<E, B, N>(this.value.map(a => a.map(func)));
+    }
+
+    flatMap<B, N extends Monad<Either<E, B>>>(func: Func<A, EitherT<E, B, N>>): EitherT<E, B, N> {
+        return new EitherT<E, B, N>(this.value.flatMap(
+            (ma: Either<E, A>): Monad<Either<E, B>> => {
+                return ma.bimap(
+                    e => this.value.map(e1 => Either<E, B>.left(e)),
+                    (a: A) => func(a).runEitherT()
+                );
+
+                // if (ma instanceof Left<E, A>) {
+                //     const mmb: Monad<Either<E, B>> = this.value.map(e => Either<E, B>.left(e));
+
+                //     return mmb;
+                // }
+
+                // const x: Either<E, Monad<Either<E, B>>> = ma.map(a => func(a).runEitherT());
+
+                // if (x instanceof Right<E, Monad<Either<E, B>>>) {
+                //     return x.value;
+                // }
+
+                // return this.value.map(e => Either<E, B>.left(e));
+
+                // return func((ma as Right<E, A>).value).runEitherT();
+            })
+        );
+    }
+
+    // flatMap1<B, N extends Monad<Either<B>>>(func: Func<A, Either<B>>): EitherT<E, B, N> {
+    //     return new EitherT<E, B, N>(this.runEitherT().flatMap(
+    //         (v: Either<E, A>): Monad<Either<E, B>> => v.map(func))
+    //     );
+    // }
+
+    runEitherT(): Monad<Either<E, A>> {
+        return this.value;
+    }
+}
+
+// class MaybeT <A, M extends Monad<Maybe<A>>> implements Monad<A> {
+//     constructor(private readonly value: Maybe<A>) {
+//     }
+
+//     pure(value: A): MaybeT<A, M> {
+//         return new MaybeT<A, M>(this.value.pure(value));
+//     }
+
+//     map<B, N extends Monad<Maybe<B>>>(func: Func<A, B>): MaybeT<B, N> {
+//         return new MaybeT<B, N>(this.value.map(func));
+//     }
+
+//     flatMap<B, N extends Monad<Maybe<B>>>(func: Func<A, MaybeT<B, N>>): MaybeT<B, N> {
+//         return new MaybeT<B, N>(this.value.flatMap(a => func(a).runMaybeT()));
+//     }
+
+//     runMaybeT(): Maybe<A> {
+//         return this.value;
+//     }
+// }
+
+// class EitherT <E, A, M extends Monad<Either<E, A>>> implements Monad<A> {
+//     constructor(private readonly value: Either<E, A>) {
+//     }
+
+//     pure(value: A): EitherT<E, A, M> {
+//         return new EitherT<E, A, M>(this.value.pure(value));
+//     }
+
+//     map<B, N extends Monad<Either<E, B>>>(func: Func<A, B>): EitherT<E, B, N> {
+//         return new EitherT<E, B, N>(this.value.map(func));
+//     }
+
+//     flatMap<B, N extends Monad<Either<E, B>>>(func: Func<A, EitherT<E, B, N>>): EitherT<E, B, N> {
+//         return new EitherT<E, B, N>(this.value.flatMap(a => func(a).runEitherT()));
+//     }
+
+//     runEitherT(): Either<E, A> {
+//         return this.value;
+//     }
+
+//     static lift<E, A, N extends Monad<Either<E, A>>>(m: Monad<A>): EitherT<E, A, N> {
+//         return new EitherT<E, A, N>(m.map(Either<E, A>.right));
+//     }
+
+//     // static fromT<E, A, M extends Monad<Either<E, A>>>(t: Monad<Either<E, A>>): EitherT<E, A, M> {
+//     //     const a: Monad<Either<E, A>> = t.flatMap(m => new EitherT<E, A, M>(m).runEitherT());
+//     //     return new EitherT<E, A, M>(a);
+//     // }
+// }
+
+// class EitherT <E, A, M extends Monad<A>> {
+//     constructor(private readonly value: Monad<Either<E, A>>) {
+//     }
+
+//     pure(value: A): EitherT<E, A, M> {
+//         return new EitherT<E, A, M>(this.value.pure(Either.right(value)));
+//     }
+
+//     map<B, M2 extends Monad<B>>(func: Func<A, B>): EitherT<E, B, M2> {
+//         return new EitherT<E, B, M2>(this.value.map(either => either.map(func)));
+//     }
+
+//     flatMap<B, M2 extends Monad<B>>(func: Func<A, EitherT<E, B, M2>>): EitherT<E, B, M2> {
+//         return new EitherT<E, B, M2>(this.value.flatMap(either => either.flatMap(a => func(a).value)));
+//     }
+
+//     runEitherT(): Monad<A> {
+//         return this.value;
+//     }
+// }
+
+// ---
+
+// class EitherT <E, A, W extends Monad<A>> implements Monad<A> {
+//     private value: W<Either<E, A>>;
+
+//     constructor(readonly t: W<Either<E, A>>) {
+//         this.value = t;
+//     }
+
+//     pure(value: A): EitherT<E, A, W> {
+//         return new EitherT<E, A, W>(Either<E, A>.right(value));
+//     }
+
+//     map<B, U extends Monad<B>>(func: Func<A, B>): EitherT<E, B, U> {
+//         return new EitherT<E, B, U>(this.value.map(func));
+//     }
+
+//     flatMap<B, U extends Monad<B>>(func: Func<A, Either<E, B>>): EitherT<E, B, U> {
+//         return new EitherT<E, B, U>(this.value.flatMap(func));
+//     }
+
+//     runEitherT(): Either<E, A> {
+//         return this.value;
+//     }
+// }
+
+// ---
+
+interface Game {
+    name: string;
+    rank: string;
+}
+
+const createGame = (item: Element): Maybe<Game> => {
+    const rank = Maybe.maybe(item.getAttribute('rank'));
+    const name = Maybe.maybe(item.querySelector('name')).map(name => name.getAttribute('value'));
+
+    return rank.flatMap(r =>
+        name.map(n => ({ name: n, rank: r } as Game))
+    );
+};
+
+const getResponseXML = (response: string): Either<Error, XMLDocument> => {
+    try {
+        return Either<Error, XMLDocument>.right(new DOMParser().parseFromString(response, "text/xml"));
+    } catch {
+        return Either<Error, XMLDocument>.left('Received invalid XML');
+    }
+};
+
+const extractGames = (doc: XMLDocument): Either<Error, Array<Game>> => {
+    const items = Array.from(doc.querySelectorAll('items item'));
+
+    return items.reduce((accEither, item) =>
+        accEither.flatMap(acc =>
+            createGame(item)
+                .toEither(() => new Error('bad item'))
+                .map(game => [...acc, game])
+        ),
+        Either.right<Error, Array<Game>>([])
+    );
+};
+
+const getRandomTop10Game = (games: Array<Game>): Either<Error, Game> => {
+    if (games.length < 10) {
+        return Either<Error, Game>.left(new Error('Not enough games'));
+    }
+
+    return Either<Error, Game>.right(games[Math.random() * 100 % 10]);
+};
+
+const printGame = (game: Game): void => {
+    console.log(`#${game.rank}: ${game.name}`);
+};
+
+const fetchAPIResponse = () =>
+    new EitherT<Error, string, PromiseIO<Either<Error, string>>>(
+        new PromiseIO(() => fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`).then(response => Either<Error, string>.right(response.text())))
+    );
+
+const program = fetchAPIResponse()
+    .map(r => getResponseXML(r))
+    .map(doc => extractGames(doc))
+    .map(games => getRandomTop10Game(games))
+    .map(game => printGame(game))
+    .unsafeRun();
+```
+
+----
+
 Tips:
 
 having a proper functional programming in JS/TS world requires both automatic checks and strict
