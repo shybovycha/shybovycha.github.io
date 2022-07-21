@@ -792,25 +792,57 @@ const printGame = (game: Game | undefined): void => {
 Whereas with the former, optional values, you can do chaining to some extent, this becomes a burden with alternate types:
 
 ```ts
-const extractGames3 = (doc: Either<Error, XMLDocument>): Either<Error, Array<Game>> => {
-    return doc.andThen((d: XMLDocument) => {
-        const items = Array.from(d.querySelectorAll('items item'));
+const createGame3 = (item: Element): Error | Game => {
+    const rank = item.getAttribute('rank');
+    const name = item.querySelector('name')?.getAttribute('value');
 
-        return items.map(item => {
-            const rank = item.getAttribute('rank') ?? '';
-            const name = item.querySelector('name')?.getAttribute('value') ?? '';
+    if (name && rank)
+        return { name, rank } as Game;
 
-            return { rank, name };
-        });
-    });
+    return new Error('invalid response');
 };
 
-const getRandomTop10Game3 = (games: Either<Error, Array<Game>>): Either<Error, Game> => {
-    return games.andThen(gs => gs[Math.random() * 100 % 10]);
+const getResponseXML3 = (response: string): Error | XMLDocument => {
+    try {
+        return new DOMParser().parseFromString(response, "text/xml");
+    } catch {
+        return new Error('Received invalid XML');
+    }
 };
 
-const printGame3 = (game: Either<Error, Game>): void => {
-    game.andThen(g => console.log(`#${g.rank}: ${g.name}`));
+const extractGames3 = (doc: Error | XMLDocument): Error | Array<Game> => {
+    if (doc instanceof Error)
+        return doc;
+
+    const items = Array.from(doc.querySelectorAll('items item'));
+
+    const games = [] as Array<Game>;
+
+    for (let item of items) {
+        const rank = item.getAttribute('rank');
+        const name = item.querySelector('name')?.getAttribute('value');
+
+        if (name && rank)
+            games.push({ rank, name } as Game);
+        else
+            return new Error('invalida data in XML');
+    }
+
+    return games;
+};
+
+const getRandomTop10Game3 = (games: Error | Array<Game>): Error | Game => {
+    if (games instanceof Error)
+        return games;
+
+    return games[Math.random() * 100 % 10];
+};
+
+const printGame3 = (game: Error | Game): void => {
+    if (game instanceof Error)
+        return;
+
+    console.log(`#${game.rank}: ${game.name}`);
 };
 ```
 
