@@ -1802,9 +1802,11 @@ class PromiseIO <A> implements Monad<A> {
         return new PromiseIO<A>(() => m.unsafeRun().then(p => p.unsafeRun()));
     }
 }
+```
 
-// ---
+With that being sorted out, let us introduce new monad, `MaybeT` to highlight the idea behind monad transformers:
 
+```ts
 class MaybeT <A, M extends Monad<Maybe<A>>> extends Monad<A> {
     constructor(private readonly value: Monad<Maybe<A>>) {
         super();
@@ -1839,9 +1841,11 @@ class MaybeT <A, M extends Monad<Maybe<A>>> extends Monad<A> {
         return this.value;
     }
 }
+```
 
-// ---
+Now let's modify it to `EitherT`:
 
+```ts
 class EitherT <E, A, M extends Monad<Either<E, A>>> extends Monad<A> {
     constructor(private readonly value: Monad<Either<E, A>>) {
         super();
@@ -1876,14 +1880,11 @@ class EitherT <E, A, M extends Monad<Either<E, A>>> extends Monad<A> {
         return this.value;
     }
 }
+```
 
-// ---
+So that now our program can utilize this new concept:
 
-interface Game {
-    name: string;
-    rank: string;
-}
-
+```ts
 const createGame = (item: Element): Maybe<Game> => {
     const rank = Maybe.maybe(item.getAttribute('rank'));
     const name = Maybe.maybe(item.querySelector('name')).map(name => name.getAttribute('value'));
@@ -1937,6 +1938,100 @@ const program = fetchAPIResponse()
     .map(doc => extractGames(doc))
     .map(games => getRandomTop10Game(games))
     .map(game => printGame(game))
+    .unsafeRun();
+```
+
+But uh-oh, the types do not match now:
+
+```
+// .map(doc => extractGames(doc))
+Argument of type 'Either<Error, XMLDocument>' is not assignable to parameter of type 'XMLDocument'.
+  Type 'Either<Error, XMLDocument>' is missing the following properties from type 'XMLDocument': addEventListener, removeEventListener, URL, alinkColor, and 247 more.
+
+// .map(games => getRandomTop10Game(games))
+Argument of type 'Either<Error, Game[]>' is not assignable to parameter of type 'Game[]'.
+  Type 'Either<Error, Game[]>' is missing the following properties from type 'Game[]': length, pop, push, concat, and 26 more.
+
+// .map(game => printGame(game))
+Argument of type 'Either<Error, Game>' is not assignable to parameter of type 'Game'.
+  Type 'Either<Error, Game>' is missing the following properties from type 'Game': name, rank
+
+// .unsafeRun()
+Property 'unsafeRun' does not exist on type 'EitherT<Error, void, Monad<Either<Error, void>>>'
+```
+
+How about we wrap the `map` and `flatMap` operations _on a nested monad_ in a wrapper?
+
+```ts
+abstract class PromiseIOT {
+    static map<A, B>(value: PromiseIO<Monad<A>>, func: Func<A, B>): PromiseIO<Monad<B>> {
+        return value.map(m => m.map(func));
+    }
+
+    static flatMap<A, B>(value: PromiseIO<Monad<A>>, func: Func<A, Monad<B>>): PromiseIO<Monad<B>> {
+        return value.map(m => m.flatMap(func));
+    }
+}
+```
+
+With that we can write something like this:
+
+```ts
+PromiseIOT
+    .map(fetchAPIResponse(), r => getResponseXML(r))
+```
+
+But that is essentially a `Monad` in itself, just implemented with static methods, isn't it?
+How about we actually make it a `Monad`?
+
+```ts
+class PromiseIOT <A> {
+    constructor(private readonly value: PromiseIO<Monad<A>>) {
+    }
+
+    map<B>(func: Func<A, B>): PromiseIO<Monad<B>> {
+        return this.value.map(m => m.map(func));
+    }
+
+    flatMap<B>(func: Func<A, Monad<B>>): PromiseIO<Monad<B>> {
+        return this.value.map(m => m.flatMap(func));
+    }
+}
+```
+
+Unfortunately, TypeScript will go crazy if you try to implement a `Monad<A>` or `Monad<Monad<A>>` with this class, since we are not operating on the
+wrapped type `PromiseIO<Monad<A>>`, as required by the `Monad` interface, but rather on the nested wrapped type, `A`.
+
+So how about we _pretend_ it has the interface _similar_ to that of a `Monad`?
+
+```ts
+class PromiseIOT <A> {
+    constructor(private readonly value: PromiseIO<Monad<A>>) {
+    }
+
+    map<B>(func: Func<A, B>): PromiseIOT<B> {
+        return new PromiseIOT(this.value.map(m => m.map(func)));
+    }
+
+    flatMap<B>(func: Func<A, Monad<B>>): PromiseIOT<B> {
+        return new PromiseIOT(this.value.map(m => m.flatMap(func)));
+    }
+
+    runPromiseIOT(): PromiseIO<Monad<A>> {
+        return this.value;
+    }
+}
+```
+
+Now we can actually chain the methods like this:
+
+```ts
+const program = new PromiseIOT(fetchAPIResponse())
+    .flatMap(r => getResponseXML(r))
+    .flatMap(doc => extractGames(doc))
+    .flatMap(games => getRandomTop10Game(games))
+    .map(game => printGame(game))
+    .runPromiseIOT()
     .unsafeRun();
 ```
 
@@ -2337,3 +2432,4 @@ Resources:
 * https://gcanti.github.io/fp-ts/learning-resources/
 * https://dev.to/gcanti/functional-design-tagless-final-332k
 * https://stackoverflow.com/questions/6647852/haskell-actual-io-monad-implementation-in-different-language
+* https://github.com/louthy/language-ext
