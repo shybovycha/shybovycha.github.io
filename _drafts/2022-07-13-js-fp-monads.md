@@ -1441,7 +1441,7 @@ const program = fetchAPIResponse()
     .map(doc => extractGames(doc))
     .map(games => getRandomTop10Game(games))
     .map(game => printGame(game))
-    .unsafeRun(); 
+    .unsafeRun();
 ```
 
 But we can do better than this: we can get rid of all those `Either` and `Maybe` in functions which do not throw an error:
@@ -1558,72 +1558,12 @@ const program = fetchAPIResponse()
     .map(docE => docE.flatMap(doc => extractGames(doc)))
     .map(gamesE => gamesE.flatMap(games => getRandomTop10Game(games)))
     .map(gameE => gameE.map(game => printGame(game)))
-    .unsafeRun(); 
+    .unsafeRun();
 ```
 
 Or by changing the signature of the functions to take `Either<Error, ?>` instead.
 
-But there is a more neat way to handle cases like this in functional programming:
-
-----
-
-```ts
-abstract class ExceptionWrapper <E, T, W extends Wrappable<Either<E, T>>> extends Wrappable<W> {
-    // private wrappedFunc: Func<A, ExceptionWrapper<E, T>>;
-
-    // private constructor(func: Func<A, ExceptionWrapper<E, T>>) {
-    //     this.wrappedFunc = func;
-    // }
-
-    private value: Either<E, T>;
-
-    private constructor(value: ExceptionWrapper<E, T>) {
-        this.value = value;
-    }
-
-    static run <E, T, W extends >(func: Func<Void, ExceptionWrapper<E, T>>): ExceptionWrapper<E, T> {
-        return new ExceptionWrapper<A, E, T>(func);
-    }
-
-    static throwError <E, T>(error: E): ExceptionWrapper<E, T> {
-        return new ExceptionWrapper<E, T>(Either.left<E, T>(error));
-    }
-
-    static catchError <E, T>(func: Func<E, ExceptionWrapper<E, T>>) {
-        return new ExceptionWrapper<E, T>
-    }
-}
-```
-
-----
-
-```ts
-class WrapperTransformer <A, W extends Wrappable<A>> extends Wrappable<W> {
-    private value: W<A>;
-
-    private constructor(value: W<A>) {
-        this.value = value;
-    }
-
-    override wrap <A>(value: A): WrapperTransformer<W<A>> {
-        return new WrapperTransformer(W.wrap<A>(value));
-    }
-
-    abstract override andThen <B>(func: Func<A, W<B>>): WrapperTransformer<W<B>> {
-        return new WrapperTransformer(this.value.andThen(func));
-    }
-
-    abstract override andThenWrap <B>(func: Func<A, WrapperTransformer<W<B>>>): WrapperTransformer<W<B>> {
-        return this.value.andThen(func);
-    }
-
-    run(): W<A> {
-        return this.value;
-    }
-}
-```
-
-----
+But there is a more neat way to handle cases like this in functional programming: by using monad transformers, `PromiseIOT` in our case.
 
 ## Monad transformers
 
@@ -2065,6 +2005,56 @@ const program = new PromiseIOT(fetchAPIResponse())
     .map(game => printGame(game))
     .runPromiseIOT()
     .unsafeRun();
+```
+
+There is still one issue with the code: the `try..catch` block. Let us monadize it!
+
+```ts
+class ExceptionW <A> implements Wrappable <A> {
+    constructor(private readonly task: Func0<Wrappable<A>>, private readonly exceptionHandler: Func0<Wrappable<A>>) {}
+
+    andThen<B>(func: Func<A, B>): ExceptionW<B> {
+        return new ExceptionW<B>(
+            () => this.task().andThen(func),
+            () => this.exceptionHandler().andThen(func)
+        );
+    }
+
+    andThenWrap<B>(func: Func<A, ExceptionW<B>>): ExceptionW<B> {
+        return new ExceptionW<B>(
+            () => this.task().andThenWrap(func),
+            () => this.exceptionHandler().andThenWrap(func)
+        );
+    }
+
+    unsafeRun(): Wrappable<A> {
+        try {
+            return this.task();
+        } catch {
+            return this.exceptionHandler();
+        }
+    }
+}
+```
+
+With this monad we can prettify the `getResponseXML` function:
+
+```ts
+const getResponseXML = (response: string): ExceptionW<XMLDocument> =>
+    new ExceptionW(
+        () => Either<Error, XMLDocument>.right(new DOMParser().parseFromString(response, "text/xml")),
+        () => Either<Error, XMLDocument>.left(new Error('Received invalid XML'))
+    );
+```
+
+The only difference is the `program` - the `PromiseIOT` requires a wrapped monad type in a constructor,
+whilst the `fetchAPIResponse` function returns a primitive type wrapped:
+
+```ts
+new PromiseIOT(fetchAPIResponse()) // <=========== error: Argument of type 'PromiseIO<string>' is not assignable to parameter of type 'PromiseIO<Wrappable<unknown>>'.
+    .andThen(response => getResponseXML(response))
+
+new PromiseIOT(fetchAPIResponse().andThen(response => getResponseXML(response))) // Just works (TM)
 ```
 
 ----
