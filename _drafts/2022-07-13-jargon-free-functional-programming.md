@@ -1708,8 +1708,379 @@ With that, the code becomes a little bit cleaner:
 const program = getResponseXML('invalid XML')
     .andThenWrap(doc => extractGames(doc))
     .andThenWrap(games => getRandomTop10Game(games))
-    .runExceptionW<Either<Error, XMLDocument>>>()
+    .runExceptionW<Either<Error, XMLDocument>>()
     .andThen(result => console.log('success', result));
+```
+
+With this new concept of wrapping an entire blocks of functionality in a `Wrappable`, we can solve a similar problem
+with the initial program: promises.
+
+Instead of just creating a promise object together with the `Wrappable`, we can instead hide it in a function.
+
+Let us do this step by step. First, the interface implementation and the overall skeleton of a new class:
+
+```ts
+class PromiseIO <A> implements Wrappable<A> {
+    andThen<B>(func: Func<A, B>): PromiseIO<B> {
+        // ???
+    }
+
+    andThenWrap<B>(func: Func<A, PromiseIO<B>>): PromiseIO<B> {
+        // ???
+    }
+}
+```
+
+Now, to wrap the promise:
+
+```ts
+class PromiseIO <A> implements Wrappable<A> {
+    constructor(private readonly task: Func0<Promise<A>>) {}
+
+    andThen<B>(func: Func<A, B>): PromiseIO<B> {
+        // ???
+    }
+
+    andThenWrap<B>(func: Func<A, PromiseIO<B>>): PromiseIO<B> {
+        // ???
+    }
+}
+```
+
+And running the wrapped promise:
+
+```ts
+class PromiseIO <A> implements Wrappable<A> {
+    constructor(private readonly task: Func0<Promise<A>>) {}
+
+    andThen<B>(func: Func<A, B>): PromiseIO<B> {
+        // ???
+    }
+
+    andThenWrap<B>(func: Func<A, PromiseIO<B>>): PromiseIO<B> {
+        // ???
+    }
+
+    unsafeRun(): Promise<A> {
+        return this.task();
+    }
+}
+```
+
+Note how I explicitly called it "unsafe" - since promise can (and, most likely, will) work with an outside world,
+we should only run it when we are ready to run the whole program, so it immediately produces the result as
+a function of whatever the wrapped promise has returned.
+
+Then, when we need to chain the logic off that promise, we do not really need to call the promise - instead,
+we create a new `Wrappable` instance which _will_ call the promise somewhere in the future.
+
+So instead of calling `wrappedPromise.then(func)`, which is now wrapped in a function `() => Promise<A>`,
+we create a new `PromiseIO` wrappable with a new function, which will do something _when the promise returns_.
+
+This is better explained with the code, in my opinion:
+
+```ts
+class PromiseIO <A> implements Wrappable<A> {
+    constructor(private readonly task: Func0<Promise<A>>) {
+    }
+
+    andThen<B>(func: Func<A, B>): PromiseIO<B> {
+        return new PromiseIO<B>(() => this.unsafeRun().then(func));
+    }
+
+    andThenWrap<B>(func: Func<A, PromiseIO<B>>): PromiseIO<B> {
+        return new PromiseIO<B>(() => this.unsafeRun().then(func));
+    }
+
+    unsafeRun(): Promise<A> {
+        return this.task();
+    }
+}
+```
+
+Unfortunately, this won't work. The issue is in the `andThenWrap` method.
+Recall the interface of `Wrappable<A>`:
+
+```ts
+andThen<B>(func: Func<A, B>): Wrappable<B>;
+
+andThenWrap<B>(func: Func<A, Wrappable<B>>): Wrappable<B>;
+```
+
+Now the code we have in there right now will work if the function `func` returned `B`,
+which would be exactly what `andThen` method does:
+
+```ts
+// func: Func<A, B>
+
+this.unsafeRun().then(func)
+// => Promise<A>.then((a: A) => func(a)) => Promise<B>
+
+new PromiseIO(() => this.unsafeRun().then(func)) // seems OK, gives PromiseIO<B>
+```
+
+But since the function `func` returns `PromiseIO<B>` instead, the result would be slightly different:
+
+```ts
+// func: Func<A, PromiseIO<B>>
+
+this.unsafeRun().then(func)
+// => Promise<A>.then((a: A) => func(a)) => Promise<PromiseIO<B>>
+
+new PromiseIO(() => this.unsafeRun().then(func))
+// this gives PromiseIO<PromiseIO<B>>, can't return from `andThenWrap`
+```
+
+But notice how this is a nested `PromiseIO` object - can we maybe "unwrap" and "repack" it?
+
+Turns out, we can - remember how a `Promise<A>.then(() => Promise<B>)` resolves in `Promise<B>`.
+We can utilize this property of `Promise`, if the function we wrap will return `Promise<Promise<B>>`.
+
+And that's where our `unsafeRun` method can be utilized within the function we wrap:
+
+```ts
+new PromiseIO<B>(
+    () => {
+        const p1 = new PromiseIO<PromiseIO<B>>(
+            () => this.unsafeRun() // gives Promise<A>
+                .then(func) // this gives the Promise<PromiseIO<B>>
+        );
+
+        const p2: Promise<PromiseIO<B>> = p1.unsafeRun();
+
+        const p3: Promise<B> = p2.then(
+            (p: PromiseIO<B>) => p.unsafeRun() // this gives Promise<B>
+        );
+
+        // at this stage we have Promise<Promise<B>>, which is automatically converted to Promise<B>
+        // passing it to the constructor of PromiseIO, wrapped in a function, will give PromiseIO<B>
+
+        return p3;
+    }
+)
+```
+
+and then
+
+```ts
+class PromiseIO <A> implements Wrappable<A> {
+    constructor(private readonly task: Func0<Promise<A>>) {
+    }
+
+    andThen<B>(func: Func<A, B>): PromiseIO<B> {
+        return new PromiseIO<B>(() => this.unsafeRun().then(func));
+    }
+
+    andThenWrap<B>(func: Func<A, PromiseIO<B>>): PromiseIO<B> {
+        return new PromiseIO<B>(() =>
+            new PromiseIO<PromiseIO<B>>(() =>
+                this.unsafeRun()
+                    .then(func)
+            )
+            .unsafeRun()
+            .then(p => p.unsafeRun())
+        );
+    }
+
+    unsafeRun(): Promise<A> {
+        return this.task();
+    }
+}
+```
+
+Now let us build our solution again, using this newly acquired wrappable:
+
+```ts
+const fetchAPIResponse = () =>
+    new PromiseIO(() => fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`).then(response => response.text()));
+
+const program = fetchAPIResponse()
+    .andThen(response => getResponseXML(response))
+    .andThen(doc => extractGames(doc))
+    .andThen(games => getRandomTop10Game(games))
+    .runExceptionW<Either<Error, XMLDocument>>()
+    .andThen(game => printGame(game))
+    .unsafeRun();
+```
+
+Uh-oh, there is an issue with the types again:
+
+```ts
+fetchAPIResponse() // PromiseIO<string>
+    .andThen(response => getResponseXML(response)) // PromiseIO<ExceptionW<XMLDocument>>
+    .andThen(doc => extractGames(doc)) // doc is now ExceptionW<XMLDocument>
+```
+
+So we can not really use the existing functions directly - the types mismatch.
+The issue is that they are nested twice already - `PromiseIO<ExceptionW<XMLDocument>>`.
+And the `extractGames` function expects just the `XMLDocument` as an input.
+Is there a way to extract the double-wrapped value?
+
+Well, in functional programming, we use another wrappable (oh really) which ignores the outside
+wrappable and operates on the nested one. We call them "transformers":
+
+```ts
+new PromiseIOT(fetchAPIResponse()) // PromiseIOT<string>, the transformer
+    .andThen(response => getResponseXML(response)) // unpacks the string, runs the function, and packs everything back in PromiseIOT
+    .andThen(doc => extractGames(doc)) // unpacks the XMLDocument, runs the function, and packs everything back in PromiseIOT
+```
+
+So this new thing is only helpful for dealing with whatever `PromiseIO` wraps.
+And, unfortunately, there needs to be a new one for whatever the new wrappable you come up with.
+This is understandable to some extent, since each "external" wrappable would handle the functions
+`andThen` and `andThenWrap` differently, so there can not really be a universal one.
+
+Let's see how we can create one for `PromiseIO`, step-by-step.
+
+First things first, the skeleton of a transformer:
+
+```ts
+class PromiseIOT <A> implements Wrappable<A> {
+    andThen<B>(func: Func<A, B>): PromiseIOT<B> {
+        // ???
+    }
+
+    andThenWrap<B>(func: Func<A, Wrappable<B>>): PromiseIOT<B> {
+        // ???
+    }
+}
+```
+
+And the thing we wrap, which is a `PromiseIO<A>`:
+
+```ts
+class PromiseIOT <A> {
+    constructor(private readonly value: PromiseIO<Wrappable<A>>) {
+    }
+
+    andThen<B>(func: Func<A, B>): PromiseIOT<B> {
+        // ???
+    }
+
+    andThenWrap<B>(func: Func<A, Wrappable<B>>): PromiseIOT<B> {
+        // ???
+    }
+}
+```
+
+And, as in case with `PromiseIO` itself, there has to be a way to run the promise (since it is wrapped).
+We will simply expose the value we wrap - as unsafe as it might look, the value we wrap is a wrapped promise already:
+
+```ts
+class PromiseIOT <A> {
+    constructor(private readonly value: PromiseIO<Wrappable<A>>) {
+    }
+
+    andThen<B>(func: Func<A, B>): PromiseIOT<B> {
+        // ???
+    }
+
+    andThenWrap<B>(func: Func<A, Wrappable<B>>): PromiseIOT<B> {
+        // ???
+    }
+
+    runPromiseIOT(): PromiseIO<Wrappable<A>> {
+        return this.value;
+    }
+}
+```
+
+Note how it has to be `PromiseIO<Wrappable<A>>` - so the value `PromiseIO` wraps is a `Wrappable` on its own.
+This is where the transformers differ from the "simple" wrappers - if `PromiseIO` (the thing transformer wraps)
+would wrap a simple type (`PromiseIO<A>`) - then there is no need for a transformer - just use the wrapper' interface directly.
+
+Now, to the implementation: the function passed to `andThen` and `andThenWrap` methods would be applied
+to the thing the `PromiseIO` wraps. And the transformer wraps that `PromiseIO` object.
+Hence we need to call `this.value.andThen()` to get to the value `PromiseIO` wraps.
+But since that value is a wrapped type itself, we call `andThen` on it too:
+
+```ts
+andThen<B>(func: Func<A, B>): PromiseIOT<B> {
+    return new PromiseIOT(this.value.andThen(m => m.andThen(func)));
+}
+```
+
+And when we want to return a new wrappable to be wrapped in a `PromiseIO`, we simply use `andThenWrap` on a nested-nested value:
+
+```ts
+andThenWrap<B>(func: Func<A, Wrappable<B>>): PromiseIOT<B> {
+    return new PromiseIOT(this.value.andThen(m => m.andThenWrap(func)));
+}
+```
+
+The whole transformer looks like this now:
+
+```ts
+class PromiseIOT <A> {
+    constructor(private readonly value: PromiseIO<Wrappable<A>>) {
+    }
+
+    andThen<B>(func: Func<A, B>): PromiseIOT<B> {
+        return new PromiseIOT(this.value.andThen(m => m.andThen(func)));
+    }
+
+    andThenWrap<B>(func: Func<A, Wrappable<B>>): PromiseIOT<B> {
+        return new PromiseIOT(this.value.andThen(m => m.andThenWrap(func)));
+    }
+
+    runPromiseIOT(): PromiseIO<Wrappable<A>> {
+        return this.value;
+    }
+}
+```
+
+To incorporate it in the program:
+
+```ts
+const program = new PromiseIOT(fetchAPIResponse())
+```
+
+This won't do, since `fetchAPIResponse` returns `PromiseIO<string>`, meaning it wraps the simple type.
+And we need a `Wrappable` instead - otherwise we don't need the transformer. Conveniently for us,
+the next function in the chain takes that `string` value and returns a wrappable, `ExceptionW<XMLDocument>`.
+So we can smash them together and pass to the `PromiseIOT`:
+
+```ts
+const program = new PromiseIOT(
+    fetchAPIResponse()
+        .andThen(response => getResponseXML(response)
+)
+```
+
+Now, there is one thing to recall from the previous wrappable we made, `ExceptionW` - the logic it wraps
+will only be executed upon request. And we need to incorporate this request in the program.
+
+Since our program so far looks the way it looks, it's type is `PromiseIOT`, which does not have
+a way to run `ExceptionW` it wraps. In fact, it does not even have an interface to do so,
+since we have explicitly designed it to run all the operations on the doubly-nested type.
+We do have one option, though - to run the `ExceptionW` right after we have fetched the response:
+
+```ts
+const program = new PromiseIOT(
+    fetchAPIResponse()
+        .andThen(response => getResponseXML(response))
+        .andThen(ew => ew.runExceptionW<Either<Error, XMLDocument>>())
+)
+```
+
+Note how we are not immediately running the logic wrapped by `ExceptionW`, but deferring it to the point in the future
+when the `Promise` returns with the response (or failure). So the chain of function calls is still within
+the restrictions of functional programming (or rather pure functions) mentioned in the beginning of this article.
+
+Now the only thing left is to put the rest of the calls matching the types to the `andThen` or `andThenWrap` methods
+and run the entire program:
+
+```ts
+const program = new PromiseIOT(
+    fetchAPIResponse()
+        .andThen(response => getResponseXML(response))
+        .andThen(ew => ew.runExceptionW<Either<Error, XMLDocument>>())
+)
+    .andThenWrap(doc => extractGames(doc))
+    .andThenWrap(games => getRandomTop10Game(games))
+    .andThen(game => printGame(game))
+    .runPromiseIOT()
+    .unsafeRun();
 ```
 
 ----
