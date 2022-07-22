@@ -870,12 +870,8 @@ abstract class Maybe <A> {
 }
 
 class Some <A> extends Maybe <A> {
-    private value: A;
-
-    constructor(value: A) {
+    constructor(private readonly value: A) {
         super();
-
-        this.value = value;
     }
 
     override andThen <B>(func: Func<A, B>): Maybe<B> {
@@ -920,12 +916,8 @@ abstract class Either <A, B> {
 }
 
 class Left <A, B> extends Either <A, B> {
-    private value: A;
-
-    constructor(value: A) {
+    constructor(private readonly value: A) {
         super();
-
-        this.value = value;
     }
 
     override andThen <C>(_: Func<B, C>): Either<A, C> {
@@ -938,12 +930,8 @@ class Left <A, B> extends Either <A, B> {
 }
 
 class Right <A, B> extends Either <A, B> {
-    private value: B;
-
-    constructor(value: B) {
+    constructor(private readonly value: B) {
         super();
-
-        this.value = value;
     }
 
     override andThen <C>(func: Func<B, C>): Either<A, C> {
@@ -1030,8 +1018,6 @@ This might actually be a good time to consider if these two types have something
 
 ```ts
 abstract class Wrappable <A> {
-    abstract wrap(value: A): Wrappable<A>;
-
     abstract andThen <B>(func: Func<A, B>): Wrappable<B>;
 
     abstract andThenWrap <B>(func: Func<A, Wrappable<B>>): Wrappable<B>;
@@ -1040,10 +1026,6 @@ abstract class Wrappable <A> {
 
 ```ts
 abstract class Maybe <A> extends Wrappable <A> {
-    override wrap <A>(value: A): Maybe<A> {
-        return Maybe.some<A>(value);
-    }
-
     abstract override andThen <B>(func: Func<A, B>): Maybe<B>;
 
     abstract override andThenWrap <B>(func: Func<A, Maybe<B>>): Maybe<B>;
@@ -1064,12 +1046,8 @@ abstract class Maybe <A> extends Wrappable <A> {
 }
 
 class Some <A> extends Maybe <A> {
-    private value: A;
-
-    constructor(value: A) {
+    constructor(private readonly value: A) {
         super();
-
-        this.value = value;
     }
 
     override andThen <B>(func: Func<A, B>): Maybe<B> {
@@ -1106,10 +1084,6 @@ class None <A> extends Maybe <A> {
 
 ```ts
 abstract class Either <A, B> extends Wrappable<B> {
-    override wrap <A, B>(value: B): Either<A, B> {
-        return Either.right<A, B>(value);
-    }
-
     abstract override andThen <C>(func: Func<B, C>): Either<A, C>;
 
     abstract override andThenWrap <C>(func: Func<B, Either<A, C>>): Either<A, C>;
@@ -1128,12 +1102,8 @@ abstract class Either <A, B> extends Wrappable<B> {
 }
 
 class Left <A, B> extends Either <A, B> {
-    private value: A;
-
-    constructor(value: A) {
+    constructor(private readonly value: A) {
         super();
-
-        this.value = value;
     }
 
     override andThen <C>(_: Func<B, C>): Either<A, C> {
@@ -1154,12 +1124,8 @@ class Left <A, B> extends Either <A, B> {
 }
 
 class Right <A, B> extends Either <A, B> {
-    private value: B;
-
-    constructor(value: B) {
+    constructor(private readonly value: B) {
         super();
-
-        this.value = value;
     }
 
     override andThen <C>(func: Func<B, C>): Either<A, C> {
@@ -1215,209 +1181,6 @@ const extractGames = (doc: Either<Error, XMLDocument>): Either<Error, Array<Game
         );
     });
 };
-```
-
-----
-
-```ts
-type Func0 <A> = () => A;
-type Func <A, B> = (_: A) => B;
-
-interface Functor <A> {
-    pure(value: A): Functor<A>;
-
-    map<B>(func: Func<A, B>): Functor<B>;
-}
-
-interface Monad <A> extends Functor <A> {
-    flatMap<B>(func: Func<A, Monad<B>>): Monad<B>;
-}
-
-abstract class Maybe<A> implements Monad<A> {
-    abstract map<B>(_: Func<A, B>): Maybe<B>;
-
-    abstract flatMap<B>(_: Func<A, Maybe<B>>): Maybe<B>;
-
-    abstract toEither<E>(_: Func0<E>): Either<E, A>;
-
-    pure(value: A): Maybe<A> {
-        return new Just<A>(value);
-    }
-
-    static maybe<A>(value: A | undefined | null): Maybe<A> {
-        return (!value) ? new Nothing<A>() : new Just<A>(value);
-    }
-
-    static just<A>(value: A): Maybe<A> {
-        return new Just<A>(value);
-    }
-
-    static nothing<A>(): Maybe<A> {
-        return new Nothing<A>();
-    }
-}
-
-class Just<A> extends Maybe<A> {
-    private readonly value: A;
-
-    constructor(readonly v: A) {
-        super();
-
-        this.value = v;
-    }
-
-    override map<B>(func: Func<A, B>): Maybe<B> {
-        return new Just<B>(func(this.value));
-    }
-
-    override flatMap<B>(func: Func<A, Maybe<B>>): Maybe<B> {
-        return func(this.value);
-    }
-
-    override toEither<E>(_: Func0<E>): Either<E, A> {
-        return new Right(this.value);
-    }
-}
-
-class Nothing<A> extends Maybe<A> {
-    constructor() {
-        super();
-    }
-
-    override map<B>(_: Func<A, B>): Maybe<B> {
-        return new Nothing<B>();
-    }
-
-    override flatMap<B>(_: Func<A, Maybe<B>>): Maybe<B> {
-        return new Nothing<B>();
-    }
-
-    override toEither<E>(leftProvider: Func0<E>): Either<E, A> {
-        return new Left<E, A>(leftProvider());
-    }
-}
-
-abstract class Either<E, A> implements Monad<A> {
-    abstract map<B>(_: Func<A, B>): Either<E, B>;
-
-    abstract flatMap<B>(_: Func<A, Either<E, B>>): Either<E, B>;
-
-    abstract toMaybe(): Maybe<A>;
-
-    pure(value: A): Either<E, A> {
-        return new Right<E, A>(value);
-    }
-
-    static left<E, A>(value: E): Either<E, A> {
-        return new Left<E, A>(value);
-    }
-
-    static right<E, A>(value: A): Either<E, A> {
-        return new Right<E, A>(value);
-    }
-}
-
-class Right<E, A> extends Either<E, A> {
-    private readonly value: A;
-
-    constructor(readonly v: A) {
-        super();
-
-        this.value = v;
-    }
-
-    override map<B>(func: Func<A, B>): Either<E, B> {
-        return new Right<E, B>(func(this.value));
-    }
-
-    override flatMap<B>(func: Func<A, Either<E, B>>): Either<E, B> {
-        return func(this.value);
-    }
-
-    override toMaybe(): Maybe<A> {
-        return new Just<A>(this.value);
-    }
-}
-
-class Left<E, A> extends Either<E, A> {
-    private readonly value: E;
-
-    constructor(readonly v: E) {
-        super();
-
-        this.value = v;
-    }
-
-    override map<B>(_: Func<A, B>): Either<E, B> {
-        return new Left<E, B>(this.value);
-    }
-
-    override flatMap<B>(_: Func<A, Either<E, B>>): Either<E, B> {
-        return new Left<E, B>(this.value);
-    }
-
-    override toMaybe(): Maybe<A> {
-        return new Nothing<A>();
-    }
-}
-
-class IO<A> implements Monad<A> {
-    private task: Func0<A>;
-
-    constructor(readonly t: Func0<A>) {
-        this.task = t;
-    }
-
-    pure(value: A): IO<A> {
-        return new IO<A>(() => value);
-    }
-
-    map<B>(func: Func<A, B>): IO<B> {
-        return new IO<B>(() => func(this.task()));
-    }
-
-    flatMap<B>(func: Func<A, IO<B>>): IO<B> {
-        return IO.join(new IO<IO<B>>(() => func(this.task())));
-    }
-
-    unsafeRun(): A {
-        return this.task();
-    }
-
-    static join<A>(m: IO<IO<A>>): IO<A> {
-        return new IO<A>(() => m.unsafeRun().unsafeRun());
-    }
-}
-```
-
-```ts
-class PromiseIO <A> implements Monad<A> {
-    private task: Func0<Promise<A>>;
-
-    constructor(readonly t: Func0<Promise<A>>) {
-        this.task = t;
-    }
-
-    pure(value: A): PromiseIO<A> {
-        return new PromiseIO<A>(() => Promise.resolve(value));
-    }
-
-    map<B>(func: Func<A, B>): PromiseIO<B> {
-        return new PromiseIO<B>(() => this.unsafeRun().then(func));
-    }
-
-    flatMap<B>(func: Func<A, PromiseIO<B>>): PromiseIO<B> {
-        return PromiseIO.join(new PromiseIO<PromiseIO<B>>(() => this.unsafeRun().then(func)));
-    }
-
-    unsafeRun(): Promise<A> {
-        return this.task();
-    }
-
-    static join<A>(m: PromiseIO<PromiseIO<A>>): PromiseIO<A> {
-        return new PromiseIO<A>(() => m.unsafeRun().then(p => p.unsafeRun()));
-    }
-}
 ```
 
 ```ts
@@ -2083,323 +1846,37 @@ const program = new PromiseIOT(
     .unsafeRun();
 ```
 
-----
+Leaving all the "boilerplate" code aside (all those wrappables), this is how our program looks like so far:
 
 ```ts
-type Func0 <A> = () => A;
-
-type Func <A, B> = (_: A) => B;
-
-abstract class Monad <A> {
-    abstract pure(value: A): Monad<A>;
-
-    abstract map<B>(func: Func<A, B>): Monad<B>;
-
-    abstract flatMap<B>(func: Func<A, Monad<B>>): Monad<B>;
-}
-
-abstract class Maybe<A> extends Monad<A> {
-    abstract map<B>(_: Func<A, B>): Maybe<B>;
-
-    abstract flatMap<B>(_: Func<A, Maybe<B>>): Maybe<B>;
-
-    abstract bimap<B>(nothingFunc: Func0<B>, justFunc: Func<A, B>): B;
-
-    toEither<E>(func: Func0<E>): Either<E, A> {
-        return new Left<E, A>(func());
-    }
-
-    pure(value: A): Maybe<A> {
-        return new Just<A>(value);
-    }
-
-    static maybe<A>(value: A | undefined | null): Maybe<A> {
-        return (!value) ? new Nothing<A>() : new Just<A>(value);
-    }
-
-    static just<A>(value: A): Maybe<A> {
-        return new Just<A>(value);
-    }
-
-    static nothing<A>(): Maybe<A> {
-        return new Nothing<A>();
-    }
-
-    // static join<A>(maybe: Maybe<Maybe<A>>): Maybe<A> {
-    //     return maybe.flatMap(x => x);
-    // }
-}
-
-class Just<A> extends Maybe<A> {
-    constructor(readonly value: A) {
-        super();
-    }
-
-    override map<B>(func: Func<A, B>): Maybe<B> {
-        return new Just<B>(func(this.value));
-    }
-
-    override flatMap<B>(func: Func<A, Maybe<B>>): Maybe<B> {
-        return func(this.value);
-    }
-
-    override bimap<B>(_: Func0<B>, justFunc: Func<A, B>): B {
-        return justFunc(this.value);
-    }
-
-    override toEither<E>(_: Func0<E>): Either<E, A> {
-        return new Right(this.value);
-    }
-}
-
-class Nothing<A> extends Maybe<A> {
-    constructor() {
-        super();
-    }
-
-    override map<B>(_: Func<A, B>): Maybe<B> {
-        return new Nothing<B>();
-    }
-
-    override flatMap<B>(_: Func<A, Maybe<B>>): Maybe<B> {
-        return new Nothing<B>();
-    }
-
-    override bimap<B>(nothingFunc: Func0<B>, _: Func<A, B>): B {
-        return nothingFunc();
-    }
-
-    override toEither<E>(leftProvider: Func0<E>): Either<E, A> {
-        return new Left<E, A>(leftProvider());
-    }
-}
-
-abstract class Either<E, A> extends Monad<A> {
-    abstract map<B>(_: Func<A, B>): Either<E, B>;
-
-    abstract flatMap<B>(_: Func<A, Either<E, B>>): Either<E, B>;
-
-    abstract bimap<B>(leftFunc: Func<E, B>, rightFunc: Func<A, B>): B;
-
-    abstract toMaybe(): Maybe<A>;
-
-    pure(value: A): Either<E, A> {
-        return new Right<E, A>(value);
-    }
-
-    static left<E, A>(value: E): Either<E, A> {
-        return new Left<E, A>(value);
-    }
-
-    static right<E, A>(value: A): Either<E, A> {
-        return new Right<E, A>(value);
-    }
-}
-
-class Right<E, A> extends Either<E, A> {
-    constructor(readonly value: A) {
-        super();
-    }
-
-    override map<B>(func: Func<A, B>): Either<E, B> {
-        return new Right<E, B>(func(this.value));
-    }
-
-    override flatMap<B>(func: Func<A, Either<E, B>>): Either<E, B> {
-        return func(this.value);
-    }
-
-    override bimap<B>(_: Func<E, B>, rightFunc: Func<A, B>): B {
-        return rightFunc(this.value);
-    }
-
-    override toMaybe(): Maybe<A> {
-        return new Just<A>(this.value);
-    }
-}
-
-class Left<E, A> extends Either<E, A> {
-    constructor(private readonly value: E) {
-        super();
-    }
-
-    override map<B>(_: Func<A, B>): Either<E, B> {
-        return new Left<E, B>(this.value);
-    }
-
-    override flatMap<B>(_: Func<A, Either<E, B>>): Either<E, B> {
-        return new Left<E, B>(this.value);
-    }
-
-    override bimap<B>(leftFunc: Func<E, B>, _: Func<A, B>): B {
-        return leftFunc(this.value);
-    }
-
-    override toMaybe(): Maybe<A> {
-        return new Nothing<A>();
-    }
-}
-
-class IO<A> extends Monad<A> {
-    constructor(private readonly task: Func0<A>) {
-        super();
-    }
-
-    pure(value: A): IO<A> {
-        return new IO<A>(() => value);
-    }
-
-    map<B>(func: Func<A, B>): IO<B> {
-        return new IO<B>(() => func(this.unsafeRun()));
-    }
-
-    flatMap<B>(func: Func<A, IO<B>>): IO<B> {
-        return IO.join(new IO<IO<B>>(() => func(this.unsafeRun())));
-    }
-
-    unsafeRun(): A {
-        return this.task();
-    }
-
-    static join<A>(m: IO<IO<A>>): IO<A> {
-        return new IO<A>(() => m.unsafeRun().unsafeRun());
-    }
-}
-
-// ---
-
-class PromiseIO <A> implements Monad<A> {
-    constructor(private readonly task: Func0<Promise<A>>) {
-    }
-
-    pure(value: A): PromiseIO<A> {
-        return new PromiseIO<A>(() => Promise.resolve(value));
-    }
-
-    map<B>(func: Func<A, B>): PromiseIO<B> {
-        return new PromiseIO<B>(() => this.unsafeRun().then(func));
-    }
-
-    flatMap<B>(func: Func<A, PromiseIO<B>>): PromiseIO<B> {
-        return PromiseIO.join(new PromiseIO<PromiseIO<B>>(() => this.unsafeRun().then(func)));
-    }
-
-    unsafeRun(): Promise<A> {
-        return this.task();
-    }
-
-    static join<A>(m: PromiseIO<PromiseIO<A>>): PromiseIO<A> {
-        return new PromiseIO<A>(() => m.unsafeRun().then(p => p.unsafeRun()));
-    }
-}
-```
-
-With that being sorted out, let us introduce new monad, `MaybeT` to highlight the idea behind monad transformers:
-
-```ts
-class MaybeT <A, M extends Monad<Maybe<A>>> extends Monad<A> {
-    constructor(private readonly value: Monad<Maybe<A>>) {
-        super();
-    }
-
-    pure(value: A): MaybeT<A, M> {
-        return new MaybeT<A, M>(this.value.pure(Maybe<A>.just(value)));
-    }
-
-    map<B, N extends Monad<Maybe<B>>>(func: Func<A, B>): MaybeT<B, N> {
-        return new MaybeT<B, N>(this.value.map(a => a.map(func)));
-    }
-
-    flatMap<B, N extends Monad<Maybe<B>>>(func: Func<A, MaybeT<B, N>>): MaybeT<B, N> {
-        return new MaybeT<B, N>(this.value.flatMap(
-            (ma: Maybe<A>): Monad<Maybe<B>> =>
-                ma.bimap(
-                    () => this.value.map(_ => Maybe<B>.nothing()),
-                    (a: A) => func(a).runMaybeT()
-                )
-            )
-        );
-    }
-
-    // flatMap1<B, N extends Monad<Maybe<B>>>(func: Func<A, Maybe<B>>): MaybeT<B, N> {
-    //     return new MaybeT<B, N>(this.value.flatMap(
-    //         (v: Maybe<A>): Monad<Maybe<B>> => v.map(func))
-    //     );
-    // }
-
-    runMaybeT(): Monad<Maybe<A>> {
-        return this.value;
-    }
-}
-```
-
-Now let's modify it to `EitherT`:
-
-```ts
-class EitherT <E, A, M extends Monad<Either<E, A>>> extends Monad<A> {
-    constructor(private readonly value: Monad<Either<E, A>>) {
-        super();
-    }
-
-    pure(value: A): EitherT<E, A, M> {
-        return new EitherT<E, A, M>(this.value.pure(Either<E, A>.right(value)));
-    }
-
-    map<B, N extends Monad<Either<E, B>>>(func: Func<A, B>): EitherT<E, B, N> {
-        return new EitherT<E, B, N>(this.value.map(a => a.map(func)));
-    }
-
-    flatMap<B, N extends Monad<Either<E, B>>>(func: Func<A, EitherT<E, B, N>>): EitherT<E, B, N> {
-        return new EitherT<E, B, N>(this.value.flatMap(
-            (ma: Either<E, A>): Monad<Either<E, B>> =>
-                ma.bimap(
-                    e => this.value.map(e1 => Either<E, B>.left(e)),
-                    (a: A) => func(a).runEitherT()
-                )
-            )
-        );
-    }
-
-    // flatMap1<B, N extends Monad<Either<B>>>(func: Func<A, Either<B>>): EitherT<E, B, N> {
-    //     return new EitherT<E, B, N>(this.runEitherT().flatMap(
-    //         (v: Either<E, A>): Monad<Either<E, B>> => v.map(func))
-    //     );
-    // }
-
-    runEitherT(): Monad<Either<E, A>> {
-        return this.value;
-    }
-}
-```
-
-So that now our program can utilize this new concept:
-
-```ts
-const createGame = (item: Element): Maybe<Game> => {
-    const rank = Maybe.maybe(item.getAttribute('rank'));
-    const name = Maybe.maybe(item.querySelector('name')).map(name => name.getAttribute('value'));
-
-    return rank.flatMap(r =>
-        name.map(n => ({ name: n, rank: r } as Game))
+const fetchAPIResponse = (): PromiseIO<string> =>
+    new PromiseIO(() => fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`).then(response => response.text()));
+
+const getResponseXML = (response: string): ExceptionW<XMLDocument> =>
+    new ExceptionW(
+        () => Either<Error, XMLDocument>.right(new DOMParser().parseFromString(response, "text/xml")),
+        () => Either<Error, XMLDocument>.left(new Error('Received invalid XML'))
     );
-};
 
-const getResponseXML = (response: string): Either<Error, XMLDocument> => {
-    try {
-        return Either<Error, XMLDocument>.right(new DOMParser().parseFromString(response, "text/xml"));
-    } catch {
-        return Either<Error, XMLDocument>.left(new Error('Received invalid XML'));
-    }
+const createGame = (item: Element): Maybe<Game> => {
+    const rank = Maybe.option(item.getAttribute('rank'));
+    const name = Maybe.option(item.querySelector('name')).andThen(name => name.getAttribute('value'));
+
+    return rank.andThenWrap(r =>
+        name.andThen(n => ({ name: n, rank: r } as Game))
+    );
 };
 
 const extractGames = (doc: XMLDocument): Either<Error, Array<Game>> => {
     const items = Array.from(doc.querySelectorAll('items item'));
 
     return items.reduce((accEither, item) =>
-        accEither.flatMap(acc =>
+        accEither.andThenWrap(acc =>
             createGame(item)
-                .toEither(() => new Error('bad item'))
-                .map(game => [...acc, game])
+                .convert(
+                    () => Either<Error, Array<Game>>.left(new Error('bad item')),
+                    game => Either<Error, Array<Game>>.right([...acc, game])
+                )
         ),
         Either.right<Error, Array<Game>>([])
     );
@@ -2410,170 +1887,166 @@ const getRandomTop10Game = (games: Array<Game>): Either<Error, Game> => {
         return Either<Error, Game>.left(new Error('Not enough games'));
     }
 
-    return Either<Error, Game>.right(games[Math.random() * 100 % 10]);
+    return Either<Error, Game>.right(games[(Math.random() * 100) % 10]);
 };
 
 const printGame = (game: Game): void => {
-    console.log(`#${game.rank}: ${game.name}`);
+    console.log('RESULT', `#${game.rank}: ${game.name}`);
 };
 
+const program =
+    new PromiseIOT(
+        fetchAPIResponse()
+            .andThen(response => getResponseXML(response))
+            .andThen(w => w.runExceptionW<Either<Error, XMLDocument>>())
+    )
+    .andThenWrap(doc => extractGames(doc))
+    .andThenWrap(games => getRandomTop10Game(games))
+    .andThen(game => printGame(game))
+    .runPromiseIOT();
+
+program.unsafeRun();
+```
+
+Compare it to the initial implementation:
+
+```ts
 const fetchAPIResponse = () =>
-    new EitherT<Error, string, PromiseIO<Either<Error, string>>>(
-        new PromiseIO(() => fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`).then(response => response.text()))
-            .map(response => Either<Error, string>.right(response))
+    fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`)
+        .then(response => response.text());
+
+const getResponseXML = (response: string) => {
+    try {
+        return new DOMParser().parseFromString(response, "text/xml");
+    } catch {
+        throw 'Received invalid XML';
+    }
+};
+
+const extractGames = (doc: XMLDocument) => {
+    const items = Array.from(doc.querySelectorAll('items item'));
+
+    return items.map(item => {
+        const rank = item.getAttribute('rank') ?? '';
+        const name = item.querySelector('name')?.getAttribute('value') ?? '';
+
+        return { rank, name };
+    });
+};
+
+const getRandomTop10Game = (games: Array<Game>) => {
+    if (!games) {
+        throw 'No games found';
+    }
+
+    if (games.length < 10) {
+        throw 'Less than 10 games received';
+    }
+
+    const randomRank = Math.floor((Math.random() * 100) % 10);
+
+    return games[randomRank];
+};
+
+const printGame = (game: Game) => {
+    if (!game) {
+        throw 'No game provided';
+    }
+
+    const log = `#${game.rank}: ${game.name}`;
+
+    console.log(log);
+};
+
+fetchAPIResponse()
+    .then(r => getResponseXML(r))
+    .then(doc => extractGames(doc))
+    .then(games => getRandomTop10Game(games))
+    .then(game => printGame(game))
+    .catch(error => console.error('Failed', error));
+```
+
+To me they both look quite similar. So was there any value in all this rewrite?
+Let's find it out together!
+
+How about testing?
+
+There is a big test suite for the initial implementation at the top of this article.
+
+How do we go about testing this true-to-functional-programming version though?
+
+We can apply it to this new code with few minor changes around assertions - now
+instead of expecting an exception to be thrown or a value immediately returned,
+we need to check if the value returned by the function is `Left` or `Right` and
+check the wrapped value.
+
+How about testing the program as a whole?
+Well now, since the program is just a value, we can easily test its value.
+Dang, by replacing the functions in the chain we can even test different behaviours
+of the program! As in, instead of using `fetchAPIResponse` we can pass in a different
+instance of `PromiseIO` wrapping a completely wild value and see how the program would
+process it.
+
+Errors are not a problem now - they are values, not breaking the execution of a program.
+
+Interacting with the outer world is a breeze - just substitute the `fetch` with any `Promise` you want
+and it still won't break the whole program.
+
+Now, here's the catch: I am not trying to sell you functional programming as the Holy Grail of
+developing the software and a silver bullet to every problem you might have.
+
+In fact, there is a bug in the current true-to-functional-programming implementation,
+which is way easier to pin-point with the "conventional" error logs in the console.
+However, to find it, one first must run the program. With the functional-programming-implementation,
+the program will simply result in a `Either<Error, unknown>.Left` value, without providing _exact_
+reason for the error.
+
+The bug is tiny but pesky:
+
+```ts
+const getRandomTop10Game = (games: Array<Game>): Either<Error, Game> => {
+    if (games.length < 10) {
+        return Either<Error, Game>.left(new Error('Not enough games'));
+    }
+
+    return Either<Error, Game>.right(games[(Math.random() * 100) % 10]);
+};
+```
+
+Issue is in the `games[(Math.random() * 100) % 10]` expression:
+`(Math.random() * 100) % 10` is a floating-point number.
+So most often, this will produce an `undefined` value.
+
+And thus we come to the bigger issue, not related to the functional programming
+itself, but rather the issue with TypeScript: in order for one to notice this issue,
+the code must be run. But it would have not even been an issue if there was a mechanism
+in place to prevent accessing the array elements by randomly typed index.
+
+We can mitigate it in a similar manner we have dealt with all the problems in this whole
+process of rewriting the program in a true functional programming way: implement a new
+class which would wrap an array of elements of a same type and provide a reasonable
+interface to access the elements.
+
+Roughly put, if there was a class `List<A>` which would return a `Maybe<A>` when trying
+to access an element of the list by index, the program would have looked differently:
+
+```ts
+const getRandomTop10Game = (games: List<Game>): Either<Error, Game> => {
+    if (games.length() < 10) {
+        return Either<Error, Game>.left(new Error('Not enough games'));
+    }
+
+    const game: Maybe<Game> = games.at((Math.random() * 100) % 10);
+
+    return game.toEither(
+        () => new Error('Bad game index in the list of games'),
+        (value) => value
     );
-
-const program = fetchAPIResponse()
-    .map(r => getResponseXML(r))
-    .map(doc => extractGames(doc))
-    .map(games => getRandomTop10Game(games))
-    .map(game => printGame(game))
-    .unsafeRun();
+};
 ```
 
-But uh-oh, the types do not match now:
-
-```
-// .map(doc => extractGames(doc))
-Argument of type 'Either<Error, XMLDocument>' is not assignable to parameter of type 'XMLDocument'.
-  Type 'Either<Error, XMLDocument>' is missing the following properties from type 'XMLDocument': addEventListener, removeEventListener, URL, alinkColor, and 247 more.
-
-// .map(games => getRandomTop10Game(games))
-Argument of type 'Either<Error, Game[]>' is not assignable to parameter of type 'Game[]'.
-  Type 'Either<Error, Game[]>' is missing the following properties from type 'Game[]': length, pop, push, concat, and 26 more.
-
-// .map(game => printGame(game))
-Argument of type 'Either<Error, Game>' is not assignable to parameter of type 'Game'.
-  Type 'Either<Error, Game>' is missing the following properties from type 'Game': name, rank
-
-// .unsafeRun()
-Property 'unsafeRun' does not exist on type 'EitherT<Error, void, Monad<Either<Error, void>>>'
-```
-
-How about we wrap the `map` and `flatMap` operations _on a nested monad_ in a wrapper?
-
-```ts
-abstract class PromiseIOT {
-    static map<A, B>(value: PromiseIO<Monad<A>>, func: Func<A, B>): PromiseIO<Monad<B>> {
-        return value.map(m => m.map(func));
-    }
-
-    static flatMap<A, B>(value: PromiseIO<Monad<A>>, func: Func<A, Monad<B>>): PromiseIO<Monad<B>> {
-        return value.map(m => m.flatMap(func));
-    }
-}
-```
-
-With that we can write something like this:
-
-```ts
-PromiseIOT
-    .map(fetchAPIResponse(), r => getResponseXML(r))
-```
-
-But that is essentially a `Monad` in itself, just implemented with static methods, isn't it?
-How about we actually make it a `Monad`?
-
-```ts
-class PromiseIOT <A> {
-    constructor(private readonly value: PromiseIO<Monad<A>>) {
-    }
-
-    map<B>(func: Func<A, B>): PromiseIO<Monad<B>> {
-        return this.value.map(m => m.map(func));
-    }
-
-    flatMap<B>(func: Func<A, Monad<B>>): PromiseIO<Monad<B>> {
-        return this.value.map(m => m.flatMap(func));
-    }
-}
-```
-
-Unfortunately, TypeScript will go crazy if you try to implement a `Monad<A>` or `Monad<Monad<A>>` with this class, since we are not operating on the
-wrapped type `PromiseIO<Monad<A>>`, as required by the `Monad` interface, but rather on the nested wrapped type, `A`.
-
-So how about we _pretend_ it has the interface _similar_ to that of a `Monad`?
-
-```ts
-class PromiseIOT <A> {
-    constructor(private readonly value: PromiseIO<Monad<A>>) {
-    }
-
-    map<B>(func: Func<A, B>): PromiseIOT<B> {
-        return new PromiseIOT(this.value.map(m => m.map(func)));
-    }
-
-    flatMap<B>(func: Func<A, Monad<B>>): PromiseIOT<B> {
-        return new PromiseIOT(this.value.map(m => m.flatMap(func)));
-    }
-
-    runPromiseIOT(): PromiseIO<Monad<A>> {
-        return this.value;
-    }
-}
-```
-
-Now we can actually chain the methods like this:
-
-```ts
-const program = new PromiseIOT(fetchAPIResponse())
-    .flatMap(r => getResponseXML(r))
-    .flatMap(doc => extractGames(doc))
-    .flatMap(games => getRandomTop10Game(games))
-    .map(game => printGame(game))
-    .runPromiseIOT()
-    .unsafeRun();
-```
-
-There is still one issue with the code: the `try..catch` block. Let us monadize it!
-
-```ts
-class ExceptionW <A> implements Wrappable <A> {
-    constructor(private readonly task: Func0<Wrappable<A>>, private readonly exceptionHandler: Func0<Wrappable<A>>) {}
-
-    andThen<B>(func: Func<A, B>): ExceptionW<B> {
-        return new ExceptionW<B>(
-            () => this.task().andThen(func),
-            () => this.exceptionHandler().andThen(func)
-        );
-    }
-
-    andThenWrap<B>(func: Func<A, ExceptionW<B>>): ExceptionW<B> {
-        return new ExceptionW<B>(
-            () => this.task().andThenWrap(func),
-            () => this.exceptionHandler().andThenWrap(func)
-        );
-    }
-
-    unsafeRun(): Wrappable<A> {
-        try {
-            return this.task();
-        } catch {
-            return this.exceptionHandler();
-        }
-    }
-}
-```
-
-With this monad we can prettify the `getResponseXML` function:
-
-```ts
-const getResponseXML = (response: string): ExceptionW<XMLDocument> =>
-    new ExceptionW(
-        () => Either<Error, XMLDocument>.right(new DOMParser().parseFromString(response, "text/xml")),
-        () => Either<Error, XMLDocument>.left(new Error('Received invalid XML'))
-    );
-```
-
-The only difference is the `program` - the `PromiseIOT` requires a wrapped monad type in a constructor,
-whilst the `fetchAPIResponse` function returns a primitive type wrapped:
-
-```ts
-new PromiseIOT(fetchAPIResponse()) // <=========== error: Argument of type 'PromiseIO<string>' is not assignable to parameter of type 'PromiseIO<Wrappable<unknown>>'.
-    .andThen(response => getResponseXML(response))
-
-new PromiseIOT(fetchAPIResponse().andThen(response => getResponseXML(response))) // Just works (TM)
-```
+And the whole program would have resulted in a `Left<Error>` with a message
+rather than some misleading exception (with a stack trace, though).
 
 ----
 
