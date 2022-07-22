@@ -1526,69 +1526,158 @@ const program = fetchAPIResponse()
     .map(docE => docE.flatMap(doc => extractGames(doc)))
     .map(gamesE => gamesE.flatMap(games => getRandomTop10Game(games)))
     .map(gameE => gameE.map(game => printGame(game)))
-    .unsafeRun(); 
+    .unsafeRun();
 ```
 
 Or by changing the signature of the functions to take `Either<Error, ?>` instead.
 
-But there is a more neat way to handle cases like this in functional programming:
+But there is a more neat way to handle cases like this in functional programming.
 
-----
+Since the entire program is a chain of `andThen` and `andThenWrap` calls on different
+`Wrappable` objects, we can create one which will wrap the `try..catch` expression.
+
+Consider the code which might fail:
 
 ```ts
-abstract class ExceptionWrapper <E, T, W extends Wrappable<Either<E, T>>> extends Wrappable<W> {
-    // private wrappedFunc: Func<A, ExceptionWrapper<E, T>>;
+const getResponseXML = (response: string): XMLDocument =>
+    new DOMParser().parseFromString(response, "text/xml");
+```
 
-    // private constructor(func: Func<A, ExceptionWrapper<E, T>>) {
-    //     this.wrappedFunc = func;
-    // }
+This might not return what we need, according to the [`DOMParser` documentation](https://developer.mozilla.org/en-US/docs/Web/API/DOMParser/parseFromString#error_handling).
+When the string passed to the `parseFromString` method is not a valid document, the object
+returned would be a document with a single node - `<parsererror>`.
+Normally, in JS or TS, we would either return an "invalid" value (think `null` or `undefined`) or throw an exception.
 
-    private value: Either<E, T>;
+In functional programming we could get away with returning a `Maybe` or `Either` object.
 
-    private constructor(value: ExceptionWrapper<E, T>) {
-        this.value = value;
+However, let us consider throwing exception just to paint the bigger picture:
+
+```ts
+const getResponseXML = (response: string): XMLDocument => {
+    try {
+        const doc = new DOMParser().parseFromString(response, "text/xml");
+
+        // see https://developer.mozilla.org/en-US/docs/Web/API/DOMParser/parseFromString#error_handling
+        if (doc.querySelector('parsererror'))
+            throw new Error('Parser error');
+
+        return doc;
+    } catch (e) {
+        // ???
+    }
+};
+```
+
+The above function, once called, will actually _do some work_. Luckily, in this specific case it won't
+do anything too "offensive" in terms of functional programming restrictions (like going to the database or making network calls).
+But it will _do something_ rather than just _return a value_.
+
+Every time we call this function, the new `DOMParser` will be created and it will parse the string.
+
+In functional programming world, as mentioned above, the program is just a chain of calls.
+So the way to handle situations like this would be to somehow wrap the _actual work_ and only
+execute it upon request.
+
+The best way we could _wrap work_ is in a function which is yet to be called:
+
+```ts
+() => new DOMParser().parseFromString(response, "text/xml")
+```
+
+We then should allow for this code to be worked around in a "callback" manner (as you might be familiar with the concept from
+NodeJS and event handlers in browser JS) - the entire program should build upon a concept of "when the result of this execution becomes available".
+
+The way to do so is already described above in terms of `Wrappable` class with its `andThen` and `andThenWrap` methods:
+
+```ts
+new XWrappable(() => new DOMParser().parseFromString(response, "text/xml"))
+    .andThen(document => doSomething(document))
+```
+
+Hence we could build a new `Wrappable` which would wrap both the logic in the `try` block and the logic in the `catch` block.
+However, it should not call neither of those blocks of logic until explicitly requested - so we should add a new method to this
+new wrappable - to call the logic and return a certain value.
+
+```ts
+class ExceptionW <A> implements Wrappable <A> {
+    constructor(private readonly task: Func0<Wrappable<A>>, private readonly exceptionHandler: Func<unknown, Wrappable<A>>) {}
+
+    andThen<B>(func: Func<A, B>): ExceptionW<B> {
+        return new ExceptionW<B>(
+            () => this.runExceptionW().andThen(func),
+            (e) => this.runExceptionW(e).andThen(func)
+        );
     }
 
-    static run <E, T, W extends >(func: Func<Void, ExceptionWrapper<E, T>>): ExceptionWrapper<E, T> {
-        return new ExceptionWrapper<A, E, T>(func);
+    andThenWrap<B>(func: Func<A, ExceptionW<B>>): ExceptionW<B> {
+        return new ExceptionW<B>(
+            () => this.runExceptionW().andThenWrap(func),
+            (e) => this.runExceptionW(e).andThenWrap(func)
+        );
     }
 
-    static throwError <E, T>(error: E): ExceptionWrapper<E, T> {
-        return new ExceptionWrapper<E, T>(Either.left<E, T>(error));
-    }
-
-    static catchError <E, T>(func: Func<E, ExceptionWrapper<E, T>>) {
-        return new ExceptionWrapper<E, T>
+    runExceptionW(): Wrappable<A> {
+        try {
+            return this.task();
+        } catch (e) {
+            return this.exceptionHandler(e);
+        }
     }
 }
 ```
 
-----
+Now the program from the beginning of the article can be re-written as follows:
 
 ```ts
-class WrapperTransformer <A, W extends Wrappable<A>> extends Wrappable<W> {
-    private value: W<A>;
+const getResponseXML = (response: string): ExceptionW<XMLDocument> =>
+    new ExceptionW(
+        () => {
+            const doc = new DOMParser().parseFromString(response, "text/xml");
 
-    private constructor(value: W<A>) {
-        this.value = value;
-    }
+            if (doc.querySelector('parsererror'))
+                return Either<Error, XMLDocument>.left(new Error('Parser error'));
 
-    override wrap <A>(value: A): WrapperTransformer<W<A>> {
-        return new WrapperTransformer(W.wrap<A>(value));
-    }
+            return Either<Error, XMLDocument>.right(doc);
+        },
+        (e) => Either<Error, XMLDocument>.left(e)
+    );
+```
 
-    abstract override andThen <B>(func: Func<A, W<B>>): WrapperTransformer<W<B>> {
-        return new WrapperTransformer(this.value.andThen(func));
-    }
+Just to confirm once more if you are still asking "why bother with this `ExceptionW` thing? why not to use `Either` right away?":
+this whole `ExceptionW` thing allows us to _postpone running the actual logic_ and build the entire program as a function of
+the result of this logic. In turn, when we are ready to execute the entire program, we can run this wrapped logic.
 
-    abstract override andThenWrap <B>(func: Func<A, WrapperTransformer<W<B>>>): WrapperTransformer<W<B>> {
-        return this.value.andThen(func);
-    }
+Let us see how this new function can be used in the program:
 
-    run(): W<A> {
-        return this.value;
+```ts
+const program = (getResponseXML('invalid XML')
+    .andThenWrap(doc => extractGames(doc))
+    .andThenWrap(games => getRandomTop10Game(games))
+    .runExceptionW() as Either<Error, XMLDocument>>)
+    .andThen(result => console.log('success', result));
+```
+
+There is a little bit of a quirk around type casting (`(???.runExceptionW() as Either<Error, XMLDocument>).andThen`).
+We can solve it by slightly modifying the `runExceptionW` method:
+
+```ts
+runExceptionW<W extends Wrappable<A>>(): W {
+    try {
+        return this.task() as W;
+    } catch (e) {
+        return this.exceptionHandler(e) as W;
     }
 }
+```
+
+With that, the code becomes a little bit cleaner:
+
+```ts
+const program = getResponseXML('invalid XML')
+    .andThenWrap(doc => extractGames(doc))
+    .andThenWrap(games => getRandomTop10Game(games))
+    .runExceptionW<Either<Error, XMLDocument>>>()
+    .andThen(result => console.log('success', result));
 ```
 
 ----
@@ -2462,3 +2551,4 @@ Resources:
 * https://gcanti.github.io/fp-ts/learning-resources/
 * https://dev.to/gcanti/functional-design-tagless-final-332k
 * https://stackoverflow.com/questions/6647852/haskell-actual-io-monad-implementation-in-different-language
+* https://stackoverflow.com/questions/73032939/typescript-generic-type-constraints-cant-deduct-type/73074420#73074420
