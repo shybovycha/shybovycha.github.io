@@ -6,7 +6,27 @@ Let me introduce you functional programming with as few jargonisms and buzz-word
 
 Shall we start with a simple problem to solve: get a random board game from top-10 games on BoardGamesGeek website and print out its rank and title.
 
-In JavaScript the solution of this problem might look something like this:
+BoardGameGeek website has an API: a request `GET https://boardgamegeek.com/xmlapi2/hot?type=boardgame` will return an XML document like this:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+
+<items termsofuse="https://boardgamegeek.com/xmlapi/termsofuse">
+    <item id="361545" rank="1">
+        <thumbnail value="https://cf.geekdo-images.com/lD8s_SQPObXTPevz-aAElA__thumb/img/YZG-deJK2vFm4NMOaniqZwwlaAE=/fit-in/200x150/filters:strip_icc()/pic6892102.png" />
+        <name value="Twilight Inscription" />
+        <yearpublished value="2022" />
+    </item>
+
+    <item id="276182" rank="2">
+        <thumbnail value="https://cf.geekdo-images.com/4q_5Ox7oYtK3Ma73iRtfAg__thumb/img/TU4UOoot_zqqUwCEmE_wFnLRRCY=/fit-in/200x150/filters:strip_icc()/pic4650725.jpg" />
+        <name value="Dead Reckoning" />
+        <yearpublished value="2022" />
+    </item>
+</items>
+```
+
+In JavaScript a solution to this problem might look something like this:
 
 ```js
 fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`)
@@ -559,7 +579,7 @@ detecting and fixing errors in the code:
 * Pre-production environment (manual testing on dedicated QA / staging environment or even testing on production) - around few hours, may involve other people
 * Production - measured in days or months and risking the reputation with the customers
 
-_TODO: add a diagram_
+<img data-src="/jargon-free-functional-programming/cost_of_error.webp" />
 
 Hence if we could detect the errors while writing the code the first time - we could potentially save ourselves a fortune measured in both time and money.
 
@@ -642,14 +662,33 @@ Let me rephrase this with few bits of code.
 For the problem above, we are trying to get the response of an API somewhere in the outer world.
 This is said to be an "unsafe" operation, since the data lives outside of the program, so we need to wrap this operation in a "safe" manner. Essentially, we will create an _object_ which describes _an intention to run the fetch call_ and then write our program around this object to describe how this data will be processed down the line, when we actually run the program (and the fetch request together with it).
 
-See it in the code:
+Let's go through the thought process all together: we first need a class to _wrap an unsafe function without executing it_:
 
 ```ts
 class IO {
-    private intentionFunc: Function;
+    constructor(private intentionFunc: Function;) {
+    }
+}
+```
 
-    constructor(func: Function) {
-        this.intentionFunc = func;
+We then need a way to explicitly execute this function when we are ready to do so:
+
+```ts
+class IO {
+    constructor(private intentionFunc: Function;) {
+    }
+
+    unsafeRun() {
+        this.intentionFunc();
+    }
+}
+```
+
+The last piece is we want to be able to chain this function with some other function _in a safe manner_ (e.g. again, wrap the chained function):
+
+```ts
+class IO {
+    constructor(private intentionFunc: Function) {
     }
 
     andThen(func: Function) {
@@ -680,7 +719,33 @@ That would not work, however, since `fetch` call will return a `Promise`. So we 
 Let me postpone this discussion for a short while.
 
 <spoiler>
-We could have tried implementing an `unpromisify` helper which would make the `fetch` call synchronous, but promises start executing not immediately,
+We could have tried implementing an `unpromisify` helper which would make the `fetch` call synchronous, something like this:
+
+```ts
+const unpromisify = (promiseFn: Function) => {
+    const state = { isReady: false, result: undefined, error: undefined };
+
+    promiseFn()
+        .then((result) => {
+            state.result = result;
+            state.isReady = true;
+        })
+        .catch((error) => {
+            state.error = error;
+            state.isReady = true;
+        });
+
+    while (!state.isReady);
+
+    if (state.error) {
+        throw state.error;
+    }
+
+    return state.result;
+};
+```
+
+But in JS world, promises start executing not immediately,
 but once you leave the context of a currently running function. So having that endless `while` loop, waiting for a promise to get resolved has zero effect
 since this loop will be running until the end of days, but unless you exit the function beforehand, the promise won't start executing because JS is single threaded
 and the execution queue / event loop prevents you from running the promise immediately.
@@ -697,10 +762,7 @@ But with this new construct of ours, `IO`, combining anything would be tricky:
 type Func <A, B> = (_: A) => B;
 
 class IO <A, B> {
-    private intentionFunc: Func<A, B>;
-
-    constructor(func: Func<A, B>) {
-        this.intentionFunc = func;
+    constructor(private intentionFunc: Func<A, B>) {
     }
 
     andThen<C>(func: Func<B, C>) {
@@ -2063,7 +2125,7 @@ welcome to the world of endless custom-made classes for immutability and monads.
 
 > Yeah but, we implement any side effects in useEffect which is a hook
 
-> let's forget the hooks for a moment, how would you want to deal with side effects? Even when we only had classes, side effects were happening in functions. 
+> let's forget the hooks for a moment, how would you want to deal with side effects? Even when we only had classes, side effects were happening in functions.
 > They give us reusability which I believe trumps the fact that a function is not pure when we are developing.
 
 > the only valid way to deal with side effects (the ones you can't avoid) in a true functional way is hide them in monads and let the runtime handle them ;)
