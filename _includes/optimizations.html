@@ -41,19 +41,5 @@
 
       head.appendChild(elt);
     });
-
-    if (window.innerWidth > 375) {
-      setTimeout(() => {
-        // load heavy body background
-        const ua = navigator.userAgent;
-        const bgSrc = (ua.includes('Chrome') || ua.includes('Firefox')) ? '/images/background2-compressed.webp' : '/images/background2-compressed.jpg';
-
-        const img = new Image();
-
-        img.onload = () => document.body.style.background = `url(${bgSrc}) no-repeat top left fixed`;
-
-        img.src = bgSrc;
-      }, 0);
-    }
   });
 </script>
