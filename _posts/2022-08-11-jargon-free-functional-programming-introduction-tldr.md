@@ -4,7 +4,7 @@ title: 'Jargon-free functional programming. TL;DR'
 date: '2022-08-11T17:00:00+10:00'
 ---
 
-This is a boiled-down version of a much longer read, _Jargon-free functional programming_ (coming soon),
+This is a boiled-down version of a much longer read, <a href="/2022/08/24/jargon-free-functional-programming-part1.html"><em>Jargon-free functional programming</em></a>,
 giving a brief and visual introduction to the concepts of a real-world functional programming. This blog is aimed at people who already know something
 about programming and want to learn what the heck functional programming is, how is it different to "normal" programming and how does it look like
 in a real world.
@@ -211,7 +211,7 @@ const program = fetchSomeResponse()
     .unsafeRun();
 ```
 
-The next article (coming soon) contains a few examples and explains the above in bloody details,
+The <a href="/2022/08/24/jargon-free-functional-programming-part1.html">next article</a> contains a few examples and explains the above in bloody details,
 using TypeScript and a (semi-)real-world problem and a step-by-step approach to arrivin at the above concepts.
 It also introduces few more of those containers so you can actually go out and understand some (if not most)
 of the real-world applications made with functional paradigm. Or even build your own!
