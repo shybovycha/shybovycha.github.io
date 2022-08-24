@@ -1557,11 +1557,11 @@ rather than some misleading exception (with a stack trace, though).
 
 There are some resources I used when coming up with this article in different programming languages and full of jargon specific to functional programming, but here they are anyways:
 
-* https://blog.tmorris.net/posts/monads-do-not-compose/
-* https://mmhaskell.com/monads/transformers
-* https://github.com/JordanMartinez/pure-conf-talk/blob/master/slides/Cheatsheet.md
-* https://gcanti.github.io/fp-ts/learning-resources/
-* https://dev.to/gcanti/functional-design-tagless-final-332k
-* https://stackoverflow.com/questions/6647852/haskell-actual-io-monad-implementation-in-different-language
-* https://stackoverflow.com/questions/73032939/typescript-generic-type-constraints-cant-deduct-type/73074420#73074420
-* https://github.com/louthy/language-ext
+* <a href="https://blog.tmorris.net/posts/monads-do-not-compose/">Monads do not compose</a>
+* <a href="https://mmhaskell.com/monads/transformers">Monad Transformers</a>
+* <a href="https://github.com/JordanMartinez/pure-conf-talk/blob/master/slides/Cheatsheet.md">Monad Transformers Cheatsheet</a>
+* <a href="https://gcanti.github.io/fp-ts/learning-resources/">fp-ts learning resources</a>
+* <a href="https://dev.to/gcanti/functional-design-tagless-final-332k">Functional design: tagless final <em>(actually not a good article itself, just an inspiration)</em></a>
+* <a href="https://stackoverflow.com/questions/6647852/haskell-actual-io-monad-implementation-in-different-language">Haskell: actual IO monad implementation, in different language?</a>
+* <a href="https://stackoverflow.com/questions/73032939/typescript-generic-type-constraints-cant-deduct-type/73074420#73074420">TypeScript generic type constraints can't deduct type</a>
+* <a href="https://github.com/louthy/language-ext">language-ext GitHub repo</a>

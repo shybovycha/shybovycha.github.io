@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Jargon-free functional programming. Part 1: problem statement'
-date: '2022-08-24T10:00:00+10:00'
+date: '2022-08-24T00:00:00+00:00'
 ---
 
 ## Basics
