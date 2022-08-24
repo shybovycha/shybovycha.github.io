@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Jargon-free functional programming. Part 2: functional wrappers'
-date: '2022-08-24T10:15:00+10:00'
+date: '2022-08-24T00:15:00+00:00'
 ---
 
 ## Disclaimer
