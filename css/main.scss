@@ -10,17 +10,20 @@ blockquote {
   font-style: italic;
 }
 
-code {
-  background: white;
-  padding: 2px 4px;
-  margin: 0 4px;
-  line-height: 1.5em;
+pre {
+  overflow: auto;
+  background-color: #fffcf3;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #ddd
 }
 
-pre code {
-  padding: 0;
-  margin: 0;
-  line-height: 1em;
+code:not(pre > code) {
+  background: #fffcf3;
+  padding: 0.25rem;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  margin: 0
 }
 
 table {
