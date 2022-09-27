@@ -42,7 +42,12 @@ Hardcore interviewer:
 * [Caverna: Cave vs Cave](https://boardgamegeek.com/boardgame/220520/caverna-cave-vs-cave) (🇵🇱)
 * [Bohnanza](https://boardgamegeek.com/boardgame/11/bohnanza) (🇵🇱)
 * [Star Wars: The Outer Rim](https://boardgamegeek.com/boardgame/271896/star-wars-outer-rim) (🇵🇱)
+* [Wingspan](https://boardgamegeek.com/boardgame/266192/wingspan)
+* [Hive](https://boardgamegeek.com/boardgame/2655/hive)
+* [Flick of Faith](https://boardgamegeek.com/boardgame/281194/flick-faith) (🇵🇱)
 * [<del>Sword & Sorcery</del>](https://boardgamegeek.com/boardgame/170771/sword-sorcery) (💸)
+* [<del>Stone Age</del>](https://boardgamegeek.com/boardgame/34635/stone-age) (💸)
+* [<del>Castles of Burgundy (2011)</del>](https://boardgamegeek.com/boardgame/84876/castles-burgundy) (💸)
 
 ## Favourite books, music, movies & anime
 
