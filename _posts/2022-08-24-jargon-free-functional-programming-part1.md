@@ -102,6 +102,8 @@ fetchAPIResponse()
 
 Okay, now we can test some of the bits of the program without _too much_ of a hassle - we could test that every call of `getRandomGame` returns a different value (which might not be true) but within the given list of values. We could test the `extractGames` function on a mock XML document and verify it extracts all the `<item>` nodes and its `<name>` child. Testing `fetchAPIResponse` and `getResponseXML` and `printGame` functions, though, would be a bit tricky without either mocking the `fetch`, `console.log` and `DOMParser` or actually calling those functions.
 
+<!--more-->
+
 ```js
 import {
   fetchAPIResponse,

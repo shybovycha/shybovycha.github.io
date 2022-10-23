@@ -48,6 +48,8 @@ Hardcore interviewer:
 * [<del>Sword & Sorcery</del>](https://boardgamegeek.com/boardgame/170771/sword-sorcery) (💸)
 * [<del>Stone Age</del>](https://boardgamegeek.com/boardgame/34635/stone-age) (💸)
 * [<del>Castles of Burgundy (2011)</del>](https://boardgamegeek.com/boardgame/84876/castles-burgundy) (💸)
+* [<del>Small world</del>](https://boardgamegeek.com/boardgame/40692/small-world) (💸)
+* [<del>Noir: a deductive mystery game</del>](https://boardgamegeek.com/boardgame/102148/noir-deductive-mystery-game) (💸)
 
 ## Favourite books, music, movies & anime
 

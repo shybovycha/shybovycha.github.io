@@ -68,8 +68,7 @@ fetchAPIResponse()
 
 Since each next function in the chain accepts exactly the type the previous function has returned, they all combine quite well.
 
-<jfyi>
-In other languages and some libraries there are operators to combine functions into one big function:
+**JFYI**: in other languages and some libraries there are operators to combine functions into one big function:
 
 ```js
 fetchAPIResponse()
@@ -86,7 +85,6 @@ fetchAPIResponse()
         getResponseXML.andThen(extractGames).andThen(getRandomTop10Game).andThen(printGame).aplly(response)
     );
 ```
-</jfyi>
 
 You will understand why this matters in a minute.
 
@@ -156,8 +154,7 @@ new IO(() => fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`))
 That would not work, however, since `fetch` call will return a `Promise`. So we need to somehow work with `Promise` instances instead.
 Let me postpone this discussion for a short while.
 
-<spoiler>
-We could have tried implementing an `unpromisify` helper which would make the `fetch` call synchronous, something like this:
+**Spoiler:** we could have tried implementing an `unpromisify` helper which would make the `fetch` call synchronous, something like this:
 
 ```ts
 const unpromisify = (promiseFn: Function) => {
@@ -187,7 +184,10 @@ But in JS world, promises start executing not immediately,
 but once you leave the context of a currently running function. So having that endless `while` loop, waiting for a promise to get resolved has zero effect
 since this loop will be running until the end of days, but unless you exit the function beforehand, the promise won't start executing because JS is single threaded
 and the execution queue / event loop prevents you from running the promise immediately.
-</spoiler>
+
+**End of spoiler**
+
+<!--more-->
 
 For now, let us pretend this code would magically work, so we can talk about one important matter.
 As I mentioned above, simple functions combine easily if one function accepts the same argument type the previous function returns.
