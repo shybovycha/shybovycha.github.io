@@ -11,7 +11,7 @@ There might be some mistakes, since I am not an expert in CG and OpenGL and ther
 In this blog I will try to condense the knowledge I have acquired. I will skip most basic parts such as initializing context, creating window and so on, since
 most of the tutorials and articles on the Internet focus on those topics. Unlike most tutorials and articles out there, this blog will be all about _rendering techniques_.
 
-This article was heavily inspired by few blogs on Russian website ([Habr](https://habr.com/)), namely "super-modern OpenGL" ([part 1](https://habr.com/ru/post/456932/) and [part 2](https://habr.com/ru/post/457380/)) - they are quite messy and lack a lot of material on really interesting topics (again, rendering techniques). This blog partially builds on top of those two and uses a lot more other materials (references provided).
+This article was heavily inspired by few blogs on russian website ([Habr](https://habr.com/)), namely "super-modern OpenGL" ([part 1](https://habr.com/ru/post/456932/) and [part 2](https://habr.com/ru/post/457380/)) - they are quite messy and lack a lot of material on really interesting topics (again, rendering techniques). This blog partially builds on top of those two and uses a lot more other materials (references provided).
 
 ## Setting up
 
@@ -328,9 +328,9 @@ int main()
         }
 
         glm::mat4 projection = glm::perspective(
-            glm::radians(fov), 
-            (float) window.getSize().x / (float) window.getSize().y, 
-            0.1f, 
+            glm::radians(fov),
+            (float) window.getSize().x / (float) window.getSize().y,
+            0.1f,
             100.0f);
 
         glm::mat4 view = glm::lookAt(
@@ -417,8 +417,8 @@ int main()
 {
     // ...
 
-    std::vector<PointLightDescriptor> pointLights{ 
-        { glm::vec3(-1.75f, 3.85f, -0.75f), 0.5f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) } 
+    std::vector<PointLightDescriptor> pointLights{
+        { glm::vec3(-1.75f, 3.85f, -0.75f), 0.5f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) }
     };
 
     auto pointLightDataBuffer = std::make_unique<globjects::Buffer>();
@@ -667,10 +667,10 @@ objectInstanceDataBuffer->bindBase(static_cast<gl::GLenum>(GL_SHADER_STORAGE_BUF
 vao->bind();
 
 vao->multiDrawElementsIndirect(
-    static_cast<gl::GLenum>(GL_TRIANGLES), 
-    static_cast<gl::GLenum>(GL_UNSIGNED_INT), 
-    0, 
-    m_drawCommands.size(), 
+    static_cast<gl::GLenum>(GL_TRIANGLES),
+    static_cast<gl::GLenum>(GL_UNSIGNED_INT),
+    0,
+    m_drawCommands.size(),
     0);
 
 simpleProgram->release();
@@ -1212,7 +1212,7 @@ float shadowCalculation(vec3 normal, vec3 lightDirection)
 
     // this biasing fixes aliasing artifact, but introduces peter-panning
     float bias = max(0.05 * (1.0 - dot(normal, lightDirection)), 0.005);
-    
+
     return thisDepth - bias < occluderDepth ? 1.0 : 0.0;
 }
 ```
@@ -1347,6 +1347,316 @@ Read more:
 [3](https://docs.microsoft.com/en-us/windows/win32/dxtecharts/cascaded-shadow-maps)
 [4](https://ogldev.org/www/tutorial49/tutorial49.html)
 
+For the most part, the logic is implemented in the main application, where you have to set up the projection matrices for the shadow mapping and run the shadow mapping rendering stage multiple times (for each of the projection matrix).
+
+Alternatively, this could be used in conjunction with other two optimization techniques - SSBO and geometry shader - you send the projection matrices to the shader via SSBO and then instead of issuing rendering commands multiple times from the application side (CPU), everything is done on the GPU, without the need to switch back and forth between shader context and application context (roughly put - without the need to formally finish the rendering, let the CPU / application know about this and make it issue a new bunch of rendering commands, which essentially will be the same - just the projection matrix will be different).
+
+Setting up shadow mapping shaders:
+
+```cpp
+auto shadowMappingVertexSource = globjects::Shader::sourceFromFile("media/shadow-mapping.vert");
+auto shadowMappingVertexShaderTemplate = globjects::Shader::applyGlobalReplacements(shadowMappingVertexSource.get());
+auto shadowMappingVertexShader = std::make_unique<globjects::Shader>(static_cast<gl::GLenum>(GL_VERTEX_SHADER), shadowMappingVertexShaderTemplate.get());
+
+if (!shadowMappingVertexShader->compile())
+{
+    std::cerr << "[ERROR] Can not compile vertex shader" << std::endl;
+    return 1;
+}
+
+auto shadowMappingGeometrySource = globjects::Shader::sourceFromFile("media/shadow-mapping.geom");
+auto shadowMappingGeometryShaderTemplate = globjects::Shader::applyGlobalReplacements(shadowMappingGeometrySource.get());
+auto shadowMappingGeometryShader = std::make_unique<globjects::Shader>(gl::GL_GEOMETRY_SHADER, shadowMappingGeometryShaderTemplate.get());
+
+if (!shadowMappingGeometryShader->compile())
+{
+    std::cerr << "[ERROR] Can not compile geometry shader" << std::endl;
+    return 1;
+}
+
+auto shadowMappingFragmentSource = globjects::Shader::sourceFromFile("media/shadow-mapping.frag");
+auto shadowMappingFragmentShaderTemplate = globjects::Shader::applyGlobalReplacements(shadowMappingFragmentSource.get());
+auto shadowMappingFragmentShader = std::make_unique<globjects::Shader>(static_cast<gl::GLenum>(GL_FRAGMENT_SHADER), shadowMappingFragmentShaderTemplate.get());
+
+if (!shadowMappingFragmentShader->compile())
+{
+    std::cerr << "[ERROR] Can not compile fragment shader" << std::endl;
+    return 1;
+}
+
+auto shadowMappingProgram = std::make_unique<globjects::Program>();
+
+shadowMappingProgram->attach(shadowMappingVertexShader.get(), shadowMappingGeometryShader.get(), shadowMappingFragmentShader.get());
+
+auto shadowMappingModelTransformationUniform = shadowMappingProgram->getUniform<glm::mat4>("modelTransformation");
+auto shadowMappingLightViewProjectionMatrices = shadowMappingProgram->getUniform<std::vector<glm::mat4>>("lightViewProjectionMatrix");
+auto lightViewProjectionMatricesUniform = shadowMappingProgram->getUniform<std::vector<glm::mat4>>("lightViewProjectionMatrix");
+```
+
+And a few constants:
+
+```cpp
+std::vector<glm::mat4> lightViewProjectionMatrices;
+std::vector<float> splitDepths;
+const std::vector<float> splits{ { 0.0f, 0.05f, 0.2f, 0.5f, 1.0f } };
+
+// these vertices define view frustum in screen space coordinates
+constexpr std::array<glm::vec3, 8> _cameraFrustumSliceCornerVertices{
+    {
+        { -1.0f, -1.0f, -1.0f }, { 1.0f, -1.0f, -1.0f }, { 1.0f, 1.0f, -1.0f }, { -1.0f, 1.0f, -1.0f },
+        { -1.0f, -1.0f, 1.0f }, { 1.0f, -1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, { -1.0f, 1.0f, 1.0f },
+    }
+};
+```
+
+Then, the shadow mapping stage:
+
+```cpp
+{
+    lightViewProjectionMatrices.clear();
+    splitDepths.clear();
+
+    glm::mat4 proj = glm::inverse(cameraProjection * cameraView);
+
+    std::array<glm::vec3, 8> _entireFrustum{};
+
+    std::transform(
+        _cameraFrustumSliceCornerVertices.begin(),
+        _cameraFrustumSliceCornerVertices.end(),
+        _entireFrustum.begin(),
+        [proj](glm::vec3 p) {
+            glm::vec4 v = proj * glm::vec4(p, 1.0f);
+            return glm::vec3(v) / v.w;
+        }
+    );
+
+    std::array<glm::vec3, 4> _frustumEdgeDirections {};
+
+    for (auto i = 0; i < 4; ++i)
+    {
+        _frustumEdgeDirections[i] = glm::normalize(_entireFrustum[4 + i] - _entireFrustum[i]);
+    }
+
+    const float _depth = farPlane - nearPlane;
+
+    for (auto splitIdx = 1; splitIdx < splits.size(); ++splitIdx)
+    {
+        // frustum slice vertices in world space
+        std::array<glm::vec3, 8> _frustumSliceVertices;
+
+        for (auto t = 0; t < 4; ++t)
+        {
+            _frustumSliceVertices[t] = _entireFrustum[t] + _frustumEdgeDirections[t] * _depth * splits[splitIdx - 1];
+            _frustumSliceVertices[4 + t] = _entireFrustum[t] + _frustumEdgeDirections[t] * _depth * splits[splitIdx];
+        }
+
+        // TODO: also check if camera is looking towards the light
+
+        glm::vec3 _frustumSliceCenter(0.0f);
+
+        for (auto p : _frustumSliceVertices)
+        {
+            _frustumSliceCenter += p;
+        }
+
+        _frustumSliceCenter /= 8.0f;
+
+        glm::vec3 _frustumRadiusVector(0.0f);
+
+        for (auto p : _frustumSliceVertices)
+        {
+            auto v = p - _frustumSliceCenter;
+
+            if (glm::length(_frustumRadiusVector) < glm::length(v))
+            {
+                _frustumRadiusVector = v;
+            }
+        }
+
+        // calculate new light projection
+        glm::vec3 _forward = glm::normalize(_lightDirection);
+        glm::vec3 _right = glm::cross(_forward, glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::vec3 _up(0.0f, 1.0f, 0.0f);
+        glm::mat4 _lightView = glm::lookAt(_frustumSliceCenter - glm::normalize(_lightDirection) * glm::length(_frustumRadiusVector), _frustumSliceCenter, _up);
+
+        const float _frustumRadius = glm::length(_frustumRadiusVector);
+
+        glm::mat4 _lightProjectionViewMatrix = glm::ortho(
+            _frustumSliceCenter.x - _frustumRadius,
+            _frustumSliceCenter.x + _frustumRadius,
+            _frustumSliceCenter.y - _frustumRadius,
+            _frustumSliceCenter.y + _frustumRadius,
+            0.0f,
+            _frustumSliceCenter.z + 2.0f * _frustumRadius
+        ) * _lightView;
+
+        lightViewProjectionMatrices.push_back(_lightProjectionViewMatrix);
+
+        splitDepths.push_back(_depth * splits[splitIdx] * 0.7f);
+    }
+
+    shadowMappingLightViewProjectionMatrices->set(lightViewProjectionMatrices);
+    shadowRenderingLightViewProjectionsUniform->set(lightViewProjectionMatrices);
+    shadowRenderingSplitsUniform->set(splitDepths);
+}
+```
+
+Then geometry shader would be:
+
+```glsl
+#version 410
+
+layout(triangles) in;
+
+/*
+ this shader will be emitting data to 4 shadow map layers as per 4 frustum splits;
+ each triangle fed into this geometry shader will be projected into each shadow map layer;
+ hence this shader will emit 4 layers * 3 vertices (per each input primitive / geometry) = 12 vertices;
+ note how the input vertices are in the world space, so we need to project them to the clip space in here
+*/
+layout(triangle_strip, max_vertices = 12) out;
+
+out gl_PerVertex
+{
+  vec4 gl_Position;
+};
+
+// out int gl_Layer;
+
+uniform mat4 lightViewProjectionMatrix[4]; // as per 4 frustum splits
+
+void main()
+{
+    for (int split = 0; split < 4; ++split)
+    {
+        // input primitive index
+        for (int i = 0; i < gl_in.length(); ++i)
+        {
+            // in a 3D texture, which layer do we project our input primitive to
+            gl_Layer = split;
+
+            // project an input primitive using the corresponding projection matrix from the uniform
+            gl_Position = lightViewProjectionMatrix[split] * gl_in[i].gl_Position;
+
+            EmitVertex();
+        }
+
+        EndPrimitive();
+    }
+}
+```
+
+The rendering stage would use the projection matrices too. So setting up the rendering shader:
+
+```cpp
+auto shadowRenderingFragmentShaderSource = globjects::Shader::sourceFromFile("media/shadow-rendering.frag");
+auto shadowRenderingFragmentShaderTemplate = globjects::Shader::applyGlobalReplacements(shadowRenderingFragmentShaderSource.get());
+auto shadowRenderingFragmentShader = std::make_unique<globjects::Shader>(static_cast<gl::GLenum>(GL_FRAGMENT_SHADER), shadowRenderingFragmentShaderTemplate.get());
+
+if (!shadowRenderingFragmentShader->compile())
+{
+    std::cerr << "[ERROR] Can not compile chicken fragment shader" << std::endl;
+    return 1;
+}
+
+auto shadowRenderingProgram = std::make_unique<globjects::Program>();
+shadowRenderingProgram->attach(shadowRenderingVertexShader.get(), shadowRenderingFragmentShader.get());
+
+auto shadowRenderingModelTransformationUniform = shadowRenderingProgram->getUniform<glm::mat4>("model");
+auto shadowRenderingViewTransformationUniform = shadowRenderingProgram->getUniform<glm::mat4>("view");
+auto shadowRenderingProjectionTransformationUniform = shadowRenderingProgram->getUniform<glm::mat4>("projection");
+
+auto shadowRenderingLightPositionUniform = shadowRenderingProgram->getUniform<glm::vec3>("lightPosition");
+auto shadowRenderingLightColorUniform = shadowRenderingProgram->getUniform<glm::vec3>("lightColor");
+auto shadowRenderingCameraPositionUniform = shadowRenderingProgram->getUniform<glm::vec3>("cameraPosition");
+
+auto shadowRenderingLightViewProjectionsUniform = shadowRenderingProgram->getUniform<std::vector<glm::mat4>>("lightViewProjections");
+auto shadowRenderingSplitsUniform = shadowRenderingProgram->getUniform<std::vector<float>>("splits"); // distance from camera to zFar, e.g. (far - cameraPosition.z) * splitFraction
+```
+
+And finally, the fragment shader for the final rendering stage:
+
+```glsl
+#version 410
+
+layout (location = 0) out vec4 fragmentColor;
+
+in VS_OUT {
+    vec4 viewPosition;
+    vec4 fragmentPosition;
+    vec3 normal;
+    vec2 textureCoord;
+} fsIn;
+
+uniform mat4 lightViewProjections[4];
+uniform float splits[4];
+
+uniform sampler2DArray shadowMaps;
+uniform sampler2D diffuseTexture;
+
+uniform vec3 lightPosition;
+uniform vec3 lightColor;
+uniform vec3 cameraPosition;
+
+float shadowCalculation(vec3 normal, vec3 lightDirection)
+{
+    float cameraViewDepth = fsIn.viewPosition.z;
+
+    for (int i = 0; i < 4; ++i)
+    {
+        if (cameraViewDepth < splits[i])
+        {
+            vec4 fragmentPositionInLightSpace = lightViewProjections[i] * fsIn.fragmentPosition;
+            vec3 shadowPos1 = fragmentPositionInLightSpace.xyz / fragmentPositionInLightSpace.w;
+            vec3 shadowMapCoord = shadowPos1 * 0.5 + 0.5;
+            float thisDepth = shadowMapCoord.z;
+
+            if (thisDepth > 1.0)
+            {
+                continue;
+            }
+
+            float occluderDepth = texture(shadowMaps, vec3(shadowMapCoord.xy, i)).r;
+
+            float bias = max(0.05 * (1.0 - dot(normal, lightDirection)), 0.005);
+
+            return thisDepth - bias > occluderDepth ? 0.25 : 1.0;
+        }
+    }
+
+    return 0.0;
+}
+
+void main()
+{
+    vec3 color = texture(diffuseTexture, fsIn.textureCoord).rgb;
+    vec3 normal = normalize(fsIn.normal);
+
+    // ambient
+    vec3 ambient = 0.3 * color;
+
+    // diffuse
+    vec3 lightDirection = normalize(lightPosition - vec3(fsIn.fragmentPosition) / fsIn.fragmentPosition.w);
+    float diff = max(dot(lightDirection, normal), 0.0);
+    vec3 diffuse = diff * lightColor;
+
+    // specular
+    vec3 viewDirection = normalize(cameraPosition - vec3(fsIn.fragmentPosition) / fsIn.fragmentPosition.w);
+    vec3 halfwayDirection = normalize(lightDirection + viewDirection);
+    float spec = pow(max(dot(normal, halfwayDirection), 0.0), 64.0);
+    vec3 specular = spec * lightColor;
+
+    // calculate shadow
+    float shadow = shadowCalculation(normal, lightDirection);
+
+    vec3 lighting = ((shadow * (diffuse + specular)) + ambient) * color;
+
+    fragmentColor = vec4(lighting, 1.0);
+}
+```
+
+Note how now the shadow calculation function makes use of the projection matrices, so instead of rendering the scene multiple times again, we simply pick the shadow data from a corresponding shadow map buffer.
+
 ### Anti-aliasing
 
 You might have noticed that rendering scene from the framebuffer results in most lines looking like stairs, with very distinct hard edges around every shape.
@@ -1357,13 +1667,87 @@ This is most obvious during the deferred rendering.
 
 In order to prevent (or rather somewhat mitigate) this issue, the technique called "anti-aliasing" is used. It softens the pixels around those hard edges so they gradually change color instead of hard jump.
 
-### Multi-sampled anti-aliasing
+### Multi-sampled anti-aliasing (MSAA)
 
 I have never understood the concept of multi-resolution pyramid (even when working on my second M.Sc. thesis) until I got myself into all this OpenGL stuff.
 The way you can soften the rapid change of a color in neighbour pixels is to upscale the image image few times and then downscale it back. This way you will loose a lot of detail, getting an average color value for each scaling level.
 OpenGL actually comes bundled with the multi-sampled rendering feature - when you create a framebuffer you can specify the number of samples for texture.
 
-### Fast-approximation anti-aliasing
+But you can implement one by yourself, explicitly, using one rather simple shader program and a deferred rendering technique.
+
+First rendering pass would be rendering a scene to a frame buffer. The last (or second, in this overly-simplified example) rendering pass would run on top of that frame buffer and compute the new one using the simple shader program:
+
+vertex shader for the MSAA last rendering pass:
+
+```glsl
+#version 410
+
+layout (location = 0) in vec3 vertexPosition;
+layout (location = 2) in vec2 vertexTextureCoord;
+
+out VS_OUT
+{
+    vec3 fragmentPosition;
+    vec2 textureCoord;
+} vsOut;
+
+out gl_PerVertex {
+    vec4 gl_Position;
+};
+
+void main()
+{
+    vsOut.fragmentPosition = vertexPosition;
+    vsOut.textureCoord = vec2(1.0 - vertexTextureCoord.x, vertexTextureCoord.y);
+
+    gl_Position = vec4(vertexPosition, 1.0);
+}
+```
+
+fragment shader for the last rendering pass:
+
+```glsl
+#version 410
+
+layout (location = 0) out vec4 fragmentColor;
+
+in VS_OUT {
+    vec3 fragmentPosition;
+    vec2 textureCoord;
+} fsIn;
+
+uniform sampler2D diffuseTexture;
+
+vec4 msaa( sampler2D tex, vec2 uv ) {
+    vec2 resolution = textureSize(tex, 0);
+
+    vec4 singleSample = texture(tex, uv);
+
+    float a = (3.0 / 8.0) * (1.0 / resolution.x);
+    float b = (1.0 / 8.0) * (1.0 / resolution.y);
+
+    vec4 acc = vec4(0.0);
+
+    acc += texture(tex, (uv + vec2(-a, b)));
+    acc += texture(tex, (uv + vec2(a, -b)));
+    acc += texture(tex, (uv + vec2(-b, -a)));
+    acc += texture(tex, (uv + vec2(b, a)));
+    acc /= 4.0;
+
+    // vec4 color = pow(acc, vec4(1.0 / 2.2));
+
+    return acc;
+}
+
+void main()
+{
+    vec4 color = msaa(diffuseTexture, fsIn.textureCoord);
+
+    fragmentColor = color;
+}
+```
+
+### Fast-approximation anti-aliasing (FXAA)
 
 Multi-sampled rendering is fine, but usually it comes at a cost of higher memory consumption - for each multi-sampled texture you have to allocate memory.
 The more multi-sampled textures you have - the more memory your application consumes.
@@ -1378,7 +1762,93 @@ That sounds easy on paper, but how does it actually detect the edges? The algori
 <img data-src="/images/opengl-advanced-samples/sample-22-fxaa-0.webp">
 <img data-src="/images/opengl-advanced-samples/sample-22-fxaa-1.webp">
 
-### Screen-space ambient occlusion
+The only substantial difference in the code for FXAA is in the fragment shader for the last rendering pass:
+
+```glsl
+#version 410
+
+layout (location = 0) out vec4 fragmentColor;
+
+in VS_OUT {
+    vec3 fragmentPosition;
+    vec2 textureCoord;
+} fsIn;
+
+uniform sampler2D diffuseTexture;
+
+#define FXAA_SPAN_MAX 16.0
+#define FXAA_REDUCE_MUL   (1.0 / FXAA_SPAN_MAX)
+#define FXAA_REDUCE_MIN   (1.0 / 128.0)
+#define FXAA_SUBPIX_SHIFT (1.0 / 8.0)
+
+vec4 fxaa( sampler2D tex, vec2 uv2 )
+{
+    vec2 res = textureSize(tex, 0);
+    vec2 rcpFrame = 1. / res;
+
+    vec4 uv = vec4( uv2, uv2 - (rcpFrame * (0.5 + FXAA_SUBPIX_SHIFT)));
+
+    vec3 rgbNW = texture(tex, uv.zw).xyz;
+    vec3 rgbNE = texture(tex, uv.zw + vec2(1, 0) * rcpFrame.xy).xyz;
+    vec3 rgbSW = texture(tex, uv.zw + vec2(0, 1) * rcpFrame.xy).xyz;
+    vec3 rgbSE = texture(tex, uv.zw + vec2(1, 1) * rcpFrame.xy).xyz;
+    vec4 texColor = texture(tex, uv.xy);
+    vec3 rgbM  = texColor.xyz;
+
+    vec3 luma = vec3(0.299, 0.587, 0.114);
+    float lumaNW = dot(rgbNW, luma);
+    float lumaNE = dot(rgbNE, luma);
+    float lumaSW = dot(rgbSW, luma);
+    float lumaSE = dot(rgbSE, luma);
+    float lumaM  = dot(rgbM,  luma);
+
+    float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));
+    float lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));
+
+    vec2 dir;
+    dir.x = -((lumaNW + lumaNE) - (lumaSW + lumaSE));
+    dir.y =  ((lumaNW + lumaSW) - (lumaNE + lumaSE));
+
+    float dirReduce = max(
+        (lumaNW + lumaNE + lumaSW + lumaSE) * (0.25 * FXAA_REDUCE_MUL),
+        FXAA_REDUCE_MIN
+    );
+
+    float rcpDirMin = 1.0/(min(abs(dir.x), abs(dir.y)) + dirReduce);
+
+    dir = min(
+        vec2( FXAA_SPAN_MAX,  FXAA_SPAN_MAX),
+        max(
+            vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX),
+            dir * rcpDirMin
+        )
+    ) * rcpFrame.xy;
+
+    vec3 rgbA = (1.0/2.0) * (
+        texture(tex, uv.xy + dir * (1.0 / 3.0 - 0.5)).xyz +
+        texture(tex, uv.xy + dir * (2.0 / 3.0 - 0.5)).xyz);
+
+    vec3 rgbB = rgbA * (1.0 / 2.0) + (1.0 / 4.0) * (
+        texture(tex, uv.xy + dir * (0.0 / 3.0 - 0.5)).xyz +
+        texture(tex, uv.xy + dir * (3.0 / 3.0 - 0.5)).xyz);
+
+    float lumaB = dot(rgbB, luma);
+
+    if ((lumaB < lumaMin) || (lumaB > lumaMax))
+        return vec4(rgbA, texColor.a);
+    else
+        return vec4(rgbB, texColor.a);
+}
+
+void main()
+{
+    vec4 color = fxaa(diffuseTexture, fsIn.textureCoord);
+
+    fragmentColor = color;
+}
+```
+
+### Screen-space ambient occlusion (SSAO)
 
 As you might know, rendering big and complex scenes is expensive in both time, memory and computational resources. It is not always desirable or even possible to render all effects like reflections and shadows for each and every polygon of the scene.
 
@@ -1397,7 +1867,7 @@ Read more:
 
 [1](https://learnopengl.com/Advanced-Lighting/SSAO)
 
-### Horizon-based ambient occlusion
+### Horizon-based ambient occlusion (HBAO)
 
 Screen-space ambient occlusion algorithm (aka SSAO) is fine, but it can use even further improvement. Instead of calculating random samples inside imaginary sphere, you can be a little smarter about those samples and only generate them in a hemisphere, oriented towards the camera. Then, instead of checking the camera-space positions of samples and pixels, you can use the "horizon" of a current pixel and calculate the "horizion" for each of the samples. You can then use the angle difference between those two "horizons" to see if pixels are potentially occluded by some other polygon.
 
@@ -1541,7 +2011,7 @@ auto bloomBlurFramebuffer2 = std::make_unique<globjects::Framebuffer>();
 bloomBlurFramebuffer2->attachTexture(static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT0), bloomBlurTexture2.get());
 ```
 
-With all that preparatory work, the rendering is a multi-step (multi-pass) process - first pass is to render scene to the `bloomFramebuffer`, 
+With all that preparatory work, the rendering is a multi-step (multi-pass) process - first pass is to render scene to the `bloomFramebuffer`,
 filling the `bloomColorTexture` and `bloomBrightnessTexture`:
 
 ```cpp
@@ -1906,6 +2376,8 @@ Vertex shader is same deferred rendering vertex shader - without any projection 
 ### Particle systems
 
 Particle simulation is not really a technique in itself - it is a very big topic (how you design it from the code perspective, how do you simulate particles optimally - concurrent programming, SIMD, calculations on the GPU, etc.). But the way you render bunch of particles could be qualified as a rendering technique. It is mostly about instanced rendering.
+
+The standard implementations include calculating every particle's params (position, rotation, texture animation frame etc.) on CPU and passing that data to the GPU to be rendered. More interesting approach is to do all the calculations on the GPU itself, only passing a handful of parameters from CPU, like the number of particles and their origin - essentially, the particle emitter parameters and then using the computing shader to do the rest.
 
 Read more:
 
