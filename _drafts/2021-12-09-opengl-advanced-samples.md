@@ -4053,6 +4053,7 @@ void main()
 ```
 
 Note how the shadow map is `samplerCube` and sampling it is using the `vec3` instead of `vec2` as with planar (2D) textures.
+Also note how lighting has something called "attenuation" now - this is the fading-out factor - the further the pixel is from the light source - the more bleak the lighting effect would be.
 
 ### Reflections
 
@@ -4062,3 +4063,296 @@ Reflections on the water surface are relatively simple to implement - for each p
 <img data-src="/images/opengl-advanced-samples/sample-18-reflection-4.webp">
 
 The concept of cubemaps is not only useful for skyboxes, but could also be used to calculate reflections on the objects. For each reflective object you render the scene from its position to the cubemap texture (so you will have to render the scene six times, which is huge overhead in itself) and when rendering the object, you reflect the camera view vector (vector from the pixel in world space to camera position) and sample the cubemap with that vector. You then add the sampled color to the source pixel color to receive a nice reflective surface effect.
+
+This technique is very similar to both point light shadow mapping and skybox rendering combined.
+
+We will need the cubemap texture to render to:
+
+```cpp
+auto reflectionMapTexture = std::make_unique<globjects::Texture>(static_cast<gl::GLenum>(GL_TEXTURE_CUBE_MAP));
+
+reflectionMapTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MIN_FILTER), static_cast<gl::GLenum>(GL_LINEAR));
+reflectionMapTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MAG_FILTER), static_cast<gl::GLenum>(GL_LINEAR));
+
+reflectionMapTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_WRAP_S), static_cast<gl::GLenum>(GL_CLAMP_TO_BORDER));
+reflectionMapTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_WRAP_T), static_cast<gl::GLenum>(GL_CLAMP_TO_BORDER));
+reflectionMapTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_WRAP_R), static_cast<gl::GLenum>(GL_CLAMP_TO_BORDER));
+
+reflectionMapTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_BORDER_COLOR), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+reflectionMapTexture->bind();
+
+const auto reflectionMapSize = 2048;
+
+for (auto i = 0; i < 6; ++i)
+{
+    ::glTexImage2D(
+        static_cast<::GLenum>(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i),
+        0,
+        GL_RGBA8,
+        reflectionMapSize,
+        reflectionMapSize,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_INT,
+        nullptr);
+}
+
+reflectionMapTexture->unbind();
+```
+
+And on top of that, for things to not look mangled, we will need a depth texture. Which also has to be a cubemap:
+
+```cpp
+auto reflectionMapDepthTexture = std::make_unique<globjects::Texture>(static_cast<gl::GLenum>(GL_TEXTURE_CUBE_MAP));
+
+reflectionMapDepthTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MIN_FILTER), static_cast<gl::GLenum>(GL_LINEAR));
+reflectionMapDepthTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MAG_FILTER), static_cast<gl::GLenum>(GL_LINEAR));
+
+reflectionMapDepthTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_WRAP_S), static_cast<gl::GLenum>(GL_CLAMP_TO_BORDER));
+reflectionMapDepthTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_WRAP_T), static_cast<gl::GLenum>(GL_CLAMP_TO_BORDER));
+reflectionMapDepthTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_WRAP_R), static_cast<gl::GLenum>(GL_CLAMP_TO_BORDER));
+
+reflectionMapDepthTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_BORDER_COLOR), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+
+reflectionMapDepthTexture->bind();
+
+for (auto i = 0; i < 6; ++i)
+{
+    ::glTexImage2D(
+        static_cast<::GLenum>(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i),
+        0,
+        GL_DEPTH_COMPONENT,
+        reflectionMapSize,
+        reflectionMapSize,
+        0,
+        GL_DEPTH_COMPONENT,
+        GL_FLOAT,
+        nullptr);
+}
+
+reflectionMapDepthTexture->unbind();
+```
+
+They both are then attached to a framebuffer:
+
+```cpp
+auto reflectionMappingFramebuffer = std::make_unique<globjects::Framebuffer>();
+reflectionMappingFramebuffer->attachTexture(static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT0), reflectionMapTexture.get());
+reflectionMappingFramebuffer->attachTexture(static_cast<gl::GLenum>(GL_DEPTH_ATTACHMENT), reflectionMapDepthTexture.get());
+
+// tell framebuffer it actually needs to render to **BOTH** textures, but does not have to output anywhere (last NONE argument, iirc)
+reflectionMappingFramebuffer->setDrawBuffers({ static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT0), static_cast<gl::GLenum>(GL_NONE) });
+
+reflectionMappingFramebuffer->printStatus(true);
+```
+
+Then, we have to render scene... well, 6 times - once for each side of the reflection cubemap:
+
+```cpp
+// this is a cubemap, hence aspect ratio **must** be 1:1
+glm::mat4 reflectionProjection = glm::perspective(glm::radians(90.0f), 1.0f, nearPlane, farPlane);
+
+// TODO: technically, this should be calculated as AABB / 2
+const auto reflectionOffset = glm::vec3(0.0f, 0.05f, 0.0f);
+
+reflectionMappingProgram->setUniform("projectionViewMatrices[0]", reflectionProjection * glm::lookAt(reflectiveModelPosition + reflectionOffset, reflectiveModelPosition + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+reflectionMappingProgram->setUniform("projectionViewMatrices[1]", reflectionProjection * glm::lookAt(reflectiveModelPosition + reflectionOffset, reflectiveModelPosition + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+reflectionMappingProgram->setUniform("projectionViewMatrices[2]", reflectionProjection * glm::lookAt(reflectiveModelPosition + reflectionOffset, reflectiveModelPosition + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+reflectionMappingProgram->setUniform("projectionViewMatrices[3]", reflectionProjection * glm::lookAt(reflectiveModelPosition + reflectionOffset, reflectiveModelPosition + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
+reflectionMappingProgram->setUniform("projectionViewMatrices[4]", reflectionProjection * glm::lookAt(reflectiveModelPosition + reflectionOffset, reflectiveModelPosition + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+reflectionMappingProgram->setUniform("projectionViewMatrices[5]", reflectionProjection * glm::lookAt(reflectiveModelPosition + reflectionOffset, reflectiveModelPosition + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+
+reflectionMappingFramebuffer->bind();
+
+reflectionMappingProgram->use();
+
+// render scene EXCEPT the mirror object
+
+reflectionMappingFramebuffer->unbind();
+
+reflectionMappingProgram->release();
+```
+
+For this we use geometry shader:
+
+```glsl
+#version 430
+
+layout (triangles) in;
+
+// we emit 6 triangles for one input triangle - to be written to 6 textures of the cubemap
+layout (triangle_strip, max_vertices = 18) out;
+
+in VS_OUT
+{
+    vec4 vertexPosition;
+    vec3 fragmentPosition;
+    vec3 normal;
+    vec2 textureCoords;
+} gsIn[];
+
+out GS_OUT
+{
+    vec4 vertexPosition;
+    vec4 fragmentPosition;
+    vec3 normal;
+    vec2 textureCoords;
+} gsOut;
+
+uniform mat4 projectionViewMatrices[6];
+
+// out vec4 fragmentPosition;
+
+void main()
+{
+    for (int face = 0; face < 6; ++face)
+    {
+        gl_Layer = face;
+
+        for (int vertex = 0; vertex < 3; ++vertex)
+        {
+            gsOut.vertexPosition = gsIn[vertex].vertexPosition;
+            gsOut.fragmentPosition = projectionViewMatrices[face] * gsIn[vertex].vertexPosition;
+            gsOut.normal = gsIn[vertex].normal;
+            gsOut.textureCoords = gsIn[vertex].textureCoords;
+
+            gl_Position = projectionViewMatrices[face] * gsIn[vertex].vertexPosition;
+
+            EmitVertex();
+        }
+
+        EndPrimitive();
+    }
+}
+```
+
+Vertex shader for reflection mapping:
+
+```glsl
+#version 430
+
+layout (location = 0) in vec3 vertexPosition;
+layout (location = 1) in vec3 vertexNormal;
+layout (location = 2) in vec2 vertexTextureCoords;
+
+out VS_OUT
+{
+    vec4 vertexPosition;
+    vec3 fragmentPosition;
+    vec3 normal;
+    vec2 textureCoords;
+} vsOut;
+
+out gl_PerVertex {
+    vec4 gl_Position;
+};
+
+uniform mat4 modelTransformation;
+
+void main()
+{
+    vsOut.vertexPosition = modelTransformation * vec4(vertexPosition, 1.0);
+    vsOut.fragmentPosition = vec3(modelTransformation * vec4(vertexPosition, 1.0));
+    vsOut.normal = vertexNormal;
+    vsOut.textureCoords = vertexTextureCoords;
+
+    gl_Position = vsOut.vertexPosition;
+}
+```
+
+And fragment shader:
+
+```glsl
+#version 430
+
+in GS_OUT
+{
+    vec4 vertexPosition;
+    vec4 fragmentPosition;
+    vec3 normal;
+    vec2 textureCoords;
+} fsIn;
+
+uniform sampler2D diffuseTexture;
+
+void main()
+{
+    vec4 color = texture(diffuseTexture, fsIn.textureCoords);
+
+    // TODO: add lighting component here
+    gl_FragColor = color;
+}
+```
+
+Note how the output is a 4-component vector instead of a regular 3-component one.
+
+When rendering the reflective object on the final render pass, we sample the reflection cubemap texture and use the `reflect` function in **vertex shader** to calculate the sampling vector from the camera view vector:
+
+```glsl
+#version 430
+
+layout (location = 0) in vec3 vertexPosition;
+layout (location = 1) in vec3 vertexNormal;
+layout (location = 2) in vec2 vertexTextureCoord;
+
+out VS_OUT
+{
+    vec3 fragmentPosition;
+    vec3 normal;
+    vec2 textureCoords;
+    vec3 reflectedDirection;
+} vsOut;
+
+out gl_PerVertex {
+    vec4 gl_Position;
+};
+
+uniform mat4 projection;
+uniform mat4 view;
+uniform mat4 model;
+
+uniform vec3 cameraPosition;
+
+void main()
+{
+    vsOut.fragmentPosition = vec3(model * vec4(vertexPosition, 1.0));
+    vsOut.normal = vertexNormal;
+    vsOut.textureCoords = vertexTextureCoord;
+    vsOut.reflectedDirection = reflect(normalize(vsOut.fragmentPosition - cameraPosition), vertexNormal);
+
+    gl_Position = projection * view * model * vec4(vertexPosition, 1.0);
+}
+```
+
+In the fragment shader we then combine the color sampled from reflection texture and the object' own _(albedo)_ color:
+
+```glsl
+#version 430
+
+layout (location = 0) out vec4 fragmentColor;
+
+in VS_OUT
+{
+    vec3 fragmentPosition;
+    vec3 normal;
+    vec2 textureCoords;
+    vec3 reflectedDirection;
+} fsIn;
+
+uniform samplerCube reflectionMap;
+uniform sampler2D diffuseTexture;
+
+// uniform vec3 lightColor;
+uniform vec3 cameraPosition;
+
+uniform mat4 model;
+
+void main()
+{
+    vec4 reflectionColor = texture(reflectionMap, fsIn.reflectedDirection);
+    vec4 albedoColor = texture(diffuseTexture, fsIn.textureCoords);
+
+    fragmentColor = mix(albedoColor, reflectionColor, 0.6);
+}
+```
