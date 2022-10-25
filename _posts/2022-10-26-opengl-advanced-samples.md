@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "OpenGL: advanced samples"
-date: "23-12-2021T12:00:00+10:00"
+date: "26-10-2022T00:00:00+10:00"
 ---
 
 Damn this blog was long coming - I picked my interest in shaders over a decade ago, started to actually learn something in early 2021 and started writing this blog at the end of 2021. Now the time has finally come to share this with the world!
@@ -9,6 +9,15 @@ Damn this blog was long coming - I picked my interest in shaders over a decade a
 For a long time I was keen in learning low-level computer graphics APIs and algorithms, but only recently actually made any progress towards that goal.
 I have spent few weeks if not months learning about shaders, graphics pipeline and rendering techniques, so this write-up was long forecoming.
 There might be some mistakes, since I am not an expert in CG and OpenGL and there is a big chunk missing, namely rendering animated 3D models, compute shaders and tesselation, but I hope to fix those in the future.
+
+One might ask: why OpenGL? Why not Vulkan (or DirectX 12)? Why even bother with these emulaiton techniques - why not jump straight to raytracing?
+Well, it is the `end of October 2022` at the moment of publishing this blog, the most recent GPU on the market is GeForce RTX 4090, which is yet to arrive and its RRP (recommended retailer price) is `A$2959` (as advertised by nVidia):
+
+<img data-src="/images/advanced-opengl-techniques/geforce-rtx-4090-price-oct-2022.png" alt="RTX4090 price as of October 2022" />
+
+And most of those cards are gone in a blink of an eye and used for mining whatever-coins. My PC runs GTX1080, which is still more than enough for most of the games I play (being Genshin Impact at most).
+
+I think it is still not a widely spread consumer market, and whilst raytracing, DLSS and all those fine things sound super cool and nice, it is still a niche market. That is not to say I won't be looking into that in the near future. I just think OpenGL still has place in this world, at least as a starting point to build a decent understanding of the modern graphics pipeline, some basic rendering techniques and justify switching to more recent APIs. OpenGL as well as DirectX 11 are still a very feasible fallback for those sytems which do not run top-notch hardware or are struggling running those massive open-world games in anything higher than 1080p@60fps.
 
 In this blog I will try to condense the knowledge I have acquired. I will skip most basic parts such as initializing context, creating window and so on, since
 most of the tutorials and articles on the Internet focus on those topics. Unlike most tutorials and articles out there, this blog will be all about _rendering techniques_.
@@ -46,6 +55,8 @@ This blog is enormous, so blow is the table of contents for the topics covered. 
     * [Skybox](#skybox)
     * [Point lighting](#point-lighting)
     * [Reflections](#reflections)
+
+<!--more-->
 
 ## Setting up
 
