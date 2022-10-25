@@ -4,6 +4,8 @@ title: "OpenGL: advanced samples"
 date: "23-12-2021T12:00:00+10:00"
 ---
 
+Damn this blog was long coming - I picked my interest in shaders over a decade ago, started to actually learn something in early 2021 and started writing this blog at the end of 2021. Now the time has finally come to share this with the world!
+
 For a long time I was keen in learning low-level computer graphics APIs and algorithms, but only recently actually made any progress towards that goal.
 I have spent few weeks if not months learning about shaders, graphics pipeline and rendering techniques, so this write-up was long forecoming.
 There might be some mistakes, since I am not an expert in CG and OpenGL and there is a big chunk missing, namely rendering animated 3D models, compute shaders and tesselation, but I hope to fix those in the future.
@@ -13,7 +15,7 @@ most of the tutorials and articles on the Internet focus on those topics. Unlike
 
 This article was heavily inspired by few blogs on russian website ([Habr](https://habr.com/)), namely "super-modern OpenGL" ([part 1](https://habr.com/ru/post/456932/) and [part 2](https://habr.com/ru/post/457380/)) - they are quite messy and lack a lot of material on really interesting topics (again, rendering techniques). This blog partially builds on top of those two and uses a lot more other materials (references provided).
 
-Contents:
+This blog is enormous, so blow is the table of contents for the topics covered. Feel free to jump straight to the topic that picks your interest, screenshots are provided:
 
 * [Setting up](#setting-up)
 * [Basics I promised not to focus on](#basics-i-promised-not-to-focus-on)
