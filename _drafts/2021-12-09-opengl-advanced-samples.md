@@ -2581,6 +2581,384 @@ Read more:
 [2](https://www.alexandre-pestana.com/volumetric-lights/)
 [3](https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-13-volumetric-light-scattering-post-process)
 
+The implementation for this technique is actually pretty straightforward: this is a two-pass deferred rendering application.
+
+First, you set up a framebuffer with multiple attachments, for each of the scene parameters:
+
+```cpp
+auto deferredFragmentPositionTexture = std::make_unique<globjects::Texture>(static_cast<gl::GLenum>(GL_TEXTURE_2D));
+
+deferredFragmentPositionTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MIN_FILTER), static_cast<GLint>(GL_LINEAR));
+deferredFragmentPositionTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MAG_FILTER), static_cast<GLint>(GL_LINEAR));
+
+deferredFragmentPositionTexture->image2D(
+    0,
+    static_cast<gl::GLenum>(GL_RGB32F),
+    glm::vec2(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)),
+    0,
+    static_cast<gl::GLenum>(GL_RGB),
+    static_cast<gl::GLenum>(GL_FLOAT),
+    nullptr
+);
+
+auto deferredFragmentNormalTexture = std::make_unique<globjects::Texture>(static_cast<gl::GLenum>(GL_TEXTURE_2D));
+
+deferredFragmentNormalTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MIN_FILTER), static_cast<GLint>(GL_LINEAR));
+deferredFragmentNormalTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MAG_FILTER), static_cast<GLint>(GL_LINEAR));
+
+deferredFragmentNormalTexture->image2D(
+    0,
+    static_cast<gl::GLenum>(GL_RGB32F),
+    glm::vec2(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)),
+    0,
+    static_cast<gl::GLenum>(GL_RGB),
+    static_cast<gl::GLenum>(GL_FLOAT),
+    nullptr
+);
+
+auto deferredFragmentAlbedoTexture = std::make_unique<globjects::Texture>(static_cast<gl::GLenum>(GL_TEXTURE_2D));
+
+deferredFragmentAlbedoTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MIN_FILTER), static_cast<GLint>(GL_LINEAR));
+deferredFragmentAlbedoTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MAG_FILTER), static_cast<GLint>(GL_LINEAR));
+
+deferredFragmentAlbedoTexture->image2D(
+    0,
+    static_cast<gl::GLenum>(GL_RGBA8),
+    glm::vec2(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)),
+    0,
+    static_cast<gl::GLenum>(GL_RGBA),
+    static_cast<gl::GLenum>(GL_UNSIGNED_BYTE),
+    nullptr
+);
+
+auto deferredFragmentLightSpacePositionTexture = std::make_unique<globjects::Texture>(static_cast<gl::GLenum>(GL_TEXTURE_2D));
+
+deferredFragmentLightSpacePositionTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MIN_FILTER), static_cast<GLint>(GL_LINEAR));
+deferredFragmentLightSpacePositionTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MAG_FILTER), static_cast<GLint>(GL_LINEAR));
+
+deferredFragmentLightSpacePositionTexture->image2D(
+    0,
+    static_cast<gl::GLenum>(GL_RGB32F),
+    glm::vec2(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)),
+    0,
+    static_cast<gl::GLenum>(GL_RGB),
+    static_cast<gl::GLenum>(GL_FLOAT),
+    nullptr
+);
+
+auto deferredFragmentDepthTexture = std::make_unique<globjects::Texture>(static_cast<gl::GLenum>(GL_TEXTURE_2D));
+
+deferredFragmentDepthTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MIN_FILTER), static_cast<GLint>(GL_LINEAR));
+deferredFragmentDepthTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MAG_FILTER), static_cast<GLint>(GL_LINEAR));
+
+deferredFragmentDepthTexture->image2D(
+    0,
+    static_cast<gl::GLenum>(GL_DEPTH_COMPONENT),
+    glm::vec2(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)),
+    0,
+    static_cast<gl::GLenum>(GL_DEPTH_COMPONENT),
+    static_cast<gl::GLenum>(GL_FLOAT),
+    nullptr
+);
+
+auto deferredRenderingFramebuffer = std::make_unique<globjects::Framebuffer>();
+deferredRenderingFramebuffer->attachTexture(static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT0), deferredFragmentPositionTexture.get());
+deferredRenderingFramebuffer->attachTexture(static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT1), deferredFragmentNormalTexture.get());
+deferredRenderingFramebuffer->attachTexture(static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT2), deferredFragmentAlbedoTexture.get());
+deferredRenderingFramebuffer->attachTexture(static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT3), deferredFragmentLightSpacePositionTexture.get());
+deferredRenderingFramebuffer->attachTexture(static_cast<gl::GLenum>(GL_DEPTH_ATTACHMENT), deferredFragmentDepthTexture.get());
+
+// tell framebuffer it actually needs to render to **BOTH** textures, but does not have to output anywhere (last NONE argument, iirc)
+deferredRenderingFramebuffer->setDrawBuffers({
+    static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT0),
+    static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT1),
+    static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT2),
+    static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT3),
+    static_cast<gl::GLenum>(GL_NONE)
+});
+
+deferredRenderingFramebuffer->printStatus(true);
+```
+
+Then, you render scene to that framebuffer:
+
+```cpp
+deferredRenderingFramebuffer->bind();
+
+deferredRenderingPrePassProgram->use();
+
+// render scene
+
+deferredRenderingPrePassProgram->release();
+
+deferredRenderingFramebuffer->unbind();
+```
+
+The vertex shader for this pass is:
+
+```glsl
+#version 410
+
+layout (location = 0) in vec3 vertexPosition;
+layout (location = 1) in vec3 vertexNormal;
+layout (location = 2) in vec2 vertexTextureCoord;
+// layout (location = 3) in vec3 vertexTangent;
+// layout (location = 4) in vec3 vertexBitangent;
+
+out VS_OUT
+{
+    vec3 fragmentPosition;
+    vec3 normal;
+    vec2 textureCoord;
+    vec3 lightSpaceCoord;
+} vsOut;
+
+out gl_PerVertex {
+    vec4 gl_Position;
+};
+
+uniform mat4 projection;
+uniform mat4 view;
+uniform mat4 model;
+uniform mat4 lightSpaceMatrix;
+
+void main()
+{
+    vec4 position = model * vec4(vertexPosition, 1.0);
+    vsOut.fragmentPosition = position.xyz / position.w;
+    vsOut.normal = transpose(inverse(mat3(view * model))) * vertexNormal;
+    vsOut.textureCoord = vertexTextureCoord;
+
+    vec4 lightSpaceCoord = lightSpaceMatrix * model * vec4(vertexPosition, 1.0);
+    vsOut.lightSpaceCoord = lightSpaceCoord.xyz / lightSpaceCoord.w;
+
+    gl_Position = projection * view * model * vec4(vertexPosition, 1.0);
+}
+```
+
+And the fragment shader is:
+
+```glsl
+#version 410
+
+in VS_OUT
+{
+    vec3 fragmentPosition;
+    vec3 normal;
+    vec2 textureCoord;
+    vec3 lightSpaceCoord;
+} fsIn;
+
+layout (location = 0) out vec3 fsPosition;
+layout (location = 1) out vec3 fsNormal;
+layout (location = 2) out vec4 fsAlbedo;
+layout (location = 3) out vec3 fsLightSpaceCoord;
+
+uniform sampler2D diffuseTexture;
+uniform sampler2D normalMapTexture;
+
+void main()
+{
+    fsPosition = fsIn.fragmentPosition * 0.5 + 0.5;
+
+    fsNormal = texture(normalMapTexture, fsIn.textureCoord).rgb;
+
+    if (length(fsNormal) == 0.0)
+    {
+        fsNormal = fsIn.normal;
+    }
+
+    fsNormal = normalize(fsNormal.xyz) * 0.5 + 0.5;
+
+    fsAlbedo = texture(diffuseTexture, fsIn.textureCoord);
+
+    fsLightSpaceCoord = fsIn.lightSpaceCoord.xyz * 0.5 + 0.5;
+}
+```
+
+In the final render pass you just combine the textures of the previous render pass(-es) into the final frame:
+
+```cpp
+// final render pass - merge textures from the deferred rendering pre-pass into a final frame
+{
+    ::glViewport(0, 0, static_cast<GLsizei>(window.getSize().x), static_cast<GLsizei>(window.getSize().y));
+    ::glClearColor(static_cast<gl::GLfloat>(1.0f), static_cast<gl::GLfloat>(0.0f), static_cast<gl::GLfloat>(0.0f), static_cast<gl::GLfloat>(1.0f));
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    deferredRenderingFinalPassProgram->use();
+
+    deferredFragmentPositionTexture->textureHandle().makeResident();
+    deferredFragmentNormalTexture->textureHandle().makeResident();
+    deferredFragmentAlbedoTexture->textureHandle().makeResident();
+
+    deferredFragmentLightSpacePositionTexture->textureHandle().makeResident();
+    shadowMapTexture->textureHandle().makeResident();
+
+    pointLightDataBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 5);
+
+    deferredRenderingFinalPassProgram->setUniform("positionTexture", deferredFragmentPositionTexture->textureHandle().handle());
+    deferredRenderingFinalPassProgram->setUniform("normalTexture", deferredFragmentNormalTexture->textureHandle().handle());
+    deferredRenderingFinalPassProgram->setUniform("albedoTexture", deferredFragmentAlbedoTexture->textureHandle().handle());
+
+    deferredRenderingFinalPassProgram->setUniform("lightSpaceCoord", deferredFragmentLightSpacePositionTexture->textureHandle().handle());
+    deferredRenderingFinalPassProgram->setUniform("shadowMap", shadowMapTexture->textureHandle().handle());
+
+    deferredRenderingFinalPassProgram->setUniform("cameraPosition", cameraPos);
+    deferredRenderingFinalPassProgram->setUniform("projection", cameraProjection);
+    deferredRenderingFinalPassProgram->setUniform("view", cameraView);
+
+    deferredRenderingFinalPassProgram->setUniform("lightSpaceMatrix", lightSpaceMatrix);
+    deferredRenderingFinalPassProgram->setUniform("sunDirection", -lightPosition);
+    deferredRenderingFinalPassProgram->setUniform("sunColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+    quadModel->bind();
+    quadModel->draw();
+    quadModel->unbind();
+
+    pointLightDataBuffer->unbind(GL_SHADER_STORAGE_BUFFER, 5);
+
+    deferredFragmentPositionTexture->textureHandle().makeNonResident();
+    deferredFragmentNormalTexture->textureHandle().makeNonResident();
+    deferredFragmentAlbedoTexture->textureHandle().makeNonResident();
+
+    deferredFragmentLightSpacePositionTexture->textureHandle().makeNonResident();
+    shadowMapTexture->textureHandle().makeNonResident();
+
+    deferredRenderingFinalPassProgram->release();
+}
+```
+
+Using the fragment shader, which increases the brightness of the pixels based on the information from the light projection buffer. This is done using counting _(or the  "accumulating")_ the number of intersections of the ray from the viewing position towards the light source _(by checking the light projection buffer - the position of each pixel in the light space)_:
+
+```glsl
+#version 460
+
+#extension GL_ARB_bindless_texture : require
+
+in VS_OUT
+{
+    vec3 fragmentPosition;
+    vec3 normal;
+    vec2 textureCoord;
+} fsIn;
+
+layout (location = 0) out vec4 fragmentColor;
+
+struct PointLight
+{
+    vec3 position;
+    float strength;
+    vec4 color;
+    // float farPlane;
+    // mat4 projectionViewMatrices[6];
+};
+
+layout (std430, binding = 5) buffer PointLightData
+{
+    PointLight pointLight[];
+} pointLightData;
+
+layout(bindless_sampler) uniform sampler2D positionTexture;
+layout(bindless_sampler) uniform sampler2D normalTexture;
+layout(bindless_sampler) uniform sampler2D albedoTexture;
+
+layout(bindless_sampler) uniform sampler2D lightSpaceCoord;
+layout(bindless_sampler) uniform sampler2D shadowMap;
+
+uniform vec3 cameraPosition;
+uniform vec3 sunDirection;
+uniform vec4 sunColor;
+
+uniform mat4 view;
+uniform mat4 projection;
+uniform mat4 lightSpaceMatrix;
+
+float attenuation_constant = 1.0;
+float attenuation_linear = 0.09;
+float attenuation_quadratic = 0.032;
+
+const float NB_STEPS = 30;
+const float G_SCATTERING = 0.858;
+
+#define M_PI 3.1415926535897932384626433832795
+
+void main()
+{
+    vec3 fragmentPosition = texture(positionTexture, fsIn.textureCoord).xyz * 2 - 1;
+    vec3 normal = texture(normalTexture, fsIn.textureCoord).rgb * 2 - 1;
+    vec4 albedoColor = texture(albedoTexture, fsIn.textureCoord);
+
+    vec3 viewDirection = normalize(cameraPosition - fragmentPosition);
+
+    vec3 startPosition = cameraPosition;
+    vec3 endRayPosition = fragmentPosition;
+
+    vec3 rayVector = endRayPosition.xyz- startPosition;
+
+    float rayLength = length(rayVector);
+    vec3 rayDirection = normalize(rayVector);
+
+    float stepLength = rayLength / NB_STEPS;
+
+    vec3 raymarchingStep = rayDirection * stepLength;
+
+    vec3 currentPosition = startPosition;
+
+    vec4 accumFog = vec4(0.0);
+
+    for (int i = 0; i < NB_STEPS; i++)
+    {
+        // basically perform shadow mapping
+        vec4 worldInLightSpace = lightSpaceMatrix * vec4(currentPosition, 1.0f);
+        worldInLightSpace /= worldInLightSpace.w;
+
+        vec2 lightSpaceTextureCoord1 = (worldInLightSpace.xy * 0.5) + 0.5; // [-1..1] -> [0..1]
+        float shadowMapValue1 = texture(shadowMap, lightSpaceTextureCoord1.xy).r;
+
+        if (shadowMapValue1 > worldInLightSpace.z)
+        {
+            // Mie scaterring approximated with Henyey-Greenstein phase function
+            float lightDotView = dot(normalize(rayDirection), normalize(-sunDirection));
+
+            float scattering = 1.0 - G_SCATTERING * G_SCATTERING;
+            scattering /= (4.0f * M_PI * pow(1.0f + G_SCATTERING * G_SCATTERING - (2.0f * G_SCATTERING) * lightDotView, 1.5f));
+
+            accumFog += scattering * sunColor;
+        }
+
+        currentPosition += raymarchingStep;
+    }
+
+    accumFog /= NB_STEPS;
+
+    // fade rays away
+    // accumFog *= currentPosition / NB_STEPS);
+
+    // lighting *= accumFog;
+
+    vec4 fragmentPositionInLightSpace1 = lightSpaceMatrix * vec4(fragmentPosition, 1.0);
+    fragmentPositionInLightSpace1 /= fragmentPositionInLightSpace1.w;
+
+    vec2 shadowMapCoord1 = fragmentPositionInLightSpace1.xy * 0.5 + 0.5;
+
+    // vec3 fragmentPositionInLightSpace2 = texture(lightSpaceCoord, fsIn.textureCoord).xyz;
+
+    // vec2 shadowMapCoord2 = fragmentPositionInLightSpace2.xy;
+
+    float thisDepth = fragmentPositionInLightSpace1.z;
+    float occluderDepth = texture(shadowMap, shadowMapCoord1).r;
+
+    float shadowFactor = 0.0;
+
+    if (thisDepth > 0.0 && occluderDepth < 1.0 && thisDepth < occluderDepth)
+    {
+        shadowFactor = 1.0;
+    }
+
+    fragmentColor = ((albedoColor * shadowFactor * 0.3) + (accumFog * 0.7));
+}
+```
+
 ## Common rendering techniques
 
 There are few simpler effects and techniques, which are more widely known (in that more tutorials on the Internet discuss these to some degree), but I feel like describing them as well.
