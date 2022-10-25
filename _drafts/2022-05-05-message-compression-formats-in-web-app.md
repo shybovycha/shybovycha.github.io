@@ -1,9 +1,28 @@
 ---
 layout: post
-title: 'Message compression formats in web app'
+title: 'Message compression formats in a web application'
 ---
 
-Compare the compression rates & encoding / decoding performance of small & large messages using these formats:
+I have seen quite a few web applications which are passing heaps of data between client and server. Pretty much all of them use JSON for that purpose.
+And whilst that solves the business problem, some of those applications aim to provide nearly real-time user experience, and that's where the issues arise.
+
+With the rise of web sockets, RTC and HTTP2 tech, the data transfer speed issues might be not so noticeable, but the more data app tries to transfer, the more
+pressing the matter gets. This issue also becomes more apparent on the server side - server has to process a lot more data in a request thread.
+
+At The Trade Desk I have observed an approach, where we are transferring a list of strings (later we converted them to integers to widen the bandwidth) between
+high-loaded services (think 15 million requests per second with a hard time bound on request processing of 100 milliseconds).
+
+I thought this is a cool concept, worth exploring deeper. For this matter, I have searched the Internet for similar approaches.
+
+One of the readings was an [article](https://habr.com/ru/company/vk/blog/594633/) on the russian
+resource about speeding up a web application by switching from HTTP1 to HTTP2, utilizing various data compression formats: for static assets - WEBP, AVIF and
+progressive JPEG; for general data - various stream compression algorithms - GZIP, Brotli and ZSTD; alongside with different data serialization formats - MessagePack.
+
+I decided to expand my search in the direction of serialization formats. In this article I compare few of those and focus on their performance in serializing
+different kinds of data (lists, nested objects, integers and strings, large and small datasets)
+and the serialization & deserialization performance in browser and the compression rates.
+
+The formats covered are:
 
 * [BSON](https://www.mongodb.com/json-and-bson)
 * [CBOR](https://cbor.io/)
@@ -14,27 +33,65 @@ Compare the compression rates & encoding / decoding performance of small & large
 * [Cap'n'Proto](https://capnproto.org/)
 * [FlatBuffers](https://github.com/google/flatbuffers)
 
-Describe how we pass a protobuf-serialized object with a list of category IDs (and the difference between string IDs vs integer IDs) in the URL query parameters
+One of the optimizations we have achieved at The Trade Desk was 7 times reduction in data size by switching from string IDs to integer values.
+Think `"something-else"` we used to operate everywhere was assigned an integer ID of `4092`.
+Now that int is 4 bytes long, whereas the string value is 14 bytes long. That is more than 3x reduction in size, but you have to still store the mapping
+somewhere, which we already did (in our case).
 
-Few data to test with:
+But the overall idea is worth researching too - how much compression each format provides when working with long lists of strings and long lists of ints.
 
-* a sample object `Pet { name: string, kind: enum Kind { CAT, DOG } }`
+To make the thing more interesting, I came up with few various data types to be messed around:
+
+* a simple object `Pet { name: string, kind: enum Kind { CAT, DOG } }`
 * an object with an array of string identifiers `StringIdsResource { ids: string[] }`
 * an object with an array of integer identifiers `StringIdsResource { ids: int[] }`
 
-Things to compare:
+As mentioned before, the metrics I'm going to be focusing on are:
 
-* encoding & decoding performance in NodeJS and browser environment
+* encoding & decoding performance in browser environment
 * encoded message length (raw, as UTF-8 string and base-64 encoded UTF-8 string)
-* amount of runtime (bundled code) needed in browser
+* amount of runtime (bundled code) required to work with the format
 
-Few lessons learned:
+To make it quick and easy, here's the summary _(time measured in browser, on a nested object with a list of `1000` children of various data types)_:
+
+| Serializer         | Encoding time | Decoding time | Encoded data size (byte array) | Data saving | Encoded data size (base-64 utf-8 encoded) | Bundle size |
+| ------------------ | ------------- | ------------- | ------------------------------ | ----------- | ----------------------------------------- | ----------- |
+| Avro               | 12ms          | 4ms           | 30003                          | 77.16%      | 40004                                     | 111.7kb     |
+| BSON               | 10ms          | 11ms          | 98912                          | 24.71%      | 131884                                    | 98.0kb      |
+| CBOR               | 3ms           | 4ms           | 89017                          | 32.24%      | 118692                                    | 30.1kb      |
+| MessagePack        | 3ms           | 3ms           | 89017                          | 32.24%      | 118692                                    | 27.7kb      |
+| Protobuf           | 13ms          | 3ms           | 38000                          | 71.07%      | 50668                                     | 76.6kb      |
+| Protobuf, compiled | 6ms           | 1ms           | 38000                          | 71.07%      | 50668                                     | 30.0kb      |
+| Flatbuffers        | 9ms           | 3ms           | 32052                          | 75.60%      | 42736                                     | 3.1kb       |
+| Thrift (binary)    | 42ms          | 6ms           | 45009                          | 65.74%      | 60012                                     | n/a         |
+| Thrift (compact)   | 33ms          | 11ms          | 36005                          | 72.59%      | 48008                                     | n/a         |
+
+Few learnings:
 
 * Thrift is quite slow and not that straightforward to use (after all, it was designed to provide entire communication layer for an application), but provides decent compression rate
 * Protobuf and Avro provide by far the most compact output (because of schema provided)
 * Protobuf library (protobufjs), unlike Avro, can't handle enumerations (Protobufjs requires raw integer values to be used whereas Avro supports semantic, string values)
 * Cap'n'Proto seems outdated and its JS plugin did not get any support for few years now, have to check the TS version
 * FlatBuffers is quite low-level and tricky to use (much more effort than those other tools)
+
+My take on these results is that:
+
+* Protobuf, when using a compiled serialzier/deserializer for specific message(-s):
+  * has a comfortable API
+  * fast serialization / deserialization in browser
+  * decent compression rate
+  * relatively small bundle size increase
+* Flatbuffers:
+  * great compression rate
+  * tiny bundle size impact
+  * great performance in browser
+  * super-cumbersome API (well, that's low-level trade-offs for ya)
+
+The source code for the tests could be found on my [GitHub repo](https://github.com/shybovycha/webapp-data-serialization-formats-comparison).
+
+Under the cut you will find a stream of consciousness - my notes whilst implementing the tests for these tech.
+
+<!--more-->
 
 ### FlatBuffers
 
