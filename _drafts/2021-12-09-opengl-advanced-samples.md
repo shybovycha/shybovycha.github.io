@@ -23,15 +23,15 @@ You can totally use anything else in your projects with greater success, these w
 * [glm](https://github.com/g-truc/glm) for maths (algebra and matrices, predominantly)
 * [assimp](https://github.com/assimp/assimp) to load 3D models
 
-The project uses [CMake](https://cmake.org/) to handle the build process and [vcpkg](https://github.com/microsoft/vcpkg) to manage the dependencies. I have also tried [xmake]() but because it lacks IDE support (I have used Visual Studio), it did not quite fit me.
+The project uses [CMake](https://cmake.org/) to handle the build process and [vcpkg](https://github.com/microsoft/vcpkg) to manage the dependencies. I have also tried [xmake](https://xmake.io/) but because it lacks IDE support _(I have used Visual Studio)_, it did not quite fit me.
 
-In these projects I have tried to utilize C++20 as much as possible, but I might be missing few great improvements it gives (mostly around vectors and memory ownership).
+In these projects I have tried to utilize the new C++ features _(C++17 onwards)_ as much as possible, but I might be missing few great improvements it gives _(mostly around containers and memory ownership)_.
 
 I also have implemented a sample of using [imgui](https://github.com/ocornut/imgui) for user interface way down the line as I thought it was not all that helpful for my projects, but apparently, I could have saved myself a lot of debugging time if I added few windows and buttons here and there. Hence I encourage you to look into that too.
 
 ## Basics I promised not to focus on
 
-Again, to get this out of the way and not go into too much detail on these topics, few words on how I approached OpenGL from my very much outdated background (think OpenGL ver. 1).
+Again, to get this out of the way and not go into too much detail on these topics, few words on how I approached OpenGL from my very much outdated background _(think OpenGL ver. 1)_.
 
 ### Getting started with SFML
 
@@ -1867,6 +1867,612 @@ Read more:
 
 [1](https://learnopengl.com/Advanced-Lighting/SSAO)
 
+Setting up the initial render pass framebuffer is a bit tricky - you will need multiple attachments for each of the data component:
+
+```cpp
+auto deferredFragmentPositionTexture = std::make_unique<globjects::Texture>(static_cast<gl::GLenum>(GL_TEXTURE_2D));
+
+deferredFragmentPositionTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MIN_FILTER), static_cast<GLint>(GL_LINEAR));
+deferredFragmentPositionTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MAG_FILTER), static_cast<GLint>(GL_LINEAR));
+
+deferredFragmentPositionTexture->image2D(
+    0,
+    static_cast<gl::GLenum>(GL_RGB32F),
+    glm::vec2(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)),
+    0,
+    static_cast<gl::GLenum>(GL_RGB),
+    static_cast<gl::GLenum>(GL_FLOAT),
+    nullptr
+);
+
+auto deferredFragmentNormalTexture = std::make_unique<globjects::Texture>(static_cast<gl::GLenum>(GL_TEXTURE_2D));
+
+deferredFragmentNormalTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MIN_FILTER), static_cast<GLint>(GL_LINEAR));
+deferredFragmentNormalTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MAG_FILTER), static_cast<GLint>(GL_LINEAR));
+
+deferredFragmentNormalTexture->image2D(
+    0,
+    static_cast<gl::GLenum>(GL_RGB32F),
+    glm::vec2(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)),
+    0,
+    static_cast<gl::GLenum>(GL_RGB),
+    static_cast<gl::GLenum>(GL_FLOAT),
+    nullptr
+);
+
+auto deferredFragmentAlbedoTexture = std::make_unique<globjects::Texture>(static_cast<gl::GLenum>(GL_TEXTURE_2D));
+
+deferredFragmentAlbedoTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MIN_FILTER), static_cast<GLint>(GL_LINEAR));
+deferredFragmentAlbedoTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MAG_FILTER), static_cast<GLint>(GL_LINEAR));
+
+deferredFragmentAlbedoTexture->image2D(
+    0,
+    static_cast<gl::GLenum>(GL_RGBA8),
+    glm::vec2(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)),
+    0,
+    static_cast<gl::GLenum>(GL_RGBA),
+    static_cast<gl::GLenum>(GL_UNSIGNED_BYTE),
+    nullptr
+);
+
+auto deferredFragmentDepthTexture = std::make_unique<globjects::Texture>(static_cast<gl::GLenum>(GL_TEXTURE_2D));
+
+deferredFragmentDepthTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MIN_FILTER), static_cast<GLint>(GL_LINEAR));
+deferredFragmentDepthTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MAG_FILTER), static_cast<GLint>(GL_LINEAR));
+
+deferredFragmentDepthTexture->image2D(
+    0,
+    static_cast<gl::GLenum>(GL_DEPTH_COMPONENT),
+    glm::vec2(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)),
+    0,
+    static_cast<gl::GLenum>(GL_DEPTH_COMPONENT),
+    static_cast<gl::GLenum>(GL_FLOAT),
+    nullptr
+);
+
+auto deferredRenderingFramebuffer = std::make_unique<globjects::Framebuffer>();
+deferredRenderingFramebuffer->attachTexture(static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT0), deferredFragmentPositionTexture.get());
+deferredRenderingFramebuffer->attachTexture(static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT1), deferredFragmentNormalTexture.get());
+deferredRenderingFramebuffer->attachTexture(static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT2), deferredFragmentAlbedoTexture.get());
+deferredRenderingFramebuffer->attachTexture(static_cast<gl::GLenum>(GL_DEPTH_ATTACHMENT), deferredFragmentDepthTexture.get());
+
+// tell framebuffer it actually needs to render to **BOTH** textures, but does not have to output anywhere (last NONE argument, iirc)
+deferredRenderingFramebuffer->setDrawBuffers({
+    static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT0),
+    static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT1),
+    static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT2),
+    static_cast<gl::GLenum>(GL_NONE)
+});
+
+deferredRenderingFramebuffer->printStatus(true);
+```
+
+You will also need two buffers for blur:
+
+```cpp
+auto temporaryTexture1 = std::make_unique<globjects::Texture>(static_cast<gl::GLenum>(GL_TEXTURE_2D));
+
+temporaryTexture1->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MIN_FILTER), static_cast<GLint>(GL_LINEAR));
+temporaryTexture1->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MAG_FILTER), static_cast<GLint>(GL_LINEAR));
+
+temporaryTexture1->image2D(
+    0,
+    static_cast<gl::GLenum>(GL_RGBA8),
+    glm::vec2(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)),
+    0,
+    static_cast<gl::GLenum>(GL_RGBA),
+    static_cast<gl::GLenum>(GL_UNSIGNED_BYTE),
+    nullptr
+);
+
+auto temporaryFramebuffer = std::make_unique<globjects::Framebuffer>();
+
+temporaryFramebuffer->attachTexture(static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT0), temporaryTexture1.get());
+temporaryFramebuffer->setDrawBuffers({ static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT0), static_cast<gl::GLenum>(GL_NONE) });
+
+temporaryFramebuffer->printStatus(true);
+
+auto temporaryTexture2 = std::make_unique<globjects::Texture>(static_cast<gl::GLenum>(GL_TEXTURE_2D));
+
+temporaryTexture2->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MIN_FILTER), static_cast<GLint>(GL_LINEAR));
+temporaryTexture2->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MAG_FILTER), static_cast<GLint>(GL_LINEAR));
+
+temporaryTexture2->image2D(
+    0,
+    static_cast<gl::GLenum>(GL_RGBA8),
+    glm::vec2(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)),
+    0,
+    static_cast<gl::GLenum>(GL_RGBA),
+    static_cast<gl::GLenum>(GL_UNSIGNED_BYTE),
+    nullptr
+);
+
+auto temporaryFramebuffer2 = std::make_unique<globjects::Framebuffer>();
+
+temporaryFramebuffer2->attachTexture(static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT0), temporaryTexture2.get());
+temporaryFramebuffer2->setDrawBuffers({ static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT0), static_cast<gl::GLenum>(GL_NONE) });
+
+temporaryFramebuffer2->printStatus(true);
+```
+
+And the random data (vector offsets) for the SSAO algorithm, which we will generate in the application and store in a small texture:
+
+```cpp
+std::uniform_real_distribution<float> randomFloats(0.0, 1.0); // random floats between [0.0, 1.0]
+std::default_random_engine generator;
+
+const auto ssaoKernelSamples = 64;
+
+std::vector<glm::vec3> ssaoKernel;
+
+for (unsigned int i = 0; i < ssaoKernelSamples; ++i)
+{
+    glm::vec3 sample(
+        randomFloats(generator) * 2.0f - 1.0f,
+        randomFloats(generator) * 2.0f - 1.0f,
+        randomFloats(generator)
+    );
+
+    sample = glm::normalize(sample);
+    sample *= randomFloats(generator);
+
+    float scale = static_cast<float>(i) / static_cast<float>(ssaoKernelSamples);
+
+    // lerp(a, b, f) = a + f * (b - a);
+    // scale = lerp(0.1f, 1.0f, scale * scale);
+    scale = 0.1f + (scale * scale * (1.0f - 0.1f));
+
+    sample *= scale;
+
+    ssaoKernel.push_back(sample);
+}
+
+std::vector<glm::vec3> ssaoNoise;
+
+for (unsigned int i = 0; i < 16; i++)
+{
+    glm::vec3 noise(
+        randomFloats(generator) * 2.0f - 1.0f,
+        randomFloats(generator) * 2.0f - 1.0f,
+        0.0f
+    );
+
+    ssaoNoise.push_back(noise);
+}
+
+auto ssaoNoiseTexture = std::make_unique<globjects::Texture>(static_cast<gl::GLenum>(GL_TEXTURE_2D));
+
+ssaoNoiseTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MIN_FILTER), static_cast<GLint>(GL_NEAREST));
+ssaoNoiseTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MAG_FILTER), static_cast<GLint>(GL_NEAREST));
+ssaoNoiseTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_WRAP_S), static_cast<GLint>(GL_REPEAT));
+ssaoNoiseTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_WRAP_T), static_cast<GLint>(GL_REPEAT));
+
+ssaoNoiseTexture->image2D(
+    0,
+    static_cast<gl::GLenum>(GL_RGB32F),
+    glm::vec2(4.0f, 4.0f),
+    0,
+    static_cast<gl::GLenum>(GL_RGB),
+    static_cast<gl::GLenum>(GL_FLOAT),
+    &ssaoNoise[0]
+);
+
+auto ssaoKernelTexture = std::make_unique<globjects::Texture>(static_cast<gl::GLenum>(GL_TEXTURE_1D));
+
+ssaoKernelTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MIN_FILTER), static_cast<GLint>(GL_NEAREST));
+ssaoKernelTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MAG_FILTER), static_cast<GLint>(GL_NEAREST));
+
+ssaoKernelTexture->image1D(
+    0,
+    static_cast<gl::GLenum>(GL_RGBA16F),
+    static_cast<float>(ssaoKernelSamples),
+    0,
+    static_cast<gl::GLenum>(GL_RGB),
+    static_cast<gl::GLenum>(GL_FLOAT),
+    &ssaoKernel[0]
+);
+```
+
+With the rendering itself, there are no tricks - you have three passes.
+
+On the first pass you bind the deferred rendering buffer (with a few attachments, that is) and render scene as normal.
+The textures attached to the deferred rendering buffer will be populated with the data.
+
+This data is then used on the second rendering pass to calculate the dark edges (amboent occlusion) on the frame rendered (aka in the screen space) and blur them.
+
+On the last rendering pass you combine the framebuffers to obtain the final image:
+
+```cpp
+// first render pass - prepare for deferred rendering by rendering to the entire scene to a deferred rendering framebuffer's attachments
+{
+    deferredRenderingFramebuffer->bind();
+
+    deferredRenderingPrePassProgram->use();
+
+    // render scene
+
+    deferredRenderingPrePassProgram->release();
+
+    deferredRenderingFramebuffer->unbind();
+}
+
+// second render pass - calculate & blur the ambient occlusion
+{
+    temporaryFramebuffer->bind();
+
+    ::glViewport(0, 0, static_cast<GLsizei>(window.getSize().x), static_cast<GLsizei>(window.getSize().y));
+    ::glClearColor(static_cast<gl::GLfloat>(1.0f), static_cast<gl::GLfloat>(0.0f), static_cast<gl::GLfloat>(0.0f), static_cast<gl::GLfloat>(1.0f));
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    ssaoProgram->use();
+
+    deferredFragmentPositionTexture->bindActive(2);
+    deferredFragmentNormalTexture->bindActive(3);
+
+    ssaoNoiseTexture->bindActive(5);
+    ssaoKernelTexture->bindActive(6);
+
+    ssaoProgram->setUniform("positionTexture", 2);
+    ssaoProgram->setUniform("normalTexture", 3);
+    ssaoProgram->setUniform("albedoTexture", 4);
+
+    ssaoProgram->setUniform("ssaoNoiseTexture", 5);
+    ssaoProgram->setUniform("ssaoKernelTexture", 6);
+
+    ssaoProgram->setUniform("cameraPosition", cameraPos);
+    ssaoProgram->setUniform("projection", cameraProjection);
+    ssaoProgram->setUniform("view", cameraView);
+
+    quadModel->bind();
+    quadModel->draw();
+    quadModel->unbind();
+
+    deferredFragmentPositionTexture->unbindActive(2);
+    deferredFragmentNormalTexture->unbindActive(3);
+
+    ssaoNoiseTexture->unbindActive(5);
+    ssaoKernelTexture->unbindActive(6);
+
+    ssaoProgram->release();
+
+    temporaryFramebuffer->unbind();
+
+    // blur
+    temporaryFramebuffer->bind(static_cast<gl::GLenum>(GL_READ_FRAMEBUFFER));
+    temporaryFramebuffer2->bind(static_cast<gl::GLenum>(GL_DRAW_FRAMEBUFFER));
+
+    temporaryFramebuffer->blit(
+        static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT0),
+        std::array<gl::GLint, 4>{ 0, 0, static_cast<int>(window.getSize().x), static_cast<int>(window.getSize().y) },
+        temporaryFramebuffer2.get(),
+        std::vector<gl::GLenum>{ static_cast<gl::GLenum>(GL_COLOR_ATTACHMENT0) },
+        std::array<gl::GLint, 4>{ 0, 0, static_cast<int>(window.getSize().x), static_cast<int>(window.getSize().y) },
+        static_cast<gl::ClearBufferMask>(GL_COLOR_BUFFER_BIT),
+        static_cast<gl::GLenum>(GL_NEAREST));
+
+    // same as
+    // glReadBuffer(GL_COLOR_ATTACHMENT0);
+    // glDrawBuffer(GL_COLOR_ATTACHMENT0);
+    // glBlitFramebuffer(0, 0, window.getSize().x, window.getSize().y, 0, 0, window.getSize().x, window.getSize().y, static_cast<gl::ClearBufferMask>(GL_COLOR_BUFFER_BIT), static_cast<gl::GLenum>(GL_NEAREST));
+
+    temporaryFramebuffer->unbind();
+    temporaryFramebuffer2->unbind();
+
+    blurProgram->use();
+
+    const auto blurPasses = 10;
+
+    // for the initial blur pass, use the texture from the bloomFramebuffer as an input
+
+    // we do not need anything extra here, since the bloomBlurFramebuffer2 (which we read from) will already contain the data from the bloomBrightnessTexture
+
+    blurProgram->setUniform("blurInput", 0);
+
+    for (auto i = 0; i < blurPasses; ++i)
+    {
+        // bind one framebuffer to write blur results to and bind the texture from another framebuffer to read input data from (for this blur stage)
+        if (i % 2 == 0)
+        {
+            // bind the new target framebuffer to write blur results to
+            temporaryFramebuffer->bind();
+            // bind the texture from the previous blur pass to read input data for this stage from
+            temporaryTexture2->bindActive(0);
+            // tell shader that we want to use horizontal blur
+            blurProgram->setUniform("isHorizontalBlur", true);
+        }
+        else
+        {
+            // bind the new target framebuffer to write blur results to
+            temporaryFramebuffer2->bind();
+            // bind the texture from the previous blur pass to read input data for this stage from
+            if (i > 0)
+                temporaryTexture1->bindActive(0);
+            // tell shader that we want to use vertical blur
+            blurProgram->setUniform("isHorizontalBlur", false);
+        }
+
+        // render quad with the texture from the active texture
+        quadModel->bind();
+        quadModel->draw();
+        quadModel->unbind();
+
+        if (i % 2 == 0)
+        {
+            // unbind the active framebuffer
+            temporaryFramebuffer->unbind();
+            // unbind the active texture
+            temporaryTexture2->unbindActive(0);
+        }
+        else
+        {
+            temporaryFramebuffer2->unbind();
+            temporaryTexture1->unbindActive(0);
+        }
+    }
+
+    blurProgram->release();
+}
+
+// third render pass - merge textures from the deferred rendering pre-pass into a final frame
+{
+    ::glViewport(0, 0, static_cast<GLsizei>(window.getSize().x), static_cast<GLsizei>(window.getSize().y));
+    ::glClearColor(static_cast<gl::GLfloat>(1.0f), static_cast<gl::GLfloat>(0.0f), static_cast<gl::GLfloat>(0.0f), static_cast<gl::GLfloat>(1.0f));
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    deferredRenderingFinalPassProgram->use();
+
+    deferredFragmentPositionTexture->bindActive(2);
+    deferredFragmentNormalTexture->bindActive(3);
+    deferredFragmentAlbedoTexture->bindActive(4);
+
+    temporaryTexture1->bindActive(5);
+
+    pointLightDataBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 5);
+
+    deferredRenderingFinalPassProgram->setUniform("positionTexture", 2);
+    deferredRenderingFinalPassProgram->setUniform("normalTexture", 3);
+    deferredRenderingFinalPassProgram->setUniform("albedoTexture", 4);
+
+    deferredRenderingFinalPassProgram->setUniform("ssaoTexture", 5);
+
+    deferredRenderingFinalPassProgram->setUniform("cameraPosition", cameraPos);
+    deferredRenderingFinalPassProgram->setUniform("projection", cameraProjection);
+    deferredRenderingFinalPassProgram->setUniform("view", cameraView);
+
+    quadModel->bind();
+    quadModel->draw();
+    quadModel->unbind();
+
+    pointLightDataBuffer->unbind(GL_SHADER_STORAGE_BUFFER, 5);
+
+    deferredFragmentPositionTexture->unbindActive(2);
+    deferredFragmentNormalTexture->unbindActive(3);
+    deferredFragmentAlbedoTexture->unbindActive(4);
+
+    temporaryTexture1->unbindActive(5);
+
+    deferredRenderingFinalPassProgram->release();
+}
+```
+
+The fragment shader for the first render pass:
+
+```glsl
+#version 410
+
+in VS_OUT
+{
+    vec3 fragmentPosition;
+    vec3 normal;
+    vec2 textureCoord;
+} fsIn;
+
+layout (location = 0) out vec3 fsPosition;
+layout (location = 1) out vec3 fsNormal;
+layout (location = 2) out vec4 fsAlbedo;
+
+uniform sampler2D diffuseTexture;
+uniform sampler2D normalMapTexture;
+
+void main()
+{
+    fsPosition = fsIn.fragmentPosition;
+
+    fsNormal = texture(normalMapTexture, fsIn.textureCoord).rgb;
+
+    if (length(fsNormal) == 0.0)
+    {
+        fsNormal = fsIn.normal;
+    }
+
+    fsAlbedo = texture(diffuseTexture, fsIn.textureCoord);
+}
+```
+
+Note how it has three output **vectors**, each of which will be bound to the corresponding framebuffer attachment.
+
+The fragment shader for SSAO _(second render pass)_:
+
+```glsl
+#version 410
+
+layout (location = 0) out vec4 fragmentColor;
+
+in VS_OUT {
+    vec3 fragmentPosition;
+    vec2 textureCoord;
+} fsIn;
+
+uniform sampler2D positionTexture;
+uniform sampler2D normalTexture;
+
+uniform sampler2D ssaoNoiseTexture;
+uniform sampler1D ssaoKernelTexture;
+
+uniform mat4 projection;
+
+void main()
+{
+    vec3 fragmentPosition = texture(positionTexture, fsIn.textureCoord).xyz;
+    vec3 normal = texture(normalTexture, fsIn.textureCoord).rgb;
+
+    float radius = 0.5;
+    float bias = 0.025;
+
+    vec2 screenSize = textureSize(positionTexture, 0);
+    vec2 noiseSize = textureSize(ssaoNoiseTexture, 0);
+    float kernelSize = textureSize(ssaoKernelTexture, 0);
+
+    vec2 noiseScale = screenSize / noiseSize;
+
+    vec3 randomVec = normalize(texture(ssaoNoiseTexture, fsIn.textureCoord * noiseScale).xyz);
+
+    vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
+    vec3 bitangent = cross(normal, tangent);
+    mat3 TBN = mat3(tangent, bitangent, normal);
+
+    float occlusion = 0.0;
+
+    for (int i = 0; i < kernelSize; ++i)
+    {
+        vec3 samplePosition = TBN * texture(ssaoKernelTexture, i).xyz;
+
+        if (dot(samplePosition, normal) < 0.0)
+            samplePosition *= -1.0;
+
+        samplePosition = fragmentPosition + samplePosition * radius;
+
+        vec4 offsetUV = projection * vec4(samplePosition, 1.0);
+        offsetUV.xyz /= offsetUV.w;
+        offsetUV.xy = offsetUV.xy * 0.5 + 0.5;
+
+        vec4 offsetPosition = texture(positionTexture, offsetUV.xy);
+
+        float rangeCheck = smoothstep(0.0, 1.0, radius / abs(fragmentPosition.z - offsetPosition.z));
+
+        occlusion += (samplePosition.z >= offsetPosition.z + bias ? 1.0 : 0.0) * rangeCheck;
+    }
+
+    occlusion = (occlusion / kernelSize);
+
+    fragmentColor = vec4(vec3(occlusion), 1.0);
+}
+```
+
+The blur fragment shader:
+
+```glsl
+#version 410
+
+layout (location = 0) out vec4 fragmentColor;
+
+in VS_OUT {
+    vec3 fragmentPosition;
+    vec3 normal;
+    vec2 textureCoord;
+} fsIn;
+
+uniform sampler2D blurInput;
+
+uniform bool isHorizontalBlur;
+
+float weight[5] = float[] (0.2270270270, 0.1945945946, 0.1216216216, 0.0540540541, 0.0162162162);
+
+void main()
+{
+    vec2 textureOffset = 1.0 / textureSize(blurInput, 0);
+    vec3 result = texture(blurInput, fsIn.textureCoord).rgb * weight[0];
+
+    if (isHorizontalBlur) {
+        for (int i = 1; i < 5; ++i) {
+            result += texture(blurInput, fsIn.textureCoord + vec2(textureOffset.x * i, 0.0)).rgb * weight[i];
+            result += texture(blurInput, fsIn.textureCoord - vec2(textureOffset.x * i, 0.0)).rgb * weight[i];
+        }
+    } else {
+        for (int i = 1; i < 5; ++i) {
+            result += texture(blurInput, fsIn.textureCoord + vec2(0.0, textureOffset.y * i)).rgb * weight[i];
+            result += texture(blurInput, fsIn.textureCoord - vec2(0.0, textureOffset.y * i)).rgb * weight[i];
+        }
+    }
+
+    fragmentColor = vec4(result, 1.0);
+}
+```
+
+The final render pass fragment shader:
+
+```glsl
+#version 430
+
+in VS_OUT
+{
+    vec3 fragmentPosition;
+    vec3 normal;
+    vec2 textureCoord;
+} fsIn;
+
+layout (location = 0) out vec4 fragmentColor;
+
+struct PointLight
+{
+    vec3 position;
+    float strength;
+    vec4 color;
+    // float farPlane;
+    // mat4 projectionViewMatrices[6];
+};
+
+layout (std430, binding = 5) buffer PointLightData
+{
+    PointLight pointLight[];
+} pointLightData;
+
+uniform sampler2D positionTexture;
+uniform sampler2D normalTexture;
+uniform sampler2D albedoTexture;
+uniform sampler2D ssaoTexture;
+
+uniform vec3 cameraPosition;
+
+uniform mat4 view;
+uniform mat4 projection;
+
+float attenuation_constant = 1.0;
+float attenuation_linear = 0.09;
+float attenuation_quadratic = 0.032;
+
+void main()
+{
+    vec3 fragmentPosition = texture(positionTexture, fsIn.textureCoord).xyz;
+    vec3 normal = texture(normalTexture, fsIn.textureCoord).rgb;
+    vec4 albedoColor = texture(albedoTexture, fsIn.textureCoord);
+
+    vec3 viewDirection = normalize(cameraPosition - fragmentPosition);
+
+    float ambientOcclusion = texture(ssaoTexture, fsIn.textureCoord).r;
+
+    vec4 lighting = albedoColor * 0.3 * ambientOcclusion;
+
+    for (int i = 0; i < pointLightData.pointLight.length(); ++i)
+    {
+        PointLight light = pointLightData.pointLight[i];
+
+        vec3 lightDirection = normalize(light.position - fragmentPosition);
+
+        float lightDistance = length(light.position - fragmentPosition);
+        float attenuation = 1.0 / (attenuation_constant + (attenuation_linear * lightDistance) + (attenuation_quadratic * lightDistance * lightDistance));
+
+        vec4 diffuse = max(dot(normal, lightDirection), 0.0) * albedoColor * light.color;
+
+        lighting += diffuse * attenuation;
+    }
+
+    fragmentColor = lighting;
+}
+```
+
+Since all of the rendering is happening in passes on the frame buffers, the vertex shaders are very simple - just passing the parameters through to the next stage.
+
 ### Horizon-based ambient occlusion (HBAO)
 
 Screen-space ambient occlusion algorithm (aka SSAO) is fine, but it can use even further improvement. Instead of calculating random samples inside imaginary sphere, you can be a little smarter about those samples and only generate them in a hemisphere, oriented towards the camera. Then, instead of checking the camera-space positions of samples and pixels, you can use the "horizon" of a current pixel and calculate the "horizion" for each of the samples. You can then use the angle difference between those two "horizons" to see if pixels are potentially occluded by some other polygon.
@@ -1879,6 +2485,85 @@ This technique gives better results for corners and edges than conventional SSAO
 Read more:
 
 [1](https://developer.download.nvidia.com/presentations/2008/SIGGRAPH/HBAO_SIG08b.pdf)
+
+The difference between SSAO and HBAO implementations lays in literally one fragment shader, calculating the ambient occlusion values _(the second pass, from the SSAO paragraph)_:
+
+```glsl
+#version 410
+
+layout (location = 0) out vec4 fragmentColor;
+
+in VS_OUT {
+    vec3 fragmentPosition;
+    vec2 textureCoord;
+} fsIn;
+
+uniform sampler2D positionTexture;
+uniform sampler2D normalTexture;
+
+uniform sampler2D hbaoNoiseTexture;
+uniform sampler1D hbaoKernelTexture;
+
+uniform mat4 projection;
+
+const float PI = 3.14;
+const float NUM_SAMPLE_DIRECTIONS = 10.0;
+const float NUM_SAMPLE_STEPS = 10.0;
+const float INTENSITY = 2.0;
+
+const float radius = 30;
+const float bias = 0.5;
+
+void main()
+{
+    vec3 fragmentPosition = texture(positionTexture, fsIn.textureCoord).xyz;
+    vec3 normal = texture(normalTexture, fsIn.textureCoord).rgb;
+
+    vec2 screenSize = textureSize(positionTexture, 0);
+    vec2 noiseSize = textureSize(hbaoNoiseTexture, 0);
+
+    vec2 noiseScale = screenSize / noiseSize;
+
+    const float stepPixels = radius / (NUM_SAMPLE_STEPS + 1);
+    const float alpha = 2 * PI / float(NUM_SAMPLE_DIRECTIONS);
+
+    float occlusion = 0.0;
+
+    for (float i = 0; i < NUM_SAMPLE_DIRECTIONS; ++i)
+    {
+        float angle = alpha * i;
+
+        vec4 random = texture(hbaoNoiseTexture, fsIn.textureCoord * noiseScale);
+
+        // vec2 dir = vec2(cos(angle), sin(angle));
+        // vec2 cosSin = random.xy;
+        // vec2 direction = vec2(dir.x * cosSin.x - dir.y * cosSin.y, dir.x * cosSin.y + dir.y * cosSin.x);
+        // vec2 direction = rotateDirection(vec2(cos(angle), sin(angle)), random.xy);
+
+        vec2 direction = vec2(cos(angle) * random.x - sin(angle) * random.y, cos(angle) * random.y + sin(angle) * random.x);
+
+        float rayPixels = random.z * (stepPixels + 1.0);
+
+        for (float t = 0; t < NUM_SAMPLE_STEPS; ++t)
+        {
+            vec2 sampleUV = round(rayPixels * direction) * (1.0 / screenSize) + fsIn.textureCoord;
+            vec3 samplePosition = texture(positionTexture, sampleUV).xyz;
+
+            rayPixels += stepPixels;
+
+            vec3 sampleDirection = samplePosition - fragmentPosition;
+            float v1 = dot(sampleDirection, sampleDirection);
+            float v2 = dot(normal, sampleDirection) * 1.0 / sqrt(v1);
+            occlusion += clamp(v2 - bias, 0.0, 1.0) * clamp(v1 * (-1.0 / (radius * radius)) + 1.0, 0.0, 1.0);
+        }
+    }
+
+    occlusion *= INTENSITY / (NUM_SAMPLE_DIRECTIONS * NUM_SAMPLE_STEPS);
+    occlusion = clamp(occlusion, 0.0, 1.0);
+
+    fragmentColor = vec4(vec3(occlusion), 1.0);
+}
+```
 
 ### Volumetric lighting
 
