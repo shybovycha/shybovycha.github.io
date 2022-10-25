@@ -13,6 +13,38 @@ most of the tutorials and articles on the Internet focus on those topics. Unlike
 
 This article was heavily inspired by few blogs on russian website ([Habr](https://habr.com/)), namely "super-modern OpenGL" ([part 1](https://habr.com/ru/post/456932/) and [part 2](https://habr.com/ru/post/457380/)) - they are quite messy and lack a lot of material on really interesting topics (again, rendering techniques). This blog partially builds on top of those two and uses a lot more other materials (references provided).
 
+Contents:
+
+* [Setting up](#setting-up)
+* [Basics I promised not to focus on](#basics-i-promised-not-to-focus-on)
+    * [Getting started with SFML](#getting-started-with-sfml)
+    * [Getting started with globjects](#getting-started-with-globjects)
+    * [Camera and getting started with glm](#camera-and-getting-started-with-glm)
+* [Optimization techniques](#optimization-techniques)
+    * [Passing data to the shader](#passing-data-to-the-shader)
+    * [Deferred rendering](#deferred-rendering)
+    * [Batch geometry rendering](#batch-geometry-rendering)
+    * [Texture handles](#texture-handles)
+    * [Rendering to different textures in geometry shader](#rendering-to-different-textures-in-geometry-shader)
+* [Rendering techniques](#rendering-techniques)
+    * [Simple shadow mapping](#simple-shadow-mapping)
+    * [Biasing](#biasing)
+    * [Percentage-close filtering](#percentage-close-filtering)
+    * [Variance shadow mapping](#variance-shadow-mapping)
+    * [Cascaded shadow mapping](#cascaded-shadow-mapping)
+    * [Anti-aliasing](#anti-aliasing)
+    * [Multi-sampled anti-aliasing (MSAA)](#multi-sampled-anti-aliasing-msaa)
+    * [Fast-approximation anti-aliasing (FXAA)](#fast-approximation-anti-aliasing-fxaa)
+    * [Screen-space ambient occlusion (SSAO)](#screen-space-ambient-occlusion-ssao)
+    * [Horizon-based ambient occlusion (HBAO)](#horizon-based-ambient-occlusion-hbao)
+    * [Volumetric lighting](#volumetric-lighting)
+* [Common rendering techniques](#common-rendering-techniques)
+    * [Bloom](#bloom)
+    * [Particle systems](#particle-systems)
+    * [Skybox](#skybox)
+    * [Point lighting](#point-lighting)
+    * [Reflections](#reflections)
+
 ## Setting up
 
 Just to get this out of the way: I have used few available libraries to simplify my work.
@@ -3447,6 +3479,8 @@ Read more:
 [1](https://learnopengl.com/In-Practice/2D-Game/Particles)
 [2](http://www.opengl-tutorial.org/intermediate-tutorials/billboards-particles/particles-instancing/)
 
+<!-- TODO: compute shaders -->
+
 ### Skybox
 
 Sky can really add atmosphere to your game. Rendering it might be as simple as rendering an inverted cube with texture on the insides of its faces and moving it along with the camera (or rather rendering it in camera space, not world space).
@@ -3459,11 +3493,566 @@ Read more:
 
 [1](https://learnopengl.com/Advanced-OpenGL/Cubemaps)
 
+In order to implement skybox, one first needs a cubemap texture:
+
+```cpp
+sf::Image m_top, m_bottom, m_left, m_right, m_front, m_back;
+
+// load textures with SFML
+
+std::map<gl::GLenum, sf::Image> skyboxTextures{
+    { static_cast<gl::GLenum>(GL_TEXTURE_CUBE_MAP_POSITIVE_X), m_right },
+    { static_cast<gl::GLenum>(GL_TEXTURE_CUBE_MAP_NEGATIVE_X), m_left },
+    { static_cast<gl::GLenum>(GL_TEXTURE_CUBE_MAP_POSITIVE_Y), m_top },
+    { static_cast<gl::GLenum>(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y), m_bottom },
+    { static_cast<gl::GLenum>(GL_TEXTURE_CUBE_MAP_POSITIVE_Z), m_back },
+    { static_cast<gl::GLenum>(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z), m_front },
+};
+
+auto skyboxTexture = std::make_unique<globjects::Texture>(static_cast<gl::GLenum>(GL_TEXTURE_CUBE_MAP));
+
+skyboxTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MIN_FILTER), static_cast<GLint>(GL_LINEAR));
+skyboxTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MAG_FILTER), static_cast<GLint>(GL_LINEAR));
+
+skyboxTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_WRAP_S), static_cast<GLint>(GL_CLAMP_TO_EDGE));
+skyboxTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_WRAP_T), static_cast<GLint>(GL_CLAMP_TO_EDGE));
+skyboxTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_WRAP_R), static_cast<GLint>(GL_CLAMP_TO_EDGE));
+
+skyboxTexture->bind();
+
+for (auto& kv : skyboxTextures)
+{
+    const auto target = kv.first;
+    auto& image = kv.second;
+
+    if (target == gl::GL_TEXTURE_CUBE_MAP_POSITIVE_Y || target == gl::GL_TEXTURE_CUBE_MAP_NEGATIVE_Y)
+    {
+        image.flipVertically();
+    }
+    else
+    {
+        image.flipHorizontally();
+    }
+
+    ::glTexImage2D(
+        static_cast<::GLenum>(target),
+        0,
+        static_cast<::GLenum>(GL_RGBA8),
+        static_cast<::GLsizei>(image.getSize().x),
+        static_cast<::GLsizei>(image.getSize().y),
+        0,
+        static_cast<::GLenum>(GL_RGBA),
+        static_cast<::GLenum>(GL_UNSIGNED_BYTE),
+        reinterpret_cast<const ::GLvoid*>(image.getPixelsPtr()));
+}
+
+skyboxTexture->unbind();
+```
+
+In my sample I manually create a box mesh with inverted normals:
+
+```cpp
+std::vector<glm::vec3> vertices{
+    { -1.0f, 1.0f, 1.0f },
+    { -1.0f, -1.0f, 1.0f },
+    { 1.0f, -1.0f, 1.0f },
+    { 1.0f, 1.0f, 1.0f },
+    { -1.0f, 1.0f, 1.0f },
+    { -1.0f, -1.0f, 1.0f },
+    { -1.0f, -1.0f, -1.0f },
+    { -1.0f, 1.0f, -1.0f },
+    { 1.0f, 1.0f, 1.0f },
+    { 1.0f, -1.0f, 1.0f },
+    { 1.0f, -1.0f, -1.0f },
+    { 1.0f, 1.0f, -1.0f },
+    { -1.0f, 1.0f, -1.0f },
+    { -1.0f, -1.0f, -1.0f },
+    { 1.0f, -1.0f, -1.0f },
+    { 1.0f, 1.0f, -1.0f },
+    { -1.0f, 1.0f, -1.0f },
+    { -1.0f, 1.0f, 1.0f },
+    { 1.0f, 1.0f, 1.0f },
+    { 1.0f, 1.0f, -1.0f },
+    { -1.0f, -1.0f, -1.0f },
+    { -1.0f, -1.0f, 1.0f },
+    { 1.0f, -1.0f, 1.0f },
+    { 1.0f, -1.0f, -1.0f },
+};
+
+std::vector<glm::vec3> normals{
+    { 0.0f, 1.0f, 0.0f },
+    { 0.0f, 1.0f, 0.0f },
+    { 0.0f, 1.0f, 0.0f },
+
+    { 0.0f, -1.0f, 0.0f },
+    { 0.0f, -1.0f, 0.0f },
+    { 0.0f, -1.0f, 0.0f },
+
+    { -1.0f, 0.0f, 0.0f },
+    { -1.0f, 0.0f, 0.0f },
+    { -1.0f, 0.0f, 0.0f },
+
+    { 0.0f, 0.0f, -1.0f },
+    { 0.0f, 0.0f, -1.0f },
+    { 0.0f, 0.0f, -1.0f },
+
+    { 1.0f, 0.0f, 0.0f },
+    { 1.0f, 0.0f, 0.0f },
+    { 1.0f, 0.0f, 0.0f },
+
+    { 0.0f, 0.0f, 1.0f },
+    { 0.0f, 0.0f, 1.0f },
+    { 0.0f, 0.0f, 1.0f },
+
+    { 0.0f, 1.0f, 0.0f },
+    { 0.0f, 1.0f, 0.0f },
+    { 0.0f, 1.0f, 0.0f },
+
+    { 0.0f, -1.0f, 0.0f },
+    { 0.0f, -1.0f, 0.0f },
+    { 0.0f, -1.0f, 0.0f },
+
+    { -1.0f, 0.0f, 0.0f },
+    { -1.0f, 0.0f, 0.0f },
+    { -1.0f, 0.0f, 0.0f },
+
+    { 0.0f, 0.0f, -1.0f },
+    { 0.0f, 0.0f, -1.0f },
+    { 0.0f, 0.0f, -1.0f },
+
+    { 1.0f, 0.0f, 0.0f },
+    { 1.0f, 0.0f, 0.0f },
+    { 1.0f, 0.0f, 0.0f },
+
+    { 0.0f, 0.0f, 1.0f },
+    { 0.0f, 0.0f, 1.0f },
+    { 0.0f, 0.0f, 1.0f },
+};
+
+std::for_each(vertices.begin(), vertices.end(), [this](glm::vec3 p) { return p * m_size; });
+
+std::vector<unsigned int> indices{
+    2, 1, 0,
+    2, 0, 3,
+    4, 5, 6,
+    7, 4, 6,
+    10, 9, 8,
+    10, 8, 11,
+    12, 13, 14,
+    15, 12, 14,
+    18, 17, 16,
+    18, 16, 19,
+    20, 21, 22,
+    23, 20, 22,
+};
+
+std::vector<glm::vec2> uvs{
+    { 0.333333f, 0.500000f },
+    { 0.333333f, 0.000000f },
+    { 0.000000f, 0.000000f },
+    { 0.000000f, 0.500000f },
+    { 0.000000f, 1.000000f },
+    { 0.000000f, 0.500000f },
+    { 0.333333f, 0.500000f },
+    { 0.333333f, 1.000000f },
+    { 1.000000f, 1.000000f },
+    { 1.000000f, 0.500000f },
+    { 0.666666f, 0.500000f },
+    { 0.666666f, 1.000000f },
+    { 0.333333f, 1.000000f },
+    { 0.333333f, 0.500000f },
+    { 0.666666f, 0.500000f },
+    { 0.666666f, 1.000000f },
+    { 0.340000f, 0.500000f },
+    { 0.666666f, 0.500000f },
+    { 0.666666f, 0.000000f },
+    { 0.340000f, 0.000000f },
+    { 0.666666f, 0.500000f },
+    { 0.666666f, 0.000000f },
+    { 1.000000f, 0.000000f },
+    { 1.000000f, 0.500000f },
+};
+
+// use AbstractMesh to render this
+```
+
+The only difference in rendering skybox is the use of `samplerCube` for texture in the fragment shader:
+
+```glsl
+#version 410
+
+in VS_OUT
+{
+    vec3 textureCoords;
+} fsIn;
+
+out vec4 fragmentColor;
+
+uniform samplerCube cubeMap;
+
+void main() {
+    fragmentColor = texture(cubeMap, fsIn.textureCoords);
+}
+```
+
+In vertex shader, however, the `textureCoords` variable is set using the camera view matrix passed as a uniform variable:
+
+```glsl
+#version 410
+
+layout (location = 0) in vec3 vertexPosition;
+layout (location = 1) in vec3 vertexNormal;
+layout (location = 2) in vec2 vertexUV;
+
+out VS_OUT
+{
+    vec3 textureCoords;
+} vsOut;
+
+out gl_PerVertex {
+    vec4 gl_Position;
+};
+
+uniform mat4 projection;
+uniform mat4 view;
+
+void main()
+{
+    vec4 pos = projection * view * vec4(vertexPosition, 1.0);
+    gl_Position = pos; //.xyww;
+    vsOut.textureCoords = vertexPosition;
+}
+```
+
+And passing the matrix to the uniform variable in the application _(thanks globjects for a beautiful API)_:
+
+```cpp
+skyboxRenderingProjectionTransformationUniform->set(cameraProjection);
+skyboxRenderingViewTransformationUniform->set(glm::mat4(glm::mat3(cameraView)));
+```
+
 ### Point lighting
 
 When people are talking about point light sources, they usually mean light attenuation (light intensity fading with the distance from the light source) and object shading calculation for each light source around a given polygon (you calculate the Blinn-Phong shading considering each light source and light attenuation).
 
 A bit more interesting here is the shadow casting technique. Instead of rendering shadow map as a simple 2D texture, you will need to utilize the cubemap, rendering an entire scene for each light source six times. But bear in mind: this is a very calculation-intensive technique, so refrain from doing so on the large landscapes. Alternatively, you should limit the light sources to the ones that are visible (or whose shadows are visible) in the camera space.
+
+The implementation is quite interesting - it is an inversion of a cubemap rendering technique - instead of sampling the cubemap texture we now render to the cubemap texture.
+Initializing this texture:
+
+```cpp
+auto pointShadowMapTexture = std::make_unique<globjects::Texture>(static_cast<gl::GLenum>(GL_TEXTURE_CUBE_MAP));
+
+pointShadowMapTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MIN_FILTER), static_cast<gl::GLenum>(GL_LINEAR));
+pointShadowMapTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_MAG_FILTER), static_cast<gl::GLenum>(GL_LINEAR));
+
+pointShadowMapTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_WRAP_S), static_cast<gl::GLenum>(GL_CLAMP_TO_BORDER));
+pointShadowMapTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_WRAP_T), static_cast<gl::GLenum>(GL_CLAMP_TO_BORDER));
+pointShadowMapTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_WRAP_R), static_cast<gl::GLenum>(GL_CLAMP_TO_BORDER));
+
+pointShadowMapTexture->setParameter(static_cast<gl::GLenum>(GL_TEXTURE_BORDER_COLOR), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+pointShadowMapTexture->bind();
+
+const auto shadowMapSize = 2048;
+
+for (auto i = 0; i < 6; ++i)
+{
+    ::glTexImage2D(
+        static_cast<::GLenum>(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i),
+        0,
+        GL_DEPTH_COMPONENT,
+        shadowMapSize,
+        shadowMapSize,
+        0,
+        GL_DEPTH_COMPONENT,
+        GL_FLOAT,
+        nullptr);
+}
+
+pointShadowMapTexture->unbind();
+```
+
+This texture will be attached to a framebuffer:
+
+```cpp
+auto pointShadowMappingFramebuffer = std::make_unique<globjects::Framebuffer>();
+pointShadowMappingFramebuffer->attachTexture(static_cast<gl::GLenum>(GL_DEPTH_ATTACHMENT), pointShadowMapTexture.get());
+
+pointShadowMappingFramebuffer->printStatus(true);
+```
+
+Since the cubemap is effectively six different textures, we will need to render to all of them, using different light projection matrices. We can somewhat optimize this by using geometry shader. Passing the matrices could be optimized using the SSBO:
+
+```cpp
+struct alignas(16) PointLightData
+{
+    glm::vec3 lightPosition;
+    float farPlane;
+    std::array<glm::mat4, 6> projectionViewMatrices;
+};
+
+auto pointLightDataBuffer = std::make_unique<globjects::Buffer>();
+
+// calculate the 6 light projection matrices
+
+glm::mat4 pointLightProjection = glm::perspective(glm::radians(90.0f), static_cast<float>(shadowMapSize / shadowMapSize), nearPlane, farPlane);
+
+std::array<glm::mat4, 6> pointLightProjectionViewMatrices{
+    pointLightProjection * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
+    pointLightProjection * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
+    pointLightProjection * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+    pointLightProjection * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)),
+    pointLightProjection * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
+    pointLightProjection * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
+};
+
+PointLightData pointLightData{ pointLightPosition, farPlane, pointLightProjectionViewMatrices };
+
+pointLightDataBuffer->setData(pointLightData, static_cast<gl::GLenum>(GL_DYNAMIC_COPY));
+```
+
+Then, on each frame, bind the SSBO and render scene to a framebuffer with cubemap texture attached to it:
+
+```cpp
+// bind the buffer on each frame
+
+pointShadowMappingFramebuffer->bind();
+
+pointLightDataBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, 5);
+
+pointShadowMappingProgram->use();
+
+// render frame
+
+pointLightDataBuffer->unbind(GL_SHADER_STORAGE_BUFFER, 5);
+
+pointShadowMappingFramebuffer->unbind();
+
+pointShadowMappingProgram->release();
+```
+
+For shadow mapping pass, the shaders are as following:
+
+**geometry shader:**
+
+```glsl
+#version 430
+
+layout (triangles) in;
+
+// we emit 6 triangles for one input triangle - to be written to 6 textures of the cubemap
+layout (triangle_strip, max_vertices = 18) out;
+
+struct PointLight
+{
+   vec3 lightPosition;
+   float farPlane;
+   mat4 projectionViewMatrices[6];
+};
+
+layout (std430, binding = 5) buffer pointLightData
+{
+   PointLight pointLight;
+};
+
+out vec4 fragmentPosition;
+
+void main()
+{
+    for (int face = 0; face < 6; ++face)
+    {
+        gl_Layer = face;
+
+        for (int vertex = 0; vertex < 3; ++vertex)
+        {
+            fragmentPosition = gl_in[vertex].gl_Position;
+            gl_Position = pointLight.projectionViewMatrices[face] * fragmentPosition;
+            EmitVertex();
+        }
+
+        EndPrimitive();
+    }
+}
+```
+
+**fragment shader:**
+
+```glsl
+#version 430
+
+in vec4 fragmentPosition;
+
+struct PointLight
+{
+    vec3 lightPosition;
+    float farPlane;
+    mat4 projectionViewMatrices[6];
+};
+
+layout (std430, binding = 5) buffer pointLightData
+{
+    PointLight pointLight;
+};
+
+void main()
+{
+    float distance = length(fragmentPosition.xyz - pointLight.lightPosition) / pointLight.farPlane;
+
+    gl_FragDepth = distance;
+}
+```
+
+And for the final render pass _(sampling the shadow cubemap)_:
+
+**vertex shader:**
+
+```glsl
+#version 430
+
+in vec4 fragmentPosition;
+
+struct PointLight
+{
+    vec3 lightPosition;
+    float farPlane;
+    mat4 projectionViewMatrices[6];
+};
+
+layout (std430, binding = 5) buffer pointLightData
+{
+    PointLight pointLight;
+};
+
+void main()
+{
+    float distance = length(fragmentPosition.xyz - pointLight.lightPosition) / pointLight.farPlane;
+
+    gl_FragDepth = distance;
+}
+```
+
+**fragment shader:**
+
+```glsl
+#version 430
+
+layout (location = 0) out vec4 fragmentColor;
+
+in VS_OUT
+{
+    vec3 fragmentPosition;
+    vec3 normal;
+    vec2 textureCoords;
+} fsIn;
+
+uniform samplerCube shadowMap;
+uniform sampler2D diffuseTexture;
+uniform sampler2D specularMapTexture;
+uniform sampler2D emissionMapTexture;
+
+struct PointLight
+{
+    vec3 lightPosition;
+    float farPlane;
+    mat4 projectionViewMatrices[6];
+};
+
+layout (std430, binding = 5) buffer pointLightData
+{
+    PointLight pointLight;
+};
+
+uniform vec3 lightColor;
+uniform vec3 cameraPosition;
+
+// TODO: make these params uniforms
+// uniform vec3 ambientColor;
+// uniform vec3 diffuseColor;
+// uniform float materialSpecular;
+uniform vec3 emissionColor;
+
+float attenuation_constant = 1.0;
+float attenuation_linear = 0.09;
+float attenuation_quadratic = 0.032;
+
+const int pcfSamples = 20;
+vec3 pcfSampleOffsetDirections[pcfSamples] = vec3[]
+(
+   vec3(1, 1, 1), vec3(1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1),
+   vec3(1, 1, -1), vec3(1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+   vec3(1, 1, 0), vec3(1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0),
+   vec3(1, 0, 1), vec3(-1, 0, 1), vec3(1, 0, -1), vec3(-1, 0, -1),
+   vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1)
+);
+
+float shadowCalculation(vec3 normal)
+{
+    vec3 fragmentToLight = fsIn.fragmentPosition - pointLight.lightPosition;
+    float occluderDepth = texture(shadowMap, fragmentToLight).r * pointLight.farPlane;
+    float thisDepth = length(fragmentToLight);
+
+    float bias = 0.15;
+
+    // PCF
+    /*float shadow = 0.0;
+    float viewDistance = length(fsIn.fragmentPosition - cameraPosition);
+    float diskRadius = (1.0 + (viewDistance / farPlane)) / 50.0;
+
+    for (int i = 0; i < pcfSamples; ++i)
+    {
+        float closestDepth = texture(shadowMap, fragmentToLight + pcfSampleOffsetDirections[i] * diskRadius).r * farPlane;
+
+        if (thisDepth - bias < closestDepth)
+            shadow += 1.0;
+    }
+
+    shadow /= float(pcfSamples);*/
+
+    float shadow = (thisDepth - bias) < occluderDepth ? 1.0 : 0.0;
+
+    return shadow;
+}
+
+void main()
+{
+    vec3 color = texture(diffuseTexture, fsIn.textureCoords).rgb;
+    vec3 normal = normalize(fsIn.normal);
+
+    // ambient
+    vec3 ambient = 0.3 * color;
+
+    // diffuse
+    vec3 lightDirection = normalize(pointLight.lightPosition - fsIn.fragmentPosition);
+    float diff = max(dot(lightDirection, normal), 0.0);
+    vec3 diffuse = diff * lightColor;
+
+    // specular
+    vec3 viewDirection = normalize(cameraPosition - fsIn.fragmentPosition);
+    vec3 halfwayDirection = normalize(lightDirection + viewDirection);
+    float spec = pow(max(dot(normal, halfwayDirection), 0.0), 64.0);
+    vec3 specular = spec * lightColor;
+
+    // attenuation
+    float lightRadius = 10.0;
+    float distance = length(pointLight.lightPosition - fsIn.fragmentPosition) / lightRadius;
+    float attenuation = 1.0 / (attenuation_constant + attenuation_linear * distance + attenuation_quadratic * (distance * distance));
+
+    // calculate shadow; this represents a global directional light, like Sun
+    float shadow = shadowCalculation(normal);
+
+    // these are the multipliers from different light maps (read from corresponding textures)
+    float specularCoefficient = texture(specularMapTexture, fsIn.textureCoords).r;
+    float emissionCoefficient = texture(emissionMapTexture, fsIn.textureCoords).r;
+
+    // vec3 lighting = ((shadow * ((diffuse * attenuation) + (specular * specularCoefficient * attenuation))) + (ambient * attenuation)) * color + (emissionColor * emissionCoefficient);
+    vec3 lighting = ((shadow * ((diffuse) + (specular * specularCoefficient))) + (ambient)) * color + (emissionColor * emissionCoefficient);
+
+    fragmentColor = vec4(lighting, 1.0);
+}
+```
+
+Note how the shadow map is `samplerCube` and sampling it is using the `vec3` instead of `vec2` as with planar (2D) textures.
 
 ### Reflections
 
