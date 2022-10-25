@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 'Message compression formats in a web application'
+date: '2022-10-25T00:15:00+00:00'
 ---
 
 I have seen quite a few web applications which are passing heaps of data between client and server. Pretty much all of them use JSON for that purpose.
