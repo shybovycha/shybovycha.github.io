@@ -13,7 +13,7 @@ There might be some mistakes, since I am not an expert in CG and OpenGL and ther
 One might ask: why OpenGL? Why not Vulkan (or DirectX 12)? Why even bother with these emulaiton techniques - why not jump straight to raytracing?
 Well, it is the `end of October 2022` at the moment of publishing this blog, the most recent GPU on the market is GeForce RTX 4090, which is yet to arrive and its RRP (recommended retailer price) is `A$2959` (as advertised by nVidia):
 
-<img data-src="/images/advanced-opengl-techniques/geforce-rtx-4090-price-oct-2022.png" alt="RTX4090 price as of October 2022" />
+<img data-src="/images/opengl-advanced-samples/geforce-rtx-4090-price-oct-2022.webp" alt="RTX4090 price as of October 2022" />
 
 And most of those cards are gone in a blink of an eye and used for mining whatever-coins. My PC runs GTX1080, which is still more than enough for most of the games I play (being Genshin Impact at most).
 
