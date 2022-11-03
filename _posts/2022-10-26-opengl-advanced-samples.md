@@ -38,16 +38,17 @@ This blog is enormous, so blow is the table of contents for the topics covered. 
     * [Texture handles](#texture-handles)
     * [Rendering to different textures in geometry shader](#rendering-to-different-textures-in-geometry-shader)
 * [Rendering techniques](#rendering-techniques)
-    * [Simple shadow mapping](#simple-shadow-mapping)
-    * [Biasing](#biasing)
-    * [Percentage-close filtering](#percentage-close-filtering)
-    * [Variance shadow mapping](#variance-shadow-mapping)
-    * [Cascaded shadow mapping](#cascaded-shadow-mapping)
+    * [Shadow mapping](#shadow-mapping)
+        * [Biasing](#biasing)
+        * [Percentage-close filtering](#percentage-close-filtering)
+        * [Variance shadow mapping](#variance-shadow-mapping)
+        * [Cascaded shadow mapping](#cascaded-shadow-mapping)
     * [Anti-aliasing](#anti-aliasing)
-    * [Multi-sampled anti-aliasing (MSAA)](#multi-sampled-anti-aliasing-msaa)
-    * [Fast-approximation anti-aliasing (FXAA)](#fast-approximation-anti-aliasing-fxaa)
-    * [Screen-space ambient occlusion (SSAO)](#screen-space-ambient-occlusion-ssao)
-    * [Horizon-based ambient occlusion (HBAO)](#horizon-based-ambient-occlusion-hbao)
+        * [Multi-sampled anti-aliasing (MSAA)](#multi-sampled-anti-aliasing-msaa)
+        * [Fast-approximation anti-aliasing (FXAA)](#fast-approximation-anti-aliasing-fxaa)
+    * Ambient occlusion
+        * [Screen-space ambient occlusion (SSAO)](#screen-space-ambient-occlusion-ssao)
+        * [Horizon-based ambient occlusion (HBAO)](#horizon-based-ambient-occlusion-hbao)
     * [Volumetric lighting](#volumetric-lighting)
 * [Common rendering techniques](#common-rendering-techniques)
     * [Bloom](#bloom)
@@ -55,6 +56,8 @@ This blog is enormous, so blow is the table of contents for the topics covered. 
     * [Skybox](#skybox)
     * [Point lighting](#point-lighting)
     * [Reflections](#reflections)
+
+The source code is available on [GitHub](https://github.com/shybovycha/opengl-samples/).
 
 <!--more-->
 
@@ -828,7 +831,7 @@ void main()
 
 Read more:
 
-[1](https://on-demand.gputechconf.com/gtc/2014/video/S4379-opengl-44-scene-rendering-techniques.mp4)
+* [[blog] Opengl 4.4 scene rendering techniques](https://on-demand.gputechconf.com/gtc/2014/video/S4379-opengl-44-scene-rendering-techniques.mp4)
 
 ### Texture handles
 
@@ -1021,9 +1024,9 @@ void main()
 
 ## Rendering techniques
 
-### Simple shadow mapping
+### Shadow mapping
 
-The simplest idea of shadow mapping is: you render a scene depths (each pixel represents a distance from camera to the object) from the perspective of a light source to a separate render target. Then you render your scene normally from the perspective of a camera and for each pixel you compare its distance to the light source (take position of a pixel and subtract position of a light source from it) - if scene pixel is further from the light than the same pixel' depth in the light space - there's some other thing blocking the light, so this pixel is in the shadow.
+The most straightforward idea of implementing shadow mapping is: you render a scene depths (each pixel represents a distance from camera to the object) from the perspective of a light source to a separate render target. Then you render your scene normally from the perspective of a camera and for each pixel you compare its distance to the light source (take position of a pixel and subtract position of a light source from it) - if scene pixel is further from the light than the same pixel' depth in the light space - there's some other thing blocking the light, so this pixel is in the shadow.
 
 For this algorithm, you would need a shadow map texture and a framebuffer it is attached to:
 
@@ -1418,10 +1421,10 @@ Thus, you "divide" your camera space into few sections (aka "cascades") and rend
 
 Read more:
 
-[1](https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-10-parallel-split-shadow-maps-programmable-gpus)
-[2](https://sudonull.com/post/110380-Shadow-Rendering-Using-Parallel-Split-Shadow-Mapping)
-[3](https://docs.microsoft.com/en-us/windows/win32/dxtecharts/cascaded-shadow-maps)
-[4](https://ogldev.org/www/tutorial49/tutorial49.html)
+* [[nVidia] Parallel split shadow maps on programmable GPUs](https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-10-parallel-split-shadow-maps-programmable-gpus)
+* [[blog] Shadow Rendering Using Parallel-Split Shadow Mapping](https://sudonull.com/post/110380-Shadow-Rendering-Using-Parallel-Split-Shadow-Mapping)
+* [[MSDN] Cascaded shadow maps](https://docs.microsoft.com/en-us/windows/win32/dxtecharts/cascaded-shadow-maps)
+* [[OGLdev] Cascaded shadow mapping](https://ogldev.org/www/tutorial49/tutorial49.html)
 
 For the most part, the logic is implemented in the main application, where you have to set up the projection matrices for the shadow mapping and run the shadow mapping rendering stage multiple times (for each of the projection matrix).
 
@@ -1941,7 +1944,7 @@ You will need to store the position of each fragment in camera space (yes, camer
 
 Read more:
 
-[1](https://learnopengl.com/Advanced-Lighting/SSAO)
+* [[learnopengl] SSAO](https://learnopengl.com/Advanced-Lighting/SSAO)
 
 Setting up the initial render pass framebuffer is a bit tricky - you will need multiple attachments for each of the data component:
 
@@ -2560,7 +2563,7 @@ This technique gives better results for corners and edges than conventional SSAO
 
 Read more:
 
-[1](https://developer.download.nvidia.com/presentations/2008/SIGGRAPH/HBAO_SIG08b.pdf)
+* [[nVidia] Image-Space Horizon-Based Ambient Occlusion](https://developer.download.nvidia.com/presentations/2008/SIGGRAPH/HBAO_SIG08b.pdf)
 
 The difference between SSAO and HBAO implementations lays in literally one fragment shader, calculating the ambient occlusion values _(the second pass, from the SSAO paragraph)_:
 
@@ -2653,9 +2656,9 @@ The idea is that you store the pixels' depth and position information in both li
 
 Read more:
 
-[1](https://developer.nvidia.com/volumetriclighting)
-[2](https://www.alexandre-pestana.com/volumetric-lights/)
-[3](https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-13-volumetric-light-scattering-post-process)
+* [[nVidia] Volumetric lighting](https://developer.nvidia.com/volumetriclighting)
+* [[blog] Volumetric lights](https://www.alexandre-pestana.com/volumetric-lights/)
+* [[nVidia] Volumetric light scattering post-processing](https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-13-volumetric-light-scattering-post-process)
 
 The implementation for this technique is actually pretty straightforward: this is a two-pass deferred rendering application.
 
@@ -3520,8 +3523,8 @@ The standard implementations include calculating every particle's params (positi
 
 Read more:
 
-[1](https://learnopengl.com/In-Practice/2D-Game/Particles)
-[2](http://www.opengl-tutorial.org/intermediate-tutorials/billboards-particles/particles-instancing/)
+* [[learnopengl] Particles](https://learnopengl.com/In-Practice/2D-Game/Particles)
+* [[opengl-tutorial] Particles / instancing](http://www.opengl-tutorial.org/intermediate-tutorials/billboards-particles/particles-instancing/)
 
 <!-- TODO: compute shaders -->
 
@@ -3535,7 +3538,7 @@ The skybox can use normal textures or it could use cubemaps - literally just a c
 
 Read more:
 
-[1](https://learnopengl.com/Advanced-OpenGL/Cubemaps)
+* [[learnopengl] Cubemaps](https://learnopengl.com/Advanced-OpenGL/Cubemaps)
 
 In order to implement skybox, one first needs a cubemap texture:
 
