@@ -34,7 +34,7 @@ Hence I crafted this simple grammar in ANTLR4 to parse these files:
 ```antlr
 grammar ConfigScript;
 
-config : (object | LINE_COMMENT)* EOF ;
+config : (object | comment)* EOF ;
 
 object
     : Identifier '{' property* '}'
@@ -49,7 +49,12 @@ propertyValue
     | FLOAT
     | BOOL
     | STRING
-    | object
+    | objectValue
+    ;
+
+objectValue
+    : '{' property* '}'
+    | STRING '{' (property)* '}'
     ;
 
 vector
@@ -57,9 +62,11 @@ vector
     | FLOAT+
     ;
 
+comment : LINE_COMMENT | BLOCK_COMMENT ;
+
 STRING : DOUBLE_QUOTED_STRING | SINGLE_QUOTED_STRING ;
 
-BOOL : ('true' | 'false') ;
+BOOL : 'true' | 'false' ;
 
 DOUBLE_QUOTED_STRING : '"' DoubleQuoteStringChar* '"' ;
 SINGLE_QUOTED_STRING : '\'' SingleQuoteStringChar* '\'' ;
@@ -85,12 +92,24 @@ FLOAT : ('+' | '-')? NUM+ '.' NUM+ ;
 WHITESPACE : [ \r\n\t]+ -> skip ;
 ALPHA : [a-zA-Z_] ;
 NUM : [0-9] ;
-DASH : '-' ;
-NEWLINE : [\r\n]+ ;
-COMMENT : [/] ;
-
-NODOUBLEQUOTE : [^"] ;
-NOSINGLEQUOTE : [^'] ;
 
 LINE_COMMENT : '//' ~[\r\n]* -> skip ;
+BLOCK_COMMENT : '/*' .*? '*/' -> skip ;
+```
+
+The only difference is that the object name can only be a quoted string:
+
+```
+// This is a comment
+object_keyword "Example/ObjectName" // <--- this can not be just Example/ObjectName
+{
+    attribute_name "some value"
+
+    object_keyword2 "Nested Object"
+    {
+        other_attribute 1 2 3
+        // and so on..
+        /* block comment */
+    }
+}
 ```
