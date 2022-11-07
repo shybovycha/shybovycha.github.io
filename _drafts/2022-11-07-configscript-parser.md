@@ -34,57 +34,63 @@ Hence I crafted this simple grammar in ANTLR4 to parse these files:
 ```antlr
 grammar ConfigScript;
 
-config : (object)* ;
+config : (object | LINE_COMMENT)* EOF ;
 
-object : identifier WHITESPACE stringValue WHITESPACE '{' (property)* '}' ;
-
-identifier
-    : '\'' rawIdentifier '\''
-    | '"' rawIdentifier '"'
-    | rawIdentifier
+object
+    : Identifier '{' property* '}'
+    | Identifier STRING '{' (property)* '}'
     ;
 
-rawIdentifier : ALPHA rawIdentifier1 ;
-
-rawIdentifier1
-    : ALPHA rawIdentifier1
-    | NUM rawIdentifier1
-    | DASH rawIdentifier1
-    ;
-
-property : (WHITESPACE)* rawIdentifier (WHITESPACE)+ propertyValue ;
+property : Identifier propertyValue ;
 
 propertyValue
-    : propertyValue1
-    | propertyValue1 (WHITESPACE)+ propertyValue
+    : vector
+    | INT
+    | FLOAT
+    | BOOL
+    | STRING
+    | object
     ;
 
-propertyValue1
-    : integerValue
-    | floatValue
-    | booleanValue
-    | stringValue
+vector
+    : INT+
+    | FLOAT+
     ;
 
-integerValue : ('+'|'-') (NUM)+ ;
+STRING : DOUBLE_QUOTED_STRING | SINGLE_QUOTED_STRING ;
 
-floatValue : ('+'|'-') (NUM)+ '.' (NUM)+ ;
+BOOL : ('true' | 'false') ;
 
-booleanValue : ('true' | 'false') ;
+DOUBLE_QUOTED_STRING : '"' DoubleQuoteStringChar* '"' ;
+SINGLE_QUOTED_STRING : '\'' SingleQuoteStringChar* '\'' ;
 
-stringValue
-    : '"' doubleQuotedRawString '"'
-    | '\'' singleQuotedRawString '\''
+Identifier : ALPHA (ALPHA | NUM)* ;
+
+fragment SingleQuoteStringChar : ~['\r\n] ;
+    // : ~['\\\r\n]
+    // | SimpleEscapeSequence ;
+
+fragment DoubleQuoteStringChar : ~["\r\n] ;
+    // : ~["\\\r\n]
+    // | SimpleEscapeSequence ;
+
+// fragment SimpleEscapeSequence : '\\' ['"?abfnrtv\\] ;
+
+INT : '0'
+    | '-'? [1-9] [0-9]*
     ;
 
-doubleQuotedRawString : (NODOUBLEQUOTE)* ;
-singleQuotedRawString : (NOSINGLEQUOTE)* ;
+FLOAT : ('+' | '-')? NUM+ '.' NUM+ ;
 
-WHITESPACE : [ \r\n\t]+ -> skip;
-ALPHA : [a-zA-Z] ;
+WHITESPACE : [ \r\n\t]+ -> skip ;
+ALPHA : [a-zA-Z_] ;
 NUM : [0-9] ;
 DASH : '-' ;
+NEWLINE : [\r\n]+ ;
+COMMENT : [/] ;
 
 NODOUBLEQUOTE : [^"] ;
 NOSINGLEQUOTE : [^'] ;
+
+LINE_COMMENT : '//' ~[\r\n]* -> skip ;
 ```
