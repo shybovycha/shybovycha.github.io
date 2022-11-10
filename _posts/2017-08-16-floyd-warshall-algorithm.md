@@ -4,6 +4,8 @@ title: Floyd-Warshall algorithm
 date: '2017-09-04T11:38:24+11:00'
 ---
 
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="0" data-page="{{page.title | escape}}"></div>
+
 <style>
     table td {
         padding: 0.25em 1em;
@@ -229,6 +231,8 @@ Let's "animate" this algorithm in few steps for the sample graph from above:
 
 ### Step 1
 
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="25" data-page="{{page.title | escape}}"></div>
+
 We try to find the vertex which makes the **shorter** path through itself than the direct path between two vertices. E.g. for every vertex `k` we find the pair of vertices `u` and `v` where path `u -> v` is **longer** than the path `u -> k -> v`. If we found one - we will update the matrices `D` and `R`, correspondingly.
 
 For vertex `k = 0` we will check each combination of:
@@ -417,6 +421,8 @@ For path `3 -> 1 -> 2`:
 
 1. there is no path from `3` to `2` directly, so its length is `inf`
 2. `3 -> 1` has length `2` and `1 -> 2` has length `6`, the total is `8` which is infinitely better than infinity
+
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="50" data-page="{{page.title | escape}}"></div>
 
 Here are the updated matrices:
 
@@ -677,6 +683,8 @@ For vertex `3` we will check each combination of:
 
 This case is the last one. It is similar to the previous two. But please note that we are using the matrix values from the previous step.
 
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="75" data-page="{{page.title | escape}}"></div>
+
 For path `0 -> 1`:
 
 1. direct path from `0` to `1` does not exist, take it as `inf`
@@ -924,3 +932,5 @@ You can read 'bout this algorithm on [wikipedia][1] and get some data structures
 
   [1]: http://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm
   [2]: http://quickgraph.codeplex.com/
+
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="100" data-page="{{page.title | escape}}"></div>

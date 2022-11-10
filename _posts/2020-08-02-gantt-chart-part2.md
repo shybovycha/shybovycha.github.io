@@ -4,6 +4,8 @@ title: Gantt chart with D3. Part 2
 date: '2020-08-02T15:04:24+10:00'
 ---
 
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="0" data-page="{{page.title | escape}}"></div>
+
 **UPDATE:** there is a follow-up to this blog, [Gantt chart with Canvas]({% post_url 2021-03-04-gantt-chart-part3 %}).
 
 This is a follow-up to the blog I wrote a bit over three years ago, [Gantt chart with D3]({% post_url 2017-04-09-gantt-chart-with-d3 %})
@@ -78,6 +80,8 @@ I think that is quite ridiculous, so here are few considerations:
 
 Let us actually start with D3.
 
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="25" data-page="{{page.title | escape}}"></div>
+
 The library currently operates on few features from D3:
 
 * selecting DOM nodes
@@ -149,6 +153,8 @@ const detectConflicts = data => {
 ```
 
 Then we can render those milestones with errors and their connectivity lines with different styles:
+
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="50" data-page="{{page.title | escape}}"></div>
 
 ```js
 let stroke = color;
@@ -228,6 +234,8 @@ As you can see, the width of a rectangle is being calculated based on the total 
 
 <img data-src="/images/gantt_chart_with_d3_part2/chart_with_days1-min.webp" alt="">
 
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="75" data-page="{{page.title | escape}}"></div>
+
 One little change to this implementation that I would like to see is alteration in rectangles' colors:
 
 ```js
@@ -273,3 +281,5 @@ The source code of this implementation could be found on [Github](https://github
 
 I think that is enough for now, but it is not the end! There's still some work to be done in removing the D3 from this setup completely,
 which is actually done in [Gantt chart: part 3]({% post_url 2021-03-04-gantt-chart-part3 %}) blog.
+
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="100" data-page="{{page.title | escape}}"></div>

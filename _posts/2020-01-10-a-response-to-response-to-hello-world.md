@@ -10,6 +10,8 @@ tags:
   - performance
 ---
 
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="0" data-page="{{page.title | escape}}"></div>
+
 Recently I've received an email from StackOverflow newsletters with a link to a quite controversial (at first glance) blog, [A response to Hello World](https://www.doxsey.net/blog/a-response-to-hello-world) by Caleb Doxsey. This blog is a response to another curious read, [Hello world](https://drewdevault.com/2020/01/04/Slow.html) by Drew DeVault.
 
 In the former article, author compared the performance of a tiny "Hello, World" program in Assembly to the same program in Go.
@@ -95,6 +97,8 @@ I have spent quite some time (predominantly because I am quite rusty with Assemb
 I came up with the code in Assembly that does exactly the same - allocates the memory, fills it with the repeated `"hello world"` string and then makes a syscall to print it to the console.
 
 ### My optimized Assembly
+
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="25" data-page="{{page.title | escape}}"></div>
 
 ```nasm
 ;; compile me on OSX: nasm -fmacho64 helloworld.asm && ld helloworld.o -lSystem -macosx_version_min 10.13
@@ -203,6 +207,8 @@ section .data
 msg: db "Hello, world", 10
 len equ $ - msg
 ```
+
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="50" data-page="{{page.title | escape}}"></div>
 
 ### My version with logs
 
@@ -360,78 +366,4 @@ The results became more reasonable:
 
 <img alt="" data-src="/images/a-response-to-response-to-hello-world/go_vs_asm_hello_world-min.webp">
 
-<!--
-```
-[
-  [1000000, "./helloworld1", 0.85],
-  [1000000, "go run go/helloworld1.go", 1.135],
-  [1000000, "./helloworld3", 0.03],
-  [1000000, "go run go/helloworld2.go", 0.352],
-  [2500000, "./helloworld1", 2.074],
-  [2500000, "go run go/helloworld1.go", 2.419],
-  [2500000, "./helloworld3", 0.056],
-  [2500000, "go run go/helloworld2.go", 0.4],
-  [5000000, "./helloworld1", 4.376],
-  [5000000, "go run go/helloworld1.go", 4.516],
-  [5000000, "./helloworld3", 0.097],
-  [5000000, "go run go/helloworld2.go", 0.473],
-  [7500000, "./helloworld1", 6.274],
-  [7500000, "go run go/helloworld1.go", 6.535],
-  [7500000, "./helloworld3", 0.154],
-  [7500000, "go run go/helloworld2.go", 0.794],
-  [10000000, "./helloworld1", 8.352],
-  [10000000, "go run go/helloworld1.go", 8.693],
-  [10000000, "./helloworld3", 0.223],
-  [10000000, "go run go/helloworld2.go", 0.656],
-  [12500000, "./helloworld1", 10.567],
-  [12500000, "go run go/helloworld1.go", 10.883],
-  [12500000, "./helloworld3", 0.227],
-  [12500000, "go run go/helloworld2.go", 0.721],
-  [15000000, "./helloworld1", 12.529],
-  [15000000, "go run go/helloworld1.go", 13.844],
-  [15000000, "./helloworld3", 0.373],
-  [15000000, "go run go/helloworld2.go", 0.881],
-  [17500000, "./helloworld1", 16.307],
-  [17500000, "go run go/helloworld1.go", 15.158],
-  [17500000, "./helloworld3", 0.36],
-  [17500000, "go run go/helloworld2.go", 1.039]
-]
-```
-
-```
-[
-  [1000000, "./helloworld1", 0.837],
-  [1000000, "./go/helloworld1", 1.395],
-  [1000000, "./helloworld3", 0.03],
-  [1000000, "./go/helloworld2", 0.51],
-  [2500000, "./helloworld1", 2.1],
-  [2500000, "./go/helloworld1", 2.36],
-  [2500000, "./helloworld3", 0.062],
-  [2500000, "./go/helloworld2", 0.094],
-  [5000000, "./helloworld1", 4.203],
-  [5000000, "./go/helloworld1", 4.201],
-  [5000000, "./helloworld3", 0.113],
-  [5000000, "./go/helloworld2", 0.171],
-  [7500000, "./helloworld1", 6.238],
-  [7500000, "./go/helloworld1", 6.197],
-  [7500000, "./helloworld3", 0.17],
-  [7500000, "./go/helloworld2", 0.26],
-  [10000000, "./helloworld1", 8.226],
-  [10000000, "./go/helloworld1", 8.355],
-  [10000000, "./helloworld3", 0.219],
-  [10000000, "./go/helloworld2", 0.335],
-  [12500000, "./helloworld1", 10.359],
-  [12500000, "./go/helloworld1", 10.571],
-  [12500000, "./helloworld3", 0.258],
-  [12500000, "./go/helloworld2", 0.458],
-  [15000000, "./helloworld1", 13.388],
-  [15000000, "./go/helloworld1", 12.554],
-  [15000000, "./helloworld3", 0.319],
-  [15000000, "./go/helloworld2", 0.498],
-  [17500000, "./helloworld1", 14.625],
-  [17500000, "./go/helloworld1", 14.529],
-  [17500000, "./helloworld3", 0.347],
-  [17500000, "./go/helloworld2", 0.575]
-]
-```
--->
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="100" data-page="{{page.title | escape}}"></div>

@@ -4,6 +4,8 @@ title: "OpenGL: advanced samples"
 date: "26-10-2022T00:00:00+10:00"
 ---
 
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="0" data-page="{{page.title | escape}}"></div>
+
 Damn this blog was long coming - I picked my interest in shaders over a decade ago, started to actually learn something in early 2021 and started writing this blog at the end of 2021. Now the time has finally come to share this with the world!
 
 For a long time I was keen in learning low-level computer graphics APIs and algorithms, but only recently actually made any progress towards that goal.
@@ -1025,6 +1027,8 @@ void main()
 ## Rendering techniques
 
 ### Shadow mapping
+
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="25" data-page="{{page.title | escape}}"></div>
 
 The most straightforward idea of implementing shadow mapping is: you render a scene depths (each pixel represents a distance from camera to the object) from the perspective of a light source to a separate render target. Then you render your scene normally from the perspective of a camera and for each pixel you compare its distance to the light source (take position of a pixel and subtract position of a light source from it) - if scene pixel is further from the light than the same pixel' depth in the light space - there's some other thing blocking the light, so this pixel is in the shadow.
 
@@ -2151,6 +2155,8 @@ ssaoKernelTexture->image1D(
     &ssaoKernel[0]
 );
 ```
+
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="50" data-page="{{page.title | escape}}"></div>
 
 With the rendering itself, there are no tricks - you have three passes.
 
@@ -3444,6 +3450,8 @@ void main()
 }
 ```
 
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="75" data-page="{{page.title | escape}}"></div>
+
 Except there is no need to project anything when rendering to the quad, so the difference is only in the last line for the blur shader:
 
 ```glsl
@@ -4403,3 +4411,5 @@ void main()
     fragmentColor = mix(albedoColor, reflectionColor, 0.6);
 }
 ```
+
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="100"></div>

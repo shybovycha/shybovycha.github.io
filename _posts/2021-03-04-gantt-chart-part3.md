@@ -4,6 +4,8 @@ title: "Gantt chart. Part 3"
 date: '2021-03-04T19:46:24+11:00'
 ---
 
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="0" data-page="{{page.title | escape}}"></div>
+
 I have been writing about and improving on [my Gantt chart implementation](https://github.com/shybovycha/gantt-chart/) for quite some time now.
 
 It all started with this ([blog]({% post_url 2017-04-09-gantt-chart-with-d3 %})):
@@ -65,6 +67,8 @@ window.addEventListener('DOMContentLoaded', () => {
 More about the implementation specifics under the cut.
 
 <!--more-->
+
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="50" data-page="{{page.title | escape}}"></div>
 
 The main goal I had in mind was getting rid of D3, since it is a rather heavy dependency which is only used for few rather simple functions.
 By the end of this rework I ended up adding a ton of visual and functional improvements to the implementation, but I'll talk about it in detail later.
@@ -164,3 +168,5 @@ However, the big disadvantage of using Canvas is the complexity to use the custo
 This is the reason this implementation is still not a standalone React component - I am still trying to figure out the best way to render the chart.
 
 Anyhow, that's it for now. I will improve this solution when the time comes.
+
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="100" data-page="{{page.title | escape}}"></div>

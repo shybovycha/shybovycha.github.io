@@ -4,6 +4,8 @@ title: "ShootThem! revival"
 date: '2020-11-13T13:46:24+11:00'
 ---
 
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="0" data-page="{{page.title | escape}}"></div>
+
 Quite some time ago I [dag out]({% post_url tumblr/2015-04-06-shootthem %}) the sources of an old game of mine, ShootThem! made back when I was at high-school, around 2006.
 
 It has been over a decade ever since I made that game and I had enough inspiration to revisit the code once again.
@@ -94,6 +96,8 @@ The editor was also reworked... Or better being said, made from scratch - now it
 
 <div><img data-src="/images/shootthem-revival/Shoot Them Editor 26_09_2020 1_09_03 PM.webp"></div>
 <div><img data-src="/images/shootthem-revival/Shoot Them Editor 26_09_2020 1_12_56 PM.webp"></div>
+
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="25" data-page="{{page.title | escape}}"></div>
 
 ## Lessons learned
 
@@ -200,6 +204,7 @@ class Store {
     }
 };
 ```
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="50" data-page="{{page.title | escape}}"></div>
 
 Templates won't solve the issue either:
 
@@ -287,6 +292,8 @@ This allows for a magnitude of interesting mechanics.
 
 For a number of reasons I didn't choose it - there were some user experience issues significantly reducing my productivity.
 
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="75" data-page="{{page.title | escape}}"></div>
+
 #### Asset management
 
 Sspecifically the neccesity to specify every single texture for every single object on a scene. Check out this chicken model:
@@ -338,3 +345,5 @@ So that every time you need an FPS camera - you have to define it from zero, usi
 I am not done with this project revival just yet - I still want it to build under OSX and I still have few assets to put into the game.
 Also, the plot is still not very clear, so I'd better come up with something rather interesting.
 Stay tuned for more updates!
+
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="100" data-page="{{page.title | escape}}"></div>

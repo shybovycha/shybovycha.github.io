@@ -11,6 +11,8 @@ tags:
 tumblr_url: 'http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-programs'
 ---
 
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="0" data-page="{{page.title | escape}}"></div>
+
 ## Foreword
 
 Writing code in assembly language in 2015 seems stupid and meaningless. Yet, it has a few huge benefits:
@@ -169,6 +171,8 @@ size(float*) = 8 bytes
 size(double*) = 8 bytes
 size(long double*) = 8 bytes
 ```
+
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="25" data-page="{{page.title | escape}}"></div>
 
 But when run in **32-bit** mode, these numbers are different:
 
@@ -390,6 +394,8 @@ _Z5func8x:
     ret
 ```
 
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="50" data-page="{{page.title | escape}}"></div>
+
 We may clean it up removing all those <code>DWORD PTR</code> type hints:
 
 ```nasm
@@ -563,6 +569,8 @@ add_loop:
 ```
 
 We’ve just saved two lines of code!
+
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="75" data-page="{{page.title | escape}}"></div>
 
 ## Floating-point operations
 
@@ -787,3 +795,5 @@ Now, using GDB, try to find out what&rsquo;s wrong with the program I&rsquo;ve s
 This is currently most of important things I’ve learnt at the university. This is pretty much for a beginner. And this information is really for those who have fun writing code or those who are made to write some excercises at university.
 
 As for me, now ASM does not look so scary now =) But I like writing more high-level code _(in C at least!)_ because it takes less time to do more.
+
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="100" data-page="{{page.title | escape}}"></div>

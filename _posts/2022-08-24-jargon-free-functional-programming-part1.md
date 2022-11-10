@@ -4,6 +4,8 @@ title: 'Jargon-free functional programming. Part 1: problem statement'
 date: '2022-08-24T00:00:00+00:00'
 ---
 
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="0" data-page="{{page.title | escape}}"></div>
+
 ## Basics
 
 Let me introduce you functional programming with as few jargonisms and buzz-words as possible.
@@ -103,6 +105,8 @@ fetchAPIResponse()
 Okay, now we can test some of the bits of the program without _too much_ of a hassle - we could test that every call of `getRandomGame` returns a different value (which might not be true) but within the given list of values. We could test the `extractGames` function on a mock XML document and verify it extracts all the `<item>` nodes and its `<name>` child. Testing `fetchAPIResponse` and `getResponseXML` and `printGame` functions, though, would be a bit tricky without either mocking the `fetch`, `console.log` and `DOMParser` or actually calling those functions.
 
 <!--more-->
+
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="25" data-page="{{page.title | escape}}"></div>
 
 ```js
 import {
@@ -310,6 +314,8 @@ describe("printGame", () => {
 });
 ```
 
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="50" data-page="{{page.title | escape}}"></div>
+
 In a lot of ways, I personally find these tests quite... hacky. But they seem to cover most of the functionality.
 
 Let us talk about corner cases. As in, what would happen if the API does not return the result? Or what would happen if the result is not a valid XML (like `404 Not Found` text)? Or what would happen if the XML is valid, but it does not contain any `items` or `item[rank]>name[value]` nodes? Or what if it only returns `5` results (or any number of results less than `10`, for that matter)?
@@ -497,6 +503,8 @@ fetchAPIResponse()
     .catch(error => console.error('Failed', error));
 ```
 
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="75" data-page="{{page.title | escape}}"></div>
+
 That's all good and nice and we seem to have covered most of the edge case scenarios (at least those we could think of).
 Now, what if I tell you the program is still not entirely correct? See those `querySelector` calls? They might return `null` if the node
 or the attribute is not present. And we do not want those empty objects in our program' output. This might be tricky to catch immediately
@@ -573,3 +581,5 @@ There is a application design approach which might be able to solve quite a bit 
 Let me introduce you to the world of functional programming without a ton of buzzwords and overwhelming terminology.
 
 <a href="/2022/08/24/jargon-free-functional-programming-part2.html" class="btn btn-primary">Proceed</a>
+
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="100" data-page="{{page.title | escape}}"></div>

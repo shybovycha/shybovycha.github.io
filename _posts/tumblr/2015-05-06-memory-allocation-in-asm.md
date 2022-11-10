@@ -12,6 +12,8 @@ tags:
 tumblr_url: http://shybovycha.tumblr.com/post/118273000531/memory-allocation-in-asm
 ---
 
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="0" data-page="{{page.title | escape}}"></div>
+
 Currently I am working on a long arithmetic problem at the university. This problem is much more complicated than I described or than a task I shall be describing now, but here&rsquo;s the thing: I needed some part of memory to be allocated from within my function. And I needed this to be done in assembly.
 
 <!--more-->
@@ -154,3 +156,5 @@ division(int*, int, int*, int, int*&, int*)
 ```
 
 &lsquo;til next time!
+
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="100" data-page="{{page.title | escape}}"></div>

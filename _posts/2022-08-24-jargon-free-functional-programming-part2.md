@@ -4,6 +4,8 @@ title: 'Jargon-free functional programming. Part 2: functional wrappers'
 date: '2022-08-24T00:15:00+00:00'
 ---
 
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="0" data-page="{{page.title | escape}}"></div>
+
 ## Disclaimer
 
 A big disclaimer before diving too deep: I am going to introduce all of the concepts without relying on any frameworks,
@@ -345,6 +347,8 @@ const printGame3 = (game: Error | Game): void => {
     console.log(`#${game.rank}: ${game.name}`);
 };
 ```
+
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="25" data-page="{{page.title | escape}}"></div>
 
 Observe how all those `instanceof` checks and questionmarks and pipes infested the code.
 
@@ -706,6 +710,8 @@ const program = fetchAPIResponse()
     .map(game => printGame(game))
     .unsafeRun();
 ```
+
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="50" data-page="{{page.title | escape}}"></div>
 
 But we can do better than this: we can get rid of all those `Either` and `Maybe` in functions which do not throw an error:
 
@@ -1151,6 +1157,8 @@ class PromiseIO <A> implements Wrappable<A> {
 }
 ```
 
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="75" data-page="{{page.title | escape}}"></div>
+
 Now let us build our solution again, using this newly acquired wrappable:
 
 ```ts
@@ -1565,3 +1573,5 @@ There are some resources I used when coming up with this article in different pr
 * <a href="https://stackoverflow.com/questions/6647852/haskell-actual-io-monad-implementation-in-different-language">Haskell: actual IO monad implementation, in different language?</a>
 * <a href="https://stackoverflow.com/questions/73032939/typescript-generic-type-constraints-cant-deduct-type/73074420#73074420">TypeScript generic type constraints can't deduct type</a>
 * <a href="https://github.com/louthy/language-ext">language-ext GitHub repo</a>
+
+<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="100" data-page="{{page.title | escape}}"></div>
