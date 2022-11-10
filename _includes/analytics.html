@@ -1,3 +1,39 @@
 {% if jekyll.environment != 'development' %}
     {% include google_analytics_v4.html %}
 {% endif %}
+
+<script>
+    window.addEventListener('load', () => {
+        const __markers = {};
+
+        const onIntersect = (entries) => entries.forEach(entry => {
+            if (!entry.isIntersecting) {
+                return;
+            }
+
+            const elt = entry.target;
+            const fraction = elt.dataset.fraction;
+            const id = elt.dataset.id;
+            const page = elt.dataset.page;
+            const previousTimestamp = __markers[id];
+            const now = new Date().getTime();
+            const time = (typeof(previousTimestamp) === 'undefined') ? 0 : ((now - parseInt(previousTimestamp)) / 1000);
+            __markers[id] = now;
+
+            gtag && gtag('event', 'content_read', { fraction, time, page });
+        });
+
+        const observer = new IntersectionObserver(onIntersect, {
+            margin: '40px 0',
+            threshold: 0.01,
+        });
+
+        const markers = Array.from(document.querySelectorAll('.content-read-marker'));
+
+        markers.forEach(marker => observer.observe(marker));
+    });
+</script>
+
+<style>
+    .content-read-marker { display: inline-block; width: 0; height: 0; }
+</style>
