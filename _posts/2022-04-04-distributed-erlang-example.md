@@ -3,8 +3,6 @@ layout: post
 title: 'Distributed Erlang example'
 ---
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="0" data-page="{{page.title | escape}}"></div>
-
 As promised in <a href="{% post_url 2020-11-07-erlang-example-2 %}">my previous blog about Erlang</a>, I continue
 on a journey to more practical Erlang examples.
 
@@ -165,7 +163,7 @@ and in the `loop/1` function whenever we enter recursion, we pass the new versio
 The only function which actually is blocking its execution until it receives a response from a callee is `get/1` - we wait for the background process
 to send the value to the current process.
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="25" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="25"></div>
 
 The interaction with this application could look like this:
 
@@ -358,7 +356,7 @@ To do so, we will need to utilize the `net_adm` module, which conveniently has t
 atom if the node is alive and is visible from the current node or `pang` otherwise.
 This way we can replace all the occurrences of the `Nodes` list in the `db_server:loop/1` function with the list of _alive_ nodes:
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="50" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="50"></div>
 
 ```erlang
 % supervisor
@@ -553,7 +551,7 @@ loop(Nodes) ->
     end.
 ```
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="75" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="75"></div>
 
 This will still not work however. The issue is that we only assign the value to the `AliveNodes` once we enter the `db_server:loop/1` function.
 And that only happens _after_ it processed a message. But the moment the value is actually needed is _right before processing a message_.
@@ -789,4 +787,4 @@ For me, this is a great example on how to _actually_ use Erlang!
 
 The slightly built-up code is hosted [on GitHub](https://github.com/shybovycha/distributed-key-value-db).
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="100" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="100"></div>

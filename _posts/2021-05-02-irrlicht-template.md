@@ -3,8 +3,6 @@ title: "Irrlicht application template"
 date: 2021-05-02T11:00:00+0700
 ---
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="0" data-page="{{page.title | escape}}"></div>
-
 Often when I start revising my old applicaitons with Irrlicht engine, I do few things very similarly.
 Especially when the application contains GUI and uses Irrlicht tools for it.
 
@@ -216,7 +214,7 @@ private:
 
 ### `Application.cpp`
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="25" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="25"></div>
 
 ```cpp
 #include "Application.h"
@@ -519,7 +517,7 @@ bool IrrlichtEventReceiver::OnEvent(const irr::SEvent& event)
 }
 ```
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="50" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="50"></div>
 
 ## Copying resources
 
@@ -1088,4 +1086,4 @@ void SaveFileDialog::sendCancelEvent()
 This is about everything I wanted to share. This template should set you up in few-ish minutes so that you can start implementing the actual application logic
 instead of wondering why there are some missing references for linker or some nuisance like those.
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="100" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="100"></div>

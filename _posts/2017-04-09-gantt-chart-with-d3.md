@@ -4,8 +4,6 @@ title: Gantt chart with D3
 date: '2017-04-09T11:04:24+02:00'
 ---
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="0" data-page="{{page.title | escape}}"></div>
-
 At work, I've had a task to implement a Gantt chart diagram to show dependencies and order of some... let's say, milestones.
 Given this feature is in a very unstable beta in Google Charts, I thought to myself: *"Why don't I implement it on my own?"*.
 And tried to recall my D3 knowledge.
@@ -397,4 +395,4 @@ A lot of things are happening here. In short, here are few key points:
 * we have to render entities (milestones, lines, labels) in a specific "layered" order, to prevent one set of things covering the other
 * it is both good for performance and is kind of a requirement to calculate the data before rendering it
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="100" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="100"></div>

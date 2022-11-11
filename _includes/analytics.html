@@ -4,8 +4,6 @@
 
 <script>
     window.addEventListener('load', () => {
-        const __markers = {};
-
         const onIntersect = (entries) => entries.forEach(entry => {
             if (!entry.isIntersecting) {
                 return;
@@ -13,14 +11,8 @@
 
             const elt = entry.target;
             const fraction = elt.dataset.fraction;
-            const id = elt.dataset.id;
-            const page = elt.dataset.page;
-            const previousTimestamp = __markers[id];
-            const now = new Date().getTime();
-            const time = (typeof(previousTimestamp) === 'undefined') ? 0 : ((now - parseInt(previousTimestamp)) / 1000);
-            __markers[id] = now;
 
-            gtag && gtag('event', 'content_read', { fraction, time, page });
+            gtag && gtag('event', `content_read_${fraction}`);
         });
 
         const observer = new IntersectionObserver(onIntersect, {

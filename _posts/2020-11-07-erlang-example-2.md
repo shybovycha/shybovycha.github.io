@@ -4,8 +4,6 @@ title: 'Erlang example 2.0'
 date: '2020-11-07T11:42:24+9:00'
 ---
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="0" data-page="{{page.title | escape}}"></div>
-
 Quite some time ago I've published a <a href="{% post_url tumblr/2015-01-28-erlang-practice %}">blogpost about Erlang</a>. It claimed to present a *short intro to distributed programming in Erlang*. But it turned to be a very simple communication application, nothing super-exciting.
 
 In this post I would like to elaborate more on the topic of Erlang, for a number of reasons:
@@ -159,7 +157,7 @@ is_in_tree(#tree{ value = Parent, left = Left, right = _ }, Value)
   when Value < Parent -> is_in_tree(Left, Value).
 ```
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="25" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="25"></div>
 
 Well, it does make pattern matching more explicit, but the code has just blown up!
 Luckily, Erlang does provide a syntactic sugar to read a specific field of a record and to update specific record' fields:
@@ -329,7 +327,7 @@ do_create(Input) ->
 As you can see, this is a pretty complex example, since the API of `httpd` module is rather low-level - we have to explicitly form a HTTP response and send it back to clients.
 Although not impossible, it is just not so pleasant development experience as it could be. Read on to see how it could be significantly improved.
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="50" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="50"></div>
 
 ### Mnesia
 
@@ -467,7 +465,7 @@ For the most part, when working with the database, you only need a handful of fe
 * support for `SELECT`, `INSERT`, `UPDATE` and `DELETE` statements (with very few exceptions, these form 95% of all the use cases, in my experience)
 * retrieve query results (as list of dictionaries of sorts)
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="75" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="75"></div>
 
 epsql library provides all of these with the following functions:
 
@@ -649,4 +647,4 @@ in uni. I guess you could treat this as a "Practical Erlang" blog.
 This post was supposed to be released in mid-2020, but it took me quite a while to polish it. In the next blog I will
 build this on to provide a much more exciting application sample with Erlang.
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="100" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="100"></div>

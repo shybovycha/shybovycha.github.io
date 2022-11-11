@@ -11,8 +11,6 @@ tags:
 tumblr_url: 'http://shybovycha.tumblr.com/post/117161684891/assembly-in-c-programs'
 ---
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="0" data-page="{{page.title | escape}}"></div>
-
 ## Foreword
 
 Writing code in assembly language in 2015 seems stupid and meaningless. Yet, it has a few huge benefits:
@@ -172,7 +170,7 @@ size(double*) = 8 bytes
 size(long double*) = 8 bytes
 ```
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="25" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="25"></div>
 
 But when run in **32-bit** mode, these numbers are different:
 
@@ -394,7 +392,7 @@ _Z5func8x:
     ret
 ```
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="50" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="50"></div>
 
 We may clean it up removing all those <code>DWORD PTR</code> type hints:
 
@@ -570,7 +568,7 @@ add_loop:
 
 We’ve just saved two lines of code!
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="75" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="75"></div>
 
 ## Floating-point operations
 
@@ -796,4 +794,4 @@ This is currently most of important things I’ve learnt at the university. This
 
 As for me, now ASM does not look so scary now =) But I like writing more high-level code _(in C at least!)_ because it takes less time to do more.
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="100" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="100"></div>

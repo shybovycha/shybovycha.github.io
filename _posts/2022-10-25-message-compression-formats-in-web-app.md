@@ -4,8 +4,6 @@ title: 'Message compression formats in a web application'
 date: '2022-10-25T00:15:00+00:00'
 ---
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="0" data-page="{{page.title | escape}}"></div>
-
 I have seen quite a few web applications which are passing heaps of data between client and server. Pretty much all of them use JSON for that purpose.
 And whilst that solves the business problem, some of those applications aim to provide nearly real-time user experience, and that's where the issues arise.
 
@@ -199,7 +197,7 @@ const AvroType = avro.Type.forSchema(
 );
 ```
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="25" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="25"></div>
 
 But then, serialization and deserialization are extremely simple:
 
@@ -394,7 +392,7 @@ builder.finish(offset);
 return builder.asUint8Array();
 ```
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="50" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="50"></div>
 
 But this won't do - an error would be thrown:
 
@@ -565,7 +563,7 @@ CBOR-decode: 0.587ms
 [CBOR]> decoded: { name: 'Rodrigo', kind: 'DOG' }
 ```
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="75" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="75"></div>
 
 ### BSON
 
@@ -661,4 +659,4 @@ If your project needs to optimize on the transferred data amount without sufferi
 
 Do not even consider BSON, CBOR and MessagePack - at the same bundle size increase, they give very little data compression, so optimization would be pretty much pointless. They do serialize the data faster (6ms with Protobuf vs 3ms with CBOR or MessagePack), but they also deserialize the data slower (lowest is 3ms with MessagePack vs 1ms with Protobuf).
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="100" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="100"></div>

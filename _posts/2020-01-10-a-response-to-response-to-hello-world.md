@@ -10,8 +10,6 @@ tags:
   - performance
 ---
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="0" data-page="{{page.title | escape}}"></div>
-
 Recently I've received an email from StackOverflow newsletters with a link to a quite controversial (at first glance) blog, [A response to Hello World](https://www.doxsey.net/blog/a-response-to-hello-world) by Caleb Doxsey. This blog is a response to another curious read, [Hello world](https://drewdevault.com/2020/01/04/Slow.html) by Drew DeVault.
 
 In the former article, author compared the performance of a tiny "Hello, World" program in Assembly to the same program in Go.
@@ -98,7 +96,7 @@ I came up with the code in Assembly that does exactly the same - allocates the m
 
 ### My optimized Assembly
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="25" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="25"></div>
 
 ```nasm
 ;; compile me on OSX: nasm -fmacho64 helloworld.asm && ld helloworld.o -lSystem -macosx_version_min 10.13
@@ -208,7 +206,7 @@ msg: db "Hello, world", 10
 len equ $ - msg
 ```
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="50" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="50"></div>
 
 ### My version with logs
 
@@ -366,4 +364,4 @@ The results became more reasonable:
 
 <img alt="" data-src="/images/a-response-to-response-to-hello-world/go_vs_asm_hello_world-min.webp">
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="100" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="100"></div>

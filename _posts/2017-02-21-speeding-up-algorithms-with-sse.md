@@ -11,8 +11,6 @@ tags:
 tumblr_url: http://shybovycha.tumblr.com/post/122400740651/speeding-up-algorithms-with-sse
 ---
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="0" data-page="{{page.title | escape}}"></div>
-
 Have you ever asked anyone if assembly language might be useful nowadays? So, here’s the short answer: **YES**. When you know how your computer works _(not a processor itself, but the whole thing - memory organization, math co-processor and others)_, you may optimize your code while writing it. In this short article, I shall try to show you some use cases of optimizations, which you may incorporate with the usage of low-level programming.
 
 Recently I was reading through my old posts and found out there is a gap in the article about SSE - the post did not cover some of the implementation caveats. I decided to fulfill this and re-publish a new version.
@@ -138,7 +136,7 @@ Horizontal operations deal on vectors in a different direction. Instead of opera
 
 <!--more-->
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="25" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="25"></div>
 
 So there are six "types" of operations, as described above. They are:
 
@@ -320,7 +318,7 @@ float max_sse(float *a, int n) {
 }
 ```
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="50" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="50"></div>
 
 **And how about integers?**
 
@@ -488,7 +486,7 @@ sum(float*, int):
 
 vs
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="75" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="75"></div>
 
 ```asm
 sum_sse(float*, int):
@@ -603,4 +601,4 @@ Another big limitation of SSE is that initial data should be aligned to contain 
 2. [Intel intrinsics guide](https://software.intel.com/sites/landingpage/IntrinsicsGuide/)
 3. [Examples source code](https://github.com/shybovycha/sse-optimizations)
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="100" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="100"></div>

@@ -4,8 +4,6 @@ title: 'Jargon-free functional programming. Part 1: problem statement'
 date: '2022-08-24T00:00:00+00:00'
 ---
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="0" data-page="{{page.title | escape}}"></div>
-
 ## Basics
 
 Let me introduce you functional programming with as few jargonisms and buzz-words as possible.
@@ -106,7 +104,7 @@ Okay, now we can test some of the bits of the program without _too much_ of a ha
 
 <!--more-->
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="25" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="25"></div>
 
 ```js
 import {
@@ -314,7 +312,7 @@ describe("printGame", () => {
 });
 ```
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="50" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="50"></div>
 
 In a lot of ways, I personally find these tests quite... hacky. But they seem to cover most of the functionality.
 
@@ -503,7 +501,7 @@ fetchAPIResponse()
     .catch(error => console.error('Failed', error));
 ```
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="75" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="75"></div>
 
 That's all good and nice and we seem to have covered most of the edge case scenarios (at least those we could think of).
 Now, what if I tell you the program is still not entirely correct? See those `querySelector` calls? They might return `null` if the node
@@ -582,4 +580,4 @@ Let me introduce you to the world of functional programming without a ton of buz
 
 <a href="/2022/08/24/jargon-free-functional-programming-part2.html" class="btn btn-primary">Proceed</a>
 
-<div class="content-read-marker" data-id="{{page.title | slugify}}" data-fraction="100" data-page="{{page.title | escape}}"></div>
+<div class="content-read-marker" data-fraction="100"></div>
