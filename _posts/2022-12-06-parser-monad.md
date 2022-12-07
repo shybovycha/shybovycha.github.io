@@ -99,6 +99,8 @@ This is all possible thanks to the `Parser` monad. Under the cut - the implement
 
 <!--more-->
 
+<div class="content-read-marker" data-fraction="25"></div>
+
 This material is heavily based on the [Dave Sands' lectures](https://www.youtube.com/watch?v=H7aYfGP76AI) about parsing in Haskell.
 
 The main idea is that a parser is an annotated function from an input string to _maybe_ something (parsing result) and a string (the unparsed part):
@@ -192,6 +194,8 @@ instance Monad Parser where
 
   return = pure
 ```
+
+<div class="content-read-marker" data-fraction="50"></div>
 
 ## Basic parsers
 
@@ -325,6 +329,8 @@ Just (42,"")
 Just (123,"")
 ```
 
+<div class="content-read-marker" data-fraction="75"></div>
+
 ## Combining parsers
 
 To give a few practical examples of combining the parsers into something meaningful, consider the parser of an integer equation:
@@ -427,3 +433,5 @@ Just (([(-3,"x1"),(4,"x2")],5),"")
 
 The finished project contains a little bit more - it implements rational calculus (rational factors instead of just pure integers).
 The entire code is also hosted on [GitHub](https://github.com/shybovycha/gauss-elimination).
+
+<div class="content-read-marker" data-fraction="100"></div>

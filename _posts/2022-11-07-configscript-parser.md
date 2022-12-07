@@ -118,6 +118,8 @@ The only thing left with this parser thing is to compile it and use in a project
 
 <!--more-->
 
+<div class="content-read-marker" data-fraction="25"></div>
+
 ## ANTLR version incompatibility
 
 It's bragging time! For C++ users, life was never easy. Yet, some good samaritan created the CMake thing.
@@ -268,6 +270,8 @@ public:
 };
 ```
 
+<div class="content-read-marker" data-fraction="50"></div>
+
 Then we need to pass an instance of this new class to the `TreeWalker` so that we can process the tree node-by-node:
 
 ```cpp
@@ -379,6 +383,8 @@ intVector
     : INT+ { auto v = $ctx->INT(); std::for_each(v.begin(), v.end(), [&](auto* node) { _localctx->elements.push_back(std::stoi(node->getText())); }); }
     ;
 ```
+
+<div class="content-read-marker" data-fraction="75"></div>
 
 This also acts as the initialization of the additional context fields.
 
@@ -536,3 +542,5 @@ object_keyword "Example/ObjectName" // <--- this can not be just Example/ObjectN
 ```
 
 Hope this gives you a brief introduction into ANTLR4 and some of the tips on implementing your own parsers.
+
+<div class="content-read-marker" data-fraction="100"></div>
