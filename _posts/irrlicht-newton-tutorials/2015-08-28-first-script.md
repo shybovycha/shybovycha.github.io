@@ -262,7 +262,7 @@ scriptMgr->loadScript("media/scripts/test1.lua");
 Now you may remove the code, creating sphere in the `main()` function. And run the code.
 You should see exactly the same picture as before:
 
-<img data-src="/images/04_movement_untouched.webp">
+<img src="/images/04_movement_untouched.webp" loading="lazy">
 
 ## Homework
 
@@ -434,6 +434,6 @@ end
 If you run our application *now*, you should be able to control sphere with <kbd>w</kbd> and
 <kbd>s</kbd> keys:
 
-<img data-src="/images/irrlicht-newton-tutorials/lua_script_with_kbd_handling.webp">
+<img src="/images/irrlicht-newton-tutorials/lua_script_with_kbd_handling.webp" loading="lazy">
 
 <a href="/{% post_url irrlicht-newton-tutorials/2015-08-29-prepare-to-add-some-newtonianity %}" class="btn btn-success">Next chapter</a>

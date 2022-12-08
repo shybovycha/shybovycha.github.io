@@ -3,7 +3,7 @@ layout: post
 title: Game development with Newton Game Dynamics and Irrlicht tutorial
 ---
 
-<img data-src="/images/slow-compressed.webp" class="img-responsive pull-right" style="max-height: 150px" alt="Slowpoke image" />
+<img src="/images/slow-compressed.webp" loading="lazy" class="img-responsive pull-right" style="max-height: 150px" alt="Slowpoke image" />
 
 As there was not a high load on my tutorial on game development with Irrlicht and Newton Game Dynamics engines
 as a separate site, I have decided to merge them with my blog and proceed with occasional updates to both as a

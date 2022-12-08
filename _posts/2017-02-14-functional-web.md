@@ -4,7 +4,7 @@ title: Functional web
 date: '2017-02-18T17:44:39+01:00'
 ---
 
-<img data-src="/images/functional_web/bicycle.webp" class="img-responsive img-sm img-rounded pull-right">
+<img src="/images/functional_web/bicycle.webp" loading="lazy" class="img-responsive img-sm img-rounded pull-right">
 
 In last couple of years the functional programming paradigm became very popular.
 A huge amount of libraries, tools, tutorials and blog posts appeared.

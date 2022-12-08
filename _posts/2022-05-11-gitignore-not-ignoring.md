@@ -58,7 +58,7 @@ No output means the path (in this case - `node_modules`) will **not** be ignored
 
 The issue seems to be somewhat hidden - the file was saved in the `UTF16-LE` encoding, since I have used PowerShell to initialize the file with `echo 'node_modules' >> .gitignore`:
 
-<img data-src="/images/gitignore-not-ignoring/Screenshot 2022-05-11 093618.webp">
+<img src="/images/gitignore-not-ignoring/Screenshot 2022-05-11 093618.webp" loading="lazy">
 
 And seems like the valid encoding for `.gitignore` file would be `UTF-8`. Let's use VSCode itself to save it in `UTF-8` instead and try it again:
 

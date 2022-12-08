@@ -394,7 +394,7 @@ int main() {
 }
 ```
 
-<img data-src="/images/non-blocking-algorithms/queue-threads-0.png" alt="Queue usage with one producer thread and one consumer thread">
+<img src="/images/non-blocking-algorithms/queue-threads-0.png" loading="lazy" alt="Queue usage with one producer thread and one consumer thread">
 
 <!-- TODO: convert images to WEBP -->
 
@@ -418,7 +418,7 @@ producerThread.join();
 
 This makes things weird:
 
-<img data-src="/images/non-blocking-algorithms/queue-threads-1.png" alt="Queue usage with one producer thread and 10 consumer thread">
+<img src="/images/non-blocking-algorithms/queue-threads-1.png" loading="lazy" alt="Queue usage with one producer thread and 10 consumer thread">
 
 For more visibility, let's make both producer and consumer print out what they are working with (did not want to do this, since IO is quite a heavyweight process):
 
@@ -489,7 +489,7 @@ int main() {
 }
 ```
 
-<img data-src="/images/non-blocking-algorithms/queue-threads-3.png" alt="Debugging info">
+<img src="/images/non-blocking-algorithms/queue-threads-3.png" loading="lazy" alt="Debugging info">
 
 One can see, producer indeed pushes numbers from 1 to 10 to the queue, in order, one by one.
 
@@ -506,7 +506,7 @@ This would prevent all other threads from accessing the same section of the code
 
 But that would essentially draw the concurrency useless in this applicaiton - only one consumer thread out of 10 would be utilized:
 
-<img data-src="/images/non-blocking-algorithms/queue-threads-lock-2.png" alt="Thread utilization with locks">
+<img src="/images/non-blocking-algorithms/queue-threads-lock-2.png" loading="lazy" alt="Thread utilization with locks">
 
 This might be caused by the queue implementation itself - the amount of time any thread is waiting for lock whilst some other thread
 is occupying it is ridiculous.
@@ -581,9 +581,9 @@ public:
 };
 ```
 
-<img data-src="/images/non-blocking-algorithms/queue-double-linked-list-threads-lock-3.png" alt="Double-linked list with lock">
+<img src="/images/non-blocking-algorithms/queue-double-linked-list-threads-lock-3.png" loading="lazy" alt="Double-linked list with lock">
 
-<img data-src="/images/non-blocking-algorithms/queue-double-linked-list-threads-lock-2.png" alt="Double-linked list with lock">
+<img src="/images/non-blocking-algorithms/queue-double-linked-list-threads-lock-2.png" loading="lazy" alt="Double-linked list with lock">
 
 Much better - now more than one thread is actually doing some work. But now instead of synchronization and sleeping, threads
 are mostly busy actively waiting for lock to unlock.

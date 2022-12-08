@@ -1,34 +1,5 @@
 <script>
   window.addEventListener('load', () => {
-    const onIntersect = (entries) => entries.forEach(entry => {
-      if (!entry.isIntersecting || !entry.target.dataset.src) {
-        return;
-      }
-
-      const elt = entry.target;
-      const src = elt.dataset.src;
-      const img = new Image();
-
-      img.onload = () => {
-        if (!!elt.parent) {
-          elt.parent.replaceChild(img, elt);
-        } else {
-          elt.src = src;
-        }
-      };
-
-      img.src = src;
-    });
-
-    const observer = new IntersectionObserver(onIntersect, {
-      margin: '40px 0',
-      threshold: 0.01,
-    });
-
-    const images = Array.from(document.querySelectorAll('img[data-src]'));
-
-    images.forEach(image => observer.observe(image));
-
     // defer main.css
     const head = document.querySelector('head');
     const styles = [ '/css/main.css' ];

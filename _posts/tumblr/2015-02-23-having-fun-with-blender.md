@@ -8,6 +8,6 @@ tags:
 tumblr_url: http://shybovycha.tumblr.com/post/111853550271/just-some-wip-having-fun-with-blender
 ---
 
-<img data-src="/tumblr_files/tumblr_nk8333m6vx1qio88bo1_1280.png" alt="Having fun texturing chicken head in Blender" />
+<img src="/tumblr_files/tumblr_nk8333m6vx1qio88bo1_1280.png" loading="lazy" alt="Having fun texturing chicken head in Blender" />
 
 Just some WIP. Having fun with Blender 😊

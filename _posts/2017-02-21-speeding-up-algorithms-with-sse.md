@@ -113,25 +113,25 @@ So, I mentioned **horizontal vector operations**. But let’s do it in a series.
 There are two SSE operation types: **scalar** and **packed**. Scalar operations use only the lowest elements of vectors. Packed operations deal with each element of vectors given. Look at the images below and you shall see the difference:
 
 <div>
-    <img data-src="/images/sse-optimizations/addss.webp" alt="">
+    <img src="/images/sse-optimizations/addss.webp" loading="lazy" alt="">
 </div>
 
 <div>
-    <img data-src="/images/sse-optimizations/addps.webp" alt="">
+    <img src="/images/sse-optimizations/addps.webp" loading="lazy" alt="">
 </div>
 
 <div>
-    <img data-src="/images/sse-optimizations/addsd.webp" alt="">
+    <img src="/images/sse-optimizations/addsd.webp" loading="lazy" alt="">
 </div>
 
 <div>
-    <img data-src="/images/sse-optimizations/addpd.webp" alt="">
+    <img src="/images/sse-optimizations/addpd.webp" loading="lazy" alt="">
 </div>
 
 Horizontal operations deal on vectors in a different direction. Instead of operating on elements in the corresponding positions, these operate on elements in adjacent positions:
 
 <div>
-    <img data-src="/images/sse-optimizations/haddps.webp" alt="">
+    <img src="/images/sse-optimizations/haddps.webp" loading="lazy" alt="">
 </div>
 
 <!--more-->

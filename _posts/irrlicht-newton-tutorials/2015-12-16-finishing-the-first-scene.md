@@ -14,44 +14,44 @@ terms of Newton? Newton offers a set of collision shapes for us:
 
 * Sphere
 
-    <img data-src="/images/irrlicht-newton-tutorials/collision_shapes/sphere.webp" alt="Sphere" class="img-responsive">
+    <img src="/images/irrlicht-newton-tutorials/collision_shapes/sphere.webp" loading="lazy" alt="Sphere" class="img-responsive">
 
 * Box
 
-    <img data-src="/images/irrlicht-newton-tutorials/collision_shapes/box.webp" alt="Box" class="img-responsive">
+    <img src="/images/irrlicht-newton-tutorials/collision_shapes/box.webp" loading="lazy" alt="Box" class="img-responsive">
 
 * Cone
 
-    <img data-src="/images/irrlicht-newton-tutorials/collision_shapes/cone.webp" alt="Cone" class="img-responsive">
+    <img src="/images/irrlicht-newton-tutorials/collision_shapes/cone.webp" loading="lazy" alt="Cone" class="img-responsive">
 
 * Capsule
 
-    <img data-src="/images/irrlicht-newton-tutorials/collision_shapes/capsule.webp" alt="Capsule" class="img-responsive">
+    <img src="/images/irrlicht-newton-tutorials/collision_shapes/capsule.webp" loading="lazy" alt="Capsule" class="img-responsive">
 
 * Cylinder
 
-    <img data-src="/images/irrlicht-newton-tutorials/collision_shapes/cylinder.webp" alt="Cylinder" class="img-responsive">
+    <img src="/images/irrlicht-newton-tutorials/collision_shapes/cylinder.webp" loading="lazy" alt="Cylinder" class="img-responsive">
 
 * Chamfer Cylinder
 
-    <img data-src="/images/irrlicht-newton-tutorials/collision_shapes/chamfer_cylinder.webp" alt="Chamfer Cylinder" class="img-responsive">
+    <img src="/images/irrlicht-newton-tutorials/collision_shapes/chamfer_cylinder.webp" loading="lazy" alt="Chamfer Cylinder" class="img-responsive">
 
 * Convex Hull
 
-    <img data-src="/images/irrlicht-newton-tutorials/collision_shapes/convex_hull.webp" alt="Convex Hull" class="img-responsive">
+    <img src="/images/irrlicht-newton-tutorials/collision_shapes/convex_hull.webp" loading="lazy" alt="Convex Hull" class="img-responsive">
 
 * Trimesh
 
-    <img data-src="/images/irrlicht-newton-tutorials/collision_shapes/trimesh.webp" alt="Trimesh" class="img-responsive">
+    <img src="/images/irrlicht-newton-tutorials/collision_shapes/trimesh.webp" loading="lazy" alt="Trimesh" class="img-responsive">
 
 Obviously, not sphere, cone, capsule, nor cylinder make sense for us.
 We could use box shape, but then we simply ignore our inner faces (inside walls):
 
-<img data-src="/images/irrlicht-newton-tutorials/collision_shapes/ramp_box.webp" alt="Box collision shape for our ramp" class="img-responsive">
+<img src="/images/irrlicht-newton-tutorials/collision_shapes/ramp_box.webp" loading="lazy" alt="Box collision shape for our ramp" class="img-responsive">
 
 A bit better, but still the same situation with convex hull shape:
 
-<img data-src="/images/irrlicht-newton-tutorials/collision_shapes/ramp_convex.webp" alt="Convex hull collision shape for our ramp" class="img-responsive">
+<img src="/images/irrlicht-newton-tutorials/collision_shapes/ramp_convex.webp" loading="lazy" alt="Convex hull collision shape for our ramp" class="img-responsive">
 
 Generally, the way we create our Newtonian body is:
 
@@ -299,6 +299,6 @@ void createSphereBody(const std::string name, float radius, float mass) {
 Have no fear about code duplication - we will remove it later. When you are done, you should
 get picture like this one:
 
-<img data-src="/images/irrlicht-newton-tutorials/collision_shapes/ramp_with_ball.webp" alt="First completed dynamic scene" class="img-responsive">
+<img src="/images/irrlicht-newton-tutorials/collision_shapes/ramp_with_ball.webp" loading="lazy" alt="First completed dynamic scene" class="img-responsive">
 
 Congrats! That's our first completed dynamic scene!

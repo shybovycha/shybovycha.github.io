@@ -6,7 +6,7 @@ date: '2021-03-25T20:26:24+11:00'
 
 This is a yet another show-off blog.
 
-<img data-src="/images/rogue_bomber/screenshot.webp">
+<img src="/images/rogue_bomber/screenshot.webp" loading="lazy">
 
 Yet another one-day-build, made specifically for not-so-exciting ShipIt-51 hackathon we are having at work right now.
 

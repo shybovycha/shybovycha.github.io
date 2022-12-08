@@ -9,8 +9,8 @@ tumblr_url: http://shybovycha.tumblr.com/post/112683210096/have-had-some-free-ti
 ---
 
 
-<img data-src="/tumblr_files/tumblr_nkoklxttap1qio88bo1_1280.png" alt="Chicken body sculpt in Blender" />
+<img src="/tumblr_files/tumblr_nkoklxttap1qio88bo1_1280.png" loading="lazy" alt="Chicken body sculpt in Blender" />
 
-<img data-src="/tumblr_files/tumblr_nkoklxttap1qio88bo2_1280.png" alt="Chicken head in Blender" />
+<img src="/tumblr_files/tumblr_nkoklxttap1qio88bo2_1280.png" loading="lazy" alt="Chicken head in Blender" />
 
 Have had some free time and tried sculpting in Blender 😜 With some other nice stuff 😁

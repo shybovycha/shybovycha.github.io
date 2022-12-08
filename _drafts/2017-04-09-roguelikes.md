@@ -9,6 +9,6 @@ So for the last couple of days I've spent numerous hours playing as a Necromance
 *(Beat enemies! Eat enemies!)* in ADOM and taking command of a dwarwish horde in Dwarf Fortress.
 Amazing level of detail! Most powerful graphics engine in the world *(which is **your own imagination**)*!
 
-<img data-src="/images/roguelikes/DwarfFortress_optimized.webp" alt="">
+<img src="/images/roguelikes/DwarfFortress_optimized.webp" loading="lazy" alt="">
 
-<img data-src="/images/roguelikes/ADOM_optimized.webp" alt="">
+<img src="/images/roguelikes/ADOM_optimized.webp" loading="lazy" alt="">

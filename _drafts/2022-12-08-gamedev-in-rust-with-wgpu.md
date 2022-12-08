@@ -16,10 +16,10 @@ The shading language is also very pleasant to work with.
 The situation with libraries in Rust is pathetic: there are either heaps or zero packages (crates) for the same thing,
 for the most part marked as "work in progress" and having the version like `0.16.1-alpha`. Most of them have last updates from ages ago.
 
-<img data-src="/images/gamedev-in-rust-with-wgpu/crates-search-1-assimp.png" alt="Searching for 'assimp' on crates.io">
-<img data-src="/images/gamedev-in-rust-with-wgpu/crates-search-2-bullet-physics.png" alt="Searching for 'bullet physics' on crates.io">
-<img data-src="/images/gamedev-in-rust-with-wgpu/crates-search-3-physx.png" alt="Searching for 'physx' on crates.io">
-<img data-src="/images/gamedev-in-rust-with-wgpu/crates-search-4-graphics-math.png" alt="Searching for 'graphics math' on crates.io">
+<img src="/images/gamedev-in-rust-with-wgpu/crates-search-1-assimp.png" loading="lazy" alt="Searching for 'assimp' on crates.io">
+<img src="/images/gamedev-in-rust-with-wgpu/crates-search-2-bullet-physics.png" loading="lazy" alt="Searching for 'bullet physics' on crates.io">
+<img src="/images/gamedev-in-rust-with-wgpu/crates-search-3-physx.png" loading="lazy" alt="Searching for 'physx' on crates.io">
+<img src="/images/gamedev-in-rust-with-wgpu/crates-search-4-graphics-math.png" loading="lazy" alt="Searching for 'graphics math' on crates.io">
 
 This makes selecting the right tool for the job really tricky.
 

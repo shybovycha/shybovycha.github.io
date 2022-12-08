@@ -24,9 +24,9 @@ Yet, it was and still it **is** a starting point for me 😁
 Here are some of game screenshots:
 
 <div style="display:flex; flex-direction:column; align-content:center;">
-<div><img data-src="/images/tumblr/shootthem/tumblr_inline_nmea8sxPPW1qh5oee_640.png" data-orig-height="768" data-orig-width="1366"/></div>
-<div><img data-src="/images/tumblr/shootthem/tumblr_inline_nmea966kmi1qh5oee_640.png" data-orig-height="768" data-orig-width="1366"/></div>
-<div><img data-src="/images/tumblr/shootthem/tumblr_inline_nmea9pD5Nj1qh5oee_640.png" data-orig-height="768" data-orig-width="1366"/></div>
-<div><img data-src="/images/tumblr/shootthem/tumblr_inline_nmeaa4oVAD1qh5oee_640.png" data-orig-height="768" data-orig-width="1366"/></div>
-<div><img data-src="/images/tumblr/shootthem/tumblr_inline_nmeaaiOKq51qh5oee_640.png" data-orig-height="768" data-orig-width="1366"/></div>
+<div><img src="/images/tumblr/shootthem/tumblr_inline_nmea8sxPPW1qh5oee_640.png" loading="lazy" data-orig-height="768" data-orig-width="1366"/></div>
+<div><img src="/images/tumblr/shootthem/tumblr_inline_nmea966kmi1qh5oee_640.png" loading="lazy" data-orig-height="768" data-orig-width="1366"/></div>
+<div><img src="/images/tumblr/shootthem/tumblr_inline_nmea9pD5Nj1qh5oee_640.png" loading="lazy" data-orig-height="768" data-orig-width="1366"/></div>
+<div><img src="/images/tumblr/shootthem/tumblr_inline_nmeaa4oVAD1qh5oee_640.png" loading="lazy" data-orig-height="768" data-orig-width="1366"/></div>
+<div><img src="/images/tumblr/shootthem/tumblr_inline_nmeaaiOKq51qh5oee_640.png" loading="lazy" data-orig-height="768" data-orig-width="1366"/></div>
 </div>

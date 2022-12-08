@@ -4,7 +4,7 @@ title: "libc.js: component interaction"
 date: '2017-03-12T23:22:24+02:00'
 ---
 
-<img data-src="/images/microverse-battery_optimized.webp" alt="">
+<img src="/images/microverse-battery_optimized.webp" loading="lazy" alt="">
 
 # libc.js
 

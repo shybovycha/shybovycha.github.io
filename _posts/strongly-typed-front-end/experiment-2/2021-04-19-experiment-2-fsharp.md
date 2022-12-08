@@ -251,4 +251,4 @@ Program.mkProgram init update view
 
 TL;DR:
 
-<img data-src="/images/strongly-typed-front-end/not-bad.png" alt="Not bad">
+<img src="/images/strongly-typed-front-end/not-bad.png" loading="lazy" alt="Not bad">

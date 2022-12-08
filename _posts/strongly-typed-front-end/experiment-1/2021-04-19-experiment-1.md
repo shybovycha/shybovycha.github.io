@@ -610,4 +610,4 @@ Hint: Try using String.fromInt to convert it to a string?
   </tbody>
 </table>
 
-<img data-src="/images/strongly-typed-front-end/chart1.png" alt="Bundle size comparison">
+<img src="/images/strongly-typed-front-end/chart1.png" loading="lazy" alt="Bundle size comparison">

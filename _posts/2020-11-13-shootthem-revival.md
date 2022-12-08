@@ -10,9 +10,9 @@ It has been over a decade ever since I made that game and I had enough inspirati
 
 This is a short update blog about what it used to be and what it became as of now.
 
-<div><img data-src="/images/shootthem-revival/ShootThem 15_09_2020 8_19_43 AM.webp"></div>
-<div><img data-src="/images/shootthem-revival/ShootThem 26_09_2020 8_19_43 PM.webp"></div>
-<div><img data-src="/images/shootthem-revival/square1_render2.webp"></div>
+<div><img src="/images/shootthem-revival/ShootThem 15_09_2020 8_19_43 AM.webp" loading="lazy"></div>
+<div><img src="/images/shootthem-revival/ShootThem 26_09_2020 8_19_43 PM.webp" loading="lazy"></div>
+<div><img src="/images/shootthem-revival/square1_render2.webp" loading="lazy"></div>
 
 <!--more-->
 
@@ -23,14 +23,14 @@ Back in 2006 I have barely learned some OOP and C / C++, just enough to be able 
 The game looked awful - there were no textures in the whole game, the models were mostly hand-made by myself in some dodgy 3D editor
 (Calligra TrueSpace or something alike).
 
-<div><img data-src="/images/shootthem-revival/ShootThem 13_09_2020 10_18_45 PM.webp"></div>
-<div><img data-src="/images/shootthem-revival/ShootThem 13_09_2020 10_18_52 PM.webp"></div>
-<div><img data-src="/images/shootthem-revival/ShootThem 15_09_2020 8_19_36 AM.webp"></div>
-<div><img data-src="/images/shootthem-revival/ShootThem 15_09_2020 8_19_43 AM.webp"></div>
+<div><img src="/images/shootthem-revival/ShootThem 13_09_2020 10_18_45 PM.webp" loading="lazy"></div>
+<div><img src="/images/shootthem-revival/ShootThem 13_09_2020 10_18_52 PM.webp" loading="lazy"></div>
+<div><img src="/images/shootthem-revival/ShootThem 15_09_2020 8_19_36 AM.webp" loading="lazy"></div>
+<div><img src="/images/shootthem-revival/ShootThem 15_09_2020 8_19_43 AM.webp" loading="lazy"></div>
 
 The code was terrible as well - static variables, huge functions, not to mention the whole game was a huge hard-coded, non-configurable mess in one `main.cpp` file.
 
-<div><img data-src="/images/shootthem-revival/Screen Shot 2020-11-13 at 2.02.28 pm.webp"></div>
+<div><img src="/images/shootthem-revival/Screen Shot 2020-11-13 at 2.02.28 pm.webp" loading="lazy"></div>
 
 But there was also a map editor, which allowed for some customization - it was basically a first-person camera and few magical buttons that allowed to define target positions for a specific level. The level mesh and output file were both provided via command-line arguments.
 
@@ -77,23 +77,23 @@ Along the way I have also kept maintaining a list of things I was thinking about
 
 Few improvements included adding a main menu, replacing the "UI" with something more user-friendly (previously it was just an ugly line of text), improving the "drunk shooter" effect (ended up replacing it with shaders, which is not a trivial task in Irrlicht - more on that later).
 
-<div><img data-src="/images/shootthem-revival/ShootThem 20_09_2020 2_48_59 PM.webp"></div>
-<div><img data-src="/images/shootthem-revival/ShootThem 26_09_2020 8_19_43 PM.webp"></div>
+<div><img src="/images/shootthem-revival/ShootThem 20_09_2020 2_48_59 PM.webp" loading="lazy"></div>
+<div><img src="/images/shootthem-revival/ShootThem 26_09_2020 8_19_43 PM.webp" loading="lazy"></div>
 
 I have also started reworking the 3D models for the game and decided it was a good point to just show how I _meant_ the original art to be in the game:
 
-<div><img data-src="/images/shootthem-revival/egypt1_render.webp"></div>
-<div><img data-src="/images/shootthem-revival/forest1_render.webp"></div>
-<div><img data-src="/images/shootthem-revival/square1_render2.webp"></div>
+<div><img src="/images/shootthem-revival/egypt1_render.webp" loading="lazy"></div>
+<div><img src="/images/shootthem-revival/forest1_render.webp" loading="lazy"></div>
+<div><img src="/images/shootthem-revival/square1_render2.webp" loading="lazy"></div>
 
 The art is still far from being ready, but here's a preview of the new training level:
 
-<div><img data-src="/images/shootthem-revival/blender_shooting_range3.webp"></div>
+<div><img src="/images/shootthem-revival/blender_shooting_range3.webp" loading="lazy"></div>
 
 The editor was also reworked... Or better being said, made from scratch - now it actually has a GUI, it allows to manage all the levels without restarting the app, it allows to place targets and move them around, it allows to place light sources on the scene and it is not a first-person camera anymore.
 
-<div><img data-src="/images/shootthem-revival/Shoot Them Editor 26_09_2020 1_09_03 PM.webp"></div>
-<div><img data-src="/images/shootthem-revival/Shoot Them Editor 26_09_2020 1_12_56 PM.webp"></div>
+<div><img src="/images/shootthem-revival/Shoot Them Editor 26_09_2020 1_09_03 PM.webp" loading="lazy"></div>
+<div><img src="/images/shootthem-revival/Shoot Them Editor 26_09_2020 1_12_56 PM.webp" loading="lazy"></div>
 
 <div class="content-read-marker" data-fraction="25"></div>
 
@@ -135,8 +135,8 @@ It might not seem like a _huge_ deal, but here are few things that I have notice
 
 Check these screenshots for example:
 
-<div><img data-src="/images/shootthem-revival/ShootThem 26_09_2020 8_19_30 PM.webp"></div>
-<div><img data-src="/images/shootthem-revival/ShootThem 26_09_2020 8_19_43 PM.webp"></div>
+<div><img src="/images/shootthem-revival/ShootThem 26_09_2020 8_19_30 PM.webp" loading="lazy"></div>
+<div><img src="/images/shootthem-revival/ShootThem 26_09_2020 8_19_43 PM.webp" loading="lazy"></div>
 
 It is the same scene, with lighting being messed up for _all target models_ on the latter screenshot.
 
@@ -274,19 +274,19 @@ There are features that I really liked about it.
 
 #### I18n support
 
-<div><img data-src="/images/shootthem-revival/Screen Shot 2020-08-26 at 9.58.10 am.webp"></div>
+<div><img src="/images/shootthem-revival/Screen Shot 2020-08-26 at 9.58.10 am.webp" loading="lazy"></div>
 
 #### Configurable user actions
 
 This way you can have same handler for gamepad buttons' and keyboard/mouse input events:
 
-<div><img data-src="/images/shootthem-revival/Screen Shot 2020-08-26 at 9.57.58 am.webp"></div>
+<div><img src="/images/shootthem-revival/Screen Shot 2020-08-26 at 9.57.58 am.webp" loading="lazy"></div>
 
 #### Attaching scripts to any object on the scene
 
 This allows for a magnitude of interesting mechanics.
 
-<div><img data-src="/images/shootthem-revival/Screen Shot 2020-08-26 at 9.55.19 am.webp"></div>
+<div><img src="/images/shootthem-revival/Screen Shot 2020-08-26 at 9.55.19 am.webp" loading="lazy"></div>
 
 For a number of reasons I didn't choose it - there were some user experience issues significantly reducing my productivity.
 
@@ -296,7 +296,7 @@ For a number of reasons I didn't choose it - there were some user experience iss
 
 Sspecifically the neccesity to specify every single texture for every single object on a scene. Check out this chicken model:
 
-<div><img data-src="/images/shootthem-revival/Screen Shot 2020-08-26 at 9.55.34 am.webp"></div>
+<div><img src="/images/shootthem-revival/Screen Shot 2020-08-26 at 9.55.34 am.webp" loading="lazy"></div>
 
 It is just an OBJ file with every material specified:
 
@@ -320,23 +320,23 @@ f  3/3/3 2/2/2 4/4/4
 
 Yet in the editor you'll have to manually assign every single material to every single sub-mesh:
 
-<div><img data-src="/images/shootthem-revival/Screen Shot 2020-08-26 at 9.56.56 am.webp"></div>
+<div><img src="/images/shootthem-revival/Screen Shot 2020-08-26 at 9.56.56 am.webp" loading="lazy"></div>
 
 #### Not really clear scene node types
 
 Now which node do I use for kinematic physical body?
 
-<div><img data-src="/images/shootthem-revival/Screen Shot 2020-08-26 at 10.10.15 am.webp"></div>
+<div><img src="/images/shootthem-revival/Screen Shot 2020-08-26 at 10.10.15 am.webp" loading="lazy"></div>
 
 Just what the heck is "spatial" and why does it have both "camera" and "collision shape" next to "audio stream"?
 
-<div><img data-src="/images/shootthem-revival/Screen Shot 2020-08-26 at 10.10.20 am.webp"></div>
+<div><img src="/images/shootthem-revival/Screen Shot 2020-08-26 at 10.10.20 am.webp" loading="lazy"></div>
 
 #### Lack of any sort of pre-made solutions
 
 So that every time you need an FPS camera - you have to define it from zero, using the matrix transformations. This increases the amount of boilerplate code and actually reduces the productivity even compared to Irrlicht:
 
-<div><img data-src="/images/shootthem-revival/Screen Shot 2020-08-26 at 9.55.19 am.webp"></div>
+<div><img src="/images/shootthem-revival/Screen Shot 2020-08-26 at 9.55.19 am.webp" loading="lazy"></div>
 
 ## This is not the end
 

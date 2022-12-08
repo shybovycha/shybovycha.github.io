@@ -17,7 +17,7 @@ detecting and fixing errors in the code:
 * Pre-production environment (manual testing on dedicated QA / staging environment or even testing on production) - around few hours, may involve other people
 * Production - measured in days or months and risking the reputation with the customers
 
-<img data-src="/images/jargon-free-functional-programming/cost_of_error.webp" />
+<img src="/images/jargon-free-functional-programming/cost_of_error.webp" loading="lazy" />
 
 Hence if we could detect the errors while writing the code the first time - we could potentially save ourselves a fortune measured in both time and money.
 

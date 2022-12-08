@@ -8,6 +8,6 @@ tags:
 tumblr_url: http://shybovycha.tumblr.com/post/112718503266/reworked-materials-for-my-rifle
 ---
 
-<img data-src="/tumblr_files/tumblr_nkpfpqQNbY1qio88bo1_r1_1280.png" />
+<img src="/tumblr_files/tumblr_nkpfpqQNbY1qio88bo1_r1_1280.png" loading="lazy" />
 
 Reworked materials for my rifle
