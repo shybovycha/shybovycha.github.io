@@ -40,20 +40,6 @@ But how do we read the matrix `D`?
 
 Take sample graph:
 
-<!--
-```graphviz
-digraph G {
-    // layout = "circo";
-
-    0->2 [label = "1"];
-    2->3 [label = "5"];
-    3->1 [label = "2"];
-    1->2 [label = "6"];
-    1->0 [label = "7"];
-}
-```
--->
-
 <img src="/images/floyd-warshall/floyd-warshall-graph-sample.webp" loading="lazy" alt="">
 
 In <em>GraphViz</em> it would be described as follows:
