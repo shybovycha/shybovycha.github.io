@@ -1,6 +1,7 @@
 ---
 layout: post
-title: "How not to use monads"
+title: How not to use monads
+date: '2023-01-31T11:23:24+11:00'
 ---
 
 Recently I have watched a video titled ["Optionals and errors in Haskell & Rust - monads by example"]().
