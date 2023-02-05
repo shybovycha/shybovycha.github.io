@@ -25,7 +25,36 @@ This makes selecting the right tool for the job really tricky.
 
 Using good old SDL or SFML is much more complex than in native C++: the docs mention there are either unresolved thread-safety issues (with SFML) or one needs to build the thing from sources (with SDL).
 
+Crates' version compatibility is another issue - consider two crates, `imgui` and `imgui-wgpu`. The latter requires `imgui="0.8"` and will fail if your project has anything newer as a dependency.
+Dependencies are not transitive, which makes this whole ecosystem similar to CMake and vcpkg.
+
 ## The ugly
 
 IDE support - it is simply non-existent - Vim, Emacs, VS Code and 3rd party plugin for IntelliJ is all you get.
 And I have no idea how to debug Rust code.
+
+If you want to use `imgui` on Windows - good luck, you need to setup `g++` - the existing crate does not know how to select an existing compiler.
+However, this only happens if you are ~~lazy like me~~ a normal advanced Windows user and used Chocolately to install Rust.
+In fact, no one will tell you that is wrong. But if you want the best experience, you should download the `rustup-init` thingo from the Rust website,
+make it install Cargo and mess with environment variables (e.g. set the `Path` correctly - it rarely works automagically). Then you will get the compiler
+set up for use with MSVC instead of Clang or GCC.
+
+And back to the crates and dependency versions: sometimes you might see compile-time errors like this one
+
+```
+error[E0308]: mismatched types
+   --> src\main.rs:171:9
+    |
+169 |     platform.attach_window(
+    |              ------------- arguments to this function are incorrect
+170 |         imgui.io_mut(),
+171 |         &window,
+    |         ^^^^^^^ expected struct `winit::window::Window`, found a different struct `winit::window::Window`
+    |
+    = note: expected reference `&winit::window::Window` (struct `winit::window::Window`)
+               found reference `&winit::window::Window` (struct `winit::window::Window`)
+    = note: perhaps two different versions of crate `winit` are being used?
+note: associated function defined here
+```
+
+So you will have to align the crates versions to the exact bugfix version.
