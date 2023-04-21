@@ -11,6 +11,10 @@ date: '2017-09-04T11:38:24+11:00'
     }
 </style>
 
+## Update
+
+There is [a revised version of this blog]({% post_url 2023-01-12-floyd-warshall-revised %}), showing how an algorithm implementation could be optimized.
+
 ## The story behind this post
 
 Recently I've received `+10` karma on StackOverflow. I was curious for what question or answer and clicked to check this. It appeared
