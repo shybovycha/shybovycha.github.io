@@ -5,3 +5,6 @@ _site/
 *~
 .devcontainer/
 .vscode/
+node_modules/
+out/
+_build/*_bundle.*
