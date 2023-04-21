@@ -4,7 +4,9 @@
 
 <script>
     window.addEventListener('load', () => {
-        const onIntersect = (entries) => entries.forEach(entry => {
+        const seenMarkers = new Set();
+
+        const onIntersect = (entries, observer1) => entries.forEach(entry => {
             if (!entry.isIntersecting) {
                 return;
             }
@@ -12,7 +14,15 @@
             const elt = entry.target;
             const fraction = elt.dataset.fraction;
 
-            gtag && gtag('event', `content_read_${fraction}`);
+            const previousMarkers = [25, 50, 75, 100].filter(p => p < fraction);
+            const seenPreviousMarkers = previousMarkers.any(marker => seenMarkers.has(marker));
+            const marker = seenPreviousMarkers ? `content_read_${fraction}` : `content_jumped_${fraction}`;
+
+            seenMarkers.add(fraction);
+
+            observer1.unobserve(elt);
+
+            gtag && gtag('event', marker);
         });
 
         const observer = new IntersectionObserver(onIntersect, {
