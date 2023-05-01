@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v3.5.2
 
       - name: Use Node.js 19.x
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v3.6.0
         with:
           node-version: 19.x
           cache: 'npm'
@@ -27,7 +27,7 @@ jobs:
       - run: npm run build
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v1.0.8
         with:
           # Upload entire repository
           path: '_site'
@@ -53,8 +53,8 @@ jobs:
 
     steps:
       - name: Setup Pages
-        uses: actions/configure-pages@v1
+        uses: actions/configure-pages@v3.0.6
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@main
+        uses: actions/deploy-pages@v2.0.1
