@@ -15,10 +15,13 @@ const Layout = ({  title, head = null, header = null, footer = null, children })
         <link rel="shortcut icon" href="/images/favicon-compressed.webp" />
         <link rel="apple-touch-icon" href="/images/favicon-compressed.webp" />
 
+        <link rel="preload" href="/main.css" as="style" />
+
+        <link rel="stylesheet" href="/main.css" />
+
         {head}
     </head>
     <body>
-        <link rel="preload" href="/main.css" as="style" />
         <noscript><link rel="stylesheet" href="/main.css" /></noscript>
 
         {header}
@@ -28,8 +31,6 @@ const Layout = ({  title, head = null, header = null, footer = null, children })
         </main>
 
         {footer}
-
-        <script src="/static.js"></script>
     </body>
     </html>
 );

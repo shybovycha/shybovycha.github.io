@@ -237,13 +237,18 @@ const copyStaticFiles = (outputDir) =>
     Promise.all([
         ...[
             ...getFilesRec('images'),
-            ...getFilesRec('tumblr_files')
+            ...getFilesRec('tumblr_files'),
+            ...getFilesRec('js'),
         ]
         .map(file => ([ file, path.join(outputDir, file) ]))
-        .map(([ src, dst ]) => fsPromise.mkdir(path.dirname(dst), { recursive: true }).then(() => fsPromise.copyFile(src, dst))),
+        .map(([ src, dst ]) => {
+            console.log('Copying', src, '->', dst);
+
+            return fsPromise.mkdir(path.dirname(dst), { recursive: true })
+                .then(() => fsPromise.copyFile(src, dst));
+        }),
 
         fsPromise.copyFile('_build/builder_bundle.css', path.join(outputDir, 'main.css')),
-        fsPromise.copyFile('_build/static.js', path.join(outputDir, 'static.js')),
     ]);
 
 const clean = (outputDir) =>
