@@ -1,0 +1,60 @@
+name: Build & publish on GitHub pages
+
+on:
+  push:
+    branches: [ master ]
+
+  pull_request:
+    branches: [ master ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js 19.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 19.x
+          cache: 'npm'
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          # Upload entire repository
+          path: 'dist'
+
+  deploy:
+    needs:
+      - build
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v1
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@main
