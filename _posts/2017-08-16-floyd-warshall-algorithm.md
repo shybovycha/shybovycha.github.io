@@ -13,7 +13,7 @@ date: '2017-09-04T11:38:24+11:00'
 
 ## Update
 
-There is [a revised version of this blog]({% post_url 2023-01-12-floyd-warshall-revised %}), showing how an algorithm implementation could be optimized.
+There is [a revised version of this blog](/2023/01/12/floyd-warshall-revised.html), showing how an algorithm implementation could be optimized.
 
 ## The story behind this post
 

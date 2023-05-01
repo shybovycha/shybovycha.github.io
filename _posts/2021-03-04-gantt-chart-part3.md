@@ -6,11 +6,11 @@ date: '2021-03-04T19:46:24+11:00'
 
 I have been writing about and improving on [my Gantt chart implementation](https://github.com/shybovycha/gantt-chart/) for quite some time now.
 
-It all started with this ([blog]({% post_url 2017-04-09-gantt-chart-with-d3 %})):
+It all started with this ([blog](/2017/04/09/gantt-chart-with-d3.html)):
 
 <img src="/images/gantt_chart_part3/gantt-chart-v1.webp" loading="lazy" alt="First revision of Gantt chart">
 
-Then I added few features ([blog]({% post_url 2020-08-02-gantt-chart-part2 %})):
+Then I added few features ([blog](/2020/08/02/gantt-chart-part2.html)):
 
 <img src="/images/gantt_chart_part3/gantt-chart-v2.webp" loading="lazy" alt="Second revision of Gantt chart">
 

@@ -77,4 +77,4 @@ Just try it!
 
 Remember all the three rules for our architecture. And keeping them in mind, let's get to some coding already!
 
-<a href="/{% post_url irrlicht-newton-tutorials/2015-08-27-first-application %}" class="btn btn-success">Next chapter</a>
+<a href="/irrlicht-newton-tutorials/2015/08/27/first-application.html" class="btn btn-success">Next chapter</a>

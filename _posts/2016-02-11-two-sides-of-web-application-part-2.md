@@ -6,7 +6,31 @@ date: '2016-02-11T13:47:39+01:00'
 
 <div class="row" style="justify-content: space-between">
     <div class="col-md-6 col-xs-12">
-        {% include references/two-sides-of-web-application.html %}
+        <div class="card">
+            <div class="card-header">
+                Article series
+            </div>
+
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <a href="/2015/09/20/two-sides-of-web-application-part-1.html">
+                        Part 1: The Tools
+                    </a>
+                </li>
+
+                <li class="list-group-item">
+                    <a href="/2016/02/11/two-sides-of-web-application-part-2.html">
+                        Part 2: Sketching
+                    </a>
+                </li>
+
+                <li class="list-group-item">
+                    <a href="/2016/02/11/two-sides-of-web-application-part-3.html">
+                        Part 3: Communication Layer
+                    </a>
+                </li>
+            </ul>
+        </div>
     </div>
     <div class="col-md-6 col-xs-12 text-xs-center text-md-right">
         <img src="/images/two-sides-of-web-application/Gyroscopic-Navigational-Footwear-compressed.webp" class="img-responsive" style="max-height: 150px" alt="Funny image" />

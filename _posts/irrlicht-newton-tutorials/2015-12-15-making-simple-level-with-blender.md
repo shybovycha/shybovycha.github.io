@@ -408,4 +408,4 @@ save the modified image with the **Image -> Save** menu at the bottom of **UV/Im
 
 Now we have everything we need for our Newtonian sample!
 
-<a href="/{% post_url irrlicht-newton-tutorials/2015-12-16-finishing-the-first-scene %}" class="btn btn-success">Next chapter</a>
+<a href="/irrlicht-newton-tutorials/2015/12/16/finishing-the-first-scene.html" class="btn btn-success">Next chapter</a>

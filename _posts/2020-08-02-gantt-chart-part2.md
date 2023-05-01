@@ -4,9 +4,9 @@ title: Gantt chart with D3. Part 2
 date: '2020-08-02T15:04:24+10:00'
 ---
 
-**UPDATE:** there is a follow-up to this blog, [Gantt chart with Canvas]({% post_url 2021-03-04-gantt-chart-part3 %}).
+**UPDATE:** there is a follow-up to this blog, [Gantt chart with Canvas](/2021/03/04/gantt-chart-part3.html).
 
-This is a follow-up to the blog I wrote a bit over three years ago, [Gantt chart with D3]({% post_url 2017-04-09-gantt-chart-with-d3 %})
+This is a follow-up to the blog I wrote a bit over three years ago, [Gantt chart with D3](/2017/04/09/gantt-chart-with-d3.html)
 
 In the original blog I claimed to implement something like this:
 
@@ -278,6 +278,6 @@ if (nowOnScale >= xScale.range()[0] && nowOnScale <= xScale.range()[1]) {
 The source code of this implementation could be found on [Github](https://github.com/shybovycha/gantt-chart).
 
 I think that is enough for now, but it is not the end! There's still some work to be done in removing the D3 from this setup completely,
-which is actually done in [Gantt chart: part 3]({% post_url 2021-03-04-gantt-chart-part3 %}) blog.
+which is actually done in [Gantt chart: part 3](/2021/03/04/gantt-chart-part3.html) blog.
 
 <div class="content-read-marker" data-fraction="100"></div>

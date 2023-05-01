@@ -4,7 +4,7 @@ title: 'Erlang example 2.0'
 date: '2020-11-07T11:42:24+9:00'
 ---
 
-Quite some time ago I've published a <a href="{% post_url tumblr/2015-01-28-erlang-practice %}">blogpost about Erlang</a>. It claimed to present a *short intro to distributed programming in Erlang*. But it turned to be a very simple communication application, nothing super-exciting.
+Quite some time ago I've published a <a href="/tumblr/2015/01/28/erlang-practice.html">blogpost about Erlang</a>. It claimed to present a *short intro to distributed programming in Erlang*. But it turned to be a very simple communication application, nothing super-exciting.
 
 In this post I would like to elaborate more on the topic of Erlang, for a number of reasons:
 
@@ -23,7 +23,7 @@ is quite nice.
 
 ### Tuples
 
-As you might remember from the [quick introduction to Erlang]({% post_url 2020-01-10-erlang-in-5-minutes %}), tuples are defined like this:
+As you might remember from the [quick introduction to Erlang](/2020/01/10/erlang-in-5-minutes.html), tuples are defined like this:
 
 ```erlang
 X = { elt1, elt2, elt3, elt5 }.

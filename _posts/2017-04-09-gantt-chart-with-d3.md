@@ -29,7 +29,7 @@ The implementation details are under the cut.
 
 ## Update August 2020
 
-There are few updates to this original implementation in my [new blog]({% post_url 2020-08-02-gantt-chart-part2 %}).
+There are few updates to this original implementation in my [new blog](/2020/08/02/gantt-chart-part2.html).
 
 <!--more-->
 

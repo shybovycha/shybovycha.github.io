@@ -821,4 +821,4 @@ calls.
 That was some short introduction to the Irrlicht engine. And that's basically everything we will use
 for the next few sections.
 
-<a href="/{% post_url irrlicht-newton-tutorials/2015-08-28-first-script %}" class="btn btn-success">Next chapter</a>
+<a href="/irrlicht-newton-tutorials/2015/08/28/first-script.html" class="btn btn-success">Next chapter</a>

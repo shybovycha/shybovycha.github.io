@@ -6,7 +6,7 @@ date: '2017-08-15T11:38:24+02:00'
 
 ## Foreword
 
-Some time ago I've published an <a href="{% post_url 2016-08-25-big-o-notation %}">article about bit O notation</a>. I've mentioned its source but never published it. So here it is, the original article.
+Some time ago I've published an <a href="/2016/08/25/big-o-notation.html">article about bit O notation</a>. I've mentioned its source but never published it. So here it is, the original article.
 
 ## The article
 

@@ -13,7 +13,7 @@ This is a chicken. This 3D model I've made in 3.5 hrs in Blender *(with texturin
 <div class="vspace"></div>
 
 Taking into account the fact I've started learning *Unity 3D*, I will possibly use this
-in the remake of my old <a href="{% post_url tumblr/2015-04-06-shootthem %}">Shoot Them!</a> game.
+in the remake of my old <a href="/tumblr/2015/04/06/shootthem.html">Shoot Them!</a> game.
 Like this *(early preview, made with Unity 3D in ~3 hrs)*:
 
 <div class="text-center">

@@ -3,7 +3,7 @@ layout: post
 title: 'Distributed Erlang example'
 ---
 
-As promised in <a href="{% post_url 2020-11-07-erlang-example-2 %}">my previous blog about Erlang</a>, I continue
+As promised in <a href="/2020/11/07/erlang-example-2.html">my previous blog about Erlang</a>, I continue
 on a journey to more practical Erlang examples.
 
 This might sound super ambitious, but let us build a distributed database.

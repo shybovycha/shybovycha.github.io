@@ -4,7 +4,7 @@ title: Floyd-Warshall algorithm, revised
 date: '2023-01-12T11:38:24+11:00'
 ---
 
-In this blog I would like to brush upon Floyd-Warshall algorithm implementation I have described <a href="{% post_url 2017-08-16-floyd-warshall-algorithm %}">previously</a>.
+In this blog I would like to brush upon Floyd-Warshall algorithm implementation I have described <a href="/2017/08/16/floyd-warshall-algorithm.html">previously</a>.
 
 See, generally, when explaining Floyd-Warshall algorithm, the graph is given as an adjacency matrix - an `V x V` matrix, where `V` is the number of vertices (nodes) in a graph and each matrix value representing the distance between each vertex.
 For instance, the value `G[1][3] = 12` represents the edge from vertex `1` to vertex `3` with the value of `12`.
