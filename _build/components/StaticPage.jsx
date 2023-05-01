@@ -1,13 +1,14 @@
 import React from 'react';
 
 import Layout from './Layout';
+import Header from './Header';
 
-const StaticPage = ({ title, content }) => {
+import * as style from '../styles/main.css';
+
+const StaticPage = ({ content }) => {
     return (
-        <Layout title={title}>
+        <Layout header={<Header />}>
             <article>
-                <h1>{title}</h1>
-
                 <content dangerouslySetInnerHTML={{ __html: content }} />
             </article>
         </Layout>

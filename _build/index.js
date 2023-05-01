@@ -189,7 +189,14 @@ const loadPosts = (postDir) => {
         .sort((a, b) => b.timestamp - a.timestamp);;
 };
 
-const loadPages = (pagesDir) => getFilesRec(pagesDir);
+// TODO: extract this to the config
+const staticPages = {
+    'about.md': '/about.html',
+};
+
+const loadStaticPages = (staticPagesDir) => Object.entries(staticPages)
+    .map(([ filePath, outputPath ]) => ([ path.join(staticPagesDir, filePath), outputPath ]))
+    .map(([ filePath, outputPath ]) => ({ ...loadPostContent(fs.readFileSync(filePath, 'utf-8')), outputPath }));
 
 // ---
 
@@ -205,10 +212,17 @@ const writePosts = (renderedPosts, outputDir) =>
 
         console.log('Writing post', filePath);
 
-        return fsPromise.writeFile(filePath, post.content);
+        return fsPromise.writeFile(filePath, '<!DOCTYPE html>' + post.content);
     }));
 
-const writeStaticPages = (staticPages, outputDir) => Promise.resolve(null);
+const writeStaticPages = (renderedStaticPages, outputDir) =>
+    Promise.all(renderedStaticPages.map(({ content, outputPath }) => {
+        const filePath = path.join(outputDir, outputPath);
+
+        console.log('Writing static page', filePath);
+
+        return fsPromise.writeFile(filePath, '<!DOCTYPE html>' + content);
+    }));
 
 const writeIndexPages = (renderedIndexPages, outputDir) =>
     Promise.all(renderedIndexPages.map((content, index) => {
@@ -216,7 +230,7 @@ const writeIndexPages = (renderedIndexPages, outputDir) =>
 
         console.log('Writing page', filePath);
 
-        return fsPromise.writeFile(filePath, content);
+        return fsPromise.writeFile(filePath, '<!DOCTYPE html>' + content);
     }));
 
 const copyStaticFiles = (outputDir) =>
@@ -239,14 +253,14 @@ const clean = (outputDir) =>
 const build = async () => {
     // TODO: extract config file
     const postsDir = process.env.POSTS_DIR || '_posts';
-    const staticPagesDir = process.env.PAGES_DIR || '_pages';
+    const staticPagesDir = process.env.PAGES_DIR || '.';
     // const layoutsDir = process.env.LAYOUTS_DIR || '_layouts';
     const staticFilesDir = process.env.STATIC_FILES_DIR || 'public';
     const outputDir = process.env.OUTPUT_DIR || 'out';
     const pageSize = process.env.PAGE_SIZE || 10;
 
     const posts = loadPosts(postsDir);
-    const staticPages = loadPages(staticPagesDir);
+    const staticPages = loadStaticPages(staticPagesDir);
 
     await clean(outputDir);
 
@@ -255,7 +269,7 @@ const build = async () => {
         renderRobotsTxt(posts),
         Promise.all(posts.map(post => renderPost(post))),
         Promise.all(chunk(posts, pageSize).map((posts, idx) => renderIndexPage(posts, idx))),
-        Promise.all(staticPages.map(page => renderStaticPage(page))),
+        Promise.all(staticPages.map(({ outputPath, ...page }) => renderStaticPage(page).then(content => ({ outputPath, content })))),
         Promise.all(posts.map(post => createPostDir(post, outputDir))),
     ]);
 
