@@ -15,7 +15,7 @@ between pages using web-components? Do we need to create a separate file for eac
 
 <!--more-->
 
-In my [previous post]({% post_url tumblr/2015-07-12-reactjs-introduction %}) I covered React, Riot,
+In my [previous post](/tumblr/2015/07/12/reactjs-introduction.html) I covered React, Riot,
 Angular 2.0 and Polymer. Now the time has passed and Angular 1.5 is here. So I decided to
 extend my knowledge and fill the gaps in a brand-new methodology.
 
@@ -52,7 +52,7 @@ Riot with `scoped` CSS!
 
 <!--To proceed, we need some example or input data. Let's assume for a moment we want to create a webshop.
 We'll need one page, listing products; one page, displaying product details and one page for checkout.
-I even got images of those pages, from [my post about E2E testing]({% post_url 2015-11-26-end-to-end-testing-with-webdriverio %}).
+I even got images of those pages, from [my post about E2E testing](/2015/11/26/end-to-end-testing-with-webdriverio.html).
 
 First things first: we need to think, how can we construct each page? What would be the components?
 What hierarchy will
