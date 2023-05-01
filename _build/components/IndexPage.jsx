@@ -9,7 +9,7 @@ import IndexPageFooter from './IndexPageFooter';
 const PostPreview = ({ title, timestamp, excerpt, content, link }) => (
     <article>
         <h1>
-            <a href={link}>{excerpt ? <a href={link}>{title}</a> : title}</a>
+            {excerpt ? <a href={link}>{title}</a> : title}
         </h1>
 
         <div>
