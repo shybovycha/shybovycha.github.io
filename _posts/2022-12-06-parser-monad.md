@@ -281,7 +281,7 @@ Just 1
 
 This very same code could be rewritten as follows:
 
-```hc
+```hs
 (maybe 1 (\_ -> -1)) <$> (Just Nothing)
 ```
 

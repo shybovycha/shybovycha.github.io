@@ -237,7 +237,7 @@ To do this, we need to write some test files to check our `build` task. So let's
 
 *`src/views/index.jade`:*
 
-```jade
+```pug
 html(lang="en")
 head
     meta(charset="UTF-8")

@@ -254,7 +254,7 @@ Then run `bower install`. This will provide you with all the stuff you need.
 
 Now we will move our pretty `welcome-component` to a new place. Create two files:`welcome-component.html` and `index.html`. Fill the last one with [Emmet](http://docs.emmet.io/):
 
-```jade
+```pug
 html:5
 ```
 

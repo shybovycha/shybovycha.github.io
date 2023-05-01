@@ -80,7 +80,7 @@ Here the same rules apply, except of _"steps to complete"_ we use
 _"memory cells allocated"_. So we will count the amount of allocated memory. This is mostly used
 by lists, not by objects and structures (as they always use the same memory amount). Check this out:
 
-```c++ 
+```cpp 
 struct Moo {
   int a, b, c;
   float d;
@@ -98,7 +98,7 @@ integer memory addresses' values and floats use same 4 bytes - just as integers 
 how many memory we will allocate for `Foo.d` we will get the different values. Consider the continuation
 of this example below:
 
-```c++ 
+```cpp 
 int myAlgorithm(int n) {
   // part 1
   Foo *foo = new Foo();

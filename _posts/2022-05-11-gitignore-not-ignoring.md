@@ -7,7 +7,7 @@ This is going to be a very short blog. I have been struggling with this issue fo
 
 The `.gitignore` file contents:
 
-```gitignore
+```git
 node_modules
 
 **/*.bundle.js

@@ -253,7 +253,7 @@ but we'll be changing that later. It is not bound to the **ViewModel**, because 
 of our `$scope.newAccount` and `$scope.existingAccount` are constant and don't depend on
 the template. To change this, we need to modify our `new_session.jade` template:
 
-```jade
+```pug
 .row
     .col-xs-12.col-md-4.col-md-offset-1.well
         h3 Sign up

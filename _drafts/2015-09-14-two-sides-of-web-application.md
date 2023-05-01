@@ -230,7 +230,7 @@ To do this, we need to write some test files to check our `build` task. So lets 
 
 *`src/views/index.jade`:*
 
-```jade
+```pug
 html(lang="en")
 head
     meta(charset="UTF-8")
@@ -352,7 +352,7 @@ Six pages, huh? Let's do it quick:
 
 *`src/views/layouts/default.jade`:*
 
-```jade
+```pug
 doctype html
 html(lang="en")
     head
@@ -368,7 +368,7 @@ html(lang="en")
 
 *`src/views/index.jade`:*
 
-```jade
+```pug
 extends layouts/default.jade
 
 block content
@@ -388,7 +388,7 @@ block content
 
 *`src/views/new_session.jade`:*
 
-```jade
+```pug
 extends layouts/default.jade
 
 block content
@@ -422,7 +422,7 @@ block content
 
 *`src/views/edit_account.jade`:*
 
-```jade
+```pug
 extends layouts/default.jade
 
 block content
@@ -442,7 +442,7 @@ block content
 
 *`src/views/application_list.jade`:*
 
-```jade
+```pug
 extends layouts/default.jade
 
 block content
@@ -473,7 +473,7 @@ block content
 
 *`src/views/application_details.jade`:*
 
-```jade
+```pug
 extends layouts/default.jade
 
 block content
@@ -528,7 +528,7 @@ block content
 
 *`src/views/edit_application.jade`:*
 
-```jade
+```pug
 extends layouts/default.jade
 
 block content
@@ -546,7 +546,7 @@ block content
 
 *`src/views/new_application.jade`:*
 
-```jade
+```pug
 extends layouts/default.jade
 
 block content

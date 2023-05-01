@@ -72,7 +72,7 @@ Six pages, huh? Let's do it quick:
 
 *`src/views/layouts/default.jade`:*
 
-```jade
+```pug
 doctype html
 html(lang="en")
     head
@@ -88,7 +88,7 @@ html(lang="en")
 
 *`src/views/index.jade`:*
 
-```jade
+```pug
 extends layouts/default.jade
 
 block content
@@ -105,7 +105,7 @@ block content
 
 *`src/views/new-session.jade`:*
 
-```jade
+```pug
 extends layouts/default.jade
 
 block content
@@ -139,7 +139,7 @@ block content
 
 *`src/views/edit_account.jade`:*
 
-```jade
+```pug
 extends layouts/default.jade
 
 block content
@@ -159,7 +159,7 @@ block content
 
 *`src/views/application_list.jade`:*
 
-```jade
+```pug
 extends layouts/default.jade
 
 block content
@@ -190,7 +190,7 @@ block content
 
 *`src/views/application_details.jade`:*
 
-```jade
+```pug
 extends layouts/default.jade
 
 block content
@@ -245,7 +245,7 @@ block content
 
 *`src/views/edit_application.jade`:*
 
-```jade
+```pug
 extends layouts/default.jade
 
 block content
@@ -263,7 +263,7 @@ block content
 
 *`src/views/new_application.jade`:*
 
-```jade
+```pug
 extends layouts/default.jade
 
 block content
@@ -428,7 +428,7 @@ bower install --save angular
 Now when we have Angular inside the `bower_components` directory, let's add its references to
 our layout:
 
-```jade
+```pug
 head
     script(src="angular/angular.js")
 ```
@@ -615,7 +615,7 @@ But we did not tell the Angular where to render it. To fix that, we'll
 add a `ng-view` directive to the `.container-fluid` element of our `<body>` tag,
 right in our layout:
 
-```jade
+```pug
 body
     block body
         .container-fluid(ng-view)
@@ -734,7 +734,7 @@ $routeProvider
 And we currently have a lot of pages with broken links. We should fix that,
 providing URLs to our *(empty for now)* controllers. Like this one:
 
-```jade
+```pug
 a.btn.btn-primary.btn-lg(href="#/sign-in" role="button") Sign in
 ```
 
