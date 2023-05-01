@@ -4,7 +4,7 @@ title: How not to use monads
 date: '2023-01-31T11:23:24+11:00'
 ---
 
-Recently I have watched a video titled ["Optionals and errors in Haskell & Rust - monads by example"]().
+Recently I have watched a video titled ["Optionals and errors in Haskell & Rust - monads by example"](https://www.youtube.com/watch?v=c_F1o_so2MQ).
 In the video, the author makes a simple application simulating the retrieval of a HTML document via URL and checking
 if the document contains the title. This is a half-simulated experience, aimed at the beginners to demonstrate how the error
 handling is done in Rust and Haskell.
