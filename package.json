@@ -1,21 +1,19 @@
 {
   "name": "shybovycha.github.io",
   "version": "1.0.0",
-  "description": "",
-  "scripts": {
-    "preprocess-build": "npm exec esbuild -- _build/index.js --outfile=_build/builder_bundle.js --platform=node --bundle",
-    "build": "npm run preprocess-build && node _build/builder_bundle.js"
-  },
+  "description": "My blog, built with SSR",
+  "private": true,
+  "author": "Artem Shubovych",
+  "license": "ISC",
+  "homepage": "https://shybovycha.github.io/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shybovycha/shybovycha.github.io.git"
   },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/shybovycha/shybovycha.github.io/issues"
+  "scripts": {
+    "preprocess-build": "npm exec esbuild -- _build/index.js --outfile=_build/builder_bundle.js --platform=node --bundle",
+    "build": "npm run preprocess-build && node _build/builder_bundle.js"
   },
-  "homepage": "https://github.com/shybovycha/shybovycha.github.io#readme",
   "devDependencies": {
     "classnames": "^2.3.2",
     "date-fns": "^2.29.3",

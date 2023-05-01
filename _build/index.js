@@ -261,7 +261,7 @@ const build = async () => {
     const staticPagesDir = process.env.PAGES_DIR || '.';
     // const layoutsDir = process.env.LAYOUTS_DIR || '_layouts';
     const staticFilesDir = process.env.STATIC_FILES_DIR || 'public';
-    const outputDir = process.env.OUTPUT_DIR || 'out';
+    const outputDir = process.env.OUTPUT_DIR || '_site';
     const pageSize = process.env.PAGE_SIZE || 10;
 
     const posts = loadPosts(postsDir);
