@@ -15,20 +15,17 @@ tumblr_url: http://shybovycha.tumblr.com/post/92523360106/php
             <div class="card-header">
                 Содєржаніє
             </div>
-
             <ul class="list-group list-group-flush">
                 <li class="list-group-item">
                     <a href="/tumblr/2014/07/22/php-blog-part-1.html">
                         Чоткій блог. Часть перша
                     </a>
                 </li>
-
                 <li class="list-group-item">
                     <a href="/tumblr/2014/07/27/php-blog-part-2.html">
                         Чоткій блог. Часть друга
                     </a>
                 </li>
-
                 <li class="list-group-item">
                     <a href="/tumblr/2014/07/28/php-blog-part-3.html">
                         Чоткій блог. Часть третя
@@ -37,7 +34,6 @@ tumblr_url: http://shybovycha.tumblr.com/post/92523360106/php
             </ul>
         </div>
     </div>
-
     <div class="col-md-6 col-xs-12 text-xs-center text-md-right"></div>
 </div>
 

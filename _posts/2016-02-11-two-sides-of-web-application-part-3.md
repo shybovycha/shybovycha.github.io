@@ -10,20 +10,17 @@ date: '2016-02-11T14:47:39+01:00'
             <div class="card-header">
                 Article series
             </div>
-
             <ul class="list-group list-group-flush">
                 <li class="list-group-item">
                     <a href="/2015/09/20/two-sides-of-web-application-part-1.html">
                         Part 1: The Tools
                     </a>
                 </li>
-
                 <li class="list-group-item">
                     <a href="/2016/02/11/two-sides-of-web-application-part-2.html">
                         Part 2: Sketching
                     </a>
                 </li>
-
                 <li class="list-group-item">
                     <a href="/2016/02/11/two-sides-of-web-application-part-3.html">
                         Part 3: Communication Layer
