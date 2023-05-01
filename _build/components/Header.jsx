@@ -9,7 +9,7 @@ const Header = ({ isHome, isAbout }) => (
         <div className="links">
             <a className={classname('nav-link', 'nav-item', { 'active': isHome })} href="/">Home</a>
 
-            <a className={classname('nav-link', 'nav-item', { 'active': isAbout })} href="/about/">About</a>
+            <a className={classname('nav-link', 'nav-item', { 'active': isAbout })} href="/about.html">About</a>
         </div>
     </nav>
 );
