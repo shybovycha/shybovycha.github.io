@@ -23,7 +23,9 @@ const Layout = ({  title, head = null, header = null, footer = null, children })
 
         {header}
 
-        {children}
+        <main>
+            {children}
+        </main>
 
         {footer}
 
