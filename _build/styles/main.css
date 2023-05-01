@@ -165,7 +165,7 @@ kbd {
     background: #fff;
     padding: 10px;
     box-shadow: 1px 4px #dedede;
-    text-shadow: 1px 3px #dedede;
+    /* text-shadow: 1px 3px #dedede; */
     display: inline-flex;
     margin: 4px 0;
     border: 1px solid #dedede

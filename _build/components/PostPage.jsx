@@ -13,7 +13,9 @@ const PostPage = ({ title, timestamp, content }) => {
             <article>
                 <h1>{title}</h1>
 
-                <time>{format(timestamp, 'dd MMM yyyy')}</time>
+                <div>
+                    <time>{format(timestamp, 'dd MMM yyyy')}</time>
+                </div>
 
                 <content dangerouslySetInnerHTML={{ __html: content }} />
             </article>
