@@ -1,5 +1,11 @@
 /* inline */
 
+.content-read-marker {
+    display: inline-block;
+    width: 0;
+    height: 0;
+}
+
 :root {
     --left-side: 200px;
     --right-side: 200px;

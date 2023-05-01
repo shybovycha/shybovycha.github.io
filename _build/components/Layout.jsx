@@ -31,6 +31,10 @@ const Layout = ({  title, head = null, header = null, footer = null, children })
         </main>
 
         {footer}
+
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-FHHSX9LYS3"></script>
+        <script src="/js/google_analytics.js"></script>
+        <script src="/js/additional_gtag_analytics.js"></script>
     </body>
     </html>
 );
