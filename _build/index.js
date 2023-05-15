@@ -263,6 +263,7 @@ const build = async () => {
     const staticFilesDir = process.env.STATIC_FILES_DIR || 'public';
     const outputDir = process.env.OUTPUT_DIR || '_site';
     const pageSize = process.env.PAGE_SIZE || 10;
+    const baseUrl = process.env.BASE_URL || 'https://shybovycha.github.io';
 
     const posts = loadPosts(postsDir);
     const staticPages = loadStaticPages(staticPagesDir);
@@ -270,8 +271,8 @@ const build = async () => {
     await clean(outputDir);
 
     const [sitemap, robotsTxt, renderedPosts, renderedIndexPages, renderedStaticPages, _] = await Promise.all([
-        renderSitemap(posts),
-        renderRobotsTxt(posts),
+        renderSitemap(posts, baseUrl),
+        renderRobotsTxt(posts, baseUrl),
         Promise.all(posts.map(post => renderPost(post))),
         Promise.all(chunk(posts, pageSize).map((posts, idx) => renderIndexPage(posts, idx))),
         Promise.all(staticPages.map(({ outputPath, ...page }) => renderStaticPage(page).then(content => ({ outputPath, content })))),
