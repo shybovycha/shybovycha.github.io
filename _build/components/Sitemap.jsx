@@ -1,8 +1,9 @@
 import React from 'react';
+import { format } from 'date-fns';
 
 const createRobotsUrl = (post, baseUrl) => `<url>
     <loc>${baseUrl}/${post.link.replaceAll(/[\/\\]+/g, '/')}</loc>
-    <lastmod>${post.timestamp}</lastmod>
+    <lastmod>${format(post.timestamp, 'yyyy-MM-dd')}</lastmod>
 </url>`;
 
 const Sitemap = (posts, baseUrl) => {
