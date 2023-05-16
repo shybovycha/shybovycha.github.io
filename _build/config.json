@@ -1,7 +1,11 @@
 {
     "postsDir": "_posts",
     "staticPagesDir": ".",
-    "staticFilesDir": "public",
+    "staticFilesDirs": [
+        "images",
+        "tumblr_files",
+        "js"
+    ],
     "outputDir": "_site",
     "pageSize": 10,
     "baseUrl": "https://shybovycha.github.io"

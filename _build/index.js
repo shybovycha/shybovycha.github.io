@@ -246,20 +246,17 @@ const writeIndexPages = (renderedIndexPages, outputDir) =>
         return fsPromise.writeFile(filePath, '<!DOCTYPE html>' + content);
     }));
 
-const copyStaticFiles = (outputDir) =>
+const copyStaticFiles = (staticDirs, outputDir) =>
     Promise.all([
-        ...[
-            ...getFilesRec('images'),
-            ...getFilesRec('tumblr_files'),
-            ...getFilesRec('js'),
-        ]
-        .map(file => ([ file, path.join(outputDir, file) ]))
-        .map(([ src, dst ]) => {
-            console.log('Copying', src, '->', dst);
+        staticDirs
+            .flatMap(dir => getFilesRec(dir))
+            .map(file => ([ file, path.join(outputDir, file) ]))
+            .map(([ src, dst ]) => {
+                console.log('Copying', src, '->', dst);
 
-            return fsPromise.mkdir(path.dirname(dst), { recursive: true })
-                .then(() => fsPromise.copyFile(src, dst));
-        }),
+                return fsPromise.mkdir(path.dirname(dst), { recursive: true })
+                    .then(() => fsPromise.copyFile(src, dst));
+            }),
 
         fsPromise.copyFile('_build/builder_bundle.css', path.join(outputDir, 'main.css')),
     ]);
@@ -269,10 +266,9 @@ const clean = (outputDir) =>
         .then(() => fsPromise.mkdir(outputDir, { recursive: true }));
 
 const build = async () => {
-    // TODO: extract config file
     const postsDir = process.env.POSTS_DIR || config.postsDir;
     const staticPagesDir = process.env.PAGES_DIR || config.staticPagesDir;
-    const staticFilesDir = process.env.STATIC_FILES_DIR || config.staticFilesDir;
+    const staticFilesDirs = process.env.STATIC_FILES_DIRS || config.staticFilesDirs;
     const outputDir = process.env.OUTPUT_DIR || config.outputDir;
     const pageSize = process.env.PAGE_SIZE || config.pageSize;
     const baseUrl = process.env.BASE_URL || config.baseUrl;
@@ -297,7 +293,7 @@ const build = async () => {
         writePosts(renderedPosts, outputDir),
         writeStaticPages(renderedStaticPages, outputDir),
         writeIndexPages(renderedIndexPages, outputDir),
-        copyStaticFiles(outputDir),
+        copyStaticFiles(staticFilesDirs, outputDir),
     ]);
 };
 
