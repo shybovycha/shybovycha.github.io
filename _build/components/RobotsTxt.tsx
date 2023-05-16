@@ -1,6 +1,4 @@
-import React from 'react';
-
-const RobotsTxt = (_posts, baseUrl) => `User-agent: Googlebot
+const RobotsTxt = (_posts: any[], baseUrl: string) => `User-agent: Googlebot
 Disallow: /nogooglebot/
 
 User-agent: *

@@ -6,7 +6,22 @@ import Layout from './Layout';
 import Header from './Header';
 import IndexPageFooter from './IndexPageFooter';
 
-const PostPreview = ({ title, timestamp, excerpt, content, link }) => (
+import { Post } from '../render';
+
+export interface PostPreviewProps {
+    title: string;
+    timestamp: Date;
+    excerpt?: string;
+    content: string;
+    link: string;
+}
+
+export interface IndexPageProps {
+    posts: Post[];
+    pageIndex: number;
+}
+
+const PostPreview = ({ title, timestamp, excerpt, content, link }: PostPreviewProps) => (
     <article>
         <h1>
             {excerpt ? <a href={link}>{title}</a> : title}
@@ -22,7 +37,7 @@ const PostPreview = ({ title, timestamp, excerpt, content, link }) => (
     </article>
 );
 
-const IndexPage = ({ posts, pageIndex }) => {
+const IndexPage = ({ posts, pageIndex }: IndexPageProps) => {
     const postPreviews = posts.map(post => (<PostPreview key={post.link} {...post} />));
 
     const header = <Header isHome={ pageIndex === undefined || pageIndex === 0 } />;

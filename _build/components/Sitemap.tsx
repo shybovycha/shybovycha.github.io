@@ -1,12 +1,13 @@
-import React from 'react';
 import { format } from 'date-fns';
 
-const createRobotsUrl = (post, baseUrl) => `<url>
+import { Post } from '../render';
+
+const createRobotsUrl = (post: Post, baseUrl: string) => `<url>
     <loc>${baseUrl}/${post.link.replaceAll(/[\/\\]+/g, '/')}</loc>
     <lastmod>${format(post.timestamp, 'yyyy-MM-dd')}</lastmod>
 </url>`;
 
-const Sitemap = (posts, baseUrl) => {
+const Sitemap = (posts: Post[], baseUrl: string) => {
     const urls = posts.map(post => createRobotsUrl(post, baseUrl)).join('\n');
 
     return `<?xml version="1.0" encoding="UTF-8"?>

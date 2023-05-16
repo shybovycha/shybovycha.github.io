@@ -1,6 +1,6 @@
 import React from 'react';
 
-const PreviousPage = ({ currentPage }) => {
+const PreviousPage = ({ currentPage }: { currentPage: number }) => {
     if (currentPage === 0) {
         return null;
     }
@@ -14,7 +14,7 @@ const PreviousPage = ({ currentPage }) => {
     );
 };
 
-const NextPage = ({ currentPage, pages }) => {
+const NextPage = ({ currentPage, pages }: { currentPage: number, pages: number }) => {
     if (currentPage === pages - 1) {
         return null;
     }
@@ -26,7 +26,7 @@ const NextPage = ({ currentPage, pages }) => {
     );
 };
 
-const IndexPageFooter = ({ pages, currentPage }) => {
+const IndexPageFooter = ({ currentPage, pages }: { currentPage: number, pages: number }) => {
     return (
         <footer>
             <nav>

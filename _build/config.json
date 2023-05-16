@@ -6,6 +6,9 @@
         "tumblr_files",
         "js"
     ],
+    "staticPages": {
+        "about.md": "/about.html"
+    },
     "outputDir": "_site",
     "pageSize": 10,
     "baseUrl": "https://shybovycha.github.io"

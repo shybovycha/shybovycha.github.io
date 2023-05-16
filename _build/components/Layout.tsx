@@ -1,9 +1,17 @@
 import React from 'react';
 
-import * as prismStyle from 'prismjs/themes/prism.min.css';
-import * as style from '../styles/main.css';
+import 'prismjs/themes/prism.min.css';
+import '../styles/main.css';
 
-const Layout = ({  title, head = null, header = null, footer = null, children }) => (
+export interface LayoutProps {
+    title?: React.ReactNode | string;
+    head?: React.ReactNode | React.ReactNode[];
+    header?: React.ReactNode | React.ReactNode[];
+    footer?: React.ReactNode | React.ReactNode[];
+    children?: React.ReactNode | React.ReactNode[];
+}
+
+const Layout = ({ title, head = null, header = null, footer = null, children }: LayoutProps) => (
     <html lang="en">
     <head>
         <meta charSet="UTF-8" />

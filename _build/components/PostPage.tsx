@@ -5,7 +5,13 @@ import { format } from 'date-fns';
 import Header from './Header';
 import Layout from './Layout';
 
-const PostPage = ({ title, timestamp, content }) => {
+export interface PostPageProps {
+    title: string;
+    timestamp: Date;
+    content: React.ReactNode | React.ReactNode[] | string;
+}
+
+const PostPage = ({ title, timestamp, content }: PostPageProps) => {
     const header = <Header />;
 
     return (

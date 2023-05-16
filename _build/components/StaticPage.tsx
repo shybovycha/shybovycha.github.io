@@ -3,9 +3,13 @@ import React from 'react';
 import Layout from './Layout';
 import Header from './Header';
 
-import * as style from '../styles/main.css';
+import '../styles/main.css';
 
-const StaticPage = ({ content }) => {
+export interface StaticPageProps {
+    content?: React.ReactNode | React.ReactNode[] | string;
+}
+
+const StaticPage = ({ content }: StaticPageProps) => {
     return (
         <Layout header={<Header />}>
             <article>
