@@ -5,7 +5,13 @@ import path from 'path';
 import { parse as parseDate, isValid as isValidDate } from 'date-fns';
 
 import matter from 'gray-matter';
+
 import { marked } from 'marked';
+import { markedHighlight } from 'marked-highlight';
+import { gfmHeadingId as markedGfmHeadingId  } from 'marked-gfm-heading-id';
+import { mangle as markedMangle } from 'marked-mangle';
+import { markedSmartypants } from 'marked-smartypants';
+import { markedXhtml } from 'marked-xhtml';
 
 import { chunk } from 'lodash';
 
@@ -74,11 +80,16 @@ import 'prismjs/components/prism-gherkin';
 
 import { renderRobotsTxt, renderSitemap, renderIndexPage, renderPost, renderStaticPage } from './render';
 
-marked.setOptions({
+marked.use({
     gfm: true, // GitHub-flavoured Markdown
-    xhtml: true, // self-close single tags
-    smartypants: true, // dashes and ellipses
+});
 
+marked.use(markedXhtml()); // self-close single tags
+marked.use(markedSmartypants()); // dashes and ellipses
+marked.use(markedGfmHeadingId());
+marked.use(markedMangle());
+
+marked.use(markedHighlight({
     highlight(code, language) {
         if (!Prism.languages[language]) {
             if (language) {
@@ -90,7 +101,7 @@ marked.setOptions({
 
         return Prism.highlight(code, Prism.languages[language], language);
     },
-});
+}));
 
 const loadPostContent = (src, { excertpSeparator = null } = {}) => {
     const options = excertpSeparator ? { excerpt: true, excerpt_separator: '<!--more-->' } : {};
