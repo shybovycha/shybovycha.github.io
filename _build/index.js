@@ -80,6 +80,8 @@ import 'prismjs/components/prism-gherkin';
 
 import { renderRobotsTxt, renderSitemap, renderIndexPage, renderPost, renderStaticPage } from './render';
 
+import config from './config.json';
+
 marked.use({
     gfm: true, // GitHub-flavoured Markdown
 });
@@ -268,13 +270,12 @@ const clean = (outputDir) =>
 
 const build = async () => {
     // TODO: extract config file
-    const postsDir = process.env.POSTS_DIR || '_posts';
-    const staticPagesDir = process.env.PAGES_DIR || '.';
-    // const layoutsDir = process.env.LAYOUTS_DIR || '_layouts';
-    const staticFilesDir = process.env.STATIC_FILES_DIR || 'public';
-    const outputDir = process.env.OUTPUT_DIR || '_site';
-    const pageSize = process.env.PAGE_SIZE || 10;
-    const baseUrl = process.env.BASE_URL || 'https://shybovycha.github.io';
+    const postsDir = process.env.POSTS_DIR || config.postsDir;
+    const staticPagesDir = process.env.PAGES_DIR || config.staticPagesDir;
+    const staticFilesDir = process.env.STATIC_FILES_DIR || config.staticFilesDir;
+    const outputDir = process.env.OUTPUT_DIR || config.outputDir;
+    const pageSize = process.env.PAGE_SIZE || config.pageSize;
+    const baseUrl = process.env.BASE_URL || config.baseUrl;
 
     const posts = loadPosts(postsDir);
     const staticPages = loadStaticPages(staticPagesDir);

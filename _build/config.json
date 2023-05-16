@@ -1,0 +1,8 @@
+{
+    "postsDir": "_posts",
+    "staticPagesDir": ".",
+    "staticFilesDir": "public",
+    "outputDir": "_site",
+    "pageSize": 10,
+    "baseUrl": "https://shybovycha.github.io"
+}
