@@ -90,7 +90,7 @@ import {
     StaticPage
 } from './render';
 
-import config from './config.json';
+import config from './config';
 
 marked.use({
     gfm: true, // GitHub-flavoured Markdown
@@ -278,7 +278,7 @@ const build = async () => {
     const outputDir = process.env.OUTPUT_DIR || config.outputDir;
     const pageSize = process.env.PAGE_SIZE ? parseInt(process.env.PAGE_SIZE) : config.pageSize;
     const baseUrl = process.env.BASE_URL || config.baseUrl;
-    const staticPagesMap = config.staticPages;
+    const staticPagesMap = config.staticPages || {};
 
     const posts = loadPosts(postsDir);
     const staticPages = loadStaticPages(staticPagesMap, staticPagesDir);

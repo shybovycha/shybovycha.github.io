@@ -6,14 +6,14 @@ import Header from './Header';
 import '../styles/main.css';
 
 export interface StaticPageProps {
-    content?: React.ReactNode | React.ReactNode[] | string;
+    content: string;
 }
 
 const StaticPage = ({ content }: StaticPageProps) => {
     return (
         <Layout header={<Header />}>
             <article>
-                <content dangerouslySetInnerHTML={{ __html: content }} />
+                <div className="content" dangerouslySetInnerHTML={{ __html: content }}></div>
             </article>
         </Layout>
     );

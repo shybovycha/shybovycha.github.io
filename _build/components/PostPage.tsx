@@ -8,7 +8,7 @@ import Layout from './Layout';
 export interface PostPageProps {
     title: string;
     timestamp: Date;
-    content: React.ReactNode | React.ReactNode[] | string;
+    content: string;
 }
 
 const PostPage = ({ title, timestamp, content }: PostPageProps) => {
@@ -23,7 +23,7 @@ const PostPage = ({ title, timestamp, content }: PostPageProps) => {
                     <time>{format(timestamp, 'dd MMM yyyy')}</time>
                 </div>
 
-                <content dangerouslySetInnerHTML={{ __html: content }} />
+                <div className="content" dangerouslySetInnerHTML={{ __html: content }}></div>
             </article>
         </Layout>
     );

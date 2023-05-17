@@ -31,7 +31,7 @@ const PostPreview = ({ title, timestamp, excerpt, content, link }: PostPreviewPr
             <time>{format(timestamp, 'dd MMM yyyy')}</time>
         </div>
 
-        <content dangerouslySetInnerHTML={{ __html: excerpt || content }} />
+        <div className="content" dangerouslySetInnerHTML={{ __html: excerpt || content }}></div>
 
         {excerpt ? <a role="button" className="btn btn-md btn-primary read-more" href={link}>Read more</a> : null}
     </article>
