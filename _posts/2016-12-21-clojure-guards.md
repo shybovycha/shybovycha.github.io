@@ -7,11 +7,105 @@ published: True
 date: '2016-12-21T12:54:00'
 ---
 
-Once I wanted to have something like a pretty "match" operator from Scala, but in Clojure.
-And hence there are no default options for it in Clojure out of the box, here are some
-alternatives I've found in the Internet.
+Once I wanted to have something like a pretty "match" operator from Scala (or Rust, or C# 7), but in Clojure.
+In this blog I explore some solutions for that available in Clojure world.
 
-<!--more-->
+## Use case
+
+Generally, you would use pattern matching as a neat syntax for multiple `if..else` or `switch..case` statements.
+Consider this example of transforming values between two enums:
+
+```cpp
+if (entityType == DBEntityType::ISSUE) {
+    return UIEntityType::ISSUE;
+} else if (entityType == DBEntityType::SUBTASK) {
+    return UIEntityType::SUBTASK;
+} else {
+    return UIEntityType::UNKNOWN;
+}
+```
+
+This could be written neatly with a `switch..case` statement:
+
+```cpp
+switch (entityType) {
+    case DBEntityType::ISSUE:
+        return UIEntityType::ISSUE;
+    case DBEntityType::SUBTASK:
+        return UIEntityType::SUBTASK;
+    default:
+        return UIEntityType::UNKNOWN;
+}
+```
+
+In C# starting with version 7 you could write this using switch expression:
+
+```csharp
+return entityType switch {
+    DBEntityType.ISSUE => UIEntityType.ISSUE,
+    DBEntityType.SUBTASK => UIEntityType.SUBTASK,
+    _ => UIEntityType.UNKNOWN
+};
+```
+
+But what if you have multiple conditions to check?
+
+```cpp
+if (entityType == DBEntityType::ISSUE && permissions.canEdit(user, DBEntityType::ISSUE)) {
+    return UIEntityType::ISSUE;
+} else if (entityType == DBEntityType::SUBTASK && permissions.canEdit(user, DBEntityType::SUBTASK)) {
+    return UIEntityType::SUBTASK;
+} else {
+    return UIEntityType::UNKNOWN;
+}
+```
+
+This can not be converted to `switch..case` nicely. But with switch expressions (or rather, pattern matching, in general) you can do something like this:
+
+```csharp
+return entityType switch {
+    DBEntityType::ISSUE when permissions.canEdit(user, DBEntityType::ISSUE) => UIEntityType::ISSUE,
+    DBEntityType::SUBTASK when permissions.canEdit(user, DBEntityType::SUBTASK) => UIEntityType::SUBTASK,
+    _ => UIEntityType::UNKNOWN,
+};
+```
+
+## Using `cond`
+
+```clojure
+;; Note how this method does not check the `n > 3` case
+(defn testFn [n]
+    (cond
+        (= n 1) "You entered 1!"
+        (= n 2) "You entered two!"
+        (= n 3) "You entered three!"
+        :else "You entered a big number!"
+    ))
+
+(defn complexFn [entityType user permissions]
+    (cond
+        (and (= entityType :db-issue) (can-edit? permissions user :db-issue) :ui-issue)
+        (and (= entityType :db-subtask) (can-edit? permissions user :db-subtask) :ui-subtask)
+        :else :ui-unknown))
+```
+
+## Using `condp`
+
+```clojure
+;; Note how this method does not check the `n > 3` case
+(defn testFn [n]
+    (condp = n
+        1 "You entered 1!"
+        2 "You entered two!"
+        3 "You entered three!"
+        "You entered a big number!"))
+
+(defn complexFn [entityType user permissions]
+    (condp = [ entityType true ]
+        [ :db-issue (can-edit? permissions user :db-issue) ] :ui-issue
+        [ :db-subtask (can-edit? permissions user :db-subtask) ] :ui-subtask
+        :ui-unknown))
+```
 
 ## Using `guard` macro
 
