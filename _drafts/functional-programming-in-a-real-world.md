@@ -4,40 +4,76 @@ title: 'Functional programming in a real world'
 date: '2018-01-13T18:01:00+01:00'
 ---
 
-There are lots of talks about how beautiful functional programming is,
-how it simplifies our lives, making code more straightforward, clean and testable.
-But to what extent is it true?
+There is quite a hype around functional programming kicking off in past few years.
+A lot of buzz on how it simplifies developers' lives, making code more straightforward, clean and testable.
+But to what extent is all of that true?
 
-Before talking high-level, let me ask you one question: do you know how programs are executed
-at a processor level? If you do know that - just skip the first section of this article.
+Before talking high-level, let me briefly remind you about how programs are executed on a processor level.
 
-## Gentle introduction to how computers work
+## Crude reminder of how computers work
+
+An average computer has few levels of memory on board (from fastest to slower):
+
+* CPU registers - a rather limited number of **extremely** fast but very small (`64 bits` for x86_64 CPU architecture) variables
+* L1 cache - a larger chunk of memory, which is still **very** fast; my Ryzen 7 7800X3D has 512 KB of L1 cache memory
+* L2 cache - a bit bigger chunk of a bit slower memory (still fast, though); my CPU has 8 MB of it
+* L3 cache - the last big chunk of memory available directly on CPU; my CPU has a whopping 96 MB (thanks to 3D VCache technology)
+* RAM - a comparatively fast set of memory, but rather large on modern machines (16 GB being considered the minimum viable for playing games nowadays)
+* permanent storage (HDD / SSD) - an insanely large (compared to what is available directly on CPU) chunk of rather slow memory
+
+If you consider databases, especially located somewhere on the network, potentially on another continent, they are the slowest to work with.
+
+A bit more detailed list (of how fast each memory is) [I think every programmer should know](https://gist.github.com/hellerbarde/2843375/), June 2023 version:
+
+```
+L1 cache reference ......................... 0.5 ns
+L2 cache reference ........................... 7 ns
+Main memory reference ...................... 100 ns
+Send 2 KB over 1 Gbps network ........... 20,000 ns  =  20 µs
+SSD random read ........................ 150,000 ns  = 150 µs
+Read 1 MB sequentially from memory ..... 250,000 ns  = 250 µs
+Round trip within same datacenter ...... 500,000 ns  = 0.5 ms
+Read 1 MB sequentially from SSD* ..... 1,000,000 ns  =   1 ms
+Send packet CA->Netherlands->CA .... 150,000,000 ns  = 150 ms
+```
+
+An average program (application) lifecycle is about the following (considering the contemporary computer architecture):
+
+* CPU (via the operating system abstractions) reads the program code (few megabytes, with all the libraries and actual program code) stored on SSD and stores it in RAM
+* (due to the parallel and off-order instruction execution) CPU eventually reads _a portion_ of program code and stores them in different caches (L1/L2/L3), prior to executing them
+* when CPU executes a portion of a program, it gets an _instruction_ and stores it (together with its operands) in CPU registers
+* some program instructions would load data to RAM, CPU will then copy it from RAM to CPU registers (in order to perform operations on that data)
+* some programs might perform network calls to load data into RAM and eventually get the data from RAM to CPU registers (to perform operations on that data)
+
+But why am I even mentioning these latencies and CPU registers? Well, keep on reading - we'll use these concepts later on.
 
 <!--more-->
 
-## Preamble
+## What is functional programming?
 
-What is the functional programming?
+Consider the following program in C:
 
-```
+```c
 int square(int n) {
   return n * n;
 }
 ```
 
-Is this a functional approach?
+Does this program exhibit functional approach?
 
 According to Wikipedia, functional paradigm is described by two main principles:
 
 1. operating on functions (functions as first-class citizens in a language)
-2. immutability (context isolation)
+2. immutability (context isolation; meaning a program / function does not change the state of anything outside of its scope / context)
 
 ## The big lie of functional programming
 
-The example above shows only the context isolation approach. But how about the other one?
-Given it is written in C/C++, consider these two examples:
+The example above only shows the context isolation (immutability) aspect of functional program.
+It does not really demonstrate or use functions as first-class citizens - `*` is an _operator_ in C.
 
-```
+Now consider these two examples:
+
+```cpp
 int sum(std::vector<int> a) {
   int res = 0;
 
@@ -49,11 +85,11 @@ int sum(std::vector<int> a) {
 }
 ```
 
-^ we will refer to this example a couple of times later
+We will refer to this example a couple of times later.
 
-Its output in assembly with `-std=c++1z -O1` flags:
+It compiles to the following assembly code (with `-std=c++1z -O1` compiler flags):
 
-```
+```nasm
 sum(int*, int): # @sum(int*, int)
   test esi, esi
   jle .LBB0_1
@@ -70,23 +106,23 @@ sum(int*, int): # @sum(int*, int)
   ret
 ```
 
-Now, more C-ish version:
+Now, a C-style version:
 
-```
+```c
 int sum(int *a, int n) {
   int res = 0;
 
   for (int i = 0; i < n; ++i) {
-      res += a[i];
+    res += a[i];
   }
 
   return res;
 }
 ```
 
-with `-O2`:
+with `-O2` compiler flag yields the following assembly code:
 
-```
+```nasm
 sum(int*, int): # @sum(int*, int)
   test esi, esi
   jle .LBB0_1
@@ -135,45 +171,44 @@ sum(int*, int): # @sum(int*, int)
   ret
 ```
 
-
 As you can see, written imperatively, they are compiled into relatively simple Assembly programs (given that `std::vector` has its own safety checks and is iterated over in a slightly different manner).
 
-Now, what will happen if we were about to write the exactly same programs in a more functional-ish style?
+Now, what will happen if we were about to write the exactly same programs in a more functional style?
 
 Consider this example in C:
 
-```
+```c
 int reduce(int *a, int n, int init, int (*reducer)(int, int)) {
-    int result = init;
+  int result = init;
 
-    for (int i = 0; i < n; ++i) {
-        result = reducer(a[i], result);
-    }
+  for (int i = 0; i < n; ++i) {
+    result = reducer(a[i], result);
+  }
 
-    return result;
+  return result;
 }
 ```
 
 and in C++:
 
-```
+```cpp
 #include <vector>
 #include <functional>
 
 int reduce(std::vector<int> a, int init, std::function<int(int, int)> &reducer) {
-    int result = init;
+  int result = init;
 
-    for (auto i : a) {
-        result = reducer(i, result);
-    }
+  for (auto i : a) {
+    result = reducer(i, result);
+  }
 
-    return result;
+  return result;
 }
 ```
 
 the first one produces this result:
 
-```
+```nasm
 reduce(int*, int, int, int (*)(int, int)): # @reduce(int*, int, int, int (*)(int, int))
   push rbp
   mov rbp, rsp
@@ -207,9 +242,9 @@ reduce(int*, int, int, int (*)(int, int)): # @reduce(int*, int, int, int (*)(int
   ret
 ```
 
-Still pretty short. Now the C++ one gives a lot of mess due to the use of `std::function` and `std::vector`:
+Still pretty conscise assebmly code. But the C++ one produces quite a bit of noise due to the use of `std::function` and `std::vector`:
 
-```
+```nasm
 reduce(std::vector<int, std::allocator<int> >, int, std::function<int (int, int)>&): # @reduce(std::vector<int, std::allocator<int> >, int, std::function<int (int, int)>&)
   push rbp
   mov rbp, rsp
@@ -397,7 +432,7 @@ int&& std::forward<int>(std::remove_reference<int>::type&): # @int&& std::forwar
 
 But in the essence it is still 41 LOC:
 
-```
+```nasm
 reduce(std::vector<int, std::allocator<int> >, int, std::function<int (int, int)>&): # @reduce(std::vector<int, std::allocator<int> >, int, std::function<int (int, int)>&)
   push rbp
   mov rbp, rsp
@@ -443,55 +478,52 @@ reduce(std::vector<int, std::allocator<int> >, int, std::function<int (int, int)
 
 Let us try *calling* the `reduce` function. For C:
 
-```
+```c
 int reduce(int *a, int n, int init, int (*reducer)(int, int)) {
-    int result = init;
+  int result = init;
 
-    for (int i = 0; i < n; ++i) {
-        result = reducer(a[i], result);
-    }
+  for (int i = 0; i < n; ++i) {
+    result = reducer(a[i], result);
+  }
 
-    return result;
+  return result;
 }
 
 int add(int acc, int elt) {
-    return acc + elt;
+  return acc + elt;
 }
 
 int main() {
-    int a[] = { 1, 2, 3 };
-    reduce(a, 0, 3, &add);
+  int a[] = { 1, 2, 3 };
+  reduce(a, 0, 3, &add);
 }
 ```
 
 and for C++:
 
-```
+```cpp
 #include <vector>
 #include <functional>
 
 int reduce(std::vector<int> a, int init, std::function<int(int, int)> reducer) {
-    int result = init;
+  int result = init;
 
-    for (auto i : a) {
-        result = reducer(i, result);
-    }
+  for (auto i : a) {
+    result = reducer(i, result);
+  }
 
-    return result;
+  return result;
 }
 
 int main() {
-    std::vector<int> a;
-    a.push_back(1);
-    a.push_back(2);
-    a.push_back(3);
-    reduce(a, 0, [](int a, int b) -> int { return a + b; });
+  std::vector<int> a{ 1, 2, 3 };
+  reduce(a, 0, [](int a, int b) -> int { return a + b; });
 }
 ```
 
 Which compile into these two Assemblies:
 
-```
+```nasm
 reduce: # @reduce
   push rbp
   mov rbp, rsp
@@ -558,9 +590,9 @@ main: # @main
   .long 3 # 0x3
 ```
 
-and 
+and
 
-```
+```nasm
 reduce(std::vector<int, std::allocator<int> >, int, std::function<int (int, int)>): # @reduce(std::vector<int, std::allocator<int> >, int, std::function<int (int, int)>)
   push rbp
   mov rbp, rsp
@@ -2603,26 +2635,26 @@ Now, what will happen if we will re-write the same thing but in different langua
 
 Remember functional programming was introduced in Java 8?
 
-```
+```java
 import java.util.*;
 import java.lang.*;
 import java.io.*;
 import java.util.function.*;
 
 public class Sample {
-        public static void main (String[] args) throws java.lang.Exception {
-                Function<Integer, Integer> f1 = n -> n * 2;
-                Function<Integer, Integer> f2 = n -> n * n;
-                Function<Integer, Integer> composition = f1.andThen(f2);
+  public static void main (String[] args) throws java.lang.Exception {
+    Function<Integer, Integer> f1 = n -> n * 2;
+    Function<Integer, Integer> f2 = n -> n * n;
+    Function<Integer, Integer> composition = f1.andThen(f2);
 
-                System.out.printf("(2 * n * n)(3) = %d\n", composition.apply(3));
-        }
+    System.out.printf("(2 * n * n)(3) = %d\n", composition.apply(3));
+  }
 }
 ```
 
 is compiled into something like this:
 
-```
+```java
 public class Sample {
   public Sample();
     Code:
@@ -2658,7 +2690,7 @@ public class Sample {
 ```
 
 
-```
+```cpp
 auto f1 = [](auto a, auto b) { return a + b; };
 
 auto f2 = [](std::vector<int> a, auto f, auto init) { auto res = init; for (auto i : a) res = f(i, res); return res; };
@@ -2666,7 +2698,7 @@ auto f2 = [](std::vector<int> a, auto f, auto init) { auto res = init; for (auto
 
 Does this demonstrate the first-class functions in C++? Does it refer to a functional paradigm?
 
-```
+```c
 int reduce(int n, int *a, int (*f)(int a, int b), int init) {
   int res = init;
 
@@ -2680,7 +2712,7 @@ int reduce(int n, int *a, int (*f)(int a, int b), int init) {
 
 This last example will be compiled (using Clang 5.0.0) into this:
 
-```
+```nasm
 reduce(int, int*, int (*)(int, int), int): # @reduce(int, int*, int (*)(int, int), int)
   push rbp
   mov rbp, rsp
@@ -2716,7 +2748,7 @@ reduce(int, int*, int (*)(int, int), int): # @reduce(int, int*, int (*)(int, int
 
 With `-O2` option:
 
-```
+```nasm
 reduce(int, int*, int (*)(int, int), int): # @reduce(int, int*, int (*)(int, int), int)
   push r15
   push r14
@@ -2743,24 +2775,24 @@ reduce(int, int*, int (*)(int, int), int): # @reduce(int, int*, int (*)(int, int
 
 Consider this C++17 code for the very same function:
 
-```
+```cpp
 #include <vector>
 #include <functional>
 
 int reduce(std::vector<int> a, std::function<int (int, int)> f, int init) {
-    int res = init;
+  int res = init;
 
-    for (int i : a) {
-        res = f(i, res);
-    }
+  for (int i : a) {
+    res = f(i, res);
+  }
 
-    return res;
+  return res;
 }
 ```
 
 its output (with Clang 5.0.0 and `-std=c++1z -O2` options:
 
-```
+```nasm
 reduce(std::vector<int, std::allocator<int> >, std::function<int (int, int)>, int): # @reduce(std::vector<int, std::allocator<int> >, std::function<int (int, int)>, int)
   push r15
   push r14
@@ -2803,14 +2835,14 @@ reduce(std::vector<int, std::allocator<int> >, std::function<int (int, int)>, in
 
 Now consider Haskell example:
 
-```
+```hs
 module Example where
 
 sum2 :: [Int] -> Int
 sum2 = foldr (+) 0
 ```
 
-```
+```nasm
 __stginit_Example:
 c10H_str:
   .byte 109
@@ -2906,7 +2938,7 @@ S111_srt:
 
 and recursive variant, since there are no loops in Haskell:
 
-```
+```hs
 module Example where
 
 sum1 :: [Int] -> Int
@@ -2914,7 +2946,9 @@ sum1 (x:xs) = x + sum1 xs
 sum1 [] =  0
 ```
 
-```
+which compiles into
+
+```nasm
 __stginit_Example:
 cHx_str:
   .byte 109
@@ -3010,7 +3044,7 @@ Please note: no compiler options provided!
 
 With `-O2` the last one gives us this:
 
-```
+```nasm
 __stginit_Example:
 cKp_str:
   .byte 109
@@ -3120,7 +3154,7 @@ cLw_info:
 
 Effectively, the summing function in Haskell has this Assembly output:
 
-```
+```nasm
 Example_$wsum1_info:
   leaq -16(%rbp),%rax
   cmpq %r15,%rax
@@ -3175,7 +3209,7 @@ cKO_info:
 
 Or, with a more high-level code, CMM (C--, the high-level GHC Assembly-like language):
 
-```
+```hs
 Example.sumOverArray_entry() //  [R2]
    { info_tbl: [(cHQ,
                  label: block_cHQ_info
@@ -3233,7 +3267,7 @@ Example.sumOverArray_entry() //  [R2]
 This makes comparison unfair - we've used recursion in Haskell program and loop in C program so compiler can produce slighty
 different assembly code for them. Let's then compare this latest Haskell recursive function with the recursive C function:
 
-```
+```c
 int sum(int *a, int n) {
   if (n > 0)
     return a[0] + sum(a + 1, n - 1);
@@ -3242,7 +3276,9 @@ int sum(int *a, int n) {
 }
 ```
 
-```
+which yields
+
+```nasm
 sum(int*, int): # @sum(int*, int)
   push rbp
   mov rbp, rsp
@@ -3276,7 +3312,7 @@ sum(int*, int): # @sum(int*, int)
 
 With `-O2` it produces somewhat more code:
 
-```
+```nasm
 sum(int*, int): # @sum(int*, int)
   test esi, esi
   jle .LBB0_1
@@ -3333,9 +3369,9 @@ sum(int*, int): # @sum(int*, int)
   ret
 ```
 
-Now, we talk about im-mutability. But the machines' architecture we used to deal with are not designed for immutability by design.
+Now, we talk about immutability. But the computers we use were not designed with immutability in mind.
 
-What's more important, in a number of cases we have to deal with some data storages (like databases, cookies, etc.), which are mutable by design. So what's the point of having a well-designed immutability in a language itself, when we just throw it in a window by using those data storages?
+What's more important, in a number of cases we have to deal with some data storages (like databases, cookies, etc.), which are mutable by design. So what's the point of having a well-designed immutability in a programming language, when we just throw it out of the window by using the mutable data storage?
 
 ## The practical applications
 
@@ -3351,39 +3387,39 @@ What if *(why in the world a sane person would do this?)* we write it with Haske
 
 The problem here is that games have to deal with big amounts of data. Would immutability help here?
 
-*code samples here with memory allocation / deallocation counts*
+*TODO: code samples here with memory allocation / deallocation counts*
 
 Each frame we allocate **and** free a huge amount of memory just to handle this and that stuff.
 
 ### Case 2: web applications
 
-*Heyyyy! We have Clojure, ClojureScript, Elm, React+Re* and friends! They all are already widely spread!*
+> Heyyyy! We have Clojure, ClojureScript, Elm, React+Re* and friends! They all are already widely spread!
 
 Welllllll, let's take a closer look: we have to deal with databases, DOM, cookies, browser state & user input **a lot**.
-No, <h1>A LOT</h1>. How a typical application in Clojure looks like?
+No, <h2>A LOT</h2>. How a typical application in Clojure looks like?
 
-*an example of Ring/Compojure app*
+*TODO: an example of Ring/Compojure/Liberator app*
 
 How does the React app looks like?
 
-*an example of React component*
+*TODO: an example of a React component*
 
 Well, this is a more edge-case example. See, we do have a mutable state here - DOM. And in order to update it,
 React has to deal with it in a way that it *mutates it* (remove elements, change attributes - *consolidation* algorithms?).
 
 Static typing is great? Well, here's the thing: if you have to deal with JSON - you're doomed.
 
-*an example of trying to deal with a variable JSON structure*
+*TODO: an example of trying to deal with a variable JSON structure*
 
-APIs are everywhere and if one changes - you either handle the change to fill the gaps with default values, or throw an exception. Alternatively, you re-build the whole application on each API change. Now, some might say *"Oh, just use functors/lenses/monads/whatever!"* - but imagine a *trivial task*: 
+APIs are everywhere and if one changes - you either handle the change to fill the gaps with default values, or throw an exception. Alternatively, you re-build the whole application on each API change. Now, some might say *"Oh, just use functors/lenses/monads/whatever!"* - but imagine a *trivial task*:
 
-*bad one:* you are given a structure of all known languages and known strings translations for each of those languages. The task is to translate a string in English or just use it as-is when there is no translation.
+*bad one:* you are given a map of string translations for languages supported by the system. The task is to translate a string in English or just use it as-is when there is no translation.
 
-*better one:* you are given a map of 
+*better one:* you are given a map of (what)?
 
 Looks really easy, right? But can you implement it? Can you?
 
-```
+```js
 JSON = {
   "RU": {
     "hello": "привет",
@@ -3399,24 +3435,12 @@ JSON = {
 }
 ```
 
-```
+```hs
 import Html exposing (text)
 import Json.Decode exposing (decodeString, dict, string)
 
 decodeString (dict dict) "{ \"alice\": { \"hello\": \"something\" }, \"bob\": { \"world\": \"something else\" } }"
 ```
-
-
-
-
-
-
-
-
-
-
-
-
 
 ## References
 
