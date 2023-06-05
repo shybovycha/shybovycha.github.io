@@ -4,7 +4,7 @@ title: 'Functional programming in a real world'
 date: '2018-01-13T18:01:00+01:00'
 ---
 
-There is quite a hype around functional programming kicking off in past few years.
+There has been quite a lot of hype around functional programming kicking off in past few years.
 A lot of buzz on how it simplifies developers' lives, making code more straightforward, clean and testable.
 But to what extent is all of that true?
 
@@ -14,16 +14,25 @@ Before talking high-level, let me briefly remind you about how programs are exec
 
 An average computer has few levels of memory on board (from fastest to slower):
 
-* CPU registers - a rather limited number of **extremely** fast but very small (`64 bits` for x86_64 CPU architecture) variables
-* L1 cache - a larger chunk of memory, which is still **very** fast; my Ryzen 7 7800X3D has 512 KB of L1 cache memory
-* L2 cache - a bit bigger chunk of a bit slower memory (still fast, though); my CPU has 8 MB of it
-* L3 cache - the last big chunk of memory available directly on CPU; my CPU has a whopping 96 MB (thanks to 3D VCache technology)
+* CPU registers - a rather limited number of **extremely** fast but very small variables
+* L1 cache - a larger chunk of memory, which is still **very** fast
+* L2 cache - a bit bigger chunk of a bit slower memory (still fast, though)
+* L3 cache - the last big chunk of memory available directly on CPU
 * RAM - a comparatively fast set of memory, but rather large on modern machines (16 GB being considered the minimum viable for playing games nowadays)
 * permanent storage (HDD / SSD) - an insanely large (compared to what is available directly on CPU) chunk of rather slow memory
 
 If you consider databases, especially located somewhere on the network, potentially on another continent, they are the slowest to work with.
 
-A bit more detailed list (of how fast each memory is) [I think every programmer should know](https://gist.github.com/hellerbarde/2843375/), June 2023 version:
+For example, my current desktop PC has the following configuration (given Ryzen 7 7800X3D CPU):
+
+* registers: 64-bit-wide
+* L1 cache: 512 KB
+* L2 cache: 8 MB
+* L3 cache: 96 MB
+* RAM: 32 GB
+* SSD: 2 TB
+
+A detailed list of how fast each memory is, [I think every programmer should know](https://gist.github.com/hellerbarde/2843375/), June 2023 version:
 
 ```
 L1 cache reference ......................... 0.5 ns
@@ -47,8 +56,6 @@ An average program (application) lifecycle is about the following (considering t
 
 But why am I even mentioning these latencies and CPU registers? Well, keep on reading - we'll use these concepts later on.
 
-<!--more-->
-
 ## What is functional programming?
 
 Consider the following program in C:
@@ -71,7 +78,7 @@ According to Wikipedia, functional paradigm is described by two main principles:
 The example above only shows the context isolation (immutability) aspect of functional program.
 It does not really demonstrate or use functions as first-class citizens - `*` is an _operator_ in C.
 
-Now consider these two examples:
+Now consider a tad more complex program:
 
 ```cpp
 int sum(std::vector<int> a) {
@@ -2629,9 +2636,9 @@ typeinfo for main::$_0:
   .quad typeinfo name for main::$_0
 ```
 
-When all the standard library code is removed, this gives raw of 60 LOC for C program and 41 + 72 (= 113) LOC for C++ program.
+When all the standard library code is removed, this gives raw of `60` LOC for C program and `41 + 72 = 113` LOC for C++ program.
 
-Now, what will happen if we will re-write the same thing but in different languages?
+Now, what will happen if we write the same code but in different languages?
 
 Remember functional programming was introduced in Java 8?
 
@@ -2696,7 +2703,7 @@ auto f1 = [](auto a, auto b) { return a + b; };
 auto f2 = [](std::vector<int> a, auto f, auto init) { auto res = init; for (auto i : a) res = f(i, res); return res; };
 ```
 
-Does this demonstrate the first-class functions in C++? Does it refer to a functional paradigm?
+Does this demonstrate the first-class functions in C++? Does it compy with functional paradigm?
 
 ```c
 int reduce(int n, int *a, int (*f)(int a, int b), int init) {
