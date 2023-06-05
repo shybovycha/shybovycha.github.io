@@ -6,7 +6,254 @@ date: '2018-01-13T18:01:00+01:00'
 
 There has been quite a lot of hype around functional programming kicking off in past few years.
 A lot of buzz on how it simplifies developers' lives, making code more straightforward, clean and testable.
-But to what extent is all of that true?
+But let's dig a bit deeper into what actually lies behind the facade of a neat, testable and mistake-resistant code.
+
+Just a recap: what functional programming is?
+
+When people talk about functional paradigm, they refer to few principles:
+
+1. functions are the first-class citizens in a programming language, so any program is just a function
+2. immutability (context isolation), meaning a program / function does not change the state of anything outside of its scope / context
+
+On top of this, people often talk about _pure functional programs_ or _pure functions_, which, according to Wikipedia, described as:
+
+3. programs are referentially transparent, meaning any expression in a program can be replaced with its value and the function will behave exactly the same
+4. functions don't have side effects, meaning function' state is only internal, functions do not modify the state of other objects
+
+Let us start with a concrete example of a program.
+I could have prepared a real-world one, with an in-memory index of some entities,
+converting database query result to a HTTP response or creating a HTTP query string. But all those, despite being relatively simple,
+are still a bit too big for what I'm about to show you. So let me go a bit unrealistic here and use the sum of an array of integer numbers as an example.
+
+In C++, this might look something like this:
+
+```c
+int sum(std::vector<int> a) {
+  int res = 0;
+
+  for (int i : a) {
+    res += i;
+  }
+
+  return res;
+}
+```
+
+This program exhibits the concept of scope isolation - it does not change anything (any state) outside of its scope, aka it does not have side-effects.
+
+Using the power of [Godbolt compiler exporer](https://godbolt.org/) we can see what it will be compiled to (using `x86-64 gcc 13.1` with no compiler options):
+
+```nasm
+sum(std::vector<int, std::allocator<int> >):
+        push    rbp
+        mov     rbp, rsp
+        sub     rsp, 64
+        mov     QWORD PTR [rbp-56], rdi
+        mov     DWORD PTR [rbp-4], 0
+        mov     rax, QWORD PTR [rbp-56]
+        mov     QWORD PTR [rbp-16], rax
+        mov     rax, QWORD PTR [rbp-16]
+        mov     rdi, rax
+        call    std::vector<int, std::allocator<int> >::begin()
+        mov     QWORD PTR [rbp-32], rax
+        mov     rax, QWORD PTR [rbp-16]
+        mov     rdi, rax
+        call    std::vector<int, std::allocator<int> >::end()
+        mov     QWORD PTR [rbp-40], rax
+        jmp     .L2
+.L3:
+        lea     rax, [rbp-32]
+        mov     rdi, rax
+        call    __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::operator*() const
+        mov     eax, DWORD PTR [rax]
+        mov     DWORD PTR [rbp-20], eax
+        mov     eax, DWORD PTR [rbp-20]
+        add     DWORD PTR [rbp-4], eax
+        lea     rax, [rbp-32]
+        mov     rdi, rax
+        call    __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::operator++()
+.L2:
+        lea     rdx, [rbp-40]
+        lea     rax, [rbp-32]
+        mov     rsi, rdx
+        mov     rdi, rax
+        call    bool __gnu_cxx::operator!=<int*, std::vector<int, std::allocator<int> > >(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > const&, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > > const&)
+        test    al, al
+        jne     .L3
+        mov     eax, DWORD PTR [rbp-4]
+        leave
+        ret
+```
+
+This is a rather primitive code.
+
+Same code in a what is considered a pure functional programming language, Haskell, would look like this (with a trick that `sum` is in fact a standard library function, so we have to use a different name, `sum2` sounds good to me):
+
+```hs
+sum2 :: [Int] -> Int
+sum2 (x:xs) = x + sum2 xs
+sum2 [] = 0
+```
+
+And it is compiled into the following assembly:
+
+```nasm
+.LrB_bytes:
+        .string "Example"
+.Lrz_bytes:
+        .string "main"
+.LrA_closure:
+        .quad   ghczmprim_GHCziTypes_TrNameS_con_info
+        .quad   .Lrz_bytes
+.LrC_closure:
+        .quad   ghczmprim_GHCziTypes_TrNameS_con_info
+        .quad   .LrB_bytes
+Example_$trModule_closure:
+        .quad   ghczmprim_GHCziTypes_Module_con_info
+        .quad   .LrA_closure+1
+        .quad   .LrC_closure+1
+        .quad   3
+.LsCD_info:
+
+        leaq -16(%rbp),%rax
+        cmpq %r15,%rax
+        jb .LcCZ
+
+        movq $stg_upd_frame_info,-16(%rbp)
+        movq %rbx,-8(%rbp)
+        movq 16(%rbx),%rax
+        movq %rax,%r14
+        addq $-16,%rbp
+
+        jmp Example_sum2_info
+.LcCZ:
+
+        jmp *-16(%r13)
+Example_sum2_info:
+
+        leaq -24(%rbp),%rax
+        cmpq %r15,%rax
+        jb .LcD6
+
+        movq $.LcCN_info,-8(%rbp)
+        movq %r14,%rbx
+        addq $-8,%rbp
+
+        testb $7,%bl
+        jne .LcCN
+
+        jmp *(%rbx)
+        .quad   0
+        .long   30
+        .long   Example_sum2_closure-(.LcCN_info)+0
+.LcCN_info:
+.LcCN:
+
+        movq %rbx,%rax
+        andl $7,%eax
+        cmpq $1,%rax
+        jne .LcD3
+
+        leaq stg_INTLIKE_closure+257(%rip),%rbx
+        addq $8,%rbp
+
+        jmp *(%rbp)
+.LcD3:
+
+        addq $24,%r12
+        cmpq 856(%r13),%r12
+        ja .LcDb
+
+        movq 6(%rbx),%rax
+        movq 14(%rbx),%rbx
+        movq $.LsCD_info,-16(%r12)
+        movq %rbx,(%r12)
+        leaq -16(%r12),%rbx
+        leaq base_GHCziNum_zdfNumInt_closure(%rip),%r14
+        movq $stg_ap_pp_info,-16(%rbp)
+        movq %rax,-8(%rbp)
+        movq %rbx,(%rbp)
+        addq $-16,%rbp
+
+        jmp base_GHC.Num_+_info
+.LcD6:
+
+        leaq Example_sum2_closure(%rip),%rbx
+        jmp *-8(%r13)
+.LcDb:
+
+        movq $24,904(%r13)
+        jmp stg_gc_unpt_r1
+Example_sum2_closure:
+        .quad   Example_sum2_info
+        .quad   0
+```
+
+Trick is: this is a bit of an unfair comparison -
+C++ code just mutates the variable and uses iterators whereas Haskell code passes sub-array into the recursive call of a function.
+
+Well, we can make them _very_ similar now that we have C++20, using `std::span`:
+
+```cpp
+int sum3(std::span<int> a, int res = 0) {
+  if (a.empty()) {
+    return res;
+  }
+
+  return sum3(a.subspan(1), res + a.front());
+}
+```
+
+This yields a very similar assembly code too:
+
+```nasm
+sum3(std::span<int, 18446744073709551615ul>, int):
+        push    rbp
+        mov     rbp, rsp
+        push    rbx
+        sub     rsp, 40
+        mov     rax, rdi
+        mov     rcx, rax
+        mov     rbx, rdx
+        mov     rbx, rsi
+        mov     QWORD PTR [rbp-32], rcx
+        mov     QWORD PTR [rbp-24], rbx
+        mov     DWORD PTR [rbp-36], edx
+        lea     rax, [rbp-32]
+        mov     rdi, rax
+        call    std::span<int, 18446744073709551615ul>::empty() const
+        test    al, al
+        je      .L7
+        mov     eax, DWORD PTR [rbp-36]
+        jmp     .L8
+.L7:
+        lea     rax, [rbp-32]
+        mov     rdi, rax
+        call    std::span<int, 18446744073709551615ul>::front() const
+        mov     edx, DWORD PTR [rax]
+        mov     eax, DWORD PTR [rbp-36]
+        lea     ebx, [rdx+rax]
+        lea     rax, [rbp-32]
+        mov     rdx, -1
+        mov     esi, 1
+        mov     rdi, rax
+        call    std::span<int, 18446744073709551615ul>::subspan(unsigned long, unsigned long) const
+        mov     rsi, rax
+        mov     rdi, rdx
+        mov     rcx, rsi
+        mov     rax, rdx
+        mov     edx, ebx
+        mov     rdi, rcx
+        mov     rsi, rax
+        call    sum3(std::span<int, 18446744073709551615ul>, int)
+        nop
+.L8:
+        mov     rbx, QWORD PTR [rbp-8]
+        leave
+        ret
+```
+
+---
 
 Before talking high-level, let me briefly remind you about how programs are executed on a processor level.
 
