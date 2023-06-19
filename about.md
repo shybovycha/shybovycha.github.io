@@ -30,7 +30,7 @@ Hardcore interviewer:
 * [Takenoko](https://boardgamegeek.com/boardgame/70919/takenoko)
 * [Evolution](https://boardgamegeek.com/boardgame/155703/evolution)
 * [Star realms](https://boardgamegeek.com/boardgame/147020/star-realms)
-* [u2i softwar](https://softwar.u2i.com/)
+* [u2i softwar](https://softwar.u2i.com/) (<span title="Absolutely love!">🌟</span>)
 * [7th continent](https://boardgamegeek.com/boardgame/180263/7th-continent)
 * [Robinson Crusoe](https://boardgamegeek.com/boardgame/121921/robinson-crusoe-adventures-cursed-island)
 * [Tiny epic galaxies](https://boardgamegeek.com/boardgame/163967/tiny-epic-galaxies)
@@ -45,11 +45,21 @@ Hardcore interviewer:
 * [Wingspan](https://boardgamegeek.com/boardgame/266192/wingspan)
 * [Hive](https://boardgamegeek.com/boardgame/2655/hive)
 * [Flick of Faith](https://boardgamegeek.com/boardgame/281194/flick-faith) (🇵🇱)
-* [<del>Sword & Sorcery</del>](https://boardgamegeek.com/boardgame/170771/sword-sorcery) (💸)
-* [<del>Stone Age</del>](https://boardgamegeek.com/boardgame/34635/stone-age) (💸)
-* [<del>Castles of Burgundy (2011)</del>](https://boardgamegeek.com/boardgame/84876/castles-burgundy) (💸)
-* [<del>Small world</del>](https://boardgamegeek.com/boardgame/40692/small-world) (💸)
-* [<del>Noir: a deductive mystery game</del>](https://boardgamegeek.com/boardgame/102148/noir-deductive-mystery-game) (💸)
+* [Call of Kilforth](https://boardgamegeek.com/boardgame/329121/call-kilforth-fantasy-quest-game) (<span title="Waiting">⏳</span>)
+* [Call to Adventure](https://boardgamegeek.com/boardgame/238992/call-adventure) (<span title="Considering">🤔</span>)
+* [Dale of Merchants](https://boardgamegeek.com/boardgame/176165/dale-merchants) (<span title="Considering">🤔</span>)
+* [Furnace](https://boardgamegeek.com/boardgame/318084/furnace) (<span title="Considering">🤔</span>)
+* [Spyfall](https://boardgamegeek.com/boardgame/166384/spyfall) (<span title="Considering">🤔</span>)
+* [Runebound: Unbreakable Bonds](https://boardgamegeek.com/boardgameexpansion/225275/runebound-third-edition-unbreakable-bonds/) (<span title="Looking for">🔍)
+* [8 Minute Empires](https://boardgamegeek.com/boardgame/131366/eight-minute-empire) (<span title="Looking for">🔍)
+* [Oriflamme](https://boardgamegeek.com/boardgame/287084/oriflamme) (<span title="Wondering">❔</span>)
+* [Hansa Teutonica](https://boardgamegeek.com/boardgame/43015/hansa-teutonica) (<span title="Wondering">❔</span>)
+* [Undaunted: Normandy](https://boardgamegeek.com/boardgame/268864/undaunted-normandy) (<span title="Wondering">❔❔</span>)
+* [<del>Sword & Sorcery</del>](https://boardgamegeek.com/boardgame/170771/sword-sorcery) (<span title="Sold off">💸</span>)
+* [<del>Stone Age</del>](https://boardgamegeek.com/boardgame/34635/stone-age) (<span title="Sold off">💸</span>)
+* [<del>Castles of Burgundy (2011)</del>](https://boardgamegeek.com/boardgame/84876/castles-burgundy) (<span title="Sold off">💸</span>)
+* [<del>Small world</del>](https://boardgamegeek.com/boardgame/40692/small-world) (<span title="Sold off">💸</span>)
+* [<del>Noir: a deductive mystery game</del>](https://boardgamegeek.com/boardgame/102148/noir-deductive-mystery-game) (<span title="Sold off">💸</span>)
 
 ## Favourite books, music, movies & anime
 
@@ -89,11 +99,11 @@ Big hater of Avengers series and Disney's interpretation of Star Wars.
 
 * Gothic 1, Gothic 2, Risen series
 * The Elder Scrolls III: Morrowind, The Elder Scrolls V: Skyrim
-* Two Worlds
+* Two Worlds series
 * Divinity Original Sin
 * Neighbours From Hell 1 & 2
 * Unreal Tournament
-* Legend Of Zelda: Breath of the Wild (exclusively)
+* Legend Of Zelda: Breath of the Wild and Tears of the Kingdom (exclusively)
 * ＠ true roguelike games: Angband, Nethack, Dungeon Crawl: Stone Soup
 * Dwarf Fortress
 
