@@ -156,7 +156,7 @@ const loadPost = async (absoluteFilePath: string, postDir: string): Promise<Post
         return cached.post;
     }
 
-    const src = await Bun.file(absoluteFilePath).text();
+    const src = await fsPromise.readFile(absoluteFilePath, 'utf-8');
     const { frontMatter, excerpt, content } = parsePostContent(src, { excerptSeparator: '<!--more-->' });
 
     const postLink = path.join(path.dirname(postPath), path.basename(postPath).replace(/^(\d+)-(\d+)-(\d+)-(.+)\.(md|html?)$/, '$1/$2/$3/$4.html')).replace('\\', '/').replace(/^[\\\/]+/, '');
@@ -219,8 +219,7 @@ const loadStaticPages = async (staticPages: Record<string, string>, staticPagesD
         Object.entries(staticPages)
             .map(([ filePath, outputPath ]) => ([ path.join(staticPagesDir, filePath), outputPath ]))
             .map(([ filePath, outputPath ]) =>
-                Bun.file(filePath)
-                    .text()
+                fsPromise.readFile(filePath, 'utf-8')
                     .then(txt => ({ ...parsePostContent(txt), outputPath }))
             )
     );
