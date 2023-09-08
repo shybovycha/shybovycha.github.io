@@ -23,14 +23,15 @@ const Layout = ({ title, head = null, header = null, footer = null, children }: 
         <link rel="shortcut icon" href="/images/favicon-compressed.webp" />
         <link rel="apple-touch-icon" href="/images/favicon-compressed.webp" />
 
-        <link rel="preload" href="/main.css" as="style" />
+        <link rel="preload" href="/main_bundle.css" as="style" />
 
-        <link rel="stylesheet" href="/main.css" />
+        <link rel="stylesheet" href="/main_bundle.css" />
+        <link rel="stylesheet" href="/prism.min_bundle.css" />
 
         {head}
     </head>
     <body>
-        <noscript><link rel="stylesheet" href="/main.css" /></noscript>
+        <noscript><link rel="stylesheet" href="/main_bundle.css" /><link rel="stylesheet" href="/prism.min_bundle.css" /></noscript>
 
         {header}
 

@@ -115,7 +115,7 @@ marked.use(markedHighlight({
     },
 }));
 
-const loadPostContent = (src: string, loadOptions?: LoadPostContentOptions): PostContent => {
+const parsePostContent = (src: string, loadOptions?: LoadPostContentOptions): PostContent => {
     const options = loadOptions ? { excerpt: true, excerpt_separator: loadOptions.excerptSeparator } : {};
 
     const { data: frontMatter, excerpt, content } = matter(src, options);
@@ -146,7 +146,7 @@ const parsePostDate = (postPath: string, frontMatter: Record<string, any>) => {
 
 const postCache = new Map();
 
-const loadPost = (absoluteFilePath: string, postDir: string): Post => {
+const loadPost = async (absoluteFilePath: string, postDir: string): Promise<Post> => {
     const postPath = postDir ? absoluteFilePath.replace(postDir, '') : absoluteFilePath;
     const timestamp = fs.statSync(absoluteFilePath).mtimeMs;
 
@@ -156,8 +156,8 @@ const loadPost = (absoluteFilePath: string, postDir: string): Post => {
         return cached.post;
     }
 
-    const src = fs.readFileSync(absoluteFilePath, 'utf-8');
-    const { frontMatter, excerpt, content } = loadPostContent(src, { excerptSeparator: '<!--more-->' });
+    const src = await Bun.file(absoluteFilePath).text();
+    const { frontMatter, excerpt, content } = parsePostContent(src, { excerptSeparator: '<!--more-->' });
 
     const postLink = path.join(path.dirname(postPath), path.basename(postPath).replace(/^(\d+)-(\d+)-(\d+)-(.+)\.(md|html?)$/, '$1/$2/$3/$4.html')).replace('\\', '/').replace(/^[\\\/]+/, '');
 
@@ -202,28 +202,36 @@ const getFilesRec = (dir: string): string[] => {
     return result;
 };
 
-const loadPosts = (postDir: string): Post[] => {
+const loadPosts = async (postDir: string): Promise<Post[]> => {
     if (postCache.size > 0) {
         return Object.values(postCache).sort((a, b) => b.timestamp - a.timestamp);
     }
 
-    return getFilesRec(postDir)
-        .map((file) => loadPost(file, postDir))
-        .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    const files = getFilesRec(postDir);
+
+    const posts = await Promise.all(files.map((file) => loadPost(file, postDir)));
+
+    return posts.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 };
 
-const loadStaticPages = (staticPages: Record<string, string>, staticPagesDir: string): StaticPage[] =>
-    Object.entries(staticPages)
-        .map(([ filePath, outputPath ]) => ([ path.join(staticPagesDir, filePath), outputPath ]))
-        .map(([ filePath, outputPath ]) => ({ ...loadPostContent(fs.readFileSync(filePath, 'utf-8')), outputPath }));
+const loadStaticPages = async (staticPages: Record<string, string>, staticPagesDir: string): Promise<StaticPage[]> =>
+    Promise.all(
+        Object.entries(staticPages)
+            .map(([ filePath, outputPath ]) => ([ path.join(staticPagesDir, filePath), outputPath ]))
+            .map(([ filePath, outputPath ]) =>
+                Bun.file(filePath)
+                    .text()
+                    .then(txt => ({ ...parsePostContent(txt), outputPath }))
+            )
+    );
 
 // ---
 
 const createPostDir = (post: Post, outputDir: string) => fsPromise.mkdir(path.join(outputDir, path.dirname(post.link)), { recursive: true });
 
-const writeSitemap = (sitemap: string, outputDir: string) => fsPromise.writeFile(path.join(outputDir, 'sitemap.xml'), sitemap);
+const writeSitemap = (sitemap: string, outputDir: string) => Bun.write(path.join(outputDir, 'sitemap.xml'), sitemap);
 
-const writeRobotsTxt = (robotsTxt: string, outputDir: string) => fsPromise.writeFile(path.join(outputDir, 'robots.txt'), robotsTxt);
+const writeRobotsTxt = (robotsTxt: string, outputDir: string) => Bun.write(path.join(outputDir, 'robots.txt'), robotsTxt);
 
 const writePosts = (renderedPosts: Post[], outputDir: string) =>
     Promise.all(renderedPosts.map(post => {
@@ -231,7 +239,7 @@ const writePosts = (renderedPosts: Post[], outputDir: string) =>
 
         console.log('Writing post', filePath);
 
-        return fsPromise.writeFile(filePath, '<!DOCTYPE html>' + post.content);
+        return Bun.write(filePath, '<!DOCTYPE html>' + post.content);
     }));
 
 const writeStaticPages = (renderedStaticPages: StaticPage[], outputDir: string) =>
@@ -240,7 +248,7 @@ const writeStaticPages = (renderedStaticPages: StaticPage[], outputDir: string) 
 
         console.log('Writing static page', filePath);
 
-        return fsPromise.writeFile(filePath, '<!DOCTYPE html>' + content);
+        return Bun.write(filePath, '<!DOCTYPE html>' + content);
     }));
 
 const writeIndexPages = (renderedIndexPages: string[], outputDir: string) =>
@@ -249,7 +257,7 @@ const writeIndexPages = (renderedIndexPages: string[], outputDir: string) =>
 
         console.log('Writing page', filePath);
 
-        return fsPromise.writeFile(filePath, '<!DOCTYPE html>' + content);
+        return Bun.write(filePath, '<!DOCTYPE html>' + content);
     }));
 
 const copyStaticFiles = (staticDirs: string[], outputDir: string) =>
@@ -264,7 +272,8 @@ const copyStaticFiles = (staticDirs: string[], outputDir: string) =>
                     .then(() => fsPromise.copyFile(src, dst));
             }),
 
-        fsPromise.copyFile('_build/builder_bundle.css', path.join(outputDir, 'main.css')),
+        fsPromise.copyFile('_build/main.css', path.join(outputDir, 'main.css')),
+        fsPromise.copyFile('_build/prism.min.css', path.join(outputDir, 'prism.min.css')),
     ]);
 
 const clean = (outputDir: string) =>
@@ -280,8 +289,8 @@ const build = async () => {
     const baseUrl = process.env.BASE_URL || config.baseUrl;
     const staticPagesMap = config.staticPages || {};
 
-    const posts = loadPosts(postsDir);
-    const staticPages = loadStaticPages(staticPagesMap, staticPagesDir);
+    const posts = await loadPosts(postsDir);
+    const staticPages = await loadStaticPages(staticPagesMap, staticPagesDir);
 
     await clean(outputDir);
 

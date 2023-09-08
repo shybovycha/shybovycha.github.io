@@ -11,8 +11,7 @@
     "url": "git+https://github.com/shybovycha/shybovycha.github.io.git"
   },
   "scripts": {
-    "preprocess-build": "npm exec esbuild -- _build/index.ts --outfile=_build/builder_bundle.js --platform=node --bundle",
-    "build": "npm run preprocess-build && node _build/builder_bundle.js"
+    "build": "bun build _build/index.ts --outdir _build/ --target browser --entry-naming \"builder_bundle.[ext]\" --asset-naming \"[name].[ext]\" && bun _build/index.ts"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.194",
@@ -24,7 +23,6 @@
     "@types/react-dom": "^18.2.4",
     "classnames": "^2.3.2",
     "date-fns": "^2.29.3",
-    "esbuild": "^0.17.19",
     "gray-matter": "^4.0.3",
     "lodash": "^4.17.21",
     "marked": "^5.0.2",
@@ -35,6 +33,10 @@
     "marked-xhtml": "^1.0.1",
     "prismjs": "^1.29.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
   }
 }
