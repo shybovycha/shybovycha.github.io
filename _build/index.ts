@@ -105,7 +105,7 @@ marked.use(markedHighlight({
     highlight(code: string, language: string) {
         if (!Prism.languages[language]) {
             if (language) {
-                console.warn(`Can't find language "${language}" for code ${code}`);
+                logger.warn(`Can't find language "${language}" for code ${code}`);
             }
 
             return code;
@@ -114,6 +114,45 @@ marked.use(markedHighlight({
         return Prism.highlight(code, Prism.languages[language], language);
     },
 }));
+
+class Logger {
+    public stream = Bun.stdout;
+    private writer = this.stream.writer();
+    private dateFormatter = new Intl.DateTimeFormat('en-GB', { dateStyle: 'short', timeStyle: 'medium' });
+
+    private write(logLevel: 'INFO' | 'WARN' | 'ERROR' | 'DEBUG', ...args: any[]) {
+        const message = args.map(a => typeof(a) !== 'string' ? JSON.stringify(a) : a).join(' ');
+        const timestamp = this.dateFormatter.format(new Date()); // TODO: replace with Temporal.Now.instant().toLocaleString(); once Temporal API becomes available
+
+        this.writer.write(`[${timestamp}] [${logLevel}] ${message}\n`);
+    }
+
+    log(...args: any[]) {
+        this.write('INFO', ...args);
+    }
+
+    info(...args: any[]) {
+        this.write('INFO', ...args);
+    }
+
+    warn(...args: any[]) {
+        this.write('WARN', ...args);
+    }
+
+    error(...args: any[]) {
+        this.write('ERROR', ...args);
+    }
+
+    debug(...args: any[]) {
+        this.write('DEBUG', ...args);
+    }
+
+    flush() {
+        this.writer.flush();
+    }
+}
+
+const logger = new Logger();
 
 const parsePostContent = (src: string, loadOptions?: LoadPostContentOptions): PostContent => {
     const options = loadOptions ? { excerpt: true, excerpt_separator: loadOptions.excerptSeparator } : {};
@@ -156,12 +195,12 @@ const loadPost = async (absoluteFilePath: string, postDir: string): Promise<Post
         return cached.post;
     }
 
-    const src = await fsPromise.readFile(absoluteFilePath, 'utf-8').catch(e => { console.error(`Could not find post ${absoluteFilePath}`); throw e; });
+    const src = await fsPromise.readFile(absoluteFilePath, 'utf-8').catch(e => { logger.error(`Could not find post ${absoluteFilePath}`); throw e; });
     const { frontMatter, excerpt, content } = parsePostContent(src, { excerptSeparator: '<!--more-->' });
 
     const postLink = path.join(path.dirname(postPath), path.basename(postPath).replace(/^(\d+)-(\d+)-(\d+)-(.+)\.(md|html?)$/, '$1/$2/$3/$4.html')).replace('\\', '/').replace(/^[\\\/]+/, '');
 
-    console.log(`Processing post ${postPath} -> ${postLink}`);
+    logger.log(`Processing post ${postPath} -> ${postLink}`);
 
     const post = {
         title: frontMatter.title,
@@ -220,7 +259,7 @@ const loadStaticPages = async (staticPages: Record<string, string>, staticPagesD
             .map(([ filePath, outputPath ]) => ([ path.join(staticPagesDir, filePath), outputPath ]))
             .map(([ filePath, outputPath ]) =>
                 fsPromise.readFile(filePath, 'utf-8')
-                    .catch(e => { console.error(`Could not find static page ${filePath}`); throw e; })
+                    .catch(e => { logger.error(`Could not find static page ${filePath}`); throw e; })
                     .then(txt => ({ ...parsePostContent(txt), outputPath }))
             )
     );
@@ -229,35 +268,35 @@ const loadStaticPages = async (staticPages: Record<string, string>, staticPagesD
 
 const createPostDir = (post: Post, outputDir: string) => fsPromise.mkdir(path.join(outputDir, path.dirname(post.link)), { recursive: true });
 
-const writeSitemap = (sitemap: string, outputDir: string) => Bun.write(path.join(outputDir, 'sitemap.xml'), sitemap).catch(e => { console.error(`Could not write sitemap`, e); throw e; });
+const writeSitemap = (sitemap: string, outputDir: string) => Bun.write(path.join(outputDir, 'sitemap.xml'), sitemap).catch(e => { logger.error(`Could not write sitemap`, e); throw e; });
 
-const writeRobotsTxt = (robotsTxt: string, outputDir: string) => Bun.write(path.join(outputDir, 'robots.txt'), robotsTxt).catch(e => { console.error(`Could not write robots.txt`, e); throw e; });
+const writeRobotsTxt = (robotsTxt: string, outputDir: string) => Bun.write(path.join(outputDir, 'robots.txt'), robotsTxt).catch(e => { logger.error(`Could not write robots.txt`, e); throw e; });
 
 const writePosts = (renderedPosts: Post[], outputDir: string) =>
     Promise.all(renderedPosts.map(post => {
         const filePath = path.join(outputDir, post.link);
 
-        console.log(`Writing post ${filePath}`);
+        logger.log(`Writing post ${filePath}`);
 
-        return Bun.write(filePath, '<!DOCTYPE html>' + post.content).catch(e => { console.error(`Could not write post ${filePath}`, e); throw e; });
+        return Bun.write(filePath, '<!DOCTYPE html>' + post.content).catch(e => { logger.error(`Could not write post ${filePath}`, e); throw e; });
     }));
 
 const writeStaticPages = (renderedStaticPages: StaticPage[], outputDir: string) =>
     Promise.all(renderedStaticPages.map(({ content, outputPath }) => {
         const filePath = path.join(outputDir, outputPath);
 
-        console.log(`Writing static page ${filePath}`);
+        logger.log(`Writing static page ${filePath}`);
 
-        return Bun.write(filePath, '<!DOCTYPE html>' + content).catch(e => { console.error(`Could not write static page ${filePath}`, e); throw e; });
+        return Bun.write(filePath, '<!DOCTYPE html>' + content).catch(e => { logger.error(`Could not write static page ${filePath}`, e); throw e; });
     }));
 
 const writeIndexPages = (renderedIndexPages: string[], outputDir: string) =>
     Promise.all(renderedIndexPages.map((content, index) => {
         const filePath = path.join(outputDir, index == 0 ? 'index.html' : `page${index + 1}.html`);
 
-        console.log(`Writing page ${filePath}`);
+        logger.log(`Writing page ${filePath}`);
 
-        return Bun.write(filePath, '<!DOCTYPE html>' + content).catch(e => { console.error(`Could not write index page ${filePath}`, e); throw e; });
+        return Bun.write(filePath, '<!DOCTYPE html>' + content).catch(e => { logger.error(`Could not write index page ${filePath}`, e); throw e; });
     }));
 
 const copyStaticFiles = (staticDirs: string[], outputDir: string) =>
@@ -266,15 +305,15 @@ const copyStaticFiles = (staticDirs: string[], outputDir: string) =>
             .flatMap(dir => getFilesRec(dir))
             .map(file => ([ file, path.join(outputDir, file) ]))
             .map(([ src, dst ]) => {
-                console.log(`Copying ${src} -> ${dst}`);
+                logger.log(`Copying ${src} -> ${dst}`);
 
                 return fsPromise.mkdir(path.dirname(dst), { recursive: true })
                     .then(() => fsPromise.copyFile(src, dst))
-                    .catch(e => { console.error(`Could not copy file ${src} to ${dst}`); throw e; });
+                    .catch(e => { logger.error(`Could not copy file ${src} to ${dst}`); throw e; });
             }),
 
-        fsPromise.copyFile('_build/main_bundle.css', path.join(outputDir, 'main.css')).catch(e => { console.error(`Could not copy file main_bundle.css`); throw e; }),
-        fsPromise.copyFile('_build/prism.min_bundle.css', path.join(outputDir, 'prism.min.css')).catch(e => { console.error(`Could not copy file prism.min_bundle.css`); throw e; }),
+        fsPromise.copyFile('_build/main_bundle.css', path.join(outputDir, 'main.css')).catch(e => { logger.error(`Could not copy file main_bundle.css`); throw e; }),
+        fsPromise.copyFile('_build/prism.min_bundle.css', path.join(outputDir, 'prism.min.css')).catch(e => { logger.error(`Could not copy file prism.min_bundle.css`); throw e; }),
     ]);
 
 const clean = (outputDir: string) =>
@@ -290,18 +329,21 @@ const build = async () => {
     const baseUrl = process.env.BASE_URL || config.baseUrl;
     const staticPagesMap = config.staticPages || {};
 
-    const posts = await loadPosts(postsDir);
-    const staticPages = await loadStaticPages(staticPagesMap, staticPagesDir);
+    const [posts, staticPages] = await Promise.all([
+        loadPosts(postsDir),
+        loadStaticPages(staticPagesMap, staticPagesDir),
+    ]);
 
     await clean(outputDir);
 
-    const [sitemap, robotsTxt, renderedPosts, renderedIndexPages, renderedStaticPages, _] = await Promise.all([
+    const [sitemap, robotsTxt, renderedPosts, renderedIndexPages, renderedStaticPages, _1, _2] = await Promise.all([
         renderSitemap(posts, baseUrl),
         renderRobotsTxt(posts, baseUrl),
         Promise.all(posts.map(post => renderPost(post))),
         Promise.all(chunk(posts, pageSize).map((posts: Post[], idx: number) => renderIndexPage(posts, idx))),
         Promise.all(staticPages.map((page) => renderStaticPage(page))),
         Promise.all(posts.map(post => createPostDir(post, outputDir))),
+        copyStaticFiles(staticFilesDirs, outputDir),
     ]);
 
     return await Promise.all([
@@ -310,7 +352,6 @@ const build = async () => {
         writePosts(renderedPosts, outputDir),
         writeStaticPages(renderedStaticPages, outputDir),
         writeIndexPages(renderedIndexPages, outputDir),
-        copyStaticFiles(staticFilesDirs, outputDir),
     ]);
 };
 
