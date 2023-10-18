@@ -55,7 +55,7 @@ As mentioned before, the metrics I'm going to be focusing on are:
 
 To make it quick and easy, here's the summary _(time measured in browser, on a nested object with a list of `1000` children of various data types)_:
 
-| Serializer         | Encoding time | Decoding time | Encoded data size (byte array) | Data saving | Encoded data size (base-64 utf-8 encoded) | Bundle size |
+| Serializer         | Encoding time | Decoding time | Encoded data size (byte array) | Compression | Encoded data size (base-64 utf-8 encoded) | Bundle size |
 | ------------------ | ------------- | ------------- | ------------------------------ | ----------- | ----------------------------------------- | ----------- |
 | Avro               | 12ms          | 4ms           | 30003                          | 77.16%      | 40004                                     | 111.7kb     |
 | BSON               | 10ms          | 11ms          | 98912                          | 24.71%      | 131884                                    | 98.0kb      |
