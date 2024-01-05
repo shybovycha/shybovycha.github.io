@@ -950,6 +950,67 @@ Duplicates length: 3406606 bytes out of 8347230 bytes are duplicate code (40.81%
 
 and bun does not really have a whole lot of customization in this regard.
 
+One unlikely possibility when these duplicates can be faster than having just one function is that running the nearly-defined code
+(in terms of a single block of code) might be slightly faster than making code jumps.
+This is super far-fetched idea from low-level programming, when CPU does not have to jump thousands or millions of (assembly) instructions back and forth
+but literally a few instead.
+This won't justify using verbose ES5-compatible code on ESnext browser, however.
+But how about we run a very synthetic benchmark to check just this one theory?
+
+```js
+function f(){return!1}
+
+console.time('1');
+for(var i=0;i<100000;i++){var a=[];for(var t=0;t<20000;t++)a.push(Math.random()*1000000);var x=a.filter(f).length}
+console.timeEnd('1');
+```
+
+```js
+console.time('2');
+for(var i=0;i<100000;i++){var a=[];for(var t=0;t<20000;t++)a.push(Math.random()*1000000);var f=function(){return!1},x=a.filter(f).length}
+console.timeEnd('2');
+```
+
+The results are actually quite stable:
+
+```
+1: 17029ms - timer ended
+1: 16998ms - timer ended
+1: 16903ms - timer ended
+
+2: 21877ms - timer ended
+2: 21811ms - timer ended
+2: 21821ms - timer ended
+```
+
+Having just one function instance is approx. `23%` faster. But what happens at consequitive runs?
+
+```
+1: 9194ms - timer ended
+1: 9159ms - timer ended
+1: 14044ms - timer ended
+1: 13882ms - timer ended
+1: 13975ms - timer ended
+1: 9205ms - timer ended
+1: 14026ms - timer ended
+
+2: 21821ms - timer ended
+2: 13843ms - timer ended
+2: 13866ms - timer ended
+2: 13854ms - timer ended
+2: 13961ms - timer ended
+
+2: 21718ms - timer ended
+2: 13952ms - timer ended
+2: 13925ms - timer ended
+2: 13923ms - timer ended
+```
+
+Seems like CPU does indeed do a little bit of instruction caching and branch prediction (first run is visibly slower than the subsequent runs).
+But the observation still holds: having one function is faster.
+
+With that being said, there is one interesting thing to try here: what if we actually replace some of those bulky duplicates with one-time declarations, within the same bundle?
+
 <style>
     table {
         display: block;
