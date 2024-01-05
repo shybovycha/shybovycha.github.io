@@ -28,7 +28,7 @@ I am minimizing the function definition with `uglifyjs` and counting the SHA256 
 These are my findings.
 
 Out of 54 chunks, 47 are not css-in-js chunks. Out of 47 remaining, 7 have any significant duplication.
-But when they do, they do it hard: duplication is varying between 18% and a whopping 42% of sheer file size.
+But when they do, they do it hard: duplication varies between 18% and a whopping 42% of sheer file size.
 Absolute numbers are also astonishing: 25% to 60% functions are duplicates.
 
 ```
@@ -96,9 +96,9 @@ Here are top 80-ish offenders:
         <tr><td><code>function(e,r){if(null==e)return{};var t,n=function(e,r){if(null==e)return{};for(var t,n={},l=Object.keys(e),o=0;o&lt;l.length;o++)t=l[o],0&lt;=r.indexOf(t)||(n[t]=e[t]);return n}(e,r);if(Object.getOwnPropertySymbols)for(var l=Object.getOwnPropertySymbols(e),o=0;o&lt;l.length;o++)t=l[o],0&lt;=r.indexOf(t)||Object.prototype.propertyIsEnumerable.call(e,t)&&(n[t]=e[t]);return n}</code></td><td>187</td></tr>
         <tr><td><code>function(e,r){return r=r||e.slice(0),Object.freeze(Object.defineProperties(e,{raw:{value:Object.freeze(r)}}))}</code></td><td>159</td></tr>
         <tr><td><code>function(n){return this===n}</code></td><td>119</td></tr>
-        <tr><td><code>function(r,t){if(\"object\"!=typeof r||null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return(\"string\"===t?String:Number)(r);e=e.call(r,t||\"default\");if(\"object\"!=typeof e)return e;throw new TypeError(\"@@toPrimitive must return a primitive value.\")}</code></td><td>113</td></tr>
-        <tr><td><code>function(r,e,t){return i=function(r,e){if(\"object\"!=typeof r||null===r)return r;var t=r[Symbol.toPrimitive];if(void 0===t)return String(r);t=t.call(r,e);if(\"object\"!=typeof t)return t;throw new TypeError(\"@@toPrimitive must return a primitive value.\")}(e,\"string\"),(e=\"symbol\"==typeof i?i:String(i))in r?Object.defineProperty(r,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):r[e]=t,r;var i}</code></td><td>111</td></tr>
-        <tr><td><code>function(t){t=function(t,r){if(\"object\"!=typeof t||null===t)return t;var i=t[Symbol.toPrimitive];if(void 0===i)return String(t);i=i.call(t,r);if(\"object\"!=typeof i)return i;throw new TypeError(\"@@toPrimitive must return a primitive value.\")}(t,\"string\");return\"symbol\"==typeof t?t:String(t)}</code></td><td>111</td></tr>
+        <tr><td><code>function(r,t){if("object"!=typeof r||null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return("string"===t?String:Number)(r);e=e.call(r,t||"default");if("object"!=typeof e)return e;throw new TypeError("@@toPrimitive must return a primitive value.")}</code></td><td>113</td></tr>
+        <tr><td><code>function(r,e,t){return i=function(r,e){if("object"!=typeof r||null===r)return r;var t=r[Symbol.toPrimitive];if(void 0===t)return String(r);t=t.call(r,e);if("object"!=typeof t)return t;throw new TypeError("@@toPrimitive must return a primitive value.")}(e,"string"),(e="symbol"==typeof i?i:String(i))in r?Object.defineProperty(r,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):r[e]=t,r;var i}</code></td><td>111</td></tr>
+        <tr><td><code>function(t){t=function(t,r){if("object"!=typeof t||null===t)return t;var i=t[Symbol.toPrimitive];if(void 0===i)return String(t);i=i.call(t,r);if("object"!=typeof i)return i;throw new TypeError("@@toPrimitive must return a primitive value.")}(t,"string");return"symbol"==typeof t?t:String(t)}</code></td><td>111</td></tr>
         <tr><td><code>function(e,n,r){return n in e?Object.defineProperty(e,n,{value:r,enumerable:!0,configurable:!0,writable:!0}):e[n]=r,e}</code></td><td>104</td></tr>
         <tr><td><code>function(c,i){He.call(this,c,i)}</code></td><td>94</td></tr>
         <tr><td><code>function(n,r){(null==r||r>n.length)&&(r=n.length);for(var e=0,l=new Array(r);e&lt;r;e++)l[e]=n[e];return l}</code></td><td>93</td></tr>
@@ -107,30 +107,30 @@ Here are top 80-ish offenders:
         <tr><td><code>function(){return new gt(this)}</code></td><td>77</td></tr>
         <tr><td><code>function(r){if(Array.isArray(r))return r}</code></td><td>77</td></tr>
         <tr><td><code>function(){throw new TypeError(`Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.`)}</code></td><td>77</td></tr>
-        <tr><td><code>function(t){return t&&\"object\"==typeof t&&\"default\"in t?t:{default:t}}</code></td><td>76</td></tr>
+        <tr><td><code>function(t){return t&&"object"==typeof t&&"default"in t?t:{default:t}}</code></td><td>76</td></tr>
         <tr><td><code>function(i,t){this.a=i,this.b=t}</code></td><td>58</td></tr>
         <tr><td><code>function(){return this.a}</code></td><td>49</td></tr>
         <tr><td><code>function(t,e){var r,n=Object.keys(t);return Object.getOwnPropertySymbols&&(r=Object.getOwnPropertySymbols(t),e&&(r=r.filter(function(e){return Object.getOwnPropertyDescriptor(t,e).enumerable})),n.push.apply(n,r)),n}</code></td><td>49</td></tr>
-        <tr><td><code>function(e){var t;\"default\"!==e&&(t=Object.getOwnPropertyDescriptor(c,e),Object.defineProperty(y,e,t.get?t:{enumerable:!0,get:function(){return c[e]}}))}</code></td><td>49</td></tr>
+        <tr><td><code>function(e){var t;"default"!==e&&(t=Object.getOwnPropertyDescriptor(c,e),Object.defineProperty(y,e,t.get?t:{enumerable:!0,get:function(){return c[e]}}))}</code></td><td>49</td></tr>
         <tr><td><code>function(){return c[b]}</code></td><td>49</td></tr>
-        <tr><td><code>function(a,e,i){var r,t=i[\"aria-label\"],n=i[\"aria-labelledby\"],c=i.title;switch(a){case\"img\":return t||n||c?(l(r={},\"aria-labelledby\",n),l(r,\"aria-label\",t),l(r,\"title\",c),r):{\"aria-label\":\"\".concat(e.replace(/([a-z])([A-Z])/g,\"$1 $2\"),\" Icon\")};case\"presentation\":return{\"aria-hidden\":!0,alt:\"\"}}}</code></td><td>49</td></tr>
+        <tr><td><code>function(a,e,i){var r,t=i["aria-label"],n=i["aria-labelledby"],c=i.title;switch(a){case"img":return t||n||c?(l(r={},"aria-labelledby",n),l(r,"aria-label",t),l(r,"title",c),r):{"aria-label":"".concat(e.replace(/([a-z])([A-Z])/g,"$1 $2")," Icon")};case"presentation":return{"aria-hidden":!0,alt:""}}}</code></td><td>49</td></tr>
         <tr><td><code>function(i){Di(this,i)}</code></td><td>48</td></tr>
         <tr><td><code>function(r){return Object.getOwnPropertyDescriptor(e,r).enumerable}</code></td><td>48</td></tr>
         <tr><td><code>function(){throw M(new De)}</code></td><td>46</td></tr>
-        <tr><td><code>function(l,r){var t=null==l?null:typeof Symbol<\"u\"&&l[Symbol.iterator]||l[\"@@iterator\"];if(null!=t){var n,u,e=[],a=!0,o=!1;try{for(t=t.call(l);!(a=(n=t.next()).done)&&(e.push(n.value),!r||e.length!==r);a=!0);}catch(l){o=!0,u=l}finally{try{a||null==t.return||t.return()}finally{if(o)throw u}}return e}}</code></td><td>44</td></tr>
+        <tr><td><code>function(l,r){var t=null==l?null:typeof Symbol<"u"&&l[Symbol.iterator]||l["@@iterator"];if(null!=t){var n,u,e=[],a=!0,o=!1;try{for(t=t.call(l);!(a=(n=t.next()).done)&&(e.push(n.value),!r||e.length!==r);a=!0);}catch(l){o=!0,u=l}finally{try{a||null==t.return||t.return()}finally{if(o)throw u}}return e}}</code></td><td>44</td></tr>
         <tr><td><code>function(n){throw M(new De)}</code></td><td>39</td></tr>
-        <tr><td><code>function(r){var n;return r&&\"object\"==typeof r&&\"default\"in r?r:(n=Object.create(null),r&&Object.keys(r).forEach(function(e){var t;\"default\"!==e&&(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>39</td></tr>
+        <tr><td><code>function(r){var n;return r&&"object"==typeof r&&"default"in r?r:(n=Object.create(null),r&&Object.keys(r).forEach(function(e){var t;"default"!==e&&(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>39</td></tr>
         <tr><td><code>function n(r){return n(r)}</code></td><td>38</td></tr>
         <tr><td><code>function(n){return typeof n}</code></td><td>38</td></tr>
-        <tr><td><code>function(o){return o&&\"function\"==typeof Symbol&&o.constructor===Symbol&&o!==Symbol.prototype?\"symbol\":typeof o}</code></td><td>38</td></tr>
-        <tr><td><code>function(r){var n;return r&&r.__esModule?r:(n=Object.create(null),r&&Object.keys(r).forEach(function(e){var t;\"default\"!==e&&(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>37</td></tr>
+        <tr><td><code>function(o){return o&&"function"==typeof Symbol&&o.constructor===Symbol&&o!==Symbol.prototype?"symbol":typeof o}</code></td><td>38</td></tr>
+        <tr><td><code>function(r){var n;return r&&r.__esModule?r:(n=Object.create(null),r&&Object.keys(r).forEach(function(e){var t;"default"!==e&&(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>37</td></tr>
         <tr><td><code>function(){return this.b}</code></td><td>33</td></tr>
-        <tr><td><code>function(l,r){var t=null==l?null:typeof Symbol<\"u\"&&l[Symbol.iterator]||l[\"@@iterator\"];if(null!=t){var e,n,u,a,f=[],i=!0,o=!1;try{if(u=(t=t.call(l)).next,0===r){if(Object(t)!==t)return;i=!1}else for(;!(i=(e=u.call(t)).done)&&(f.push(e.value),f.length!==r);i=!0);}catch(l){o=!0,n=l}finally{try{if(!i&&null!=t.return&&(a=t.return(),Object(a)!==a))return}finally{if(o)throw n}}return f}}</code></td><td>33</td></tr>
+        <tr><td><code>function(l,r){var t=null==l?null:typeof Symbol<"u"&&l[Symbol.iterator]||l["@@iterator"];if(null!=t){var e,n,u,a,f=[],i=!0,o=!1;try{if(u=(t=t.call(l)).next,0===r){if(Object(t)!==t)return;i=!1}else for(;!(i=(e=u.call(t)).done)&&(f.push(e.value),f.length!==r);i=!0);}catch(l){o=!0,n=l}finally{try{if(!i&&null!=t.return&&(a=t.return(),Object(a)!==a))return}finally{if(o)throw n}}return f}}</code></td><td>33</td></tr>
         <tr><td><code>function(t){Object.defineProperty(e,t,Object.getOwnPropertyDescriptor(n,t))}</code></td><td>32</td></tr>
         <tr><td><code>function(n){return Ei(n)}</code></td><td>30</td></tr>
         <tr><td><code>function(n){return L(fn,X,2,n,6,1)}</code></td><td>30</td></tr>
         <tr><td><code>function(n){}</code></td><td>29</td></tr>
-        <tr><td><code>function(r){if(typeof Symbol<\"u\"&&null!=r[Symbol.iterator]||null!=r[\"@@iterator\"])return Array.from(r)}</code></td><td>28</td></tr>
+        <tr><td><code>function(r){if(typeof Symbol<"u"&&null!=r[Symbol.iterator]||null!=r["@@iterator"])return Array.from(r)}</code></td><td>28</td></tr>
         <tr><td><code>function(){throw new TypeError(`Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.`)}</code></td><td>28</td></tr>
         <tr><td><code>()=>{}</code></td><td>27</td></tr>
         <tr><td><code>function(){return null}</code></td><td>27</td></tr>
@@ -150,12 +150,12 @@ Here are top 80-ish offenders:
         <tr><td><code>function(){return this.d}</code></td><td>15</td></tr>
         <tr><td><code>function(n,r){return n}</code></td><td>14</td></tr>
         <tr><td><code>d=>d.id</code></td><td>14</td></tr>
-        <tr><td><code>function(){var r=function(t,o){return(r=Object.setPrototypeOf||({__proto__:[]}instanceof Array?function(t,o){t.__proto__=o}:function(t,o){for(var n in o)Object.prototype.hasOwnProperty.call(o,n)&&(t[n]=o[n])}))(t,o)};return function(t,o){if(\"function\"!=typeof o&&null!==o)throw new TypeError(\"Class extends value \"+String(o)+\" is not a constructor or null\");function n(){this.constructor=t}r(t,o),t.prototype=null===o?Object.create(o):(n.prototype=o.prototype,new n)}}</code></td><td>14</td></tr>
+        <tr><td><code>function(){var r=function(t,o){return(r=Object.setPrototypeOf||({__proto__:[]}instanceof Array?function(t,o){t.__proto__=o}:function(t,o){for(var n in o)Object.prototype.hasOwnProperty.call(o,n)&&(t[n]=o[n])}))(t,o)};return function(t,o){if("function"!=typeof o&&null!==o)throw new TypeError("Class extends value "+String(o)+" is not a constructor or null");function n(){this.constructor=t}r(t,o),t.prototype=null===o?Object.create(o):(n.prototype=o.prototype,new n)}}</code></td><td>14</td></tr>
         <tr><td><code>function(_,o){_.__proto__=o}</code></td><td>14</td></tr>
         <tr><td><code>function(o,r){for(var t in r)Object.prototype.hasOwnProperty.call(r,t)&&(o[t]=r[t])}</code></td><td>14</td></tr>
         <tr><td><code>function(n){return!1}</code></td><td>13</td></tr>
         <tr><td><code>function(t){var l=-1,n=null==t?0:t.length;for(this.clear();++l&lt;n;){var r=t[l];this.set(r[0],r[1])}}</code></td><td>12</td></tr>
-        <tr><td><code>function(a,e,l){var i,r=l[\"aria-label\"],t=l[\"aria-labelledby\"],n=l.title;switch(a){case\"img\":return r||t||n?(f(i={},\"aria-labelledby\",t),f(i,\"aria-label\",r),f(i,\"title\",n),i):{\"aria-label\":\"\".concat(e.replace(/([a-z])([A-Z])/g,\"$1 $2\"),\" Icon\")};case\"presentation\":return{\"aria-hidden\":!0,alt:\"\"}}}</code></td><td>12</td></tr>
+        <tr><td><code>function(a,e,l){var i,r=l["aria-label"],t=l["aria-labelledby"],n=l.title;switch(a){case"img":return r||t||n?(f(i={},"aria-labelledby",t),f(i,"aria-label",r),f(i,"title",n),i):{"aria-label":"".concat(e.replace(/([a-z])([A-Z])/g,"$1 $2")," Icon")};case"presentation":return{"aria-hidden":!0,alt:""}}}</code></td><td>12</td></tr>
         <tr><td><code>a=>a</code></td><td>12</td></tr>
         <tr><td><code>a=>a()</code></td><td>12</td></tr>
         <tr><td><code>function(n,a){n.a=a}</code></td><td>11</td></tr>
@@ -168,11 +168,13 @@ Here are top 80-ish offenders:
         <tr><td><code>function(i){this.b=i}</code></td><td>10</td></tr>
         <tr><td><code>function(c){this.c=c}</code></td><td>10</td></tr>
         <tr><td><code>function(){return this.f}</code></td><td>10</td></tr>
-        <tr><td><code>function(n){return n||\"div\"}</code></td><td>10</td></tr>
-        <tr><td><code>function(n,r,i){var l;return i=null!=(l=i)?l:\"div\",n||(\"string\"==typeof(null==r?void 0:r.href)?\"a\":i)}</code></td><td>10</td></tr>
+        <tr><td><code>function(n){return n||"div"}</code></td><td>10</td></tr>
+        <tr><td><code>function(n,r,i){var l;return i=null!=(l=i)?l:"div",n||("string"==typeof(null==r?void 0:r.href)?"a":i)}</code></td><td>10</td></tr>
     </tbody>
 </table>
-<button class="expand-table-toggle" data-table-id="vite-1">Show more</button>
+<div class="center">
+    <button class="expand-table-toggle" data-table-id="vite-1">Show more</button>
+</div>
 
 Let's dive deeper, shall we?
 
@@ -204,27 +206,27 @@ With those points in mind, let's look at the offenders once again:
         <tr><td><code>function(n,e){if(null==n)return{};for(var r,t={},f=Object.keys(n),u=0;u&lt;f.length;u++)r=f[u],0&lt;=e.indexOf(r)||(t[r]=n[r]);return t}</code></td><td>191</td><td>?</td></tr>
         <tr><td><code>function(e,r){if(null==e)return{};var t,n=function(e,r){if(null==e)return{};for(var t,n={},l=Object.keys(e),o=0;o&lt;l.length;o++)t=l[o],0&lt;=r.indexOf(t)||(n[t]=e[t]);return n}(e,r);if(Object.getOwnPropertySymbols)for(var l=Object.getOwnPropertySymbols(e),o=0;o&lt;l.length;o++)t=l[o],0&lt;=r.indexOf(t)||Object.prototype.propertyIsEnumerable.call(e,t)&&(n[t]=e[t]);return n}</code></td><td>187</td><td>?</td></tr>
         <tr><td><code>function(e,r){return r=r||e.slice(0),Object.freeze(Object.defineProperties(e,{raw:{value:Object.freeze(r)}}))}</code></td><td>159</td><td>?</td></tr>
-        <tr><td><code>function(r,t){if(\"object\"!=typeof r||null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return(\"string\"===t?String:Number)(r);e=e.call(r,t||\"default\");if(\"object\"!=typeof e)return e;throw new TypeError(\"@@toPrimitive must return a primitive value.\")}</code></td><td>113</td><td>?</td></tr>
-        <tr><td><code>function(r,e,t){return i=function(r,e){if(\"object\"!=typeof r||null===r)return r;var t=r[Symbol.toPrimitive];if(void 0===t)return String(r);t=t.call(r,e);if(\"object\"!=typeof t)return t;throw new TypeError(\"@@toPrimitive must return a primitive value.\")}(e,\"string\"),(e=\"symbol\"==typeof i?i:String(i))in r?Object.defineProperty(r,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):r[e]=t,r;var i}</code></td><td>111</td><td>?</td></tr>
-        <tr><td><code>function(t){t=function(t,r){if(\"object\"!=typeof t||null===t)return t;var i=t[Symbol.toPrimitive];if(void 0===i)return String(t);i=i.call(t,r);if(\"object\"!=typeof i)return i;throw new TypeError(\"@@toPrimitive must return a primitive value.\")}(t,\"string\");return\"symbol\"==typeof t?t:String(t)}</code></td><td>111</td><td>?</td></tr>
+        <tr><td><code>function(r,t){if("object"!=typeof r||null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return("string"===t?String:Number)(r);e=e.call(r,t||"default");if("object"!=typeof e)return e;throw new TypeError("@@toPrimitive must return a primitive value.")}</code></td><td>113</td><td>?</td></tr>
+        <tr><td><code>function(r,e,t){return i=function(r,e){if("object"!=typeof r||null===r)return r;var t=r[Symbol.toPrimitive];if(void 0===t)return String(r);t=t.call(r,e);if("object"!=typeof t)return t;throw new TypeError("@@toPrimitive must return a primitive value.")}(e,"string"),(e="symbol"==typeof i?i:String(i))in r?Object.defineProperty(r,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):r[e]=t,r;var i}</code></td><td>111</td><td>?</td></tr>
+        <tr><td><code>function(t){t=function(t,r){if("object"!=typeof t||null===t)return t;var i=t[Symbol.toPrimitive];if(void 0===i)return String(t);i=i.call(t,r);if("object"!=typeof i)return i;throw new TypeError("@@toPrimitive must return a primitive value.")}(t,"string");return"symbol"==typeof t?t:String(t)}</code></td><td>111</td><td>?</td></tr>
         <tr><td><code>function(e,n,r){return n in e?Object.defineProperty(e,n,{value:r,enumerable:!0,configurable:!0,writable:!0}):e[n]=r,e}</code></td><td>104</td><td>?</td></tr>
         <tr class="green"><td><code>function(n,r){(null==r||r>n.length)&&(r=n.length);for(var e=0,l=new Array(r);e&lt;r;e++)l[e]=n[e];return l}</code></td><td>93</td><td>array spread?</td></tr>
         <tr class="green"><td><code>function(){return!0}</code></td><td>92</td><td>always-true</td></tr>
         <tr class="green"><td><code>function(){return!1}</code></td><td>78</td><td>always-false</td></tr>
         <tr class="green"><td><code>function(r){if(Array.isArray(r))return r}</code></td><td>77</td><td>self explanatory</td></tr>
         <tr class="green"><td><code>function(){throw new TypeError('Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.')}</code></td><td>77</td><td><code>isSymbol</code>?</td></tr>
-        <tr class="green"><td><code>function(t){return t&&\"object\"==typeof t&&\"default\"in t?t:{default:t}}</code></td><td>76</td><td>?</td></tr>
+        <tr class="green"><td><code>function(t){return t&&"object"==typeof t&&"default"in t?t:{default:t}}</code></td><td>76</td><td>?</td></tr>
         <tr><td><code>function(t,e){var r,n=Object.keys(t);return Object.getOwnPropertySymbols&&(r=Object.getOwnPropertySymbols(t),e&&(r=r.filter(function(e){return Object.getOwnPropertyDescriptor(t,e).enumerable})),n.push.apply(n,r)),n}</code></td><td>49</td><td>?</td></tr>
-        <tr><td><code>function(e){var t;\"default\"!==e&&(t=Object.getOwnPropertyDescriptor(c,e),Object.defineProperty(y,e,t.get?t:{enumerable:!0,get:function(){return c[e]}}))}</code></td><td>49</td><td>?</td></tr>
-        <tr><td><code>function(l,r){var t=null==l?null:typeof Symbol<\"u\"&&l[Symbol.iterator]||l[\"@@iterator\"];if(null!=t){var n,u,e=[],a=!0,o=!1;try{for(t=t.call(l);!(a=(n=t.next()).done)&&(e.push(n.value),!r||e.length!==r);a=!0);}catch(l){o=!0,u=l}finally{try{a||null==t.return||t.return()}finally{if(o)throw u}}return e}}</code></td><td>44</td><td>?</td></tr>
-        <tr><td><code>function(r){var n;return r&&\"object\"==typeof r&&\"default\"in r?r:(n=Object.create(null),r&&Object.keys(r).forEach(function(e){var t;\"default\"!==e&&(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>39</td><td>?</td></tr>
+        <tr><td><code>function(e){var t;"default"!==e&&(t=Object.getOwnPropertyDescriptor(c,e),Object.defineProperty(y,e,t.get?t:{enumerable:!0,get:function(){return c[e]}}))}</code></td><td>49</td><td>?</td></tr>
+        <tr><td><code>function(l,r){var t=null==l?null:typeof Symbol<"u"&&l[Symbol.iterator]||l["@@iterator"];if(null!=t){var n,u,e=[],a=!0,o=!1;try{for(t=t.call(l);!(a=(n=t.next()).done)&&(e.push(n.value),!r||e.length!==r);a=!0);}catch(l){o=!0,u=l}finally{try{a||null==t.return||t.return()}finally{if(o)throw u}}return e}}</code></td><td>44</td><td>?</td></tr>
+        <tr><td><code>function(r){var n;return r&&"object"==typeof r&&"default"in r?r:(n=Object.create(null),r&&Object.keys(r).forEach(function(e){var t;"default"!==e&&(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>39</td><td>?</td></tr>
         <tr><td><code>function n(r){return n(r)}</code></td><td>38</td><td><code>Function.apply</code>?</td></tr>
         <tr><td><code>function(n){return typeof n}</code></td><td>38</td><td><code>typeof</code></td></tr>
-        <tr><td><code>function(o){return o&&\"function\"==typeof Symbol&&o.constructor===Symbol&&o!==Symbol.prototype?\"symbol\":typeof o}</code></td><td>38</td><td>?</td></tr>
-        <tr><td><code>function(r){var n;return r&&r.__esModule?r:(n=Object.create(null),r&&Object.keys(r).forEach(function(e){var t;\"default\"!==e&&(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>37</td><td><code>import</code>?</td></tr>
-        <tr><td><code>function(l,r){var t=null==l?null:typeof Symbol<\"u\"&&l[Symbol.iterator]||l[\"@@iterator\"];if(null!=t){var e,n,u,a,f=[],i=!0,o=!1;try{if(u=(t=t.call(l)).next,0===r){if(Object(t)!==t)return;i=!1}else for(;!(i=(e=u.call(t)).done)&&(f.push(e.value),f.length!==r);i=!0);}catch(l){o=!0,n=l}finally{try{if(!i&&null!=t.return&&(a=t.return(),Object(a)!==a))return}finally{if(o)throw n}}return f}}</code></td><td>33</td><td>?</td></tr>
+        <tr><td><code>function(o){return o&&"function"==typeof Symbol&&o.constructor===Symbol&&o!==Symbol.prototype?"symbol":typeof o}</code></td><td>38</td><td>?</td></tr>
+        <tr><td><code>function(r){var n;return r&&r.__esModule?r:(n=Object.create(null),r&&Object.keys(r).forEach(function(e){var t;"default"!==e&&(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>37</td><td><code>import</code>?</td></tr>
+        <tr><td><code>function(l,r){var t=null==l?null:typeof Symbol<"u"&&l[Symbol.iterator]||l["@@iterator"];if(null!=t){var e,n,u,a,f=[],i=!0,o=!1;try{if(u=(t=t.call(l)).next,0===r){if(Object(t)!==t)return;i=!1}else for(;!(i=(e=u.call(t)).done)&&(f.push(e.value),f.length!==r);i=!0);}catch(l){o=!0,n=l}finally{try{if(!i&&null!=t.return&&(a=t.return(),Object(a)!==a))return}finally{if(o)throw n}}return f}}</code></td><td>33</td><td>?</td></tr>
         <tr class="green"><td><code>function(n){}</code></td><td>29</td><td>no-op</td></tr>
-        <tr><td><code>function(r){if(typeof Symbol<\"u\"&&null!=r[Symbol.iterator]||null!=r[\"@@iterator\"])return Array.from(r)}</code></td><td>28</td><td>?</td></tr>
+        <tr><td><code>function(r){if(typeof Symbol<"u"&&null!=r[Symbol.iterator]||null!=r["@@iterator"])return Array.from(r)}</code></td><td>28</td><td>?</td></tr>
         <tr><td><code>function(){throw new TypeError('Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.')}</code></td><td>28</td><td>?</td></tr>
         <tr class="green"><td><code>()=>{}</code></td><td>27</td><td>no-op</td></tr>
         <tr class="green"><td><code>function(){return null}</code></td><td>27</td><td>always-null</td></tr>
@@ -233,7 +235,7 @@ With those points in mind, let's look at the offenders once again:
         <tr class="green"><td><code>function(n){return n}</code></td><td>15</td><td>identity</td></tr>
         <tr class="green"><td><code>function(n,r){return n}</code></td><td>14</td><td>always-first-argument</td></tr>
         <tr><td><code>d=>d.id</code></td><td>14</td><td><code>.id</code></td></tr>
-        <tr><td><code>function(){var r=function(t,o){return(r=Object.setPrototypeOf||({__proto__:[]}instanceof Array?function(t,o){t.__proto__=o}:function(t,o){for(var n in o)Object.prototype.hasOwnProperty.call(o,n)&&(t[n]=o[n])}))(t,o)};return function(t,o){if(\"function\"!=typeof o&&null!==o)throw new TypeError(\"Class extends value \"+String(o)+\" is not a constructor or null\");function n(){this.constructor=t}r(t,o),t.prototype=null===o?Object.create(o):(n.prototype=o.prototype,new n)}}</code></td><td>14</td><td>?</td></tr>
+        <tr><td><code>function(){var r=function(t,o){return(r=Object.setPrototypeOf||({__proto__:[]}instanceof Array?function(t,o){t.__proto__=o}:function(t,o){for(var n in o)Object.prototype.hasOwnProperty.call(o,n)&&(t[n]=o[n])}))(t,o)};return function(t,o){if("function"!=typeof o&&null!==o)throw new TypeError("Class extends value "+String(o)+" is not a constructor or null");function n(){this.constructor=t}r(t,o),t.prototype=null===o?Object.create(o):(n.prototype=o.prototype,new n)}}</code></td><td>14</td><td>?</td></tr>
         <tr class="green"><td><code>function(_,o){_.__proto__=o}</code></td><td>14</td><td><code>Object.is_a</code>?</td></tr>
         <tr class="green"><td><code>function(o,r){for(var t in r)Object.prototype.hasOwnProperty.call(r,t)&&(o[t]=r[t])}</code></td><td>14</td><td>?</td></tr>
         <tr class="green"><td><code>function(n){return!1}</code></td><td>13</td><td>always-false</td></tr>
@@ -245,7 +247,9 @@ With those points in mind, let's look at the offenders once again:
         <tr><td><code>function(c){this.c=c}</code></td><td>10</td><td>enum/const definition?</td></tr>
     </tbody>
 </table>
-<button class="expand-table-toggle" data-table-id="vite-2">Show more</button>
+<div class="center">
+    <button class="expand-table-toggle" data-table-id="vite-2">Show more</button>
+</div>
 
 As a matter of fact, someone on the internet did a very similar research few years ago.
 So I hoped to see the improvement in the build tools over the years.
@@ -350,14 +354,14 @@ And a deeper analysis of the duplicated functions:
         <tr class="green"><td><code>function n(){return Object.assign&&Object.assign.bind(),n.apply(this,arguments)}</code></td><td>1204</td></tr>
         <tr class="green"><td><code>function n(){return Object.assign,n.apply(this,arguments)}</code></td><td>1010</td></tr>
         <tr class="green"><td><code>function(){}</code></td><td>844</td></tr>
-        <tr class="green"><td><code>function(t){return t&&\"object\"==typeof t&&\"default\"in t?t:{default:t}}</code></td><td>260</td></tr>
+        <tr class="green"><td><code>function(t){return t&&"object"==typeof t&&"default"in t?t:{default:t}}</code></td><td>260</td></tr>
         <tr><td><code>function(i){this.a=i}</code></td><td>250</td></tr>
         <tr><td><code>function(n,e){if(null==n)return{};for(var r,t={},f=Object.keys(n),u=0;u&lt;f.length;u++)r=f[u],0&lt;=e.indexOf(r)||(t[r]=n[r]);return t}</code></td><td>203</td></tr>
         <tr><td><code>function(e,r){if(null==e)return{};var t,n=function(e,r){if(null==e)return{};for(var t,n={},l=Object.keys(e),o=0;o&lt;l.length;o++)t=l[o],0&lt;=r.indexOf(t)||(n[t]=e[t]);return n}(e,r);if(Object.getOwnPropertySymbols)for(var l=Object.getOwnPropertySymbols(e),o=0;o&lt;l.length;o++)t=l[o],0&lt;=r.indexOf(t)||Object.prototype.propertyIsEnumerable.call(e,t)&&(n[t]=e[t]);return n}</code></td><td>194</td></tr>
         <tr class="green"><td><code>function(e,r){return r=r||e.slice(0),Object.freeze(Object.defineProperties(e,{raw:{value:Object.freeze(r)}}))}</code></td><td>160</td></tr>
-        <tr class="green"><td><code>function(r,t){if(\"object\"!=typeof r||null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return(\"string\"===t?String:Number)(r);e=e.call(r,t||\"default\");if(\"object\"!=typeof e)return e;throw new TypeError(\"@@toPrimitive must return a primitive value.\")}</code></td><td>137</td></tr>
-        <tr><td><code>function(r,e,t){return i=function(r,e){if(\"object\"!=typeof r||null===r)return r;var t=r[Symbol.toPrimitive];if(void 0===t)return String(r);t=t.call(r,e);if(\"object\"!=typeof t)return t;throw new TypeError(\"@@toPrimitive must return a primitive value.\")}(e,\"string\"),(e=\"symbol\"==typeof i?i:String(i))in r?Object.defineProperty(r,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):r[e]=t,r;var i}</code></td><td>134</td></tr>
-        <tr><td><code>function(t){t=function(t,r){if(\"object\"!=typeof t||null===t)return t;var i=t[Symbol.toPrimitive];if(void 0===i)return String(t);i=i.call(t,r);if(\"object\"!=typeof i)return i;throw new TypeError(\"@@toPrimitive must return a primitive value.\")}(t,\"string\");return\"symbol\"==typeof t?t:String(t)}</code></td><td>134</td></tr>
+        <tr class="green"><td><code>function(r,t){if("object"!=typeof r||null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return("string"===t?String:Number)(r);e=e.call(r,t||"default");if("object"!=typeof e)return e;throw new TypeError("@@toPrimitive must return a primitive value.")}</code></td><td>137</td></tr>
+        <tr><td><code>function(r,e,t){return i=function(r,e){if("object"!=typeof r||null===r)return r;var t=r[Symbol.toPrimitive];if(void 0===t)return String(r);t=t.call(r,e);if("object"!=typeof t)return t;throw new TypeError("@@toPrimitive must return a primitive value.")}(e,"string"),(e="symbol"==typeof i?i:String(i))in r?Object.defineProperty(r,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):r[e]=t,r;var i}</code></td><td>134</td></tr>
+        <tr><td><code>function(t){t=function(t,r){if("object"!=typeof t||null===t)return t;var i=t[Symbol.toPrimitive];if(void 0===i)return String(t);i=i.call(t,r);if("object"!=typeof i)return i;throw new TypeError("@@toPrimitive must return a primitive value.")}(t,"string");return"symbol"==typeof t?t:String(t)}</code></td><td>134</td></tr>
         <tr class="green"><td><code>()=>{}</code></td><td>129</td></tr>
         <tr class="green"><td><code>function(n){return this===n}</code></td><td>119</td></tr>
         <tr class="green"><td><code>function(e,n,r){return n in e?Object.defineProperty(e,n,{value:r,enumerable:!0,configurable:!0,writable:!0}):e[n]=r,e}</code></td><td>115</td></tr>
@@ -368,25 +372,25 @@ And a deeper analysis of the duplicated functions:
         <tr class="green"><td><code>function(){throw new TypeError(`Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.`)}</code></td><td>83</td></tr>
         <tr class="green"><td><code>function(){return!1}</code></td><td>79</td></tr>
         <tr><td><code>function(){return new cu(this)}</code></td><td>77</td></tr>
-        <tr><td><code>function(e){var t;\"default\"!==e&&(t=Object.getOwnPropertyDescriptor(b,e),Object.defineProperty(E,e,t.get?t:{enumerable:!0,get:function(){return b[e]}}))}</code></td><td>76</td></tr>
+        <tr><td><code>function(e){var t;"default"!==e&&(t=Object.getOwnPropertyDescriptor(b,e),Object.defineProperty(E,e,t.get?t:{enumerable:!0,get:function(){return b[e]}}))}</code></td><td>76</td></tr>
         <tr><td><code>function(){return b[P]}</code></td><td>76</td></tr>
-        <tr><td><code>function(a,e,l){var i,r=l[\"aria-label\"],t=l[\"aria-labelledby\"],n=l.title;switch(a){case\"img\":return r||t||n?(s(i={},\"aria-labelledby\",t),s(i,\"aria-label\",r),s(i,\"title\",n),i):{\"aria-label\":\"\".concat(e.replace(/([a-z])([A-Z])/g,\"$1 $2\"),\" Icon\")};case\"presentation\":return{\"aria-hidden\":!0,alt:\"\"}}}</code></td><td>76</td></tr>
-        <tr><td><code>function(r){var n;return r&&r.__esModule?r:(n=Object.create(null),r&&Object.keys(r).forEach(function(e){var t;\"default\"!==e&&(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>67</td></tr>
+        <tr><td><code>function(a,e,l){var i,r=l["aria-label"],t=l["aria-labelledby"],n=l.title;switch(a){case"img":return r||t||n?(s(i={},"aria-labelledby",t),s(i,"aria-label",r),s(i,"title",n),i):{"aria-label":"".concat(e.replace(/([a-z])([A-Z])/g,"$1 $2")," Icon")};case"presentation":return{"aria-hidden":!0,alt:""}}}</code></td><td>76</td></tr>
+        <tr><td><code>function(r){var n;return r&&r.__esModule?r:(n=Object.create(null),r&&Object.keys(r).forEach(function(e){var t;"default"!==e&&(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>67</td></tr>
         <tr class="green"><td><code>function(n){return typeof n}</code></td><td>64</td></tr>
-        <tr class="green"><td><code>function(o){return o&&\"function\"==typeof Symbol&&o.constructor===Symbol&&o!==Symbol.prototype?\"symbol\":typeof o}</code></td><td>64</td></tr>
+        <tr class="green"><td><code>function(o){return o&&"function"==typeof Symbol&&o.constructor===Symbol&&o!==Symbol.prototype?"symbol":typeof o}</code></td><td>64</td></tr>
         <tr><td><code>function n(r){return n(r)}</code></td><td>63</td></tr>
         <tr><td><code>function(t,e){var r,n=Object.keys(t);return Object.getOwnPropertySymbols&&(r=Object.getOwnPropertySymbols(t),e&&(r=r.filter(function(e){return Object.getOwnPropertyDescriptor(t,e).enumerable})),n.push.apply(n,r)),n}</code></td><td>61</td></tr>
         <tr><td><code>function(i,t){this.a=i,this.b=t}</code></td><td>58</td></tr>
-        <tr><td><code>function(r){var n;return r&&\"object\"==typeof r&&\"default\"in r?r:(n=Object.create(null),r&&Object.keys(r).forEach(function(e){var t;\"default\"!==e&&(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>50</td></tr>
-        <tr><td><code>function(r){if(typeof Symbol<\"u\"&&null!=r[Symbol.iterator]||null!=r[\"@@iterator\"])return Array.from(r)}</code></td><td>49</td></tr>
+        <tr><td><code>function(r){var n;return r&&"object"==typeof r&&"default"in r?r:(n=Object.create(null),r&&Object.keys(r).forEach(function(e){var t;"default"!==e&&(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>50</td></tr>
+        <tr><td><code>function(r){if(typeof Symbol<"u"&&null!=r[Symbol.iterator]||null!=r["@@iterator"])return Array.from(r)}</code></td><td>49</td></tr>
         <tr><td><code>function(){throw new TypeError(`Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.`)}</code></td><td>49</td></tr>
         <tr><td><code>function(){return this.a}</code></td><td>49</td></tr>
         <tr><td><code>function(i){p0(this,i)}</code></td><td>48</td></tr>
-        <tr><td><code>function(l,r){var t=null==l?null:typeof Symbol<\"u\"&&l[Symbol.iterator]||l[\"@@iterator\"];if(null!=t){var n,u,e=[],a=!0,o=!1;try{for(t=t.call(l);!(a=(n=t.next()).done)&&(e.push(n.value),!r||e.length!==r);a=!0);}catch(l){o=!0,u=l}finally{try{a||null==t.return||t.return()}finally{if(o)throw u}}return e}}</code></td><td>46</td></tr>
+        <tr><td><code>function(l,r){var t=null==l?null:typeof Symbol<"u"&&l[Symbol.iterator]||l["@@iterator"];if(null!=t){var n,u,e=[],a=!0,o=!1;try{for(t=t.call(l);!(a=(n=t.next()).done)&&(e.push(n.value),!r||e.length!==r);a=!0);}catch(l){o=!0,u=l}finally{try{a||null==t.return||t.return()}finally{if(o)throw u}}return e}}</code></td><td>46</td></tr>
         <tr><td><code>function(){throw St(new Ss)}</code></td><td>46</td></tr>
         <tr><td><code>function(n){throw St(new Ss)}</code></td><td>39</td></tr>
-        <tr><td><code>()=>{\"use strict\";Vu(),Du()}</code></td><td>38</td></tr>
-        <tr><td><code>function(l,r){var t=null==l?null:typeof Symbol<\"u\"&&l[Symbol.iterator]||l[\"@@iterator\"];if(null!=t){var e,n,u,a,f=[],i=!0,o=!1;try{if(u=(t=t.call(l)).next,0===r){if(Object(t)!==t)return;i=!1}else for(;!(i=(e=u.call(t)).done)&&(f.push(e.value),f.length!==r);i=!0);}catch(l){o=!0,n=l}finally{try{if(!i&&null!=t.return&&(a=t.return(),Object(a)!==a))return}finally{if(o)throw n}}return f}}</code></td><td>37</td></tr>
+        <tr><td><code>()=>{"use strict";Vu(),Du()}</code></td><td>38</td></tr>
+        <tr><td><code>function(l,r){var t=null==l?null:typeof Symbol<"u"&&l[Symbol.iterator]||l["@@iterator"];if(null!=t){var e,n,u,a,f=[],i=!0,o=!1;try{if(u=(t=t.call(l)).next,0===r){if(Object(t)!==t)return;i=!1}else for(;!(i=(e=u.call(t)).done)&&(f.push(e.value),f.length!==r);i=!0);}catch(l){o=!0,n=l}finally{try{if(!i&&null!=t.return&&(a=t.return(),Object(a)!==a))return}finally{if(o)throw n}}return f}}</code></td><td>37</td></tr>
         <tr><td><code>function(){return this.b}</code></td><td>33</td></tr>
         <tr><td><code>function(){X(x)}</code></td><td>32</td></tr>
         <tr class="green"><td><code>function(n){}</code></td><td>31</td></tr>
@@ -395,22 +399,24 @@ And a deeper analysis of the duplicated functions:
         <tr><td><code>function(n){return dn(oi,mr,2,n,6,1)}</code></td><td>30</td></tr>
         <tr class="green"><td><code>function(){return null}</code></td><td>29</td></tr>
         <tr class="green"><td><code>function(){return this}</code></td><td>24</td></tr>
-        <tr><td><code>()=>{\"use strict\";Du()}</code></td><td>23</td></tr>
+        <tr><td><code>()=>{"use strict";Du()}</code></td><td>23</td></tr>
         <tr><td><code>function(i){g0(this,i)}</code></td><td>23</td></tr>
-        <tr><td><code>function(t,r){var e;if(t)return\"string\"==typeof t?k(t,r):\"Map\"===(e=\"Object\"===(e=Object.prototype.toString.call(t).slice(8,-1))&&t.constructor?t.constructor.name:e)||\"Set\"===e?Array.from(t):\"Arguments\"===e||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(e)?k(t,r):void 0}</code></td><td>22</td></tr>
-        <tr><td><code>function(t,r){var e;if(t)return\"string\"==typeof t?P(t,r):\"Map\"===(e=\"Object\"===(e=Object.prototype.toString.call(t).slice(8,-1))&&t.constructor?t.constructor.name:e)||\"Set\"===e?Array.from(t):\"Arguments\"===e||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(e)?P(t,r):void 0}</code></td><td>22</td></tr>
+        <tr><td><code>function(t,r){var e;if(t)return"string"==typeof t?k(t,r):"Map"===(e="Object"===(e=Object.prototype.toString.call(t).slice(8,-1))&&t.constructor?t.constructor.name:e)||"Set"===e?Array.from(t):"Arguments"===e||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(e)?k(t,r):void 0}</code></td><td>22</td></tr>
+        <tr><td><code>function(t,r){var e;if(t)return"string"==typeof t?P(t,r):"Map"===(e="Object"===(e=Object.prototype.toString.call(t).slice(8,-1))&&t.constructor?t.constructor.name:e)||"Set"===e?Array.from(t):"Arguments"===e||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(e)?P(t,r):void 0}</code></td><td>22</td></tr>
         <tr class="green"><td><code>function(n){return null!=n&&n instanceof Array}</code></td><td>21</td></tr>
         <tr><td><code>function(r){if(Array.isArray(r))return P(r)}</code></td><td>21</td></tr>
         <tr class="green"><td><code>function(e){return e&&e.__esModule?e:{default:e}}</code></td><td>21</td></tr>
-        <tr><td><code>function(t,r){var e;if(t)return\"string\"==typeof t?Q(t,r):\"Map\"===(e=\"Object\"===(e=Object.prototype.toString.call(t).slice(8,-1))&&t.constructor?t.constructor.name:e)||\"Set\"===e?Array.from(t):\"Arguments\"===e||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(e)?Q(t,r):void 0}</code></td><td>21</td></tr>
+        <tr><td><code>function(t,r){var e;if(t)return"string"==typeof t?Q(t,r):"Map"===(e="Object"===(e=Object.prototype.toString.call(t).slice(8,-1))&&t.constructor?t.constructor.name:e)||"Set"===e?Array.from(t):"Arguments"===e||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(e)?Q(t,r):void 0}</code></td><td>21</td></tr>
         <tr><td><code>function(){throw St(new Os(il((qs(),_g))))}</code></td><td>21</td></tr>
         <tr class="green"><td><code>function(n){return n}</code></td><td>20</td></tr>
         <tr class="green"><td><code>function(n){return null!=n&&n.nodeType===Node.ELEMENT_NODE}</code></td><td>20</td></tr>
-        <tr class="green"><td><code>function(e){throw Error(\"Received unhandled value: \".concat(e))}</code></td><td>20</td></tr>
-        <tr class="green"><td><code>function(r,n){return Array.isArray(r)?r.concat(n):\"string\"==typeof r?r:void 0}</code></td><td>19</td></tr>
+        <tr class="green"><td><code>function(e){throw Error("Received unhandled value: ".concat(e))}</code></td><td>20</td></tr>
+        <tr class="green"><td><code>function(r,n){return Array.isArray(r)?r.concat(n):"string"==typeof r?r:void 0}</code></td><td>19</td></tr>
     </tbody>
 </table>
-<button class="expand-table-toggle" data-table-id="esbuild-1">Show more</button>
+<div class="center">
+    <button class="expand-table-toggle" data-table-id="esbuild-1">Show more</button>
+</div>
 
 `bun`:
 
@@ -433,11 +439,11 @@ And a deeper analysis of the duplicated functions:
         <tr class="green"><td><code>function(){return!1}</code></td><td>76</td></tr>
         <tr><td><code>function(i,t){this.a=i,this.b=t}</code></td><td>58</td></tr>
         <tr class="green"><td><code>function(n,e){if(null==n)return{};for(var r,t={},f=Object.keys(n),u=0;u&lt;f.length;u++)r=f[u],0&lt;=e.indexOf(r)||(t[r]=n[r]);return t}</code></td><td>53</td></tr>
-        <tr class="green"><td><code>function(r,t){if(\"object\"!=typeof r||null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return(\"string\"===t?String:Number)(r);e=e.call(r,t||\"default\");if(\"object\"!=typeof e)return e;throw new TypeError(\"@@toPrimitive must return a primitive value.\")}</code></td><td>51</td></tr>
+        <tr class="green"><td><code>function(r,t){if("object"!=typeof r||null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return("string"===t?String:Number)(r);e=e.call(r,t||"default");if("object"!=typeof e)return e;throw new TypeError("@@toPrimitive must return a primitive value.")}</code></td><td>51</td></tr>
         <tr><td><code>function(){return this.a}</code></td><td>49</td></tr>
         <tr class="green"><td><code>function(e,r){if(null==e)return{};var t,n=function(e,r){if(null==e)return{};for(var t,n={},l=Object.keys(e),o=0;o&lt;l.length;o++)t=l[o],0&lt;=r.indexOf(t)||(n[t]=e[t]);return n}(e,r);if(Object.getOwnPropertySymbols)for(var l=Object.getOwnPropertySymbols(e),o=0;o&lt;l.length;o++)t=l[o],0&lt;=r.indexOf(t)||Object.prototype.propertyIsEnumerable.call(e,t)&&(n[t]=e[t]);return n}</code></td><td>48</td></tr>
-        <tr class="green"><td><code>function(r,e,t){return i=function(r,e){if(\"object\"!=typeof r||null===r)return r;var t=r[Symbol.toPrimitive];if(void 0===t)return String(r);t=t.call(r,e);if(\"object\"!=typeof t)return t;throw new TypeError(\"@@toPrimitive must return a primitive value.\")}(e,\"string\"),(e=\"symbol\"==typeof i?i:String(i))in r?Object.defineProperty(r,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):r[e]=t,r;var i}</code></td><td>48</td></tr>
-        <tr class="green"><td><code>function(t){t=function(t,r){if(\"object\"!=typeof t||null===t)return t;var i=t[Symbol.toPrimitive];if(void 0===i)return String(t);i=i.call(t,r);if(\"object\"!=typeof i)return i;throw new TypeError(\"@@toPrimitive must return a primitive value.\")}(t,\"string\");return\"symbol\"==typeof t?t:String(t)}</code></td><td>48</td></tr>
+        <tr class="green"><td><code>function(r,e,t){return i=function(r,e){if("object"!=typeof r||null===r)return r;var t=r[Symbol.toPrimitive];if(void 0===t)return String(r);t=t.call(r,e);if("object"!=typeof t)return t;throw new TypeError("@@toPrimitive must return a primitive value.")}(e,"string"),(e="symbol"==typeof i?i:String(i))in r?Object.defineProperty(r,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):r[e]=t,r;var i}</code></td><td>48</td></tr>
+        <tr class="green"><td><code>function(t){t=function(t,r){if("object"!=typeof t||null===t)return t;var i=t[Symbol.toPrimitive];if(void 0===i)return String(t);i=i.call(t,r);if("object"!=typeof i)return i;throw new TypeError("@@toPrimitive must return a primitive value.")}(t,"string");return"symbol"==typeof t?t:String(t)}</code></td><td>48</td></tr>
         <tr><td><code>function(i){T6(this,i)}</code></td><td>48</td></tr>
         <tr><td><code>()=>{R3(),G3()}</code></td><td>46</td></tr>
         <tr><td><code>function(){throw x0(new w7)}</code></td><td>46</td></tr>
@@ -445,12 +451,12 @@ And a deeper analysis of the duplicated functions:
         <tr><td><code>function(n,r){(null==r||r>n.length)&&(r=n.length);for(var e=0,l=new Array(r);e&lt;r;e++)l[e]=n[e];return l}</code></td><td>41</td></tr>
         <tr><td><code>function(n){throw x0(new w7)}</code></td><td>39</td></tr>
         <tr class="green"><td><code>function(r){if(Array.isArray(r))return r}</code></td><td>36</td></tr>
-        <tr class="green"><td><code>function(){throw new TypeError(\"Invalid attempt to destructure non-iterable instance.\\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.\")}</code></td><td>36</td></tr>
+        <tr class="green"><td><code>function(){throw new TypeError("Invalid attempt to destructure non-iterable instance.\\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}</code></td><td>36</td></tr>
         <tr><td><code>function(){return this.b}</code></td><td>33</td></tr>
         <tr><td><code>function(n){return n2(n)}</code></td><td>30</td></tr>
         <tr><td><code>function(n){return J1($5,p1,2,n,6,1)}</code></td><td>30</td></tr>
         <tr><td><code>function(t,e){var r,n=Object.keys(t);return Object.getOwnPropertySymbols&&(r=Object.getOwnPropertySymbols(t),e&&(r=r.filter(function(e){return Object.getOwnPropertyDescriptor(t,e).enumerable})),n.push.apply(n,r)),n}</code></td><td>29</td></tr>
-        <tr><td><code>function(l,r){var t=null==l?null:\"undefined\"!=typeof Symbol&&l[Symbol.iterator]||l[\"@@iterator\"];if(null!=t){var e,n,u,f,i=[],a=!0,o=!1;try{if(u=(t=t.call(l)).next,0===r){if(Object(t)!==t)return;a=!1}else for(;!(a=(e=u.call(t)).done)&&(i.push(e.value),i.length!==r);a=!0);}catch(l){o=!0,n=l}finally{try{if(!a&&null!=t.return&&(f=t.return(),Object(f)!==f))return}finally{if(o)throw n}}return i}}</code></td><td>29</td></tr>
+        <tr><td><code>function(l,r){var t=null==l?null:"undefined"!=typeof Symbol&&l[Symbol.iterator]||l["@@iterator"];if(null!=t){var e,n,u,f,i=[],a=!0,o=!1;try{if(u=(t=t.call(l)).next,0===r){if(Object(t)!==t)return;a=!1}else for(;!(a=(e=u.call(t)).done)&&(i.push(e.value),i.length!==r);a=!0);}catch(l){o=!0,n=l}finally{try{if(!a&&null!=t.return&&(f=t.return(),Object(f)!==f))return}finally{if(o)throw n}}return i}}</code></td><td>29</td></tr>
         <tr class="green"><td><code>function(n){}</code></td><td>29</td></tr>
         <tr class="green"><td><code>function(){return null}</code></td><td>28</td></tr>
         <tr><td><code>function(e){return Object.getOwnPropertyDescriptor(Z,e).enumerable}</code></td><td>25</td></tr>
@@ -465,7 +471,7 @@ And a deeper analysis of the duplicated functions:
         <tr><td><code>function(n,w){throw x0(new w7)}</code></td><td>18</td></tr>
         <tr><td><code>function(){return 0}</code></td><td>17</td></tr>
         <tr class="green"><td><code>function(n){return typeof n}</code></td><td>17</td></tr>
-        <tr><td><code>function(o){return o&&\"function\"==typeof Symbol&&o.constructor===Symbol&&o!==Symbol.prototype?\"symbol\":typeof o}</code></td><td>17</td></tr>
+        <tr><td><code>function(o){return o&&"function"==typeof Symbol&&o.constructor===Symbol&&o!==Symbol.prototype?"symbol":typeof o}</code></td><td>17</td></tr>
         <tr><td><code>()=>{R3()}</code></td><td>16</td></tr>
         <tr><td><code>()=>{var e;return null!=(e=Z.options.debugAll)?e:Z.options.debugHeaders}</code></td><td>16</td></tr>
         <tr class="green"><td><code>function(n,r){return n}</code></td><td>15</td></tr>
@@ -473,8 +479,8 @@ And a deeper analysis of the duplicated functions:
         <tr><td><code>function(){return this.c}</code></td><td>15</td></tr>
         <tr><td><code>function(){return this.d}</code></td><td>15</td></tr>
         <tr><td><code>function(e,n,r){return n in e?Object.defineProperty(e,n,{value:r,enumerable:!0,configurable:!0,writable:!0}):e[n]=r,e}</code></td><td>14</td></tr>
-        <tr class="green"><td><code>function(r){if(\"undefined\"!=typeof Symbol&&null!=r[Symbol.iterator]||null!=r[\"@@iterator\"])return Array.from(r)}</code></td><td>14</td></tr>
-        <tr><td><code>function(){throw new TypeError(\"Invalid attempt to spread non-iterable instance.\\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.\")}</code></td><td>14</td></tr>
+        <tr class="green"><td><code>function(r){if("undefined"!=typeof Symbol&&null!=r[Symbol.iterator]||null!=r["@@iterator"])return Array.from(r)}</code></td><td>14</td></tr>
+        <tr><td><code>function(){throw new TypeError("Invalid attempt to spread non-iterable instance.\\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}</code></td><td>14</td></tr>
         <tr><td><code>d=>d.id</code></td><td>14</td></tr>
         <tr><td><code>()=>W(!1)</code></td><td>13</td></tr>
         <tr class="green"><td><code>a=>a</code></td><td>12</td></tr>
@@ -490,7 +496,9 @@ And a deeper analysis of the duplicated functions:
         <tr><td><code>function(){return this.f}</code></td><td>10</td></tr>
     </tbody>
 </table>
-<button class="expand-table-toggle" data-table-id="bun-1">Show more</button>
+<div class="center">
+    <button class="expand-table-toggle" data-table-id="bun-1">Show more</button>
+</div>
 
 Interestingly enough, all three tools handled the job bad in different aspects:
 
@@ -523,11 +531,11 @@ Here is a shortened list of top abusers from different bundlers for our tool:
         </tr>
         <tr>
             <th></th>
-            <th>Occurrences</th>
+            <th>#</th>
             <th>Bytes</th>
-            <th>Occurrences</th>
+            <th>#</th>
             <th>Bytes</th>
-            <th>Occurrences</th>
+            <th>#</th>
             <th>Bytes</th>
         </tr>
     </thead>
@@ -608,7 +616,7 @@ Here is a shortened list of top abusers from different bundlers for our tool:
             <td>378</td>
         </tr>
         <tr>
-            <td>function(n){}</td>
+            <td><code>function(n){}</code></td>
             <td>29</td>
             <td>377</td>
             <td>31</td>
@@ -672,7 +680,7 @@ Here is a shortened list of top abusers from different bundlers for our tool:
             <td>253</td>
         </tr>
         <tr>
-            <td>function(n,c){}</td>
+            <td><code>function(n,c){}</code></td>
             <td>n/a</td>
             <td>0</td>
             <td>n/a</td>
@@ -681,7 +689,7 @@ Here is a shortened list of top abusers from different bundlers for our tool:
             <td>180</td>
         </tr>
         <tr>
-            <td>()=&gt;{}</td>
+            <td><code>()=&gt;{}</code></td>
             <td>27</td>
             <td>162</td>
             <td>129</td>
@@ -690,7 +698,7 @@ Here is a shortened list of top abusers from different bundlers for our tool:
             <td>846</td>
         </tr>
         <tr>
-            <td>a=&gt;a</td>
+            <td><code>a=&gt;a</code></td>
             <td>12</td>
             <td>48</td>
             <td>n/a</td>
@@ -699,7 +707,7 @@ Here is a shortened list of top abusers from different bundlers for our tool:
             <td>48</td>
         </tr>
         <tr>
-            <td>a=&gt;a()</td>
+            <td><code>a=&gt;a()</code></td>
             <td>12</td>
             <td>72</td>
             <td>n/a</td>
@@ -775,8 +783,7 @@ Here is a shortened list of top abusers from different bundlers for our tool:
         </tr>
         <tr>
             <td>
-                <code>function(t){return t&amp;&amp;\&quot;object\&quot;==typeof t&amp;&amp;\&quot;default\&quot;in t?t:{default:t}}
-                </code>
+                <code>function(t){return t&amp;&amp;"object"==typeof t&amp;&amp;"default"in t?t:{default:t}}</code>
             </td>
             <td>76</td>
             <td>5624</td>
@@ -831,7 +838,7 @@ Here is a shortened list of top abusers from different bundlers for our tool:
         </tr>
         <tr>
             <td>
-                <code>function(r,n){return Array.isArray(r)?r.concat(n):\&quot;string\&quot;==typeof r?r:void 0}</code>
+                <code>function(r,n){return Array.isArray(r)?r.concat(n):"string"==typeof r?r:void 0}</code>
             </td>
             <td>n/a</td>
             <td>0</td>
@@ -864,7 +871,7 @@ Here is a shortened list of top abusers from different bundlers for our tool:
         </tr>
         <tr>
             <td>
-                <code> function(r,t){if(\&quot;object\&quot;!=typeof r||null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return(\&quot;string\&quot;===t?String:Number)(r);e=e.call(r,t||\&quot;default\&quot;);if(\&quot;object\&quot;!=typeof e)return e;throw new TypeError(\&quot;@@toPrimitive must return a primitive value.\&quot;)} </code>
+                <code> function(r,t){if("object"!=typeof r||null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return("string"===t?String:Number)(r);e=e.call(r,t||"default");if("object"!=typeof e)return e;throw new TypeError("@@toPrimitive must return a primitive value.")} </code>
             </td>
             <td>n/a</td>
             <td>0</td>
@@ -886,7 +893,7 @@ Here is a shortened list of top abusers from different bundlers for our tool:
         </tr>
         <tr>
             <td>
-                <code>function(o){return o&amp;&amp;\&quot;function\&quot;==typeof Symbol&amp;&amp;o.constructor===Symbol&amp;&amp;o!==Symbol.prototype?\&quot;symbol\&quot;:typeof o}</code>
+                <code>function(o){return o&amp;&amp;"function"==typeof Symbol&amp;&amp;o.constructor===Symbol&amp;&amp;o!==Symbol.prototype?"symbol":typeof o}</code>
             </td>
             <td>n/a</td>
             <td>0</td>
@@ -897,7 +904,7 @@ Here is a shortened list of top abusers from different bundlers for our tool:
         </tr>
         <tr>
             <td>
-                <code>function(r){if(\&quot;undefined\&quot;!=typeof Symbol&amp;&amp;null!=r[Symbol.iterator]||null!=r[\&quot;@@iterator\&quot;])return Array.from(r)}</code>
+                <code>function(r){if("undefined"!=typeof Symbol&amp;&amp;null!=r[Symbol.iterator]||null!=r["@@iterator"])return Array.from(r)}</code>
             </td>
             <td>n/a</td>
             <td>0</td>
@@ -908,7 +915,9 @@ Here is a shortened list of top abusers from different bundlers for our tool:
         </tr>
     </tbody>
 </table>
-<button class="expand-table-toggle" data-table-id="deduplicatable-1">Show more</button>
+<div class="center">
+    <button class="expand-table-toggle" data-table-id="deduplicatable-1">Show more</button>
+</div>
 
 Interestingly enough, aside from a lot of `() => {}` and `(a, b) => a` and `() => true` (as I call them, utility) functions,
 there are a lot of ES6 / TypeScript helpers such as class definition and spread operator variants, presumingly made to be compatible with ES5-only browsers.
@@ -974,36 +983,36 @@ console.timeEnd('2');
 The results are actually quite stable:
 
 ```
-1: 17029ms - timer ended
-1: 16998ms - timer ended
-1: 16903ms - timer ended
+1: 17029ms
+1: 16998ms
+1: 16903ms
 
-2: 21877ms - timer ended
-2: 21811ms - timer ended
-2: 21821ms - timer ended
+2: 21877ms
+2: 21811ms
+2: 21821ms
 ```
 
 Having just one function instance is approx. `23%` faster. But what happens at consequitive runs?
 
 ```
-1: 9194ms - timer ended
-1: 9159ms - timer ended
-1: 14044ms - timer ended
-1: 13882ms - timer ended
-1: 13975ms - timer ended
-1: 9205ms - timer ended
-1: 14026ms - timer ended
+1: 9194ms
+1: 9159ms
+1: 14044ms
+1: 13882ms
+1: 13975ms
+1: 9205ms
+1: 14026ms
 
-2: 21821ms - timer ended
-2: 13843ms - timer ended
-2: 13866ms - timer ended
-2: 13854ms - timer ended
-2: 13961ms - timer ended
+2: 21821ms
+2: 13843ms
+2: 13866ms
+2: 13854ms
+2: 13961ms
 
-2: 21718ms - timer ended
-2: 13952ms - timer ended
-2: 13925ms - timer ended
-2: 13923ms - timer ended
+2: 21718ms
+2: 13952ms
+2: 13925ms
+2: 13923ms
 ```
 
 Seems like CPU does indeed do a little bit of instruction caching and branch prediction (first run is visibly slower than the subsequent runs).
@@ -1012,6 +1021,9 @@ But the observation still holds: having one function is faster.
 With that being said, there is one interesting thing to try here: what if we actually replace some of those bulky duplicates with one-time declarations, within the same bundle?
 
 <style>
+    .center {
+        text-align: center;
+    }
     table {
         display: block;
         max-height: 200px;
