@@ -27,31 +27,31 @@ I am minimizing the function definition with `uglifyjs` and counting the SHA256 
 
 These are my findings.
 
-Out of 54 chunks, 47 are not css-in-js chunks. Out of 47 remaining, 7 have any significant duplication.
+Out of 54 chunks, 47 are not css-in-js chunks. Out of 47 remaining, 7 have any significant duplication (over 5%).
 But when they do, they do it hard: duplication varies between 18% and a whopping 42% of sheer file size.
-Absolute numbers are also astonishing: 25% to 60% functions are duplicates.
+Absolute numbers are also astonishing: 33% to 59% functions are duplicates.
 
 ```
 Found 15192 functions, 8963 are unique (59%)
-1518418 out of 3537579 bytes are duplicate code (42.92%)
+Duplicates length: 1518418 bytes out of 3537579 bytes are duplicate code (42.92%)
 
 Found 1202 functions, 494 are unique (41.1%)
-130649 out of 340227 bytes are duplicate code (38.4%)
+Duplicates length: 130649 bytes out of 340227 bytes are duplicate code (38.4%)
+
+Found 513 functions, 231 are unique (45.03%)
+Duplicates length: 50160 bytes out of 136057 bytes are duplicate code (36.87%)
 
 Found 598 functions, 267 are unique (44.65%)
-57607 out of 164737 bytes are duplicate code (34.97%)
-
-Found 154 functions, 98 are unique (63.64%)
-11140 out of 45135 bytes are duplicate code (24.68%)
+Duplicates length: 57607 bytes out of 164737 bytes are duplicate code (34.97%)
 
 Found 17 functions, 10 are unique (58.82%)
-1932 out of 6532 bytes are duplicate code (29.58%)
+Duplicates length: 1932 bytes out of 6532 bytes are duplicate code (29.58%)
+
+Found 154 functions, 98 are unique (63.64%)
+Duplicates length: 11140 bytes out of 45135 bytes are duplicate code (24.68%)
 
 Found 968 functions, 651 are unique (67.25%)
-52616 out of 281406 bytes are duplicate code (18.7%)
-
-Found 11123 functions, 8398 are unique (75.5%)
-76244 out of 1421129 bytes are duplicate code (5.37%)
+Duplicates length: 52616 bytes out of 281406 bytes are duplicate code (18.7%)
 ```
 
 I thought my code might be wrong, so I looked into the bundle code itself. Here's a short excerpt:
@@ -303,38 +303,36 @@ And the analysis of the built bundles:
 `vite`:
 
 ```
-Found 15192 functions, 8963 are unique (59%)
-Found 1202 functions, 494 are unique (41.1%)
+Found 968 functions, 651 are unique (67.25%)
 Found 598 functions, 267 are unique (44.65%)
 Found 154 functions, 98 are unique (63.64%)
 Found 17 functions, 10 are unique (58.82%)
-Found 968 functions, 651 are unique (67.25%)
-Found 11123 functions, 8398 are unique (75.5%)
-= Total 29254 functions, 18881 are unique (64.5%)
+Found 15192 functions, 8963 are unique (59%)
+Found 1202 functions, 494 are unique (41.1%)
+Found 513 functions, 231 are unique (45.03%)
+= Total 18644 functions, 10714 are unique (57.4%)
 
-1518418 out of 3537579 bytes are duplicate code (42.92%)
-130649 out of 340227 bytes are duplicate code (38.4%)
-57607 out of 164737 bytes are duplicate code (34.97%)
-11140 out of 45135 bytes are duplicate code (24.68%)
-1932 out of 6532 bytes are duplicate code (29.58%)
-52616 out of 281406 bytes are duplicate code (18.7%)
-76244 out of 1421129 bytes are duplicate code (5.37%)
-= Total 1848606 out of 5796745 bytes are duplicate code (31.8%)
+Duplicates length: 52616 bytes out of 281406 bytes are duplicate code (18.7%)
+Duplicates length: 57607 bytes out of 164737 bytes are duplicate code (34.97%)
+Duplicates length: 11140 bytes out of 45135 bytes are duplicate code (24.68%)
+Duplicates length: 1932 bytes out of 6532 bytes are duplicate code (29.58%)
+Duplicates length: 1518418 bytes out of 3537579 bytes are duplicate code (42.92%)
+Duplicates length: 130649 bytes out of 340227 bytes are duplicate code (38.4%)
+Duplicates length: 50160 bytes out of 136057 bytes are duplicate code (36.87%)
+= Total 1822522 out of 4511673 bytes are duplicate code (40.3%)
 ```
 
 `esbuild`:
 
 ```
-Found 46654 functions
-28952 are unique (62.06%)
+Found 46654 functions, 28952 are unique (62.06%)
 Duplicates length: 6905599 bytes out of 9645594 bytes are duplicate code (71.59%)
 ```
 
 `bun`:
 
 ```
-Found 31113 functions
-25755 are unique (82.78%)
+Found 31113 functions, 25755 are unique (82.78%)
 Duplicates length: 446020 bytes out of 5696964 bytes are duplicate code (7.83%)
 ```
 
@@ -944,16 +942,14 @@ bundle sizes:
 `vite`:
 
 ```
-Found 15983 functions
-9581 are unique (59.94%)
+Found 15983 functions, 9581 are unique (59.94%)
 Duplicates length: 1495985 bytes out of 4019326 bytes are duplicate code (37.22%)
 ```
 
 `esbuild`:
 
 ```
-Found 41736 functions
-29224 are unique (70.02%)
+Found 41736 functions, 29224 are unique (70.02%)
 Duplicates length: 3406606 bytes out of 8347230 bytes are duplicate code (40.81%)
 ```
 
