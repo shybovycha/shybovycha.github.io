@@ -960,7 +960,7 @@ One unlikely possibility when these duplicates can be faster than having just on
 This is super far-fetched idea from low-level programming, when CPU does not have to jump thousands or millions of (assembly) instructions back and forth
 but literally a few instead.
 This won't justify using verbose ES5-compatible code on ESnext browser, however.
-But how about we run a very synthetic benchmark to check just this one theory?
+How about we run a very synthetic benchmark to check just this one theory?
 
 ```js
 function f(){return!1}
@@ -1012,9 +1012,54 @@ Having just one function instance is approx. `23%` faster. But what happens at c
 ```
 
 Seems like CPU does indeed do a little bit of instruction caching and branch prediction (first run is visibly slower than the subsequent runs).
-But the observation still holds: having one function is faster.
+But the observation still holds: having one function definition instead of many copies (even "near" copies) has a much bigger impact.
 
 With that being said, there is one interesting thing to try here: what if we actually replace some of those bulky duplicates with one-time declarations, within the same bundle?
+
+Without performing an in-depth code analysis and optimization, I came up with the following naive implementation:
+
+1. analyze the code and pick a few functions (biggest abusers) to fix them up
+2. extract all function names, function parameter names (including potential destructuring objects in function params) and all variable and constant names
+3. for each function to be de-duplicated, create a unique name (using the variable and function parameter and function names to avoid any clashes)
+4. from the end of the file to the beginning, remove all occurrences of the function declaration and replace all function references with the unique name
+5. add the function declarations to the beginning of the file
+
+This approach is rather naive, since it does not account for a number of edge cases. For instance, if there are two functions to be replaced:
+
+```js
+function(e){for(var r=1;r<arguments.length;r++){var t,l=arguments[r];for(t in l)Object.prototype.hasOwnProperty.call(l,t)&&(e[t]=l[t])}return e}
+
+function p(){return(p=Object.assign||function(e){for(var r=1;r<arguments.length;r++){var t,l=arguments[r];for(t in l)Object.prototype.hasOwnProperty.call(l,t)&&(e[t]=l[t])}return e}).apply(this,arguments)}
+```
+
+e.g. one includes the other, the algorithm could have potentially evicted cases like this.
+
+Before proceeding further, it is a good idea to test if the cleaned up bundle can safely replace the original one.
+Hence I just stuffed it in the static assets folder of our project and ran it with the modified bundle.
+
+This way I figured few issues with the naive approach:
+
+* two function definitions are causing stack overflow:
+    * `$z=function n(){return Object.assign,n.apply(this,arguments)}`
+    * `$q=function n(){return n=Object.assign&&Object.assign.bind(),n.apply(this,arguments)}`
+* some of the empty functions are actually used as constructors (ES5-compatible OOP model) which is only discovered by finding the expressions like `$FnName.prototype.something = somethingElse;`
+* some functions are named and then referenced later in the code
+* some functions are not used at all: <img src="/images/how-unique-are-your-bundles/unused-deduplicated-functions.png" alt="Unused aliases">
+
+For the shorthand functions I first tried manually fixing them up - had to replace them with `$z=function(){return $z=Object.assign.bind(),$z.apply(this,arguments)}` alikes. This worked, so I created an AST transformer to handle these one-line return-only functions, but it resulted in few extra whitespaces being added - using uglifyjs messes things up again and TypeScript compiler does not have an option for minimal output.
+
+With the constructors I simply excluded them from being de-duplicated. This resulted in `155` fewer substitutions (in Vite mode), which is negligible on the overall scale of the problem.
+
+As for the named functions which are in the global scope and are referenced later down the line, I had to create a list of "backwards-compatible aliases", mapping those old function names onto the new unique names.
+
+Other than those, replacing the original bundle with the optimized one worked like a charm!
+
+The results?
+
+```
+4.1M input.js
+3.8M output.js
+```
 
 <style>
     .center {
