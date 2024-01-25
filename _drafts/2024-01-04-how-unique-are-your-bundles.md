@@ -281,21 +281,25 @@ bun install  0.22s user 0.65s system 47% cpu 1.849 total
 `vite build`:
 
 ```
-✓ built in 13.96s
-yarn build  23.18s user 2.42s system 171% cpu 14.961 total
+yarn vite build  85.04s user 6.46s system 228% cpu 40.055 total
 ```
 
 `esbuild build`:
 
 ```
-yarn node esbuild.mjs  2.75s user 0.53s system 322% cpu 1.020 total
+yarn node esbuild.mjs  2.57s user 0.52s system 308% cpu 1.002 total
 ```
 
 `bun build`:
 
 ```
-[216ms] bundle 3089 modules
-bun build src/app/index.tsx --outdir ./dist/bun --minify  0.41s user 0.39s system 256% cpu 0.311 total
+bun run bun.tsx  0.43s user 0.40s system 232% cpu 0.357 total
+```
+
+`webpack`:
+
+```
+yarn webpack  138.64s user 9.08s system 238% cpu 1:01.82 total
 ```
 
 And the analysis of the built bundles:
@@ -334,6 +338,13 @@ Duplicates length: 6905599 bytes out of 9645594 bytes are duplicate code (71.59%
 ```
 Found 31113 functions, 25755 are unique (82.78%)
 Duplicates length: 446020 bytes out of 5696964 bytes are duplicate code (7.83%)
+```
+
+`webpack`:
+
+```
+Found 2898 functions, 1434 are unique (49.48%)
+Duplicates length: 320940 bytes out of 4645589 bytes are duplicate code (6.91%)
 ```
 
 And a deeper analysis of the duplicated functions:
@@ -937,6 +948,9 @@ bundle sizes:
 
 ➜  js-unique-functions git:(main) ✗ ls -alh vite-tuned
 3.8M index.js
+
+➜  js-unique-functions git:(main) ✗ ls -alh webpack
+4.4M webpack.out.js
 ```
 
 `vite`:
@@ -953,6 +967,7 @@ Found 41736 functions, 29224 are unique (70.02%)
 Duplicates length: 3406606 bytes out of 8347230 bytes are duplicate code (40.81%)
 ```
 
+webpack is (should be) already using the `target` config option from `tsconfig.json` (which is set to `ESNext` in our case)
 and bun does not really have a whole lot of customization in this regard.
 
 One unlikely possibility when these duplicates can be faster than having just one function is that running the nearly-defined code
@@ -1054,11 +1069,107 @@ As for the named functions which are in the global scope and are referenced late
 
 Other than those, replacing the original bundle with the optimized one worked like a charm!
 
-The results?
+The results? With the threshold of `20` duplicates or more:
+
+# Analysis
+
+## Webpack
 
 ```
-4.1M input.js
-3.8M output.js
+Found 2898 functions, 1434 are unique (49.48%)
+Duplicates length: 320940 bytes out of 4645589 bytes are duplicate code (6.91%)
+```
+
+## esbuild
+
+```
+Found 13057 functions, 10250 are unique (78.5%)
+Duplicates length: 357706 bytes out of 9169883 bytes are duplicate code (3.9%)
+```
+
+## Vite
+
+```
+Found 3502 functions, 2365 are unique (67.53%)
+Duplicates length: 260331 bytes out of 4074811 bytes are duplicate code (6.39%)
+```
+
+## Bun
+
+```
+Found 8903 functions, 7443 are unique (83.6%)
+Duplicates length: 51197 bytes out of 6540786 bytes are duplicate code (0.78%)
+```
+
+# Optimization
+
+With the `threshold = 20`
+
+
+## Webpack
+
+```
+➜  js-unique-functions git:(main) ✗ ls -alh webpack-output.js
+-rw-r--r--  1 artem.shubovych  staff   4.1M Jan 25 13:34 webpack-output.js
+➜  js-unique-functions git:(main) ✗ ls -alh test2/webpack/webpack.out.js
+-rw-r--r--  1 artem.shubovych  staff   4.4M Jan 25 11:55 test2/webpack/webpack.out.js
+```
+
+## esbuild
+
+```
+➜  js-unique-functions git:(main) ✗ ls -alh esbuild-output.js
+-rw-r--r--  1 artem.shubovych  staff   8.5M Jan 25 13:40 esbuild-output.js
+➜  js-unique-functions git:(main) ✗ ls -alh test2/esbuild/esbuild.out.js
+-rw-r--r--  1 artem.shubovych  staff   8.7M Jan 25 11:52 test2/esbuild/esbuild.out.js
+```
+
+## Vite
+
+```
+➜  js-unique-functions git:(main) ✗ ls -alh vite-output.js
+-rw-r--r--  1 artem.shubovych  staff   3.6M Jan 25 13:27 vite-output.js
+➜  js-unique-functions git:(main) ✗ ls -alh test2/vite/index-XCz-esZ4.js
+-rw-r--r--  1 artem.shubovych  staff   3.9M Jan 25 11:52 test2/vite/index-XCz-esZ4.js
+```
+
+## Bun
+
+```
+➜  js-unique-functions git:(main) ✗ ls -alh bun-output.js
+-rw-r--r--  1 artem.shubovych  staff   6.2M Jan 25 13:32 bun-output.js
+➜  js-unique-functions git:(main) ✗ ls -alh test2/bun/index.js
+-rw-r--r--  1 artem.shubovych  staff   6.2M Jan 25 11:52 test2/bun/index.js
+```
+
+# Post-optimization analysis
+
+## Webpack
+
+```
+Found 1484 functions, 1375 are unique (92.65%)
+Duplicates length: 18718 bytes out of 4333235 bytes are duplicate code (0.43%)
+```
+
+## esbuild
+
+```
+Found 3265 functions, 2990 are unique (91.58%)
+Duplicates length: 55239 bytes out of 8915561 bytes are duplicate code (0.62%)
+```
+
+## Vite
+
+```
+Found 2483 functions, 2277 are unique (91.7%)
+Duplicates length: 64273 bytes out of 3825198 bytes are duplicate code (1.68%)
+```
+
+## Bun
+
+```
+Found 7865 functions, 7355 are unique (93.52%)
+Duplicates length: 33413 bytes out of 6525216 bytes are duplicate code (0.51%)
 ```
 
 <style>
