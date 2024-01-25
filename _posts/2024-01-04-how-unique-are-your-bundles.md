@@ -942,8 +942,8 @@ bundle sizes:
 <table>
     <thead>
         <tr>
-            <td>Bundler</td>
-            <td>Bundle size</td>
+            <th>Bundler</th>
+            <th>Bundle size</th>
         </tr>
     </thead>
     <tbody>
