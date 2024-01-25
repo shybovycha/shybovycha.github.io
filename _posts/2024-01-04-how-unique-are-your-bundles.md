@@ -1095,6 +1095,7 @@ The results? With the threshold of `20` duplicates or more:
 <table>
     <thead>
         <tr>
+            <th>Bundler</th>
             <th colspan="5">Before optimization</th>
             <th colspan="5">After optimization</th>
         </tr>
