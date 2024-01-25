@@ -1189,6 +1189,9 @@ It would be really interesting to see what would the results be running this opt
     table.expandable td, table.expandable th {
         padding: 0.5em;
     }
+    table thead th {
+        font-weight: bold;
+    }
     /* table tr.red td {
         background: rgb(250, 88, 88);
     }
