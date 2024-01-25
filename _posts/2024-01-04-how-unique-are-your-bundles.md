@@ -940,12 +940,12 @@ Well, not quite much:
 bundle sizes:
 
 <table>
-    <thread>
+    <thead>
         <tr>
             <td>Bundler</td>
             <td>Bundle size</td>
         </tr>
-    </thread>
+    </thead>
     <tbody>
         <tr>
             <td>bun</td>
@@ -1181,6 +1181,7 @@ It would be really interesting to see what would the results be running this opt
         display: block;
         max-height: 200px;
         overflow-y: hidden;
+        border: none;
     }
     table.expandable.expand {
         display: table;
