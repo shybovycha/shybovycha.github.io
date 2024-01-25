@@ -278,29 +278,32 @@ warn: esbuild's postinstall script took 748.9ms
 bun install  0.22s user 0.65s system 47% cpu 1.849 total
 ```
 
-`vite build`:
-
-```
-yarn vite build  85.04s user 6.46s system 228% cpu 40.055 total
-```
-
-`esbuild build`:
-
-```
-yarn node esbuild.mjs  2.57s user 0.52s system 308% cpu 1.002 total
-```
-
-`bun build`:
-
-```
-bun run bun.tsx  0.43s user 0.40s system 232% cpu 0.357 total
-```
-
-`webpack`:
-
-```
-yarn webpack  138.64s user 9.08s system 238% cpu 1:01.82 total
-```
+<table>
+    <thread>
+        <tr>
+            <td>Bundler</td>
+            <td>Build time</td>
+        </tr>
+    </thread>
+    <tbody>
+        <tr>
+            <td>bun</td>
+            <td>0.43s</td>
+        </tr>
+        <tr>
+            <td>esbuild</td>
+            <td>2.57s</td>
+        </tr>
+        <tr>
+            <td>vite</td>
+            <td>85.04s</td>
+        </tr>
+        <tr>
+            <td>webpack</td>
+            <td>138.64s</td>
+        </tr>
+    </tbody>
+</table>
 
 And the analysis of the built bundles:
 
@@ -936,22 +939,40 @@ Well, not quite much:
 
 bundle sizes:
 
-```
-➜  js-unique-functions git:(main) ✗ ls -alh bun/
-5.4M index.js
-
-➜  js-unique-functions git:(main) ✗ ls -alh esbuild
-9.2M esbuild.out.js
-
-➜  js-unique-functions git:(main) ✗ ls -alh esbuild-tuned
-8.0M esbuild.out.js
-
-➜  js-unique-functions git:(main) ✗ ls -alh vite-tuned
-3.8M index.js
-
-➜  js-unique-functions git:(main) ✗ ls -alh webpack
-4.4M webpack.out.js
-```
+<table>
+    <thread>
+        <tr>
+            <td>Bundler</td>
+            <td>Bundle size</td>
+        </tr>
+    </thread>
+    <tbody>
+        <tr>
+            <td>bun</td>
+            <td>5.4M</td>
+        </tr>
+        <tr>
+            <td>esbuild</td>
+            <td>9.2M</td>
+        </tr>
+        <tr>
+            <td>esbuild (tuned)</td>
+            <td>8.0M</td>
+        </tr>
+        <tr>
+            <td>vite</td>
+            <td>7.1M</td>
+        </tr>
+        <tr>
+            <td>vite (tuned)</td>
+            <td>3.8M</td>
+        </tr>
+        <tr>
+            <td>webpack</td>
+            <td>4.4M</td>
+        </tr>
+    </tbody>
+</table>
 
 `vite`:
 
@@ -1071,106 +1092,85 @@ Other than those, replacing the original bundle with the optimized one worked li
 
 The results? With the threshold of `20` duplicates or more:
 
-# Analysis
+<table>
+    <thead>
+        <tr>
+            <th colspan="5">Before optimization</th>
+            <th colspan="5">After optimization</th>
+        </tr>
+        <tr>
+            <th>Bundle size</th>
+            <th>Total functions</th>
+            <th>Unique functions</th>
+            <th>Unique functions, %</th>
+            <th>Duplicate code, %</th>
+            <th>Bundle size</th>
+            <th>Total functions</th>
+            <th>Unique functions</th>
+            <th>Unique functions, %</th>
+            <th>Duplicate code, %</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>bun</td>
+            <td>6.2M</td>
+            <td>8903</td>
+            <td>7443</td>
+            <td>83.6%</td>
+            <td>0.78%</td>
+            <td>6.2M (no change)</td>
+            <td>7865 (-1038)</td>
+            <td>7355 (-88)</td>
+            <td>93.52% (+9.92%)</td>
+            <td>0.51% (-0.27%)</td>
+        </tr>
+        <tr>
+            <td>esbuild</td>
+            <td>8.7M</td>
+            <td>13057</td>
+            <td>10250</td>
+            <td>78.5%</td>
+            <td>3.9%</td>
+            <td>8.5M (-0.2M)</td>
+            <td>3265 (-9792)</td>
+            <td>2990 (-7260)</td>
+            <td>91.58% (+13.08%)</td>
+            <td>0.62% (-3.28%)</td>
+        </tr>
+        <tr>
+            <td>vite</td>
+            <td>3.9M</td>
+            <td>3502</td>
+            <td>2365</td>
+            <td>67.53%</td>
+            <td>6.39%</td>
+            <td>3.6M (-0.3M)</td>
+            <td>2483 (-1019)</td>
+            <td>2277 (-88)</td>
+            <td>91.7% (+24.17%)</td>
+            <td>1.68% (-4.71%)</td>
+        </tr>
+        <tr>
+            <td>webpack</td>
+            <td>4.4M</td>
+            <td>2898</td>
+            <td>1434</td>
+            <td>49.48%</td>
+            <td>6.91%</td>
+            <td>4.1M (-0.3M)</td>
+            <td>1484 (-1414)</td>
+            <td>1375 (-59)</td>
+            <td>92.65% (+43.17%)</td>
+            <td>0.43% (-6.48%)</td>
+        </tr>
+    </tbody>
+</table>
 
-## Webpack
-
-```
-Found 2898 functions, 1434 are unique (49.48%)
-Duplicates length: 320940 bytes out of 4645589 bytes are duplicate code (6.91%)
-```
-
-## esbuild
-
-```
-Found 13057 functions, 10250 are unique (78.5%)
-Duplicates length: 357706 bytes out of 9169883 bytes are duplicate code (3.9%)
-```
-
-## Vite
-
-```
-Found 3502 functions, 2365 are unique (67.53%)
-Duplicates length: 260331 bytes out of 4074811 bytes are duplicate code (6.39%)
-```
-
-## Bun
-
-```
-Found 8903 functions, 7443 are unique (83.6%)
-Duplicates length: 51197 bytes out of 6540786 bytes are duplicate code (0.78%)
-```
-
-# Optimization
-
-With the `threshold = 20`
-
-
-## Webpack
-
-```
-➜  js-unique-functions git:(main) ✗ ls -alh webpack-output.js
--rw-r--r--  1 artem.shubovych  staff   4.1M Jan 25 13:34 webpack-output.js
-➜  js-unique-functions git:(main) ✗ ls -alh test2/webpack/webpack.out.js
--rw-r--r--  1 artem.shubovych  staff   4.4M Jan 25 11:55 test2/webpack/webpack.out.js
-```
-
-## esbuild
-
-```
-➜  js-unique-functions git:(main) ✗ ls -alh esbuild-output.js
--rw-r--r--  1 artem.shubovych  staff   8.5M Jan 25 13:40 esbuild-output.js
-➜  js-unique-functions git:(main) ✗ ls -alh test2/esbuild/esbuild.out.js
--rw-r--r--  1 artem.shubovych  staff   8.7M Jan 25 11:52 test2/esbuild/esbuild.out.js
-```
-
-## Vite
-
-```
-➜  js-unique-functions git:(main) ✗ ls -alh vite-output.js
--rw-r--r--  1 artem.shubovych  staff   3.6M Jan 25 13:27 vite-output.js
-➜  js-unique-functions git:(main) ✗ ls -alh test2/vite/index-XCz-esZ4.js
--rw-r--r--  1 artem.shubovych  staff   3.9M Jan 25 11:52 test2/vite/index-XCz-esZ4.js
-```
-
-## Bun
-
-```
-➜  js-unique-functions git:(main) ✗ ls -alh bun-output.js
--rw-r--r--  1 artem.shubovych  staff   6.2M Jan 25 13:32 bun-output.js
-➜  js-unique-functions git:(main) ✗ ls -alh test2/bun/index.js
--rw-r--r--  1 artem.shubovych  staff   6.2M Jan 25 11:52 test2/bun/index.js
-```
-
-# Post-optimization analysis
-
-## Webpack
-
-```
-Found 1484 functions, 1375 are unique (92.65%)
-Duplicates length: 18718 bytes out of 4333235 bytes are duplicate code (0.43%)
-```
-
-## esbuild
-
-```
-Found 3265 functions, 2990 are unique (91.58%)
-Duplicates length: 55239 bytes out of 8915561 bytes are duplicate code (0.62%)
-```
-
-## Vite
-
-```
-Found 2483 functions, 2277 are unique (91.7%)
-Duplicates length: 64273 bytes out of 3825198 bytes are duplicate code (1.68%)
-```
-
-## Bun
-
-```
-Found 7865 functions, 7355 are unique (93.52%)
-Duplicates length: 33413 bytes out of 6525216 bytes are duplicate code (0.51%)
-```
+Conclusion? The bundlers do a pretty average job at optimizing the bundles, even in production mode with some extra tuning.
+And if some brave soul is willing to invest even more time and effort than I did into developing a sophisticated solution
+(potentially improving the existing tools, like uglifyjs or bundlers themselves), the numbers can be improved even further.
+It would be really interesting to see what would the results be running this optimizer on a bigger bundle.
 
 <style>
     .center {
