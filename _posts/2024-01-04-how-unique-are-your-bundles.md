@@ -81,7 +81,7 @@ imagine how much faster this single file _could_ have been loaded in a browser.
 I was keen on seeing what functions get duplicated most often and ran my script on an entire build output directory.
 Here are top 80-ish offenders:
 
-<table id="vite-1">
+<table id="vite-1" class="expandable">
     <thead>
         <th>Function code (minimized)</th>
         <th>Occurrences</th>
@@ -192,7 +192,7 @@ But that is uncertain - one must understand what a function does first.
 
 With those points in mind, let's look at the offenders once again:
 
-<table id="vite-2">
+<table id="vite-2" class="expandable">
     <thead>
         <th>Function code (minimized)</th>
         <th>Occurrences</th>
@@ -354,7 +354,7 @@ And a deeper analysis of the duplicated functions:
 
 `esbuild`:
 
-<table id="esbuild-1">
+<table id="esbuild-1" class="expandable">
     <thead>
         <tr>
             <th>Function</th>
@@ -432,7 +432,7 @@ And a deeper analysis of the duplicated functions:
 
 `bun`:
 
-<table id="bun-1">
+<table id="bun-1" class="expandable">
     <thead>
         <tr>
             <th>Function</th>
@@ -533,7 +533,7 @@ Although, on the modern machines the difference between having one function and 
 
 Here is a shortened list of top abusers from different bundlers for our tool:
 
-<table id="deduplicatable-1">
+<table id="deduplicatable-1" class="expandable">
     <thead>
         <tr>
             <th>Function</th>
@@ -1176,16 +1176,16 @@ It would be really interesting to see what would the results be running this opt
     .center {
         text-align: center;
     }
-    table {
+    table.expandable {
         display: block;
         max-height: 200px;
         overflow-y: hidden;
     }
-    table.expand {
+    table.expandable.expand {
         display: table;
         overflow-y: visible;
     }
-    table td, table th {
+    table.expandable td, table.expandable th {
         padding: 0.5em;
     }
     /* table tr.red td {
