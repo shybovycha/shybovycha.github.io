@@ -24,7 +24,7 @@ export interface IndexPageProps {
 const PostPreview = ({ title, timestamp, excerpt, content, link }: PostPreviewProps) => (
     <article>
         <h1>
-            {excerpt ? <a href={link}>{title}</a> : title}
+            <a href={link}>{title}</a>
         </h1>
 
         <div>
