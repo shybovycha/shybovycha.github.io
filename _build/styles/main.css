@@ -260,6 +260,59 @@ table td.change {
     flex-direction: column;
 }
 
+table thead th {
+    font-weight: bold;
+}
+
+table td, table th {
+    padding: 0.25em 0.5em;
+}
+
+table code:not(pre > code) {
+    display: block;
+}
+
+li:has(code) {
+    margin: 0.5em;
+}
+
+li code {
+    margin: 0.2em;
+}
+
+/* table' "read more" */
+
+table.expandable {
+    position: relative;
+    display: block;
+    max-height: 250px;
+    overflow-y: hidden;
+    border: none;
+}
+
+table.expandable.expand {
+    display: table;
+    overflow-y: visible;
+}
+
+table.expandable td, table.expandable th {
+    padding: 0.5em;
+}
+
+table.expandable.expand:before {
+    display: none;
+}
+
+table.expandable:before {
+    content: ' ';
+    display: block;
+    top: 250px;
+    position: absolute;
+    width: 100%;
+    height: 15px;
+    box-shadow: 1px 1px 10px 20px #555b;
+}
+
 /* _syntax-highlighting.scss */
 
 .highlight {

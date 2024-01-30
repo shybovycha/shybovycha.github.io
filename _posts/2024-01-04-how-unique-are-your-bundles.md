@@ -81,102 +81,91 @@ imagine how much faster this single file _could_ have been loaded in a browser.
 I was keen on seeing what functions get duplicated most often and ran my script on an entire build output directory.
 Here are top 80-ish offenders:
 
-<table id="vite-1" class="expandable">
-    <thead>
-        <tr>
-            <th>Function code (minimized)</th>
-            <th>Occurrences</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr><td><code>function(r){for(var t=1;t&lt;arguments.length;t++){var n,o=arguments[t];for(n in o)Object.prototype.hasOwnProperty.call(o,n)&amp;&amp;(r[n]=o[n])}return r}</code></td><td>2205</td></tr>
-        <tr><td><code>function n(){return Object.assign&amp;&amp;Object.assign.bind(),n.apply(this,arguments)}</code></td><td>1197</td></tr>
-        <tr><td><code>function n(){return Object.assign,n.apply(this,arguments)}</code></td><td>1008</td></tr>
-        <tr><td><code>function(){}</code></td><td>753</td></tr>
-        <tr><td><code>function(i){this.a=i}</code></td><td>250</td></tr>
-        <tr><td><code>function(n,e){if(null==n)return{};for(var r,t={},f=Object.keys(n),u=0;u&lt;f.length;u++)r=f[u],0&lt;=e.indexOf(r)||(t[r]=n[r]);return t}</code></td><td>191</td></tr>
-        <tr><td><code>function(e,r){if(null==e)return{};var t,n=function(e,r){if(null==e)return{};for(var t,n={},l=Object.keys(e),o=0;o&lt;l.length;o++)t=l[o],0&lt;=r.indexOf(t)||(n[t]=e[t]);return n}(e,r);if(Object.getOwnPropertySymbols)for(var l=Object.getOwnPropertySymbols(e),o=0;o&lt;l.length;o++)t=l[o],0&lt;=r.indexOf(t)||Object.prototype.propertyIsEnumerable.call(e,t)&amp;&amp;(n[t]=e[t]);return n}</code></td><td>187</td></tr>
-        <tr><td><code>function(e,r){return r=r||e.slice(0),Object.freeze(Object.defineProperties(e,{raw:{value:Object.freeze(r)}}))}</code></td><td>159</td></tr>
-        <tr><td><code>function(n){return this===n}</code></td><td>119</td></tr>
-        <tr><td><code>function(r,t){if("object"!=typeof r||null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return("string"===t?String:Number)(r);e=e.call(r,t||"default");if("object"!=typeof e)return e;throw new TypeError("@@toPrimitive must return a primitive value.")}</code></td><td>113</td></tr>
-        <tr><td><code>function(r,e,t){return i=function(r,e){if("object"!=typeof r||null===r)return r;var t=r[Symbol.toPrimitive];if(void 0===t)return String(r);t=t.call(r,e);if("object"!=typeof t)return t;throw new TypeError("@@toPrimitive must return a primitive value.")}(e,"string"),(e="symbol"==typeof i?i:String(i))in r?Object.defineProperty(r,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):r[e]=t,r;var i}</code></td><td>111</td></tr>
-        <tr><td><code>function(t){t=function(t,r){if("object"!=typeof t||null===t)return t;var i=t[Symbol.toPrimitive];if(void 0===i)return String(t);i=i.call(t,r);if("object"!=typeof i)return i;throw new TypeError("@@toPrimitive must return a primitive value.")}(t,"string");return"symbol"==typeof t?t:String(t)}</code></td><td>111</td></tr>
-        <tr><td><code>function(e,n,r){return n in e?Object.defineProperty(e,n,{value:r,enumerable:!0,configurable:!0,writable:!0}):e[n]=r,e}</code></td><td>104</td></tr>
-        <tr><td><code>function(c,i){He.call(this,c,i)}</code></td><td>94</td></tr>
-        <tr><td><code>function(n,r){(null==r||r>n.length)&amp;&amp;(r=n.length);for(var e=0,l=new Array(r);e&lt;r;e++)l[e]=n[e];return l}</code></td><td>93</td></tr>
-        <tr><td><code>function(){return!0}</code></td><td>92</td></tr>
-        <tr><td><code>function(){return!1}</code></td><td>78</td></tr>
-        <tr><td><code>function(){return new gt(this)}</code></td><td>77</td></tr>
-        <tr><td><code>function(r){if(Array.isArray(r))return r}</code></td><td>77</td></tr>
-        <tr><td><code>function(){throw new TypeError(`Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.`)}</code></td><td>77</td></tr>
-        <tr><td><code>function(t){return t&amp;&amp;"object"==typeof t&amp;&amp;"default"in t?t:{default:t}}</code></td><td>76</td></tr>
-        <tr><td><code>function(i,t){this.a=i,this.b=t}</code></td><td>58</td></tr>
-        <tr><td><code>function(){return this.a}</code></td><td>49</td></tr>
-        <tr><td><code>function(t,e){var r,n=Object.keys(t);return Object.getOwnPropertySymbols&amp;&amp;(r=Object.getOwnPropertySymbols(t),e&amp;&amp;(r=r.filter(function(e){return Object.getOwnPropertyDescriptor(t,e).enumerable})),n.push.apply(n,r)),n}</code></td><td>49</td></tr>
-        <tr><td><code>function(e){var t;"default"!==e&amp;&amp;(t=Object.getOwnPropertyDescriptor(c,e),Object.defineProperty(y,e,t.get?t:{enumerable:!0,get:function(){return c[e]}}))}</code></td><td>49</td></tr>
-        <tr><td><code>function(){return c[b]}</code></td><td>49</td></tr>
-        <tr><td><code>function(a,e,i){var r,t=i["aria-label"],n=i["aria-labelledby"],c=i.title;switch(a){case"img":return t||n||c?(l(r={},"aria-labelledby",n),l(r,"aria-label",t),l(r,"title",c),r):{"aria-label":"".concat(e.replace(/([a-z])([A-Z])/g,"$1 $2")," Icon")};case"presentation":return{"aria-hidden":!0,alt:""}}}</code></td><td>49</td></tr>
-        <tr><td><code>function(i){Di(this,i)}</code></td><td>48</td></tr>
-        <tr><td><code>function(r){return Object.getOwnPropertyDescriptor(e,r).enumerable}</code></td><td>48</td></tr>
-        <tr><td><code>function(){throw M(new De)}</code></td><td>46</td></tr>
-        <tr><td><code>function(l,r){var t=null==l?null:typeof Symbol&lt;"u"&amp;&amp;l[Symbol.iterator]||l["@@iterator"];if(null!=t){var n,u,e=[],a=!0,o=!1;try{for(t=t.call(l);!(a=(n=t.next()).done)&amp;&amp;(e.push(n.value),!r||e.length!==r);a=!0);}catch(l){o=!0,u=l}finally{try{a||null==t.return||t.return()}finally{if(o)throw u}}return e}}</code></td><td>44</td></tr>
-        <tr><td><code>function(n){throw M(new De)}</code></td><td>39</td></tr>
-        <tr><td><code>function(r){var n;return r&amp;&amp;"object"==typeof r&amp;&amp;"default"in r?r:(n=Object.create(null),r&amp;&amp;Object.keys(r).forEach(function(e){var t;"default"!==e&amp;&amp;(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>39</td></tr>
-        <tr><td><code>function n(r){return n(r)}</code></td><td>38</td></tr>
-        <tr><td><code>function(n){return typeof n}</code></td><td>38</td></tr>
-        <tr><td><code>function(o){return o&amp;&amp;"function"==typeof Symbol&amp;&amp;o.constructor===Symbol&amp;&amp;o!==Symbol.prototype?"symbol":typeof o}</code></td><td>38</td></tr>
-        <tr><td><code>function(r){var n;return r&amp;&amp;r.__esModule?r:(n=Object.create(null),r&amp;&amp;Object.keys(r).forEach(function(e){var t;"default"!==e&amp;&amp;(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>37</td></tr>
-        <tr><td><code>function(){return this.b}</code></td><td>33</td></tr>
-        <tr><td><code>function(l,r){var t=null==l?null:typeof Symbol&lt;"u"&amp;&amp;l[Symbol.iterator]||l["@@iterator"];if(null!=t){var e,n,u,a,f=[],i=!0,o=!1;try{if(u=(t=t.call(l)).next,0===r){if(Object(t)!==t)return;i=!1}else for(;!(i=(e=u.call(t)).done)&amp;&amp;(f.push(e.value),f.length!==r);i=!0);}catch(l){o=!0,n=l}finally{try{if(!i&amp;&amp;null!=t.return&amp;&amp;(a=t.return(),Object(a)!==a))return}finally{if(o)throw n}}return f}}</code></td><td>33</td></tr>
-        <tr><td><code>function(t){Object.defineProperty(e,t,Object.getOwnPropertyDescriptor(n,t))}</code></td><td>32</td></tr>
-        <tr><td><code>function(n){return Ei(n)}</code></td><td>30</td></tr>
-        <tr><td><code>function(n){return L(fn,X,2,n,6,1)}</code></td><td>30</td></tr>
-        <tr><td><code>function(n){}</code></td><td>29</td></tr>
-        <tr><td><code>function(r){if(typeof Symbol&lt;"u"&amp;&amp;null!=r[Symbol.iterator]||null!=r["@@iterator"])return Array.from(r)}</code></td><td>28</td></tr>
-        <tr><td><code>function(){throw new TypeError(`Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.`)}</code></td><td>28</td></tr>
-        <tr><td><code>()=>{}</code></td><td>27</td></tr>
-        <tr><td><code>function(){return null}</code></td><td>27</td></tr>
-        <tr><td><code>function(n,o){e.exports=o(m,on(),dn)}</code></td><td>27</td></tr>
-        <tr><td><code>function(i){Fi(this,i)}</code></td><td>23</td></tr>
-        <tr><td><code>function(n,o){e.exports=o(dn,on(),m)}</code></td><td>22</td></tr>
-        <tr><td><code>function(){throw M(new Fe(Re((xe(),Ds))))}</code></td><td>21</td></tr>
-        <tr><td><code>function(){return this}</code></td><td>20</td></tr>
-        <tr><td><code>function(i,t){this.b=i,this.a=t}</code></td><td>19</td></tr>
-        <tr><td><code>function(n,e){throw M(new De)}</code></td><td>18</td></tr>
-        <tr><td><code>function(){return 0}</code></td><td>17</td></tr>
-        <tr><td><code>function(r){Object.defineProperty(e,r,Object.getOwnPropertyDescriptor(t,r))}</code></td><td>16</td></tr>
-        <tr><td><code>()=>{var l;return null!=(l=e.options.debugAll)?l:e.options.debugHeaders}</code></td><td>16</td></tr>
-        <tr><td><code>function(n){return n}</code></td><td>15</td></tr>
-        <tr><td><code>function(c){Kr.call(this,c)}</code></td><td>15</td></tr>
-        <tr><td><code>function(){return this.c}</code></td><td>15</td></tr>
-        <tr><td><code>function(){return this.d}</code></td><td>15</td></tr>
-        <tr><td><code>function(n,r){return n}</code></td><td>14</td></tr>
-        <tr><td><code>d=>d.id</code></td><td>14</td></tr>
-        <tr><td><code>function(){var r=function(t,o){return(r=Object.setPrototypeOf||({__proto__:[]}instanceof Array?function(t,o){t.__proto__=o}:function(t,o){for(var n in o)Object.prototype.hasOwnProperty.call(o,n)&amp;&amp;(t[n]=o[n])}))(t,o)};return function(t,o){if("function"!=typeof o&amp;&amp;null!==o)throw new TypeError("Class extends value "+String(o)+" is not a constructor or null");function n(){this.constructor=t}r(t,o),t.prototype=null===o?Object.create(o):(n.prototype=o.prototype,new n)}}</code></td><td>14</td></tr>
-        <tr><td><code>function(_,o){_.__proto__=o}</code></td><td>14</td></tr>
-        <tr><td><code>function(o,r){for(var t in r)Object.prototype.hasOwnProperty.call(r,t)&amp;&amp;(o[t]=r[t])}</code></td><td>14</td></tr>
-        <tr><td><code>function(n){return!1}</code></td><td>13</td></tr>
-        <tr><td><code>function(t){var l=-1,n=null==t?0:t.length;for(this.clear();++l&lt;n;){var r=t[l];this.set(r[0],r[1])}}</code></td><td>12</td></tr>
-        <tr><td><code>function(a,e,l){var i,r=l["aria-label"],t=l["aria-labelledby"],n=l.title;switch(a){case"img":return r||t||n?(f(i={},"aria-labelledby",t),f(i,"aria-label",r),f(i,"title",n),i):{"aria-label":"".concat(e.replace(/([a-z])([A-Z])/g,"$1 $2")," Icon")};case"presentation":return{"aria-hidden":!0,alt:""}}}</code></td><td>12</td></tr>
-        <tr><td><code>a=>a</code></td><td>12</td></tr>
-        <tr><td><code>a=>a()</code></td><td>12</td></tr>
-        <tr><td><code>function(n,a){n.a=a}</code></td><td>11</td></tr>
-        <tr><td><code>function(){ia.call(this)}</code></td><td>11</td></tr>
-        <tr><td><code>function(i,t,h){this.a=i,this.b=t,this.c=h}</code></td><td>11</td></tr>
-        <tr><td><code>function(n,r){return r}</code></td><td>11</td></tr>
-        <tr><td><code>function(){return this.a.gc()}</code></td><td>11</td></tr>
-        <tr><td><code>function(e){return e&amp;&amp;e.__esModule?e:{default:e}}</code></td><td>11</td></tr>
-        <tr><td><code>()=>n(!1)</code></td><td>11</td></tr>
-        <tr><td><code>function(i){this.b=i}</code></td><td>10</td></tr>
-        <tr><td><code>function(c){this.c=c}</code></td><td>10</td></tr>
-        <tr><td><code>function(){return this.f}</code></td><td>10</td></tr>
-        <tr><td><code>function(n){return n||"div"}</code></td><td>10</td></tr>
-        <tr><td><code>function(n,r,i){var l;return i=null!=(l=i)?l:"div",n||("string"==typeof(null==r?void 0:r.href)?"a":i)}</code></td><td>10</td></tr>
-    </tbody>
-</table>
-<div class="center">
-    <button class="expand-table-toggle" data-table-id="vite-1">Show more</button>
-</div>
+| Function code (minimized) | Copies |
+| ------------------------- | ------ |
+| `function(r){for(var t=1;t<arguments.length;t++){var n,o=arguments[t];for(n in o)Object.prototype.hasOwnProperty.call(o,n)&&(r[n]=o[n])}return r}` | 2205 |
+| `function n(){return Object.assign&&Object.assign.bind(),n.apply(this,arguments)}` | 1197 |
+| `function n(){return Object.assign,n.apply(this,arguments)}` | 1008 |
+| `function(){}` | 753 |
+| `function(i){this.a=i}` | 250 |
+| ``function(n,e){if(null==n)return{};for(var r,t={},f=Object.keys(n),u=0;u<f.length;u++)r=f[u],0<=e.indexOf(r)\|\|(t[r]=n[r]);return t}`` | 191 |
+| `function(e,r){if(null==e)return{};var t,n=function(e,r){if(null==e)return{};for(var t,n={},l=Object.keys(e),o=0;o<l.length;o++)t=l[o],0<=r.indexOf(t)\|\|(n[t]=e[t]);return n}(e,r);if(Object.getOwnPropertySymbols)for(var l=Object.getOwnPropertySymbols(e),o=0;o<l.length;o++)t=l[o],0<=r.indexOf(t)\|\|Object.prototype.propertyIsEnumerable.call(e,t)&&(n[t]=e[t]);return n}` | 187 |
+| `function(e,r){return r=r\|\|e.slice(0),Object.freeze(Object.defineProperties(e,{raw:{value:Object.freeze(r)}}))}` | 159 |
+| `function(n){return this===n}` | 119 |
+| `function(r,t){if("object"!=typeof r\|\|null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return("string"===t?String:Number)(r);e=e.call(r,t\|\|"default");if("object"!=typeof e)return e;throw new TypeError("@@toPrimitive must return a primitive value.")}` | 113 |
+| `function(r,e,t){return i=function(r,e){if("object"!=typeof r\|\|null===r)return r;var t=r[Symbol.toPrimitive];if(void 0===t)return String(r);t=t.call(r,e);if("object"!=typeof t)return t;throw new TypeError("@@toPrimitive must return a primitive value.")}(e,"string"),(e="symbol"==typeof i?i:String(i))in r?Object.defineProperty(r,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):r[e]=t,r;var i}` | 111 |
+| `function(t){t=function(t,r){if("object"!=typeof t\|\|null===t)return t;var i=t[Symbol.toPrimitive];if(void 0===i)return String(t);i=i.call(t,r);if("object"!=typeof i)return i;throw new TypeError("@@toPrimitive must return a primitive value.")}(t,"string");return"symbol"==typeof t?t:String(t)}` | 111 |
+| `function(e,n,r){return n in e?Object.defineProperty(e,n,{value:r,enumerable:!0,configurable:!0,writable:!0}):e[n]=r,e}` | 104 |
+| `function(c,i){He.call(this,c,i)}` | 94 |
+| `function(n,r){(null==r\|\|r&gt;n.length)&&(r=n.length);for(var e=0,l=new Array(r);e<r;e++)l[e]=n[e];return l}` | 93 |
+| `function(){return!0}` | 92 |
+| `function(){return!1}` | 78 |
+| `function(){return new gt(this)}` | 77 |
+| `function(r){if(Array.isArray(r))return r}` | 77 |
+| ``function(){throw new TypeError(`Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.`)}`` | 77 |
+| `function(t){return t&&"object"==typeof t&&"default"in t?t:{default:t}}` | 76 |
+| `function(i,t){this.a=i,this.b=t}` | 58 |
+| `function(){return this.a}` | 49 |
+| `function(t,e){var r,n=Object.keys(t);return Object.getOwnPropertySymbols&&(r=Object.getOwnPropertySymbols(t),e&&(r=r.filter(function(e){return Object.getOwnPropertyDescriptor(t,e).enumerable})),n.push.apply(n,r)),n}` | 49 |
+| `function(e){var t;"default"!==e&&(t=Object.getOwnPropertyDescriptor(c,e),Object.defineProperty(y,e,t.get?t:{enumerable:!0,get:function(){return c[e]}}))}` | 49 |
+| `function(){return c[b]}` | 49 |
+| `function(a,e,i){var r,t=i["aria-label"],n=i["aria-labelledby"],c=i.title;switch(a){case"img":return t\|\|n\|\|c?(l(r={},"aria-labelledby",n),l(r,"aria-label",t),l(r,"title",c),r):{"aria-label":"".concat(e.replace(/([a-z])([A-Z])/g,"$1 $2")," Icon")};case"presentation":return{"aria-hidden":!0,alt:""}}}` | 49 |
+| `function(i){Di(this,i)}` | 48 |
+| `function(r){return Object.getOwnPropertyDescriptor(e,r).enumerable}` | 48 |
+| `function(){throw M(new De)}` | 46 |
+| `function(l,r){var t=null==l?null:typeof Symbol<"u"&&l[Symbol.iterator]\|\|l["@@iterator"];if(null!=t){var n,u,e=[],a=!0,o=!1;try{for(t=t.call(l);!(a=(n=t.next()).done)&&(e.push(n.value),!r\|\|e.length!==r);a=!0);}catch(l){o=!0,u=l}finally{try{a\|\|null==t.return\|\|t.return()}finally{if(o)throw u}}return e}}` | 44 |
+| `function(n){throw M(new De)}` | 39 |
+| `function(r){var n;return r&&"object"==typeof r&&"default"in r?r:(n=Object.create(null),r&&Object.keys(r).forEach(function(e){var t;"default"!==e&&(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}` | 39 |
+| `function n(r){return n(r)}` | 38 |
+| `function(n){return typeof n}` | 38 |
+| `function(o){return o&&"function"==typeof Symbol&&o.constructor===Symbol&&o!==Symbol.prototype?"symbol":typeof o}` | 38 |
+| `function(r){var n;return r&&r.__esModule?r:(n=Object.create(null),r&&Object.keys(r).forEach(function(e){var t;"default"!==e&&(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}` | 37 |
+| `function(){return this.b}` | 33 |
+| `function(l,r){var t=null==l?null:typeof Symbol<"u"&&l[Symbol.iterator]\|\|l["@@iterator"];if(null!=t){var e,n,u,a,f=[],i=!0,o=!1;try{if(u=(t=t.call(l)).next,0===r){if(Object(t)!==t)return;i=!1}else for(;!(i=(e=u.call(t)).done)&&(f.push(e.value),f.length!==r);i=!0);}catch(l){o=!0,n=l}finally{try{if(!i&&null!=t.return&&(a=t.return(),Object(a)!==a))return}finally{if(o)throw n}}return f}}` | 33 |
+| `function(t){Object.defineProperty(e,t,Object.getOwnPropertyDescriptor(n,t))}` | 32 |
+| `function(n){return Ei(n)}` | 30 |
+| `function(n){return L(fn,X,2,n,6,1)}` | 30 |
+| `function(n){}` | 29 |
+| `function(r){if(typeof Symbol<"u"&&null!=r[Symbol.iterator]\|\|null!=r["@@iterator"])return Array.from(r)}` | 28 |
+| ``function(){throw new TypeError(`Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.`)}`` | 28 |
+| `()=>{}` | 27 |
+| `function(){return null}` | 27 |
+| `function(n,o){e.exports=o(m,on(),dn)}` | 27 |
+| `function(i){Fi(this,i)}` | 23 |
+| `function(n,o){e.exports=o(dn,on(),m)}` | 22 |
+| `function(){throw M(new Fe(Re((xe(),Ds))))}` | 21 |
+| `function(){return this}` | 20 |
+| `function(i,t){this.b=i,this.a=t}` | 19 |
+| `function(n,e){throw M(new De)}` | 18 |
+| `function(){return 0}` | 17 |
+| `function(r){Object.defineProperty(e,r,Object.getOwnPropertyDescriptor(t,r))}` | 16 |
+| `()=>{var l;return null!=(l=e.options.debugAll)?l:e.options.debugHeaders}` | 16 |
+| `function(n){return n}` | 15 |
+| `function(c){Kr.call(this,c)}` | 15 |
+| `function(){return this.c}` | 15 |
+| `function(){return this.d}` | 15 |
+| `function(n,r){return n}` | 14 |
+| `d=>d.id` | 14 |
+| `function(){var r=function(t,o){return(r=Object.setPrototypeOf\|\|({__proto__:[]}instanceof Array?function(t,o){t.__proto__=o}:function(t,o){for(var n in o)Object.prototype.hasOwnProperty.call(o,n)&&(t[n]=o[n])}))(t,o)};return function(t,o){if("function"!=typeof o&&null!==o)throw new TypeError("Class extends value "+String(o)+" is not a constructor or null");function n(){this.constructor=t}r(t,o),t.prototype=null===o?Object.create(o):(n.prototype=o.prototype,new n)}}` | 14 |
+| `function(_,o){_.__proto__=o}` | 14 |
+| `function(o,r){for(var t in r)Object.prototype.hasOwnProperty.call(r,t)&&(o[t]=r[t])}` | 14 |
+| `function(n){return!1}` | 13 |
+| `function(t){var l=-1,n=null==t?0:t.length;for(this.clear();++l<n;){var r=t[l];this.set(r[0],r[1])}}` | 12 |
+| `function(a,e,l){var i,r=l["aria-label"],t=l["aria-labelledby"],n=l.title;switch(a){case"img":return r\|\|t\|\|n?(f(i={},"aria-labelledby",t),f(i,"aria-label",r),f(i,"title",n),i):{"aria-label":"".concat(e.replace(/([a-z])([A-Z])/g,"$1 $2")," Icon")};case"presentation":return{"aria-hidden":!0,alt:""}}}` | 12 |
+| `a=>a` | 12 |
+| `a=>a()` | 12 |
+| `function(n,a){n.a=a}` | 11 |
+| `function(){ia.call(this)}` | 11 |
+| `function(i,t,h){this.a=i,this.b=t,this.c=h}` | 11 |
+| `function(n,r){return r}` | 11 |
+| `function(){return this.a.gc()}` | 11 |
+| `function(e){return e&&e.__esModule?e:{default:e}}` | 11 |
+| `()=>n(!1)` | 11 |
+| `function(i){this.b=i}` | 10 |
+| `function(c){this.c=c}` | 10 |
+| `function(){return this.f}` | 10 |
+| `function(n){return n\|\|"div"}` | 10 |
+| `function(n,r,i){var l;return i=null!=(l=i)?l:"div",n\|\|("string"==typeof(null==r?void 0:r.href)?"a":i)}` | 10 |
 
 Let's dive deeper, shall we?
 
@@ -194,64 +183,54 @@ But that is uncertain - one must understand what a function does first.
 
 With those points in mind, let's look at the offenders once again:
 
-<table id="vite-2" class="expandable">
-    <thead>
-        <th>Function code (minimized)</th>
-        <th>Occurrences</th>
-        <th>Notes</th>
-    </thead>
-    <tbody>
-        <tr class="green"><td><code>function(r){for(var t=1;t&lt;arguments.length;t++){var n,o=arguments[t];for(n in o)Object.prototype.hasOwnProperty.call(o,n)&amp;&amp;(r[n]=o[n])}return r}</code></td><td>2205</td><td>spread operator?</td></tr>
-        <tr class="green"><td><code>function n(){return Object.assign&amp;&amp;Object.assign.bind(),n.apply(this,arguments)}</code></td><td>1197</td><td><code>Object.assign</code> methods?</td></tr>
-        <tr class="green"><td><code>function n(){return Object.assign,n.apply(this,arguments)}</code></td><td>1008</td><td><code>Object.assign</code> properties?</td></tr>
-        <tr class="green"><td><code>function(){}</code></td><td>753</td><td>no-op</td></tr>
-        <tr><td><code>function(n,e){if(null==n)return{};for(var r,t={},f=Object.keys(n),u=0;u&lt;f.length;u++)r=f[u],0&lt;=e.indexOf(r)||(t[r]=n[r]);return t}</code></td><td>191</td><td>?</td></tr>
-        <tr><td><code>function(e,r){if(null==e)return{};var t,n=function(e,r){if(null==e)return{};for(var t,n={},l=Object.keys(e),o=0;o&lt;l.length;o++)t=l[o],0&lt;=r.indexOf(t)||(n[t]=e[t]);return n}(e,r);if(Object.getOwnPropertySymbols)for(var l=Object.getOwnPropertySymbols(e),o=0;o&lt;l.length;o++)t=l[o],0&lt;=r.indexOf(t)||Object.prototype.propertyIsEnumerable.call(e,t)&amp;&amp;(n[t]=e[t]);return n}</code></td><td>187</td><td>?</td></tr>
-        <tr><td><code>function(e,r){return r=r||e.slice(0),Object.freeze(Object.defineProperties(e,{raw:{value:Object.freeze(r)}}))}</code></td><td>159</td><td>?</td></tr>
-        <tr><td><code>function(r,t){if("object"!=typeof r||null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return("string"===t?String:Number)(r);e=e.call(r,t||"default");if("object"!=typeof e)return e;throw new TypeError("@@toPrimitive must return a primitive value.")}</code></td><td>113</td><td>?</td></tr>
-        <tr><td><code>function(r,e,t){return i=function(r,e){if("object"!=typeof r||null===r)return r;var t=r[Symbol.toPrimitive];if(void 0===t)return String(r);t=t.call(r,e);if("object"!=typeof t)return t;throw new TypeError("@@toPrimitive must return a primitive value.")}(e,"string"),(e="symbol"==typeof i?i:String(i))in r?Object.defineProperty(r,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):r[e]=t,r;var i}</code></td><td>111</td><td>?</td></tr>
-        <tr><td><code>function(t){t=function(t,r){if("object"!=typeof t||null===t)return t;var i=t[Symbol.toPrimitive];if(void 0===i)return String(t);i=i.call(t,r);if("object"!=typeof i)return i;throw new TypeError("@@toPrimitive must return a primitive value.")}(t,"string");return"symbol"==typeof t?t:String(t)}</code></td><td>111</td><td>?</td></tr>
-        <tr><td><code>function(e,n,r){return n in e?Object.defineProperty(e,n,{value:r,enumerable:!0,configurable:!0,writable:!0}):e[n]=r,e}</code></td><td>104</td><td>?</td></tr>
-        <tr class="green"><td><code>function(n,r){(null==r||r>n.length)&amp;&amp;(r=n.length);for(var e=0,l=new Array(r);e&lt;r;e++)l[e]=n[e];return l}</code></td><td>93</td><td>array spread?</td></tr>
-        <tr class="green"><td><code>function(){return!0}</code></td><td>92</td><td>always-true</td></tr>
-        <tr class="green"><td><code>function(){return!1}</code></td><td>78</td><td>always-false</td></tr>
-        <tr class="green"><td><code>function(r){if(Array.isArray(r))return r}</code></td><td>77</td><td>self explanatory</td></tr>
-        <tr class="green"><td><code>function(){throw new TypeError('Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.')}</code></td><td>77</td><td><code>isSymbol</code>?</td></tr>
-        <tr class="green"><td><code>function(t){return t&amp;&amp;"object"==typeof t&amp;&amp;"default"in t?t:{default:t}}</code></td><td>76</td><td>?</td></tr>
-        <tr><td><code>function(t,e){var r,n=Object.keys(t);return Object.getOwnPropertySymbols&amp;&amp;(r=Object.getOwnPropertySymbols(t),e&amp;&amp;(r=r.filter(function(e){return Object.getOwnPropertyDescriptor(t,e).enumerable})),n.push.apply(n,r)),n}</code></td><td>49</td><td>?</td></tr>
-        <tr><td><code>function(e){var t;"default"!==e&amp;&amp;(t=Object.getOwnPropertyDescriptor(c,e),Object.defineProperty(y,e,t.get?t:{enumerable:!0,get:function(){return c[e]}}))}</code></td><td>49</td><td>?</td></tr>
-        <tr><td><code>function(l,r){var t=null==l?null:typeof Symbol&lt;"u"&amp;&amp;l[Symbol.iterator]||l["@@iterator"];if(null!=t){var n,u,e=[],a=!0,o=!1;try{for(t=t.call(l);!(a=(n=t.next()).done)&amp;&amp;(e.push(n.value),!r||e.length!==r);a=!0);}catch(l){o=!0,u=l}finally{try{a||null==t.return||t.return()}finally{if(o)throw u}}return e}}</code></td><td>44</td><td>?</td></tr>
-        <tr><td><code>function(r){var n;return r&amp;&amp;"object"==typeof r&amp;&amp;"default"in r?r:(n=Object.create(null),r&amp;&amp;Object.keys(r).forEach(function(e){var t;"default"!==e&amp;&amp;(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>39</td><td>?</td></tr>
-        <tr><td><code>function n(r){return n(r)}</code></td><td>38</td><td><code>Function.apply</code>?</td></tr>
-        <tr><td><code>function(n){return typeof n}</code></td><td>38</td><td><code>typeof</code></td></tr>
-        <tr><td><code>function(o){return o&amp;&amp;"function"==typeof Symbol&amp;&amp;o.constructor===Symbol&amp;&amp;o!==Symbol.prototype?"symbol":typeof o}</code></td><td>38</td><td>?</td></tr>
-        <tr><td><code>function(r){var n;return r&amp;&amp;r.__esModule?r:(n=Object.create(null),r&amp;&amp;Object.keys(r).forEach(function(e){var t;"default"!==e&amp;&amp;(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>37</td><td><code>import</code>?</td></tr>
-        <tr><td><code>function(l,r){var t=null==l?null:typeof Symbol&lt;"u"&amp;&amp;l[Symbol.iterator]||l["@@iterator"];if(null!=t){var e,n,u,a,f=[],i=!0,o=!1;try{if(u=(t=t.call(l)).next,0===r){if(Object(t)!==t)return;i=!1}else for(;!(i=(e=u.call(t)).done)&amp;&amp;(f.push(e.value),f.length!==r);i=!0);}catch(l){o=!0,n=l}finally{try{if(!i&amp;&amp;null!=t.return&amp;&amp;(a=t.return(),Object(a)!==a))return}finally{if(o)throw n}}return f}}</code></td><td>33</td><td>?</td></tr>
-        <tr class="green"><td><code>function(n){}</code></td><td>29</td><td>no-op</td></tr>
-        <tr><td><code>function(r){if(typeof Symbol&lt;"u"&amp;&amp;null!=r[Symbol.iterator]||null!=r["@@iterator"])return Array.from(r)}</code></td><td>28</td><td>?</td></tr>
-        <tr><td><code>function(){throw new TypeError('Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.')}</code></td><td>28</td><td>?</td></tr>
-        <tr class="green"><td><code>()=>{}</code></td><td>27</td><td>no-op</td></tr>
-        <tr class="green"><td><code>function(){return null}</code></td><td>27</td><td>always-null</td></tr>
-        <tr class="green"><td><code>function(){return this}</code></td><td>20</td><td>always-this</td></tr>
-        <tr class="green"><td><code>function(){return 0}</code></td><td>17</td><td>always-zero</td></tr>
-        <tr class="green"><td><code>function(n){return n}</code></td><td>15</td><td>identity</td></tr>
-        <tr class="green"><td><code>function(n,r){return n}</code></td><td>14</td><td>always-first-argument</td></tr>
-        <tr><td><code>d=>d.id</code></td><td>14</td><td><code>.id</code></td></tr>
-        <tr><td><code>function(){var r=function(t,o){return(r=Object.setPrototypeOf||({__proto__:[]}instanceof Array?function(t,o){t.__proto__=o}:function(t,o){for(var n in o)Object.prototype.hasOwnProperty.call(o,n)&amp;&amp;(t[n]=o[n])}))(t,o)};return function(t,o){if("function"!=typeof o&amp;&amp;null!==o)throw new TypeError("Class extends value "+String(o)+" is not a constructor or null");function n(){this.constructor=t}r(t,o),t.prototype=null===o?Object.create(o):(n.prototype=o.prototype,new n)}}</code></td><td>14</td><td>?</td></tr>
-        <tr class="green"><td><code>function(_,o){_.__proto__=o}</code></td><td>14</td><td><code>Object.is_a</code>?</td></tr>
-        <tr class="green"><td><code>function(o,r){for(var t in r)Object.prototype.hasOwnProperty.call(r,t)&amp;&amp;(o[t]=r[t])}</code></td><td>14</td><td>?</td></tr>
-        <tr class="green"><td><code>function(n){return!1}</code></td><td>13</td><td>always-false</td></tr>
-        <tr class="green"><td><code>a=>a</code></td><td>12</td><td>identity</td></tr>
-        <tr class="green"><td><code>a=>a()</code></td><td>12</td><td>call first argument</td></tr>
-        <tr><td><code>function(n,a){n.a=a}</code></td><td>11</td><td>enum/const definition?</td></tr>
-        <tr class="green"><td><code>function(n,r){return r}</code></td><td>11</td><td>always-second-argument</td></tr>
-        <tr class="green"><td><code>function(e){return e&amp;&amp;e.__esModule?e:{default:e}}</code></td><td>11</td><td>import default</td></tr>
-        <tr><td><code>function(c){this.c=c}</code></td><td>10</td><td>enum/const definition?</td></tr>
-    </tbody>
-</table>
-<div class="center">
-    <button class="expand-table-toggle" data-table-id="vite-2">Show more</button>
-</div>
+| Function code (minimized) | Copies | Notes |
+| ------------------------- | ----------- | ----- |
+| `function(r){for(var t=1;t<arguments.length;t++){var n,o=arguments[t];for(n in o)Object.prototype.hasOwnProperty.call(o,n)&&(r[n]=o[n])}return r}` | 2205 | spread operator? |
+| `function n(){return Object.assign&&Object.assign.bind(),n.apply(this,arguments)}` | 1197 | `Object.assign` methods? |
+| `function n(){return Object.assign,n.apply(this,arguments)}` | 1008 | `Object.assign` properties? |
+| `function(){}` | 753 | no-op |
+| `function(n,e){if(null==n)return{};for(var r,t={},f=Object.keys(n),u=0;u<f.length;u++)r=f[u],0<=e.indexOf(r)\|\|(t[r]=n[r]);return t}` | 191 | ? |
+| `function(e,r){if(null==e)return{};var t,n=function(e,r){if(null==e)return{};for(var t,n={},l=Object.keys(e),o=0;o<l.length;o++)t=l[o],0<=r.indexOf(t)\|\|(n[t]=e[t]);return n}(e,r);if(Object.getOwnPropertySymbols)for(var l=Object.getOwnPropertySymbols(e),o=0;o<l.length;o++)t=l[o],0<=r.indexOf(t)\|\|Object.prototype.propertyIsEnumerable.call(e,t)&&(n[t]=e[t]);return n}` | 187 | ? |
+| `function(e,r){return r=r\|\|e.slice(0),Object.freeze(Object.defineProperties(e,{raw:{value:Object.freeze(r)}}))}` | 159 | ? |
+| `function(r,t){if("object"!=typeof r\|\|null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return("string"===t?String:Number)(r);e=e.call(r,t\|\|"default");if("object"!=typeof e)return e;throw new TypeError("@@toPrimitive must return a primitive value.")}` | 113 | ? |
+| `function(r,e,t){return i=function(r,e){if("object"!=typeof r\|\|null===r)return r;var t=r[Symbol.toPrimitive];if(void 0===t)return String(r);t=t.call(r,e);if("object"!=typeof t)return t;throw new TypeError("@@toPrimitive must return a primitive value.")}(e,"string"),(e="symbol"==typeof i?i:String(i))in r?Object.defineProperty(r,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):r[e]=t,r;var i}` | 111 | ? |
+| `function(t){t=function(t,r){if("object"!=typeof t\|\|null===t)return t;var i=t[Symbol.toPrimitive];if(void 0===i)return String(t);i=i.call(t,r);if("object"!=typeof i)return i;throw new TypeError("@@toPrimitive must return a primitive value.")}(t,"string");return"symbol"==typeof t?t:String(t)}` | 111 | ? |
+| `function(e,n,r){return n in e?Object.defineProperty(e,n,{value:r,enumerable:!0,configurable:!0,writable:!0}):e[n]=r,e}` | 104 | ? |
+| `function(n,r){(null==r\|\|r>n.length)&&(r=n.length);for(var e=0,l=new Array(r);e<r;e++)l[e]=n[e];return l}` | 93 | array spread? |
+| `function(){return!0}` | 92 | always-true |
+| `function(){return!1}` | 78 | always-false |
+| `function(r){if(Array.isArray(r))return r}` | 77 | self explanatory |
+| `function(){throw new TypeError('Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.')}` | 77 | `isSymbol`? |
+| `function(t){return t&&"object"==typeof t&&"default"in t?t:{default:t}}` | 76 | ? |
+| `function(t,e){var r,n=Object.keys(t);return Object.getOwnPropertySymbols&&(r=Object.getOwnPropertySymbols(t),e&&(r=r.filter(function(e){return Object.getOwnPropertyDescriptor(t,e).enumerable})),n.push.apply(n,r)),n}` | 49 | ? |
+| `function(e){var t;"default"!==e&&(t=Object.getOwnPropertyDescriptor(c,e),Object.defineProperty(y,e,t.get?t:{enumerable:!0,get:function(){return c[e]}}))}` | 49 | ? |
+| `function(l,r){var t=null==l?null:typeof Symbol<"u"&&l[Symbol.iterator]\|\|l["@@iterator"];if(null!=t){var n,u,e=[],a=!0,o=!1;try{for(t=t.call(l);!(a=(n=t.next()).done)&&(e.push(n.value),!r\|\|e.length!==r);a=!0);}catch(l){o=!0,u=l}finally{try{a\|\|null==t.return\|\|t.return()}finally{if(o)throw u}}return e}}` | 44 | ? |
+| `function(r){var n;return r&&"object"==typeof r&&"default"in r?r:(n=Object.create(null),r&&Object.keys(r).forEach(function(e){var t;"default"!==e&&(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}` | 39 | ? |
+| `function n(r){return n(r)}` | 38 | `Function.apply`? |
+| `function(n){return typeof n}` | 38 | `typeof` |
+| `function(o){return o&&"function"==typeof Symbol&&o.constructor===Symbol&&o!==Symbol.prototype?"symbol":typeof o}` | 38 | ? |
+| `function(r){var n;return r&&r.__esModule?r:(n=Object.create(null),r&&Object.keys(r).forEach(function(e){var t;"default"!==e&&(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}` | 37 | `import`? |
+| `function(l,r){var t=null==l?null:typeof Symbol<"u"&&l[Symbol.iterator]\|\|l["@@iterator"];if(null!=t){var e,n,u,a,f=[],i=!0,o=!1;try{if(u=(t=t.call(l)).next,0===r){if(Object(t)!==t)return;i=!1}else for(;!(i=(e=u.call(t)).done)&&(f.push(e.value),f.length!==r);i=!0);}catch(l){o=!0,n=l}finally{try{if(!i&&null!=t.return&&(a=t.return(),Object(a)!==a))return}finally{if(o)throw n}}return f}}` | 33 | ? |
+| `function(n){}` | 29 | no-op |
+| `function(r){if(typeof Symbol<"u"&&null!=r[Symbol.iterator]\|\|null!=r["@@iterator"])return Array.from(r)}` | 28 | ? |
+| `function(){throw new TypeError('Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.')}` | 28 | ? |
+| `()=>{}` | 27 | no-op |
+| `function(){return null}` | 27 | always-null |
+| `function(){return this}` | 20 | always-this |
+| `function(){return 0}` | 17 | always-zero |
+| `function(n){return n}` | 15 | identity |
+| `function(n,r){return n}` | 14 | always-first-argument |
+| `d=>d.id` | 14 | `.id` |
+| `function(){var r=function(t,o){return(r=Object.setPrototypeOf\|\|({__proto__:[]}instanceof Array?function(t,o){t.__proto__=o}:function(t,o){for(var n in o)Object.prototype.hasOwnProperty.call(o,n)&&(t[n]=o[n])}))(t,o)};return function(t,o){if("function"!=typeof o&&null!==o)throw new TypeError("Class extends value "+String(o)+" is not a constructor or null");function n(){this.constructor=t}r(t,o),t.prototype=null===o?Object.create(o):(n.prototype=o.prototype,new n)}}` | 14 | ? |
+| `function(_,o){_.__proto__=o}` | 14 | `Object.is_a`? |
+| `function(o,r){for(var t in r)Object.prototype.hasOwnProperty.call(r,t)&&(o[t]=r[t])}` | 14 | ? |
+| `function(n){return!1}` | 13 | always-false |
+| `a=>a` | 12 | identity |
+| `a=>a()` | 12 | call first argument |
+| `function(n,a){n.a=a}` | 11 | enum/const definition? |
+| `function(n,r){return r}` | 11 | always-second-argument |
+| `function(e){return e&&e.__esModule?e:{default:e}}` | 11 | import default |
+| `function(c){this.c=c}` | 10 | enum/const definition? |
 
 As a matter of fact, someone on the internet did a very similar research few years ago.
 So I hoped to see the improvement in the build tools over the years.
@@ -280,32 +259,12 @@ warn: esbuild's postinstall script took 748.9ms
 bun install  0.22s user 0.65s system 47% cpu 1.849 total
 ```
 
-<table>
-    <thread>
-        <tr>
-            <td>Bundler</td>
-            <td>Build time</td>
-        </tr>
-    </thread>
-    <tbody>
-        <tr>
-            <td>bun</td>
-            <td>0.43s</td>
-        </tr>
-        <tr>
-            <td>esbuild</td>
-            <td>2.57s</td>
-        </tr>
-        <tr>
-            <td>vite</td>
-            <td>85.04s</td>
-        </tr>
-        <tr>
-            <td>webpack</td>
-            <td>138.64s</td>
-        </tr>
-    </tbody>
-</table>
+| Bundler | Build time |
+| ------- | ---------- |
+| bun     | 0.43s |
+| esbuild | 2.57s |
+| vite    | 85.04s |
+| webpack | 138.64s |
 
 And the analysis of the built bundles:
 
@@ -356,163 +315,141 @@ And a deeper analysis of the duplicated functions:
 
 `esbuild`:
 
-<table id="esbuild-1" class="expandable">
-    <thead>
-        <tr>
-            <th>Function</th>
-            <th>Occurrences</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr class="green"><td><code>function(r){for(var t=1;t&lt;arguments.length;t++){var n,o=arguments[t];for(n in o)Object.prototype.hasOwnProperty.call(o,n)&amp;&amp;(r[n]=o[n])}return r}</code></td><td>2216</td></tr>
-        <tr class="green"><td><code>function n(){return Object.assign&amp;&amp;Object.assign.bind(),n.apply(this,arguments)}</code></td><td>1204</td></tr>
-        <tr class="green"><td><code>function n(){return Object.assign,n.apply(this,arguments)}</code></td><td>1010</td></tr>
-        <tr class="green"><td><code>function(){}</code></td><td>844</td></tr>
-        <tr class="green"><td><code>function(t){return t&amp;&amp;"object"==typeof t&amp;&amp;"default"in t?t:{default:t}}</code></td><td>260</td></tr>
-        <tr><td><code>function(i){this.a=i}</code></td><td>250</td></tr>
-        <tr><td><code>function(n,e){if(null==n)return{};for(var r,t={},f=Object.keys(n),u=0;u&lt;f.length;u++)r=f[u],0&lt;=e.indexOf(r)||(t[r]=n[r]);return t}</code></td><td>203</td></tr>
-        <tr><td><code>function(e,r){if(null==e)return{};var t,n=function(e,r){if(null==e)return{};for(var t,n={},l=Object.keys(e),o=0;o&lt;l.length;o++)t=l[o],0&lt;=r.indexOf(t)||(n[t]=e[t]);return n}(e,r);if(Object.getOwnPropertySymbols)for(var l=Object.getOwnPropertySymbols(e),o=0;o&lt;l.length;o++)t=l[o],0&lt;=r.indexOf(t)||Object.prototype.propertyIsEnumerable.call(e,t)&amp;&amp;(n[t]=e[t]);return n}</code></td><td>194</td></tr>
-        <tr class="green"><td><code>function(e,r){return r=r||e.slice(0),Object.freeze(Object.defineProperties(e,{raw:{value:Object.freeze(r)}}))}</code></td><td>160</td></tr>
-        <tr class="green"><td><code>function(r,t){if("object"!=typeof r||null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return("string"===t?String:Number)(r);e=e.call(r,t||"default");if("object"!=typeof e)return e;throw new TypeError("@@toPrimitive must return a primitive value.")}</code></td><td>137</td></tr>
-        <tr><td><code>function(r,e,t){return i=function(r,e){if("object"!=typeof r||null===r)return r;var t=r[Symbol.toPrimitive];if(void 0===t)return String(r);t=t.call(r,e);if("object"!=typeof t)return t;throw new TypeError("@@toPrimitive must return a primitive value.")}(e,"string"),(e="symbol"==typeof i?i:String(i))in r?Object.defineProperty(r,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):r[e]=t,r;var i}</code></td><td>134</td></tr>
-        <tr><td><code>function(t){t=function(t,r){if("object"!=typeof t||null===t)return t;var i=t[Symbol.toPrimitive];if(void 0===i)return String(t);i=i.call(t,r);if("object"!=typeof i)return i;throw new TypeError("@@toPrimitive must return a primitive value.")}(t,"string");return"symbol"==typeof t?t:String(t)}</code></td><td>134</td></tr>
-        <tr class="green"><td><code>()=>{}</code></td><td>129</td></tr>
-        <tr class="green"><td><code>function(n){return this===n}</code></td><td>119</td></tr>
-        <tr class="green"><td><code>function(e,n,r){return n in e?Object.defineProperty(e,n,{value:r,enumerable:!0,configurable:!0,writable:!0}):e[n]=r,e}</code></td><td>115</td></tr>
-        <tr class="green"><td><code>function(n,r){(null==r||r>n.length)&amp;&amp;(r=n.length);for(var e=0,l=new Array(r);e&lt;r;e++)l[e]=n[e];return l}</code></td><td>106</td></tr>
-        <tr><td><code>function(c,i){Bs.call(this,c,i)}</code></td><td>94</td></tr>
-        <tr class="green"><td><code>function(){return!0}</code></td><td>93</td></tr>
-        <tr class="green"><td><code>function(r){if(Array.isArray(r))return r}</code></td><td>83</td></tr>
-        <tr class="green"><td><code>function(){throw new TypeError(`Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.`)}</code></td><td>83</td></tr>
-        <tr class="green"><td><code>function(){return!1}</code></td><td>79</td></tr>
-        <tr><td><code>function(){return new cu(this)}</code></td><td>77</td></tr>
-        <tr><td><code>function(e){var t;"default"!==e&amp;&amp;(t=Object.getOwnPropertyDescriptor(b,e),Object.defineProperty(E,e,t.get?t:{enumerable:!0,get:function(){return b[e]}}))}</code></td><td>76</td></tr>
-        <tr><td><code>function(){return b[P]}</code></td><td>76</td></tr>
-        <tr><td><code>function(a,e,l){var i,r=l["aria-label"],t=l["aria-labelledby"],n=l.title;switch(a){case"img":return r||t||n?(s(i={},"aria-labelledby",t),s(i,"aria-label",r),s(i,"title",n),i):{"aria-label":"".concat(e.replace(/([a-z])([A-Z])/g,"$1 $2")," Icon")};case"presentation":return{"aria-hidden":!0,alt:""}}}</code></td><td>76</td></tr>
-        <tr><td><code>function(r){var n;return r&amp;&amp;r.__esModule?r:(n=Object.create(null),r&amp;&amp;Object.keys(r).forEach(function(e){var t;"default"!==e&amp;&amp;(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>67</td></tr>
-        <tr class="green"><td><code>function(n){return typeof n}</code></td><td>64</td></tr>
-        <tr class="green"><td><code>function(o){return o&amp;&amp;"function"==typeof Symbol&amp;&amp;o.constructor===Symbol&amp;&amp;o!==Symbol.prototype?"symbol":typeof o}</code></td><td>64</td></tr>
-        <tr><td><code>function n(r){return n(r)}</code></td><td>63</td></tr>
-        <tr><td><code>function(t,e){var r,n=Object.keys(t);return Object.getOwnPropertySymbols&amp;&amp;(r=Object.getOwnPropertySymbols(t),e&amp;&amp;(r=r.filter(function(e){return Object.getOwnPropertyDescriptor(t,e).enumerable})),n.push.apply(n,r)),n}</code></td><td>61</td></tr>
-        <tr><td><code>function(i,t){this.a=i,this.b=t}</code></td><td>58</td></tr>
-        <tr><td><code>function(r){var n;return r&amp;&amp;"object"==typeof r&amp;&amp;"default"in r?r:(n=Object.create(null),r&amp;&amp;Object.keys(r).forEach(function(e){var t;"default"!==e&amp;&amp;(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>50</td></tr>
-        <tr><td><code>function(r){if(typeof Symbol&lt;"u"&amp;&amp;null!=r[Symbol.iterator]||null!=r["@@iterator"])return Array.from(r)}</code></td><td>49</td></tr>
-        <tr><td><code>function(){throw new TypeError(`Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.`)}</code></td><td>49</td></tr>
-        <tr><td><code>function(){return this.a}</code></td><td>49</td></tr>
-        <tr><td><code>function(i){p0(this,i)}</code></td><td>48</td></tr>
-        <tr><td><code>function(l,r){var t=null==l?null:typeof Symbol&lt;"u"&amp;&amp;l[Symbol.iterator]||l["@@iterator"];if(null!=t){var n,u,e=[],a=!0,o=!1;try{for(t=t.call(l);!(a=(n=t.next()).done)&amp;&amp;(e.push(n.value),!r||e.length!==r);a=!0);}catch(l){o=!0,u=l}finally{try{a||null==t.return||t.return()}finally{if(o)throw u}}return e}}</code></td><td>46</td></tr>
-        <tr><td><code>function(){throw St(new Ss)}</code></td><td>46</td></tr>
-        <tr><td><code>function(n){throw St(new Ss)}</code></td><td>39</td></tr>
-        <tr><td><code>()=>{"use strict";Vu(),Du()}</code></td><td>38</td></tr>
-        <tr><td><code>function(l,r){var t=null==l?null:typeof Symbol&lt;"u"&amp;&amp;l[Symbol.iterator]||l["@@iterator"];if(null!=t){var e,n,u,a,f=[],i=!0,o=!1;try{if(u=(t=t.call(l)).next,0===r){if(Object(t)!==t)return;i=!1}else for(;!(i=(e=u.call(t)).done)&amp;&amp;(f.push(e.value),f.length!==r);i=!0);}catch(l){o=!0,n=l}finally{try{if(!i&amp;&amp;null!=t.return&amp;&amp;(a=t.return(),Object(a)!==a))return}finally{if(o)throw n}}return f}}</code></td><td>37</td></tr>
-        <tr><td><code>function(){return this.b}</code></td><td>33</td></tr>
-        <tr><td><code>function(){X(x)}</code></td><td>32</td></tr>
-        <tr class="green"><td><code>function(n){}</code></td><td>31</td></tr>
-        <tr><td><code>a=>a()</code></td><td>30</td></tr>
-        <tr><td><code>function(n){return V1(n)}</code></td><td>30</td></tr>
-        <tr><td><code>function(n){return dn(oi,mr,2,n,6,1)}</code></td><td>30</td></tr>
-        <tr class="green"><td><code>function(){return null}</code></td><td>29</td></tr>
-        <tr class="green"><td><code>function(){return this}</code></td><td>24</td></tr>
-        <tr><td><code>()=>{"use strict";Du()}</code></td><td>23</td></tr>
-        <tr><td><code>function(i){g0(this,i)}</code></td><td>23</td></tr>
-        <tr><td><code>function(t,r){var e;if(t)return"string"==typeof t?k(t,r):"Map"===(e="Object"===(e=Object.prototype.toString.call(t).slice(8,-1))&amp;&amp;t.constructor?t.constructor.name:e)||"Set"===e?Array.from(t):"Arguments"===e||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(e)?k(t,r):void 0}</code></td><td>22</td></tr>
-        <tr><td><code>function(t,r){var e;if(t)return"string"==typeof t?P(t,r):"Map"===(e="Object"===(e=Object.prototype.toString.call(t).slice(8,-1))&amp;&amp;t.constructor?t.constructor.name:e)||"Set"===e?Array.from(t):"Arguments"===e||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(e)?P(t,r):void 0}</code></td><td>22</td></tr>
-        <tr class="green"><td><code>function(n){return null!=n&amp;&amp;n instanceof Array}</code></td><td>21</td></tr>
-        <tr><td><code>function(r){if(Array.isArray(r))return P(r)}</code></td><td>21</td></tr>
-        <tr class="green"><td><code>function(e){return e&amp;&amp;e.__esModule?e:{default:e}}</code></td><td>21</td></tr>
-        <tr><td><code>function(t,r){var e;if(t)return"string"==typeof t?Q(t,r):"Map"===(e="Object"===(e=Object.prototype.toString.call(t).slice(8,-1))&amp;&amp;t.constructor?t.constructor.name:e)||"Set"===e?Array.from(t):"Arguments"===e||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(e)?Q(t,r):void 0}</code></td><td>21</td></tr>
-        <tr><td><code>function(){throw St(new Os(il((qs(),_g))))}</code></td><td>21</td></tr>
-        <tr class="green"><td><code>function(n){return n}</code></td><td>20</td></tr>
-        <tr class="green"><td><code>function(n){return null!=n&amp;&amp;n.nodeType===Node.ELEMENT_NODE}</code></td><td>20</td></tr>
-        <tr class="green"><td><code>function(e){throw Error("Received unhandled value: ".concat(e))}</code></td><td>20</td></tr>
-        <tr class="green"><td><code>function(r,n){return Array.isArray(r)?r.concat(n):"string"==typeof r?r:void 0}</code></td><td>19</td></tr>
-    </tbody>
-</table>
-<div class="center">
-    <button class="expand-table-toggle" data-table-id="esbuild-1">Show more</button>
-</div>
+| Function | Copies |
+| -------- | ------ |
+| `function(r){for(var t=1;t&lt;arguments.length;t++){var n,o=arguments[t];for(n in o)Object.prototype.hasOwnProperty.call(o,n)&&(r[n]=o[n])}return r}` | 2216 |
+| `function n(){return Object.assign&&Object.assign.bind(),n.apply(this,arguments)}` | 1204 |
+| `function n(){return Object.assign,n.apply(this,arguments)}` | 1010 |
+| `function(){}` | 844 |
+| `function(t){return t&&"object"==typeof t&&"default"in t?t:{default:t}}` | 260 |
+| `function(i){this.a=i}` | 250 |
+| `function(n,e){if(null==n)return{};for(var r,t={},f=Object.keys(n),u=0;u&lt;f.length;u++)r=f[u],0&lt;=e.indexOf(r)\|\|(t[r]=n[r]);return t}` | 203 |
+| `function(e,r){if(null==e)return{};var t,n=function(e,r){if(null==e)return{};for(var t,n={},l=Object.keys(e),o=0;o&lt;l.length;o++)t=l[o],0&lt;=r.indexOf(t)\|\|(n[t]=e[t]);return n}(e,r);if(Object.getOwnPropertySymbols)for(var l=Object.getOwnPropertySymbols(e),o=0;o&lt;l.length;o++)t=l[o],0&lt;=r.indexOf(t)\|\|Object.prototype.propertyIsEnumerable.call(e,t)&&(n[t]=e[t]);return n}` | 194 |
+| `function(e,r){return r=r\|\|e.slice(0),Object.freeze(Object.defineProperties(e,{raw:{value:Object.freeze(r)}}))}` | 160 |
+| `function(r,t){if("object"!=typeof r\|\|null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return("string"===t?String:Number)(r);e=e.call(r,t\|\|"default");if("object"!=typeof e)return e;throw new TypeError("@@toPrimitive must return a primitive value.")}` | 137 |
+| `function(r,e,t){return i=function(r,e){if("object"!=typeof r\|\|null===r)return r;var t=r[Symbol.toPrimitive];if(void 0===t)return String(r);t=t.call(r,e);if("object"!=typeof t)return t;throw new TypeError("@@toPrimitive must return a primitive value.")}(e,"string"),(e="symbol"==typeof i?i:String(i))in r?Object.defineProperty(r,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):r[e]=t,r;var i}` | 134 |
+| `function(t){t=function(t,r){if("object"!=typeof t\|\|null===t)return t;var i=t[Symbol.toPrimitive];if(void 0===i)return String(t);i=i.call(t,r);if("object"!=typeof i)return i;throw new TypeError("@@toPrimitive must return a primitive value.")}(t,"string");return"symbol"==typeof t?t:String(t)}` | 134 |
+| `()=>{}` | 129 |
+| `function(n){return this===n}` | 119 |
+| `function(e,n,r){return n in e?Object.defineProperty(e,n,{value:r,enumerable:!0,configurable:!0,writable:!0}):e[n]=r,e}` | 115 |
+| `function(n,r){(null==r\|\|r>n.length)&&(r=n.length);for(var e=0,l=new Array(r);e&lt;r;e++)l[e]=n[e];return l}` | 106 |
+| `function(c,i){Bs.call(this,c,i)}` | 94 |
+| `function(){return!0}` | 93 |
+| `function(r){if(Array.isArray(r))return r}` | 83 |
+| `function(){throw new TypeError(`Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.`)}` | 83 |
+| `function(){return!1}` | 79 |
+| `function(){return new cu(this)}` | 77 |
+| `function(e){var t;"default"!==e&&(t=Object.getOwnPropertyDescriptor(b,e),Object.defineProperty(E,e,t.get?t:{enumerable:!0,get:function(){return b[e]}}))}` | 76 |
+| `function(){return b[P]}` | 76 |
+| `function(a,e,l){var i,r=l["aria-label"],t=l["aria-labelledby"],n=l.title;switch(a){case"img":return r\|\|t\|\|n?(s(i={},"aria-labelledby",t),s(i,"aria-label",r),s(i,"title",n),i):{"aria-label":"".concat(e.replace(/([a-z])([A-Z])/g,"$1 $2")," Icon")};case"presentation":return{"aria-hidden":!0,alt:""}}}` | 76 |
+| `function(r){var n;return r&&r.__esModule?r:(n=Object.create(null),r&&Object.keys(r).forEach(function(e){var t;"default"!==e&&(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}` | 67 |
+| `function(n){return typeof n}` | 64 |
+| `function(o){return o&&"function"==typeof Symbol&&o.constructor===Symbol&&o!==Symbol.prototype?"symbol":typeof o}` | 64 |
+| `function n(r){return n(r)}` | 63 |
+| `function(t,e){var r,n=Object.keys(t);return Object.getOwnPropertySymbols&&(r=Object.getOwnPropertySymbols(t),e&&(r=r.filter(function(e){return Object.getOwnPropertyDescriptor(t,e).enumerable})),n.push.apply(n,r)),n}` | 61 |
+| `function(i,t){this.a=i,this.b=t}` | 58 |
+| `function(r){var n;return r&&"object"==typeof r&&"default"in r?r:(n=Object.create(null),r&&Object.keys(r).forEach(function(e){var t;"default"!==e&&(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}` | 50 |
+| `function(r){if(typeof Symbol&lt;"u"&&null!=r[Symbol.iterator]\|\|null!=r["@@iterator"])return Array.from(r)}` | 49 |
+| ``function(){throw new TypeError(`Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.`)}`` | 49 |
+| `function(){return this.a}` | 49 |
+| `function(i){p0(this,i)}` | 48 |
+| `function(l,r){var t=null==l?null:typeof Symbol&lt;"u"&&l[Symbol.iterator]\|\|l["@@iterator"];if(null!=t){var n,u,e=[],a=!0,o=!1;try{for(t=t.call(l);!(a=(n=t.next()).done)&&(e.push(n.value),!r\|\|e.length!==r);a=!0);}catch(l){o=!0,u=l}finally{try{a\|\|null==t.return\|\|t.return()}finally{if(o)throw u}}return e}}` | 46 |
+| `function(){throw St(new Ss)}` | 46 |
+| `function(n){throw St(new Ss)}` | 39 |
+| `()=>{"use strict";Vu(),Du()}` | 38 |
+| `function(l,r){var t=null==l?null:typeof Symbol&lt;"u"&&l[Symbol.iterator]\|\|l["@@iterator"];if(null!=t){var e,n,u,a,f=[],i=!0,o=!1;try{if(u=(t=t.call(l)).next,0===r){if(Object(t)!==t)return;i=!1}else for(;!(i=(e=u.call(t)).done)&&(f.push(e.value),f.length!==r);i=!0);}catch(l){o=!0,n=l}finally{try{if(!i&&null!=t.return&&(a=t.return(),Object(a)!==a))return}finally{if(o)throw n}}return f}}` | 37 |
+| `function(){return this.b}` | 33 |
+| `function(){X(x)}` | 32 |
+| `function(n){}` | 31 |
+| `a=>a()` | 30 |
+| `function(n){return V1(n)}` | 30 |
+| `function(n){return dn(oi,mr,2,n,6,1)}` | 30 |
+| `function(){return null}` | 29 |
+| `function(){return this}` | 24 |
+| `()=>{"use strict";Du()}` | 23 |
+| `function(i){g0(this,i)}` | 23 |
+| `function(t,r){var e;if(t)return"string"==typeof t?k(t,r):"Map"===(e="Object"===(e=Object.prototype.toString.call(t).slice(8,-1))&&t.constructor?t.constructor.name:e)\|\|"Set"===e?Array.from(t):"Arguments"===e\|\|/^(?:Ui\|I)nt(?:8\|16\|32)(?:Clamped)?Array$/.test(e)?k(t,r):void 0}` | 22 |
+| `function(t,r){var e;if(t)return"string"==typeof t?P(t,r):"Map"===(e="Object"===(e=Object.prototype.toString.call(t).slice(8,-1))&&t.constructor?t.constructor.name:e)\|\|"Set"===e?Array.from(t):"Arguments"===e\|\|/^(?:Ui\|I)nt(?:8\|16\|32)(?:Clamped)?Array$/.test(e)?P(t,r):void 0}` | 22 |
+| `function(n){return null!=n&&n instanceof Array}` | 21 |
+| `function(r){if(Array.isArray(r))return P(r)}` | 21 |
+| `function(e){return e&&e.__esModule?e:{default:e}}` | 21 |
+| `function(t,r){var e;if(t)return"string"==typeof t?Q(t,r):"Map"===(e="Object"===(e=Object.prototype.toString.call(t).slice(8,-1))&&t.constructor?t.constructor.name:e)\|\|"Set"===e?Array.from(t):"Arguments"===e\|\|/^(?:Ui\|I)nt(?:8\|16\|32)(?:Clamped)?Array$/.test(e)?Q(t,r):void 0}` | 21 |
+| `function(){throw St(new Os(il((qs(),_g))))}` | 21 |
+| `function(n){return n}` | 20 |
+| `function(n){return null!=n&&n.nodeType===Node.ELEMENT_NODE}` | 20 |
+| `function(e){throw Error("Received unhandled value: ".concat(e))}` | 20 |
+| `function(r,n){return Array.isArray(r)?r.concat(n):"string"==typeof r?r:void 0}` | 19 |
 
 `bun`:
 
-<table id="bun-1" class="expandable">
-    <thead>
-        <tr>
-            <th>Function</th>
-            <th>Occurrences</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr class="green"><td><code>function(){}</code></td><td>739</td></tr>
-        <tr><td><code>function(i){this.a=i}</code></td><td>250</td></tr>
-        <tr class="green"><td><code>function(r){for(var t=1;t&lt;arguments.length;t++){var n,o=arguments[t];for(n in o)Object.prototype.hasOwnProperty.call(o,n)&amp;&amp;(r[n]=o[n])}return r}</code></td><td>197</td></tr>
-        <tr class="green"><td><code>()=>{}</code></td><td>141</td></tr>
-        <tr class="green"><td><code>function(n){return this===n}</code></td><td>119</td></tr>
-        <tr><td><code>function(c,f){f7.call(this,c,f)}</code></td><td>94</td></tr>
-        <tr class="green"><td><code>function(){return!0}</code></td><td>91</td></tr>
-        <tr><td><code>function(){return new p9(this)}</code></td><td>77</td></tr>
-        <tr class="green"><td><code>function(){return!1}</code></td><td>76</td></tr>
-        <tr><td><code>function(i,t){this.a=i,this.b=t}</code></td><td>58</td></tr>
-        <tr class="green"><td><code>function(n,e){if(null==n)return{};for(var r,t={},f=Object.keys(n),u=0;u&lt;f.length;u++)r=f[u],0&lt;=e.indexOf(r)||(t[r]=n[r]);return t}</code></td><td>53</td></tr>
-        <tr class="green"><td><code>function(r,t){if("object"!=typeof r||null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return("string"===t?String:Number)(r);e=e.call(r,t||"default");if("object"!=typeof e)return e;throw new TypeError("@@toPrimitive must return a primitive value.")}</code></td><td>51</td></tr>
-        <tr><td><code>function(){return this.a}</code></td><td>49</td></tr>
-        <tr class="green"><td><code>function(e,r){if(null==e)return{};var t,n=function(e,r){if(null==e)return{};for(var t,n={},l=Object.keys(e),o=0;o&lt;l.length;o++)t=l[o],0&lt;=r.indexOf(t)||(n[t]=e[t]);return n}(e,r);if(Object.getOwnPropertySymbols)for(var l=Object.getOwnPropertySymbols(e),o=0;o&lt;l.length;o++)t=l[o],0&lt;=r.indexOf(t)||Object.prototype.propertyIsEnumerable.call(e,t)&amp;&amp;(n[t]=e[t]);return n}</code></td><td>48</td></tr>
-        <tr class="green"><td><code>function(r,e,t){return i=function(r,e){if("object"!=typeof r||null===r)return r;var t=r[Symbol.toPrimitive];if(void 0===t)return String(r);t=t.call(r,e);if("object"!=typeof t)return t;throw new TypeError("@@toPrimitive must return a primitive value.")}(e,"string"),(e="symbol"==typeof i?i:String(i))in r?Object.defineProperty(r,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):r[e]=t,r;var i}</code></td><td>48</td></tr>
-        <tr class="green"><td><code>function(t){t=function(t,r){if("object"!=typeof t||null===t)return t;var i=t[Symbol.toPrimitive];if(void 0===i)return String(t);i=i.call(t,r);if("object"!=typeof i)return i;throw new TypeError("@@toPrimitive must return a primitive value.")}(t,"string");return"symbol"==typeof t?t:String(t)}</code></td><td>48</td></tr>
-        <tr><td><code>function(i){T6(this,i)}</code></td><td>48</td></tr>
-        <tr><td><code>()=>{R3(),G3()}</code></td><td>46</td></tr>
-        <tr><td><code>function(){throw x0(new w7)}</code></td><td>46</td></tr>
-        <tr><td><code>function(e,r){return r=r||e.slice(0),Object.freeze(Object.defineProperties(e,{raw:{value:Object.freeze(r)}}))}</code></td><td>45</td></tr>
-        <tr><td><code>function(n,r){(null==r||r>n.length)&amp;&amp;(r=n.length);for(var e=0,l=new Array(r);e&lt;r;e++)l[e]=n[e];return l}</code></td><td>41</td></tr>
-        <tr><td><code>function(n){throw x0(new w7)}</code></td><td>39</td></tr>
-        <tr class="green"><td><code>function(r){if(Array.isArray(r))return r}</code></td><td>36</td></tr>
-        <tr class="green"><td><code>function(){throw new TypeError("Invalid attempt to destructure non-iterable instance.\\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}</code></td><td>36</td></tr>
-        <tr><td><code>function(){return this.b}</code></td><td>33</td></tr>
-        <tr><td><code>function(n){return n2(n)}</code></td><td>30</td></tr>
-        <tr><td><code>function(n){return J1($5,p1,2,n,6,1)}</code></td><td>30</td></tr>
-        <tr><td><code>function(t,e){var r,n=Object.keys(t);return Object.getOwnPropertySymbols&amp;&amp;(r=Object.getOwnPropertySymbols(t),e&amp;&amp;(r=r.filter(function(e){return Object.getOwnPropertyDescriptor(t,e).enumerable})),n.push.apply(n,r)),n}</code></td><td>29</td></tr>
-        <tr><td><code>function(l,r){var t=null==l?null:"undefined"!=typeof Symbol&amp;&amp;l[Symbol.iterator]||l["@@iterator"];if(null!=t){var e,n,u,f,i=[],a=!0,o=!1;try{if(u=(t=t.call(l)).next,0===r){if(Object(t)!==t)return;a=!1}else for(;!(a=(e=u.call(t)).done)&amp;&amp;(i.push(e.value),i.length!==r);a=!0);}catch(l){o=!0,n=l}finally{try{if(!a&amp;&amp;null!=t.return&amp;&amp;(f=t.return(),Object(f)!==f))return}finally{if(o)throw n}}return i}}</code></td><td>29</td></tr>
-        <tr class="green"><td><code>function(n){}</code></td><td>29</td></tr>
-        <tr class="green"><td><code>function(){return null}</code></td><td>28</td></tr>
-        <tr><td><code>function(e){return Object.getOwnPropertyDescriptor(Z,e).enumerable}</code></td><td>25</td></tr>
-        <tr><td><code>function(e){Object.defineProperty(Z,e,Object.getOwnPropertyDescriptor(W,e))}</code></td><td>25</td></tr>
-        <tr class="green"><td><code>function(n){return n}</code></td><td>23</td></tr>
-        <tr><td><code>function(i){C6(this,i)}</code></td><td>23</td></tr>
-        <tr><td><code>()=>{G3()}</code></td><td>22</td></tr>
-        <tr><td><code>function(){throw x0(new C7(n7((y7(),KG))))}</code></td><td>21</td></tr>
-        <tr class="green"><td><code>function(){return this}</code></td><td>19</td></tr>
-        <tr><td><code>function(i,t){this.b=i,this.a=t}</code></td><td>19</td></tr>
-        <tr class="green"><td><code>function(n){return!1}</code></td><td>18</td></tr>
-        <tr><td><code>function(n,w){throw x0(new w7)}</code></td><td>18</td></tr>
-        <tr><td><code>function(){return 0}</code></td><td>17</td></tr>
-        <tr class="green"><td><code>function(n){return typeof n}</code></td><td>17</td></tr>
-        <tr><td><code>function(o){return o&amp;&amp;"function"==typeof Symbol&amp;&amp;o.constructor===Symbol&amp;&amp;o!==Symbol.prototype?"symbol":typeof o}</code></td><td>17</td></tr>
-        <tr><td><code>()=>{R3()}</code></td><td>16</td></tr>
-        <tr><td><code>()=>{var e;return null!=(e=Z.options.debugAll)?e:Z.options.debugHeaders}</code></td><td>16</td></tr>
-        <tr class="green"><td><code>function(n,r){return n}</code></td><td>15</td></tr>
-        <tr><td><code>function(c){hX.call(this,c)}</code></td><td>15</td></tr>
-        <tr><td><code>function(){return this.c}</code></td><td>15</td></tr>
-        <tr><td><code>function(){return this.d}</code></td><td>15</td></tr>
-        <tr><td><code>function(e,n,r){return n in e?Object.defineProperty(e,n,{value:r,enumerable:!0,configurable:!0,writable:!0}):e[n]=r,e}</code></td><td>14</td></tr>
-        <tr class="green"><td><code>function(r){if("undefined"!=typeof Symbol&amp;&amp;null!=r[Symbol.iterator]||null!=r["@@iterator"])return Array.from(r)}</code></td><td>14</td></tr>
-        <tr><td><code>function(){throw new TypeError("Invalid attempt to spread non-iterable instance.\\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}</code></td><td>14</td></tr>
-        <tr><td><code>d=>d.id</code></td><td>14</td></tr>
-        <tr><td><code>()=>W(!1)</code></td><td>13</td></tr>
-        <tr class="green"><td><code>a=>a</code></td><td>12</td></tr>
-        <tr><td><code>function(t){var l=-1,n=null==t?0:t.length;for(this.clear();++l&lt;n;){var r=t[l];this.set(r[0],r[1])}}</code></td><td>12</td></tr>
-        <tr class="green"><td><code>function(n,c){}</code></td><td>12</td></tr>
-        <tr class="green"><td><code>function(n,r){return r}</code></td><td>11</td></tr>
-        <tr class="green"><td><code>function(n,a){n.a=a}</code></td><td>11</td></tr>
-        <tr><td><code>function(){_V.call(this)}</code></td><td>11</td></tr>
-        <tr><td><code>function(i,t,h){this.a=i,this.b=t,this.c=h}</code></td><td>11</td></tr>
-        <tr><td><code>function(){return this.a.gc()}</code></td><td>11</td></tr>
-        <tr><td><code>function(i){this.b=i}</code></td><td>10</td></tr>
-        <tr><td><code>function(c){this.c=c}</code></td><td>10</td></tr>
-        <tr><td><code>function(){return this.f}</code></td><td>10</td></tr>
-    </tbody>
-</table>
-<div class="center">
-    <button class="expand-table-toggle" data-table-id="bun-1">Show more</button>
-</div>
+| Function | Copies |
+| -------- | ----------- |
+| `function(){}` | 739 |
+| `function(i){this.a=i}` | 250 |
+| `function(r){for(var t=1;t<arguments.length;t++){var n,o=arguments[t];for(n in o)Object.prototype.hasOwnProperty.call(o,n)&&(r[n]=o[n])}return r}` | 197 |
+| `()=>{}` | 141 |
+| `function(n){return this===n}` | 119 |
+| `function(c,f){f7.call(this,c,f)}` | 94 |
+| `function(){return!0}` | 91 |
+| `function(){return new p9(this)}` | 77 |
+| `function(){return!1}` | 76 |
+| `function(i,t){this.a=i,this.b=t}` | 58 |
+| `function(n,e){if(null==n)return{};for(var r,t={},f=Object.keys(n),u=0;u<f.length;u++)r=f[u],0<=e.indexOf(r)\|\|(t[r]=n[r]);return t}` | 53 |
+| `function(r,t){if("object"!=typeof r\|\|null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return("string"===t?String:Number)(r);e=e.call(r,t\|\|"default");if("object"!=typeof e)return e;throw new TypeError("@@toPrimitive must return a primitive value.")}` | 51 |
+| `function(){return this.a}` | 49 |
+| `function(e,r){if(null==e)return{};var t,n=function(e,r){if(null==e)return{};for(var t,n={},l=Object.keys(e),o=0;o<l.length;o++)t=l[o],0<=r.indexOf(t)\|\|(n[t]=e[t]);return n}(e,r);if(Object.getOwnPropertySymbols)for(var l=Object.getOwnPropertySymbols(e),o=0;o<l.length;o++)t=l[o],0<=r.indexOf(t)\|\|Object.prototype.propertyIsEnumerable.call(e,t)&&(n[t]=e[t]);return n}` | 48 |
+| `function(r,e,t){return i=function(r,e){if("object"!=typeof r\|\|null===r)return r;var t=r[Symbol.toPrimitive];if(void 0===t)return String(r);t=t.call(r,e);if("object"!=typeof t)return t;throw new TypeError("@@toPrimitive must return a primitive value.")}(e,"string"),(e="symbol"==typeof i?i:String(i))in r?Object.defineProperty(r,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):r[e]=t,r;var i}` | 48 |
+| `function(t){t=function(t,r){if("object"!=typeof t\|\|null===t)return t;var i=t[Symbol.toPrimitive];if(void 0===i)return String(t);i=i.call(t,r);if("object"!=typeof i)return i;throw new TypeError("@@toPrimitive must return a primitive value.")}(t,"string");return"symbol"==typeof t?t:String(t)}` | 48 |
+| `function(i){T6(this,i)}` | 48 |
+| `()=>{R3(),G3()}` | 46 |
+| `function(){throw x0(new w7)}` | 46 |
+| `function(e,r){return r=r\|\|e.slice(0),Object.freeze(Object.defineProperties(e,{raw:{value:Object.freeze(r)}}))}` | 45 |
+| `function(n,r){(null==r\|\|r>n.length)&&(r=n.length);for(var e=0,l=new Array(r);e<r;e++)l[e]=n[e];return l}` | 41 |
+| `function(n){throw x0(new w7)}` | 39 |
+| `function(r){if(Array.isArray(r))return r}` | 36 |
+| `function(){throw new TypeError("Invalid attempt to destructure non-iterable instance.\\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}` | 36 |
+| `function(){return this.b}` | 33 |
+| `function(n){return n2(n)}` | 30 |
+| `function(n){return J1($5,p1,2,n,6,1)}` | 30 |
+| `function(t,e){var r,n=Object.keys(t);return Object.getOwnPropertySymbols&&(r=Object.getOwnPropertySymbols(t),e&&(r=r.filter(function(e){return Object.getOwnPropertyDescriptor(t,e).enumerable})),n.push.apply(n,r)),n}` | 29 |
+| `function(l,r){var t=null==l?null:"undefined"!=typeof Symbol&&l[Symbol.iterator]\|\|l["@@iterator"];if(null!=t){var e,n,u,f,i=[],a=!0,o=!1;try{if(u=(t=t.call(l)).next,0===r){if(Object(t)!==t)return;a=!1}else for(;!(a=(e=u.call(t)).done)&&(i.push(e.value),i.length!==r);a=!0);}catch(l){o=!0,n=l}finally{try{if(!a&&null!=t.return&&(f=t.return(),Object(f)!==f))return}finally{if(o)throw n}}return i}}` | 29 |
+| `function(n){}` | 29 |
+| `function(){return null}` | 28 |
+| `function(e){return Object.getOwnPropertyDescriptor(Z,e).enumerable}` | 25 |
+| `function(e){Object.defineProperty(Z,e,Object.getOwnPropertyDescriptor(W,e))}` | 25 |
+| `function(n){return n}` | 23 |
+| `function(i){C6(this,i)}` | 23 |
+| `()=>{G3()}` | 22 |
+| `function(){throw x0(new C7(n7((y7(),KG))))}` | 21 |
+| `function(){return this}` | 19 |
+| `function(i,t){this.b=i,this.a=t}` | 19 |
+| `function(n){return!1}` | 18 |
+| `function(n,w){throw x0(new w7)}` | 18 |
+| `function(){return 0}` | 17 |
+| `function(n){return typeof n}` | 17 |
+| `function(o){return o&&"function"==typeof Symbol&&o.constructor===Symbol&&o!==Symbol.prototype?"symbol":typeof o}` | 17 |
+| `()=>{R3()}` | 16 |
+| `()=>{var e;return null!=(e=Z.options.debugAll)?e:Z.options.debugHeaders}` | 16 |
+| `function(n,r){return n}` | 15 |
+| `function(c){hX.call(this,c)}` | 15 |
+| `function(){return this.c}` | 15 |
+| `function(){return this.d}` | 15 |
+| `function(e,n,r){return n in e?Object.defineProperty(e,n,{value:r,enumerable:!0,configurable:!0,writable:!0}):e[n]=r,e}` | 14 |
+| `function(r){if("undefined"!=typeof Symbol&&null!=r[Symbol.iterator]\|\|null!=r["@@iterator"])return Array.from(r)}` | 14 |
+| `function(){throw new TypeError("Invalid attempt to spread non-iterable instance.\\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}` | 14 |
+| `d=>d.id` | 14 |
+| `()=>W(!1)` | 13 |
+| `a=>a` | 12 |
+| `function(t){var l=-1,n=null==t?0:t.length;for(this.clear();++l<n;){var r=t[l];this.set(r[0],r[1])}}` | 12 |
+| `function(n,c){}` | 12 |
+| `function(n,r){return r}` | 11 |
+| `function(n,a){n.a=a}` | 11 |
+| `function(){_V.call(this)}` | 11 |
+| `function(i,t,h){this.a=i,this.b=t,this.c=h}` | 11 |
+| `function(){return this.a.gc()}` | 11 |
+| `function(i){this.b=i}` | 10 |
+| `function(c){this.c=c}` | 10 |
+| `function(){return this.f}` | 10 |
 
 Interestingly enough, all three tools handled the job bad in different aspects:
 
@@ -537,7 +474,7 @@ Although, on the modern machines the difference between having one function and 
 
 Here is a shortened list of top abusers from different bundlers for our tool:
 
-<table id="deduplicatable-1" class="expandable">
+<table>
     <thead>
         <tr>
             <th>Function</th>
@@ -931,9 +868,6 @@ Here is a shortened list of top abusers from different bundlers for our tool:
         </tr>
     </tbody>
 </table>
-<div class="center">
-    <button class="expand-table-toggle" data-table-id="deduplicatable-1">Show more</button>
-</div>
 
 Interestingly enough, aside from a lot of `() => {}` and `(a, b) => a` and `() => true` (as I call them, utility) functions,
 there are a lot of ES6 / TypeScript helpers such as class definition and spread operator variants, presumingly made to be compatible with ES5-only browsers.
@@ -1183,33 +1117,25 @@ It would be really interesting to see what would the results be running this opt
     .center {
         text-align: center;
     }
-    table.expandable {
-        display: block;
-        max-height: 200px;
-        overflow-y: hidden;
-        border: none;
+    .center:has(button) {
+        margin-top: 0.5em;
     }
-    table.expandable.expand {
-        display: table;
-        overflow-y: visible;
-    }
-    table.expandable td, table.expandable th {
-        padding: 0.5em;
-    }
-    table thead th {
-        font-weight: bold;
-    }
-    /* table tr.red td {
-        background: rgb(250, 88, 88);
-    }
-    table tr.green td {
-        background: rgb(100, 232, 98);
-    } */
 </style>
 <script>
-[...document.querySelectorAll('.expand-table-toggle')].forEach(btn => {
+[...document.querySelectorAll('table')].forEach((table, idx) => {
+    if (table.querySelectorAll('tbody tr').length < 10) {
+        return;
+    }
+    table.id = `table-${idx}`;
+    table.classList.add('expandable');
+    const div = document.createElement('div');
+    div.classList.add('center');
+    const btn = document.createElement('button');
+    btn.innerText = 'Show more';
+    div.appendChild(btn);
+    table.after(div);
     btn.onclick = () => {
-        const tbl = document.querySelector(`table#${btn.dataset.tableId}`);
+        const tbl = document.querySelector(`table#${table.id}`);
         tbl.classList.toggle('expand');
         if (tbl.classList.contains('expand')) {
             btn.innerText = 'Show less';
