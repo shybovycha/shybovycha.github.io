@@ -320,8 +320,12 @@ table.expandable:before {
     /* @extend %vertical-rhythm !optional; */
 }
 
-code, code[class*="language-"] {
+code {
     font-size: 1rem;
+}
+
+code[class*="language-"] {
+    font-size: 0.95rem;
 }
 
 @media (prefers-color-scheme: dark) {
