@@ -329,7 +329,7 @@ const copyStaticFiles = (staticDirs: string[], outputDir: string) =>
             ['prism-twilight.min_bundle.css', 'prism-twilight.min.css'],
         ].map(([file, alias]) =>
             fsPromise
-                .copyFile(path.join('_build', file), path.join(outputDir, alias))
+                .copyFile(path.join('_build_tmp', file), path.join(outputDir, alias))
                 .catch(e => { logger.error(`Could not copy file ${file}`); throw e; })
                 .then(() => logger.log(`Copying ${file} -> ${path.join(outputDir, alias)}`))
         ),
