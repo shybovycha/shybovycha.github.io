@@ -531,6 +531,8 @@ For the most part, the front-end can load faster for users - simply because ther
 On top of that, there are less functions to be created in memory. So _technically_, the front-end can _act_ faster.
 Although, on the modern machines the difference between having one function and few thousand of the same function is negligible.
 
+<div class="content-read-marker" data-fraction="50"></div>
+
 Here is a shortened list of top abusers from different bundlers for our tool:
 
 <table id="deduplicatable-1" class="expandable">
@@ -1172,6 +1174,8 @@ Conclusion? The bundlers do a pretty average job at optimizing the bundles, even
 And if some brave soul is willing to invest even more time and effort than I did into developing a sophisticated solution
 (potentially improving the existing tools, like uglifyjs or bundlers themselves), the numbers can be improved even further.
 It would be really interesting to see what would the results be running this optimizer on a bigger bundle.
+
+<div class="content-read-marker" data-fraction="100"></div>
 
 <style>
     .center {

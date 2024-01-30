@@ -316,6 +316,11 @@ const copyStaticFiles = (staticDirs: string[], outputDir: string) =>
         fsPromise.copyFile('_build/prism.min_bundle.css', path.join(outputDir, 'prism.min.css')).catch(e => { logger.error(`Could not copy file prism.min_bundle.css`); throw e; }),
     ]);
 
+const copyOtherFiles = (files: string[], outputDir: string) =>
+    Promise.all(
+        files.map(file => fsPromise.copyFile(file, path.join(outputDir, path.basename(file))).then(() => logger.log(`Copying ${file} -> ${path.join(outputDir, path.basename(file))}`)).catch(e => { logger.error(`Could not copy file ${file}`); throw e; }))
+    );
+
 const clean = (outputDir: string) =>
     fsPromise.rm(outputDir, { recursive: true, force: true })
         .then(() => fsPromise.mkdir(outputDir, { recursive: true }));
@@ -324,6 +329,7 @@ const build = async () => {
     const postsDir = process.env.POSTS_DIR || config.postsDir;
     const staticPagesDir = process.env.PAGES_DIR || config.staticPagesDir;
     const staticFilesDirs = process.env.STATIC_FILES_DIRS?.split(',') || config.staticFilesDirs;
+    const otherFiles = process.env.OTHER_FILES?.split(',') || config.otherFiles;
     const outputDir = process.env.OUTPUT_DIR || config.outputDir;
     const pageSize = process.env.PAGE_SIZE ? parseInt(process.env.PAGE_SIZE) : config.pageSize;
     const baseUrl = process.env.BASE_URL || config.baseUrl;
@@ -344,6 +350,7 @@ const build = async () => {
         Promise.all(staticPages.map((page) => renderStaticPage(page))),
         Promise.all(posts.map(post => createPostDir(post, outputDir))),
         copyStaticFiles(staticFilesDirs, outputDir),
+        copyOtherFiles(otherFiles, outputDir),
     ]);
 
     return await Promise.all([

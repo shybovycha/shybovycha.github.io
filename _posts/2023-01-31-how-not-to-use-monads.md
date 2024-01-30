@@ -323,6 +323,8 @@ main = do
 
 ### Reduce calls to `IO` functions
 
+<div class="content-read-marker" data-fraction="50"></div>
+
 Pure functions must return the exact same value for the same arguments, regardless of how many times they are called.
 
 `IO` (and a lot of other monads, like `Reader`, `Writer`, etc.) work around this rule by changing the outside world.
@@ -609,4 +611,4 @@ main = do
     putStrLn $ printf "  Has title: %s" (show hasTitle)
 ```
 
-
+<div class="content-read-marker" data-fraction="100"></div>

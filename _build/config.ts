@@ -6,6 +6,7 @@ export interface Config {
     staticFilesDirs: string[];
     staticPagesDir: string;
     staticPages: Record<string, string>;
+    otherFiles: string[];
 }
 
 const config: Config = {
@@ -15,6 +16,9 @@ const config: Config = {
         'images',
         'tumblr_files',
         'js',
+    ],
+    otherFiles: [
+        'google92735c11764b132a.html',
     ],
     staticPages: {
         'about.md': '/about.html',
