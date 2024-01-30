@@ -16,14 +16,14 @@ Passionate about software, boardgames and have a very specific taste in anime, m
 
 Hardcore interviewer:
 
-<img src="/images/about/interview-stats.webp" alt="My interview stats working at Atlassian">
+<img src="/images/about/interview-stats.webp" alt="Interviews conducted up until now">
 
 ## Boardgames in possession
 
 * [Arkham Horror LCG](https://boardgamegeek.com/boardgame/205637/arkham-horror-card-game) (+ [The Dunwich Legacy cycle](https://boardgamegeek.com/boardgame/208545/arkham-horror-card-game-dunwich-legacy-expansion))
 * [Lord of the Rings LCG](https://boardgamegeek.com/boardgame/77423/lord-rings-card-game)
 * [Legends of Andor](https://boardgamegeek.com/boardgame/127398/legends-andor)
-* [Gloom of Kilforth](https://boardgamegeek.com/boardgame/98527/gloom-kilforth-fantasy-quest-game) & [Shadows of Kilforth](https://boardgamegeek.com/boardgame/238916/shadows-kilforth-fantasy-quest-game)
+* [Gloom of Kilforth](https://boardgamegeek.com/boardgame/98527/gloom-kilforth-fantasy-quest-game) & [Shadows of Kilforth](https://boardgamegeek.com/boardgame/238916/shadows-kilforth-fantasy-quest-game) & [Call of Kilforth](https://boardgamegeek.com/boardgame/329121/call-kilforth-fantasy-quest-game)
 * [Mage Knight Ultimate Edition](https://boardgamegeek.com/boardgame/248562/mage-knight-ultimate-edition)
 * [Runebound 3rd edition](https://boardgamegeek.com/boardgame/181530/runebound-third-edition)
 * [Tannhauser](https://boardgamegeek.com/boardgame/25261/tannhauser) (+ [Operation Novgorod](https://boardgamegeek.com/boardgameexpansion/31258/tannhauser-operation-novgorod))
@@ -45,7 +45,6 @@ Hardcore interviewer:
 * [Wingspan](https://boardgamegeek.com/boardgame/266192/wingspan)
 * [Hive](https://boardgamegeek.com/boardgame/2655/hive)
 * [Flick of Faith](https://boardgamegeek.com/boardgame/281194/flick-faith) (🇵🇱)
-* [Call of Kilforth](https://boardgamegeek.com/boardgame/329121/call-kilforth-fantasy-quest-game) (<span title="Waiting">⏳</span>)
 * [Call to Adventure](https://boardgamegeek.com/boardgame/238992/call-adventure) (<span title="Considering">🤔</span>)
 * [Dale of Merchants](https://boardgamegeek.com/boardgame/176165/dale-merchants) (<span title="Considering">🤔</span>)
 * [Furnace](https://boardgamegeek.com/boardgame/318084/furnace) (<span title="Considering">🤔</span>)
@@ -133,9 +132,9 @@ I’m publishing some of my shots on Instagram [@moo_foo](https://www.instagram.
 It is mostly about spiders:
 
 <div class="inline-gallery">
-  <div class="image"><img src="/images/about/macrophoto-spider1.webp" alt="Garden orbweaver spider"></div>
-  <div class="image"><img src="/images/about/macrophoto-spider2.webp" alt="Solticitae, a.k.a. the jumping spider"></div>
-  <div class="image"><img src="/images/about/macrophoto-spider3.webp" alt="Maratus Anomalus, the lurky peacock spider"></div>
+  <div class="image"><img src="/images/about/macrophoto-spider4.webp" alt="Gasteracantha fornicata, aka thornback spider"></div>
+  <div class="image"><img src="/images/about/macrophoto-spider2.webp" alt="Solticitae, aka the jumping spider"></div>
+  <div class="image"><img src="/images/about/macrophoto-spider3.webp" alt="Maratus anomalus, aka peacock spider"></div>
 </div>
 
 And starry sky:
