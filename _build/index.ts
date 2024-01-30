@@ -13,7 +13,7 @@ import { mangle as markedMangle } from 'marked-mangle';
 import { markedSmartypants } from 'marked-smartypants';
 import { markedXhtml } from 'marked-xhtml';
 
-import { chunk } from 'lodash';
+import { chunk, isString } from 'lodash';
 
 import Prism from'prismjs';
 
@@ -154,15 +154,18 @@ class Logger {
 
 const logger = new Logger();
 
-const parsePostContent = (src: string, loadOptions?: LoadPostContentOptions): PostContent => {
+const parsePostContent = async (src: string, loadOptions?: LoadPostContentOptions): Promise<PostContent> => {
     const options = loadOptions ? { excerpt: true, excerpt_separator: loadOptions.excerptSeparator } : {};
 
     const { data: frontMatter, excerpt, content } = matter(src, options);
 
+    const parsedExcerpt = excerpt ? await marked.parse(excerpt) : undefined;
+    const parsedContent = await marked.parse(content);
+
     return {
         frontMatter,
-        excerpt: excerpt && marked.parse(excerpt),
-        content: marked.parse(content),
+        excerpt: parsedExcerpt,
+        content: parsedContent,
     };
 };
 
@@ -170,7 +173,7 @@ const parsePostDate = (postPath: string, frontMatter: Record<string, any>) => {
     const fileDate = path.basename(postPath).replace(/^(\d{4}-\d{2}-\d{2}).+$/, '$1');
     const fallbackDate = parseDate(fileDate, 'yyyy-MM-dd', new Date());
 
-    const frontMatterDate = frontMatter.date ? parseDate(frontMatter.date, 'yyyy-MM-dd HH:mm:ss XXXXX', new Date()) : null;
+    const frontMatterDate = frontMatter.date && isString(frontMatter.date) ? parseDate(frontMatter.date, 'yyyy-MM-dd HH:mm:ss XXXXX', new Date()) : null;
 
     if (frontMatterDate && isValidDate(frontMatterDate)) {
         return frontMatterDate;
@@ -196,7 +199,7 @@ const loadPost = async (absoluteFilePath: string, postDir: string): Promise<Post
     }
 
     const src = await fsPromise.readFile(absoluteFilePath, 'utf-8').catch(e => { logger.error(`Could not find post ${absoluteFilePath}`); throw e; });
-    const { frontMatter, excerpt, content } = parsePostContent(src, { excerptSeparator: '<!--more-->' });
+    const { frontMatter, excerpt, content } = await parsePostContent(src, { excerptSeparator: '<!--more-->' });
 
     const postLink = path.join(path.dirname(postPath), path.basename(postPath).replace(/^(\d+)-(\d+)-(\d+)-(.+)\.(md|html?)$/, '$1/$2/$3/$4.html')).replace('\\', '/').replace(/^[\\\/]+/, '');
 
@@ -257,11 +260,17 @@ const loadStaticPages = async (staticPages: Record<string, string>, staticPagesD
     Promise.all(
         Object.entries(staticPages)
             .map(([ filePath, outputPath ]) => ([ path.join(staticPagesDir, filePath), outputPath ]))
-            .map(([ filePath, outputPath ]) =>
-                fsPromise.readFile(filePath, 'utf-8')
-                    .catch(e => { logger.error(`Could not find static page ${filePath}`); throw e; })
-                    .then(txt => ({ ...parsePostContent(txt), outputPath }))
-            )
+            .map(async ([ filePath, outputPath ]) => {
+                try {
+                    const txt = await fsPromise.readFile(filePath, 'utf-8');
+                    const parsedContent = await parsePostContent(txt);
+
+                    return { ...parsedContent, outputPath };
+                } catch (e) {
+                    logger.error(`Could not find static page ${filePath}`);
+                    throw e;
+                }
+            })
     );
 
 // ---

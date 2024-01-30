@@ -31,8 +31,6 @@ const Layout = ({ title, head = null, header = null, footer = null, children }: 
         {head}
     </head>
     <body>
-        <noscript><link rel="stylesheet" href="/main.css" /><link rel="stylesheet" href="/prism.min.css" /></noscript>
-
         {header}
 
         <main>
