@@ -68,7 +68,7 @@ function(e){for(var t=1;t<arguments.length;t++){var n=arguments[t];for(var r in 
 
 In fact, this exact same fragment of code repeats 137 times in the same piece of bundle chunk (same file):
 
-<img src="/images/how-unique-are-your-bundles/duplication1.png" loading="lazy" alt="Repeated function definition in a single chunk of code">
+<img src="/images/how-unique-are-your-bundles/duplication1.webp" loading="lazy" alt="Repeated function definition in a single chunk of code">
 
 By the way, this is a production build of our front-end, built using Vite, with minification enabled.
 
@@ -1082,7 +1082,7 @@ This way I figured few issues with the naive approach:
     * `$q=function n(){return n=Object.assign&&Object.assign.bind(),n.apply(this,arguments)}`
 * some of the empty functions are actually used as constructors (ES5-compatible OOP model) which is only discovered by finding the expressions like `$FnName.prototype.something = somethingElse;`
 * some functions are named and then referenced later in the code
-* some functions are not used at all: <img src="/images/how-unique-are-your-bundles/unused-deduplicated-functions.png" alt="Unused aliases">
+* some functions are not used at all: <img src="/images/how-unique-are-your-bundles/unused-deduplicated-functions.webp" alt="Unused aliases">
 
 For the shorthand functions I first tried manually fixing them up - had to replace them with `$z=function(){return $z=Object.assign.bind(),$z.apply(this,arguments)}` alikes. This worked, so I created an AST transformer to handle these one-line return-only functions, but it resulted in few extra whitespaces being added - using uglifyjs messes things up again and TypeScript compiler does not have an option for minimal output.
 
