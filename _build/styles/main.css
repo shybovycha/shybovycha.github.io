@@ -320,9 +320,13 @@ table.expandable:before {
     /* @extend %vertical-rhythm !optional; */
 }
 
+code, code[class*="language-"] {
+    font-size: 1rem;
+}
+
 @media (prefers-color-scheme: dark) {
     img {
-        filter: brightness(.8) contrast(1.2);
+        filter: brightness(.85) contrast(1.2);
     }
 
     :root {

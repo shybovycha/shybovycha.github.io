@@ -8,6 +8,7 @@ import matter from 'gray-matter';
 
 import { marked } from 'marked';
 import { markedHighlight } from 'marked-highlight';
+import markedExtendedTables from 'marked-extended-tables';
 import { gfmHeadingId as markedGfmHeadingId  } from 'marked-gfm-heading-id';
 import { mangle as markedMangle } from 'marked-mangle';
 import { markedSmartypants } from 'marked-smartypants';
@@ -100,6 +101,7 @@ marked.use(markedXhtml()); // self-close single tags
 marked.use(markedSmartypants()); // dashes and ellipses
 marked.use(markedGfmHeadingId());
 marked.use(markedMangle());
+marked.use(markedExtendedTables());
 
 marked.use(markedHighlight({
     highlight(code: string, language: string) {

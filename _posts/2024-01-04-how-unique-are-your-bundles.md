@@ -261,10 +261,10 @@ bun install  0.22s user 0.65s system 47% cpu 1.849 total
 
 | Bundler | Build time |
 | ------- | ---------- |
-| bun     | 0.43s |
-| esbuild | 2.57s |
-| vite    | 85.04s |
-| webpack | 138.64s |
+| bun     | 0.43s      |
+| esbuild | 2.57s      |
+| vite    | 85.04s     |
+| webpack | 138.64s    |
 
 And the analysis of the built bundles:
 
@@ -877,40 +877,14 @@ Well, not quite much:
 
 bundle sizes:
 
-<table>
-    <thead>
-        <tr>
-            <th>Bundler</th>
-            <th>Bundle size</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>bun</td>
-            <td>5.4M</td>
-        </tr>
-        <tr>
-            <td>esbuild</td>
-            <td>9.2M</td>
-        </tr>
-        <tr>
-            <td>esbuild (tuned)</td>
-            <td>8.0M</td>
-        </tr>
-        <tr>
-            <td>vite</td>
-            <td>7.1M</td>
-        </tr>
-        <tr>
-            <td>vite (tuned)</td>
-            <td>3.8M</td>
-        </tr>
-        <tr>
-            <td>webpack</td>
-            <td>4.4M</td>
-        </tr>
-    </tbody>
-</table>
+| Bundler         | Bundle size |
+| --------------- | ----------- |
+| bun             | 5.4M        |
+| esbuild         | 9.2M        |
+| esbuild (tuned) | 8.0M        |
+| vite            | 7.1M        |
+| vite (tuned)    | 3.8M        |
+| webpack         | 4.4M        |
 
 `vite`:
 
@@ -1020,96 +994,140 @@ This way I figured few issues with the naive approach:
 * some functions are named and then referenced later in the code
 * some functions are not used at all: <img src="/images/how-unique-are-your-bundles/unused-deduplicated-functions.webp" alt="Unused aliases">
 
-For the shorthand functions I first tried manually fixing them up - had to replace them with `$z=function(){return $z=Object.assign.bind(),$z.apply(this,arguments)}` alikes. This worked, so I created an AST transformer to handle these one-line return-only functions, but it resulted in few extra whitespaces being added - using uglifyjs messes things up again and TypeScript compiler does not have an option for minimal output.
+For the shorthand functions I first tried manually fixing them up - had to replace them with `$z=function(){return $z=Object.assign.bind(),$z.apply(this,arguments)}` alikes. This worked, so I created an AST transformer to handle these one-line return-only functions:
+
+```js
+const simplifyFunction = (code, fname) => {
+    const tmpFilename = '_tmp';
+
+    fs.writeFileSync(tmpFilename, code, 'utf-8');
+
+    const root = ts.createSourceFile(
+        tmpFilename,
+        code,
+        ts.ScriptTarget.ESNext,
+        /* setParentNodes */ true
+    );
+
+    let rootFnName = undefined;
+
+    const parse = (node) => {
+        if (ts.isFunctionDeclaration(node) && ts.isIdentifier(node.name) && node.name.escapedText !== '') {
+            rootFnName = node.name.escapedText;
+            return;
+        }
+
+        ts.forEachChild(node, child => {
+            if (child) {
+                parse(child);
+            }
+        });
+    };
+
+    parse(root);
+
+    if (!rootFnName) {
+        fs.rmSync(tmpFilename);
+        return code;
+    }
+
+    const transformer = (ctx) => (sourceFile) => {
+        const visit = (node) => {
+            if (ts.isIdentifier(node) && node.escapedText === rootFnName) {
+                return ts.factory.createIdentifier(fname);
+            }
+
+            if (
+                ts.isFunctionDeclaration(node) &&
+                ts.isBlock(node.body) &&
+                node.body.statements.length === 1 &&
+                ts.isReturnStatement(node.body.statements[0]) &&
+                ts.isBinaryExpression(node.body.statements[0].expression)
+            ) {
+                const next = ts.factory.createFunctionDeclaration(
+                    [],
+                    undefined,
+                    undefined,
+                    [],
+                    [],
+                    undefined,
+
+                    ts.factory.createBlock([
+                        ts.factory.createReturnStatement(
+                            ts.factory.createComma(
+                                ts.factory.createAssignment(
+                                    ts.factory.createIdentifier(fname),
+                                    node.body.statements[0].expression.left
+                                ),
+
+                                node.body.statements[0].expression.right
+                            )
+                        )
+                    ])
+                );
+
+                return ts.visitEachChild(next, visit, ctx);
+            }
+
+            return ts.visitEachChild(node, visit, ctx);
+        };
+
+        return ts.visitNode(sourceFile, visit);
+    };
+
+    const s = ts.createSourceFile(tmpFilename, code, ts.ScriptTarget.ESNext);
+    const { transformed } = ts.transform(s, [ transformer ]);
+
+    const newCode = ts.createPrinter({ omitTrailingSemicolon: true })
+        .printFile(transformed.find(({ fileName }) => fileName === tmpFilename));
+
+    fs.rmSync(tmpFilename);
+
+    return newCode;
+};
+```
+
+The transformer is essentially a two-pass processor: it first parses the `code` and identifies the first function declaration.
+If none was found - it just returns the original code. If there was a so-called "root function" defined, it then replaces all
+identifier with that "root function" name with the alias provided as `fname`.
+It also replaces the return statements in form of a `return something && something()` with `return alias = something, alias()`.
+
+This approach is different from simply using `uglifyjs` to just try and minimize the code - it is way more complex (compared to just one function call). It results in few extra whitespaces being added. But using `uglifyjs` messes things up again and TypeScript compiler does not have an option for minimizing the output. But few extra whitespaces are totally acceptable given the much bigger savings from this transformation.
 
 With the constructors I simply excluded them from being de-duplicated. This resulted in `155` fewer substitutions (in Vite mode), which is negligible on the overall scale of the problem.
 
 As for the named functions which are in the global scope and are referenced later down the line, I had to create a list of "backwards-compatible aliases", mapping those old function names onto the new unique names.
 
+I ended up with a three-pass parser-transformer utility (not really "simple script" anymore). The passes being:
+
+1. figuring out the duplicate function declarations and replacing them from the end to the start of the code (to minimize the chance of writing over the just-changed code)
+2. removing the duplicate global-scope named functions and replacing them with shorthand aliases to the de-duplicated declarations
+3. replace the usages of all known aliases and shorthand-named de-duplicated functions with their corresponding new (generated) names
+
 Other than those, replacing the original bundle with the optimized one worked like a charm!
 
 The results? With the threshold of `20` duplicates or more:
 
-<table>
-    <thead>
-        <tr>
-            <th rowspan="2">Bundler</th>
-            <th colspan="5">Before optimization</th>
-            <th colspan="5">After optimization</th>
-        </tr>
-        <tr>
-            <th>Bundle size</th>
-            <th>Total functions</th>
-            <th>Unique functions</th>
-            <th>Unique functions, %</th>
-            <th>Duplicate code, %</th>
-            <th>Bundle size</th>
-            <th>Total functions</th>
-            <th>Unique functions</th>
-            <th>Unique functions, %</th>
-            <th>Duplicate code, %</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>bun</td>
-            <td>6.2M</td>
-            <td>8903</td>
-            <td>7443</td>
-            <td>83.6%</td>
-            <td>0.78%</td>
-            <td>6.2M (no change)</td>
-            <td>7865 (-1038)</td>
-            <td>7355 (-88)</td>
-            <td>93.52% (+9.92%)</td>
-            <td>0.51% (-0.27%)</td>
-        </tr>
-        <tr>
-            <td>esbuild</td>
-            <td>8.7M</td>
-            <td>13057</td>
-            <td>10250</td>
-            <td>78.5%</td>
-            <td>3.9%</td>
-            <td>8.5M (-0.2M)</td>
-            <td>3265 (-9792)</td>
-            <td>2990 (-7260)</td>
-            <td>91.58% (+13.08%)</td>
-            <td>0.62% (-3.28%)</td>
-        </tr>
-        <tr>
-            <td>vite</td>
-            <td>3.9M</td>
-            <td>3502</td>
-            <td>2365</td>
-            <td>67.53%</td>
-            <td>6.39%</td>
-            <td>3.6M (-0.3M)</td>
-            <td>2483 (-1019)</td>
-            <td>2277 (-88)</td>
-            <td>91.7% (+24.17%)</td>
-            <td>1.68% (-4.71%)</td>
-        </tr>
-        <tr>
-            <td>webpack</td>
-            <td>4.4M</td>
-            <td>2898</td>
-            <td>1434</td>
-            <td>49.48%</td>
-            <td>6.91%</td>
-            <td>4.1M (-0.3M)</td>
-            <td>1484 (-1414)</td>
-            <td>1375 (-59)</td>
-            <td>92.65% (+43.17%)</td>
-            <td>0.43% (-6.48%)</td>
-        </tr>
-    </tbody>
-</table>
+| Bundler | Before optimization ||||| After optimization |||||
+|        ^| Bundle size | Total functions | Unique functions | Unique functions, % | Duplicate code, % | Bundle size | Total functions | Unique |functions | Unique functions, % | Duplicate code, % |
+| ------- | ---- | ----- | ----- | ------ | ----- | ------------ | ------------ | ------------ | ---------------- | -------------- |
+| bun     | 6.2M | 8903  | 7443  | 83.6%  | 0.78% | 6.2M (same)  | 7865 (-1038) | 7355 (-88)   | 93.52% (+9.92%)  | 0.51% (-0.27%) |
+| esbuild | 8.7M | 13057 | 10250 | 78.5%  | 3.9%  | 8.5M (-0.2M) | 3265 (-9792) | 2990 (-7260) | 91.58% (+13.08%) | 0.62% (-3.28%) |
+| vite    | 3.9M | 3502  | 2365  | 67.53% | 6.39% | 3.6M (-0.3M) | 2483 (-1019) | 2277 (-88)   | 91.7% (+24.17%)  | 1.68% (-4.71%) |
+| webpack | 4.4M | 2898  | 1434  | 49.48% | 6.91% | 4.1M (-0.3M) | 1484 (-1414) | 1375 (-59)   | 92.65% (+43.17%) | 0.43% (-6.48%) |
 
-Conclusion? The bundlers do a pretty average job at optimizing the bundles, even in production mode with some extra tuning.
+In conclusion, the bundlers do a pretty average job at optimizing the bundles, even in production mode with some extra tuning.
 And if some brave soul is willing to invest even more time and effort than I did into developing a sophisticated solution
 (potentially improving the existing tools, like uglifyjs or bundlers themselves), the numbers can be improved even further.
 It would be really interesting to see what would the results be running this optimizer on a bigger bundle.
+
+In my humble opinion, Bun does produce the cleanest bundle. It might be not the smallest one, but it has least unnecessary stuff.
+On top of that, it is the fastest tool in JS world I have ever used.
+By the way, this very blog is built using Bun and React SSR - on Github Actions it takes around a minute to build and publish:
+
+<img src="/images/how-unique-are-your-bundles/gh-pages-bun-build.webp" loading="lazy" alt="Github Actions build and publish with Bun">
+
+<img src="/images/how-unique-are-your-bundles/gh-pages-action-breakdown.webp" loading="lazy" alt="Github Actions build breakdown">
 
 <div class="content-read-marker" data-fraction="100"></div>
 

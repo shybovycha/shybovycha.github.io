@@ -21,11 +21,13 @@
     "@types/prismjs": "^1.26.3",
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
+    "bun-types": "latest",
     "classnames": "^2.5.1",
     "date-fns": "^3.3.1",
     "gray-matter": "^4.0.3",
     "lodash": "^4.17.21",
     "marked": "^11.2.0",
+    "marked-extended-tables": "^1.0.8",
     "marked-gfm-heading-id": "^3.1.2",
     "marked-highlight": "^2.1.0",
     "marked-mangle": "^1.1.6",
@@ -33,8 +35,7 @@
     "marked-xhtml": "^1.0.8",
     "prismjs": "^1.29.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "bun-types": "latest"
+    "react-dom": "^18.2.0"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
