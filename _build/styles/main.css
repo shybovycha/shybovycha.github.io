@@ -297,4 +297,11 @@ table td.change {
     a:active:not(.btn) {
         text-decoration: underline;
     }
+
+    table,
+    table th,
+    table td,
+    table tr {
+        border-color: var(--code-outline-color);
+    }
 }
