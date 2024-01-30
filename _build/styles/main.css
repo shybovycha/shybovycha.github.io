@@ -1,3 +1,6 @@
+@import url("prism.min.css") (prefers-color-scheme: light);
+@import url("prism-twilight.min.css") (prefers-color-scheme: dark);
+
 /* inline */
 
 .content-read-marker {
@@ -263,8 +266,6 @@ table td.change {
     background: var(--code-background);
     /* @extend %vertical-rhythm !optional; */
 }
-
-/* ... */
 
 @media (prefers-color-scheme: dark) {
     img {

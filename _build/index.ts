@@ -321,8 +321,16 @@ const copyStaticFiles = (staticDirs: string[], outputDir: string) =>
                     .catch(e => { logger.error(`Could not copy file ${src} to ${dst}`); throw e; });
             }),
 
-        fsPromise.copyFile('_build/main_bundle.css', path.join(outputDir, 'main.css')).catch(e => { logger.error(`Could not copy file main_bundle.css`); throw e; }),
-        fsPromise.copyFile('_build/prism.min_bundle.css', path.join(outputDir, 'prism.min.css')).catch(e => { logger.error(`Could not copy file prism.min_bundle.css`); throw e; }),
+        [
+            ['main_bundle.css', 'main.css'],
+            ['prism.min_bundle.css', 'prism.min.css'],
+            ['prism-twilight.min_bundle.css', 'prism-twilight.min.css'],
+        ].map(([file, alias]) =>
+            fsPromise
+                .copyFile(path.join('_build', file), path.join(outputDir, alias))
+                .catch(e => { logger.error(`Could not copy file ${file}`); throw e; })
+                .then(() => logger.log(`Copying ${file} -> ${path.join(outputDir, alias)}`))
+        ),
     ]);
 
 const copyOtherFiles = (files: string[], outputDir: string) =>

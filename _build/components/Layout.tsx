@@ -1,6 +1,7 @@
 import React from 'react';
 
 import 'prismjs/themes/prism.min.css';
+import 'prismjs/themes/prism-twilight.min.css';
 import '../styles/main.css';
 
 export interface LayoutProps {
@@ -26,7 +27,6 @@ const Layout = ({ title, head = null, header = null, footer = null, children }: 
         <link rel="preload" href="/main.css" as="style" />
 
         <link rel="stylesheet" href="/main.css" />
-        <link rel="stylesheet" href="/prism.min.css" />
 
         {head}
     </head>
