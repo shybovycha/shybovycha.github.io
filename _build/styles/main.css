@@ -361,4 +361,8 @@ code, code[class*="language-"] {
     table tr {
         border-color: var(--code-outline-color);
     }
+
+    table.expandable:before {
+        box-shadow: 1px 1px 10px 20px #bbbb;
+    }
 }
