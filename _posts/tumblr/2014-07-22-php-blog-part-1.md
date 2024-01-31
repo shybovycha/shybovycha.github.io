@@ -49,7 +49,7 @@ tumblr_url: http://shybovycha.tumblr.com/post/92523360106/php
 
 <p>Приблизно це виглядить отак:</p>
 
-<p><img alt="нечотка файлова структура" src="https://31.media.tumblr.com/0a8d7d23deb6bbb91b684da390b15a48/tumblr_inline_n94vrsNmqi1qh5oee.webp"/>.</p>
+<p><img alt="нечотка файлова структура" src="/images/tumblr/php-blog-part1/tumblr_inline_pk8jsmKqWa1qh5oee_400.webp"/>.</p>
 
 <p>І дуже-дуже нада знать CSS, HTML, ООП в PHP і потом, може, JavaScript і jQuery.</p>
 
@@ -63,11 +63,11 @@ tumblr_url: http://shybovycha.tumblr.com/post/92523360106/php
 
 <p>Виглядить це якось отако: якшо у нас було</p>
 
-<p><img alt="нечоткий код index.php" src="https://31.media.tumblr.com/5f1a4a1124dc4f99dc91c0ccb1f44915/tumblr_inline_n94vt1XEHH1qh5oee.webp"/></p>
+<p><img alt="нечоткий код index.php" src="/images/tumblr/php-blog-part1/tumblr_inline_pk8jsnkhj81qh5oee_500.webp"/></p>
 
 <p>то має стати</p>
 
-<p><img alt="чоткий код index.php" src="https://31.media.tumblr.com/3745645e9005922b5bae3d5bfb4f29c0/tumblr_inline_n94vtd8sEq1qh5oee.webp"/></p>
+<p><img alt="чоткий код index.php" src="/images/tumblr/php-blog-part1/tumblr_inline_pk8jsnJby91qh5oee_500.webp"/></p>
 
 <p>Так шо першим ділом ми будем убирать з нашого HTML весь лишній PHP код. Да, і желатєльно заранєє договоритись шо до цього момєнта HTML має бути подчищений от лишнього CSS - як мінімум всі <code>style="css-code"</code> замінить на <code>class="class-name"</code>. Шоб простіше було орієнтіруватись в коді.</p>
 

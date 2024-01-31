@@ -214,7 +214,7 @@ So, welcome the WebComponents' example:
 
 This code may not look so good, as it might, but it works like a charm!
 
-<p><a href="http://codepen.io/shybovycha/pen/gpGJOV"><figure data-orig-width="660" data-orig-height="79" class="tmblr-full"><img src="https://40.media.tumblr.com/08701b6b73d8dcf7c78f1ba163d7f44f/tumblr_inline_nqciwfuAqT1qh5oee_540.webp" alt="image" data-orig-width="660" data-orig-height="79"/></figure></a></p>
+<p><a href="http://codepen.io/shybovycha/pen/gpGJOV"><figure data-orig-width="660" data-orig-height="79" class="tmblr-full"><img src="/images/tumblr/about-bower-webcomponents-and-all-the-good/tumblr_inline_nqciwfuAqT1qh5oee_500.webp" alt="image" data-orig-width="660" data-orig-height="79"/></figure></a></p>
 
 This example is a bit ugly - it has both CSS, HTML and JavaScript mixed in a single file, but we’ll deal with it for a short time. Just think of the power you’ve got! You can define your own… well, it’s certainly kinda components! It is a bit uncomfortable to paste onto a page… and they are hardly ready to be used with something like Angular.
 

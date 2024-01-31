@@ -291,7 +291,7 @@ new $class(...);
 
 <p>Тоість, тепер у нас має бути якась така файлова структура:</p>
 
-<p><img alt="чотка файлова структура" src="https://31.media.tumblr.com/a1800a7221cf2a424d042a2ae3349fdd/tumblr_inline_n94w90fOhS1qh5oee.webp"/></p>
+<p><img alt="чотка файлова структура" src="/images/tumblr/php-blog-part2/tumblr_inline_pl2njcFk4W1qh5oee_400.webp"/></p>
 
 <h2>Домашнє завдання</h2>
 

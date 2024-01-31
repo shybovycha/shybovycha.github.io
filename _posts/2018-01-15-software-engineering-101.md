@@ -54,35 +54,35 @@ Each processor instruction is a chain of ones and zeros. Assume we have these co
 
 Let us name these commands:
 
-1. `ADD` = A + B -> C
-2. `SUB` = A - B -> C
-3. `MUL` = A * B -> C
-4. `DIV` = A / B -> C
+1. `ADD` = A + B -&gt; C
+2. `SUB` = A - B -&gt; C
+3. `MUL` = A * B -&gt; C
+4. `DIV` = A / B -&gt; C
 5. `NOTA` = NOT A
 6. `NOTB` = NOT B
-7. `AND` = A AND B -> C
-8. `OR` = A OR B -> C
-9. `XOR` = A XOR B -> C
-10. `SHR` = A >> B -> C (bitwise shift right)
-11. `SHL` = A << B -> C (bitwise shift left)
-12. `MOV A, const` = const -> A
-13. `MOV B, const` = const -> B
-14. `MOV C, A` = C -> A
-15. `MOV C, B` = C -> B
-16. `MOV A, C` = A -> C
-17. `MOV B, C` = B -> C
-18. `LOAD addr, A` = memory[addr] -> A
-19. `LOAD addr, B` = memory[addr] -> B
-20. `LOADB` = memory[A] -> B
-21. `SAVEB` = B -> memory[A]
-22. `CMP` = A <=> B -> C
+7. `AND` = A AND B -&gt; C
+8. `OR` = A OR B -&gt; C
+9. `XOR` = A XOR B -&gt; C
+10. `SHR` = A &gt;&gt; B -&gt; C (bitwise shift right)
+11. `SHL` = A &lt;&lt; B -&gt; C (bitwise shift left)
+12. `MOV A, const` = const -&gt; A
+13. `MOV B, const` = const -&gt; B
+14. `MOV C, A` = C -&gt; A
+15. `MOV C, B` = C -&gt; B
+16. `MOV A, C` = A -&gt; C
+17. `MOV B, C` = B -&gt; C
+18. `LOAD addr, A` = memory[addr] -&gt; A
+19. `LOAD addr, B` = memory[addr] -&gt; B
+20. `LOADB` = memory[A] -&gt; B
+21. `SAVEB` = B -&gt; memory[A]
+22. `CMP` = A &lt;=&gt; B -&gt; C
 23. `JMP line` = GOTO line
-24. `JL line` = if A < B (from comparison flags in C) then GOTO line
-25. `JLE line` = if A <= B then GOTO line
+24. `JL line` = if A &lt; B (from comparison flags in C) then GOTO line
+25. `JLE line` = if A &lt;= B then GOTO line
 26. `JEQ line` = if A == B then GOTO line
 27. `JNEQ line` = if A != B then GOTO line
-28. `JGE line` = if A >= B then GOTO line
-29. `JG line` = if A > B then GOTO line
+28. `JGE line` = if A &gt;= B then GOTO line
+29. `JG line` = if A &gt; B then GOTO line
 30. `NOP` = do nothing
 
 This is a great subset of Assembly language commands! Just think about it: you can actually represent pretty much any program using only these 30 instructions! All the modern processors' instructions are mostly optimized variations of the commands listed above.
