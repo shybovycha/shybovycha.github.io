@@ -4,6 +4,7 @@ import ReactDOMServer from 'react-dom/server';
 import Sitemap from './components/Sitemap';
 import RobotsTxt from './components/RobotsTxt';
 import RssAtom from './components/RssAtom';
+import RssFeed from './components/RssFeed';
 import PostPage from './components/PostPage';
 import StaticPage from './components/StaticPage';
 import IndexPage from './components/IndexPage';
@@ -36,6 +37,8 @@ export const renderSitemap = (posts: Post[], baseUrl: string) => Promise.resolve
 export const renderRobotsTxt = (posts: Post[], baseUrl: string) => Promise.resolve(RobotsTxt(posts, baseUrl));
 
 export const renderRssAtom = (posts: Post[], baseUrl: string) => Promise.resolve(RssAtom(posts, baseUrl));
+
+export const renderRssFeed = (posts: Post[], baseUrl: string) => Promise.resolve(RssFeed(posts, baseUrl));
 
 export const renderPost = (post: Post) => Promise.resolve({ ...post, content: ReactDOMServer.renderToStaticMarkup(<PostPage {...post} />) });
 

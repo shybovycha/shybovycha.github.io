@@ -82,6 +82,7 @@ import 'prismjs/components/prism-gherkin';
 import {
     renderRobotsTxt,
     renderRssAtom,
+    renderRssFeed,
     renderSitemap,
     renderIndexPage,
     renderPost,
@@ -288,6 +289,8 @@ const writeRobotsTxt = (robotsTxt: string, outputDir: string) => Bun.write(path.
 
 const writeRssAtom = (rssAtom: string, outputDir: string) => Bun.write(path.join(outputDir, 'atom.xml'), rssAtom).catch(e => { logger.error(`Could not write RSS atom`, e); throw e; });
 
+const writeRssFeed = (rssFeed: string, outputDir: string) => Bun.write(path.join(outputDir, 'feed.rss'), rssFeed).catch(e => { logger.error(`Could not write RSS feed`, e); throw e; });
+
 const writePosts = (renderedPosts: Post[], outputDir: string) =>
     Promise.all(renderedPosts.map(post => {
         const filePath = path.join(outputDir, post.link);
@@ -366,10 +369,11 @@ const build = async () => {
 
     await clean(outputDir);
 
-    const [sitemap, robotsTxt, rssAtom, renderedPosts, renderedIndexPages, renderedStaticPages, _1, _2] = await Promise.all([
+    const [sitemap, robotsTxt, rssAtom, rssFeed, renderedPosts, renderedIndexPages, renderedStaticPages, _1, _2] = await Promise.all([
         renderSitemap(posts, baseUrl),
         renderRobotsTxt(posts, baseUrl),
         renderRssAtom(posts, baseUrl),
+        renderRssFeed(posts, baseUrl),
         Promise.all(posts.map(post => renderPost(post))),
         Promise.all(chunk(posts, pageSize).map((posts: Post[], idx: number) => renderIndexPage(posts, idx))),
         Promise.all(staticPages.map((page) => renderStaticPage(page))),
@@ -382,6 +386,7 @@ const build = async () => {
         writeSitemap(sitemap, outputDir),
         writeRobotsTxt(robotsTxt, outputDir),
         writeRssAtom(rssAtom, outputDir),
+        writeRssFeed(rssFeed, outputDir),
         writePosts(renderedPosts, outputDir),
         writeStaticPages(renderedStaticPages, outputDir),
         writeIndexPages(renderedIndexPages, outputDir),
