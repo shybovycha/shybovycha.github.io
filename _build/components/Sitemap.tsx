@@ -4,7 +4,7 @@ import { Post } from '../render';
 
 const createRobotsUrl = (post: Post, baseUrl: string) => `<url>
     <loc>${baseUrl}/${post.link.replaceAll(/[\/\\]+/g, '/')}</loc>
-    <lastmod>${format(post.timestamp, 'yyyy-MM-dd')}</lastmod>
+    <lastmod>${format(post.updateTimestamp, 'yyyy-MM-dd')}</lastmod>
 </url>`;
 
 const Sitemap = (posts: Post[], baseUrl: string) => {

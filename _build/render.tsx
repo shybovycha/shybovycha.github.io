@@ -3,6 +3,7 @@ import ReactDOMServer from 'react-dom/server';
 
 import Sitemap from './components/Sitemap';
 import RobotsTxt from './components/RobotsTxt';
+import RssAtom from './components/RssAtom';
 import PostPage from './components/PostPage';
 import StaticPage from './components/StaticPage';
 import IndexPage from './components/IndexPage';
@@ -21,6 +22,7 @@ export interface Post {
     title: string;
     link: string;
     timestamp: Date;
+    updateTimestamp: Date;
     excerpt?: string;
     content: string;
 }
@@ -32,6 +34,8 @@ export type StaticPage = PostContent & {
 export const renderSitemap = (posts: Post[], baseUrl: string) => Promise.resolve(Sitemap(posts, baseUrl));
 
 export const renderRobotsTxt = (posts: Post[], baseUrl: string) => Promise.resolve(RobotsTxt(posts, baseUrl));
+
+export const renderRssAtom = (posts: Post[], baseUrl: string) => Promise.resolve(RssAtom(posts, baseUrl));
 
 export const renderPost = (post: Post) => Promise.resolve({ ...post, content: ReactDOMServer.renderToStaticMarkup(<PostPage {...post} />) });
 

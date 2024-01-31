@@ -81,6 +81,7 @@ import 'prismjs/components/prism-gherkin';
 
 import {
     renderRobotsTxt,
+    renderRssAtom,
     renderSitemap,
     renderIndexPage,
     renderPost,
@@ -192,11 +193,12 @@ const postCache = new Map();
 
 const loadPost = async (absoluteFilePath: string, postDir: string): Promise<Post> => {
     const postPath = postDir ? absoluteFilePath.replace(postDir, '') : absoluteFilePath;
-    const timestamp = fs.statSync(absoluteFilePath).mtimeMs;
+    const fileStat = fs.statSync(absoluteFilePath);
+    const updateTimestamp = fileStat.mtime;
 
     const cached = postCache.get(postPath);
 
-    if (cached && timestamp === cached.timestamp) {
+    if (cached && updateTimestamp === cached.timestamp) {
         return cached.post;
     }
 
@@ -211,12 +213,13 @@ const loadPost = async (absoluteFilePath: string, postDir: string): Promise<Post
         title: frontMatter.title,
         link: postLink,
         timestamp: parsePostDate(postPath, frontMatter),
+        updateTimestamp,
         excerpt,
         content,
     };
 
     postCache.set(postPath, {
-        timestamp,
+        timestamp: updateTimestamp,
         post
     });
 
@@ -282,6 +285,8 @@ const createPostDir = (post: Post, outputDir: string) => fsPromise.mkdir(path.jo
 const writeSitemap = (sitemap: string, outputDir: string) => Bun.write(path.join(outputDir, 'sitemap.xml'), sitemap).catch(e => { logger.error(`Could not write sitemap`, e); throw e; });
 
 const writeRobotsTxt = (robotsTxt: string, outputDir: string) => Bun.write(path.join(outputDir, 'robots.txt'), robotsTxt).catch(e => { logger.error(`Could not write robots.txt`, e); throw e; });
+
+const writeRssAtom = (rssAtom: string, outputDir: string) => Bun.write(path.join(outputDir, 'atom.xml'), rssAtom).catch(e => { logger.error(`Could not write RSS atom`, e); throw e; });
 
 const writePosts = (renderedPosts: Post[], outputDir: string) =>
     Promise.all(renderedPosts.map(post => {
@@ -361,9 +366,10 @@ const build = async () => {
 
     await clean(outputDir);
 
-    const [sitemap, robotsTxt, renderedPosts, renderedIndexPages, renderedStaticPages, _1, _2] = await Promise.all([
+    const [sitemap, robotsTxt, rssAtom, renderedPosts, renderedIndexPages, renderedStaticPages, _1, _2] = await Promise.all([
         renderSitemap(posts, baseUrl),
         renderRobotsTxt(posts, baseUrl),
+        renderRssAtom(posts, baseUrl),
         Promise.all(posts.map(post => renderPost(post))),
         Promise.all(chunk(posts, pageSize).map((posts: Post[], idx: number) => renderIndexPage(posts, idx))),
         Promise.all(staticPages.map((page) => renderStaticPage(page))),
@@ -375,6 +381,7 @@ const build = async () => {
     return await Promise.all([
         writeSitemap(sitemap, outputDir),
         writeRobotsTxt(robotsTxt, outputDir),
+        writeRssAtom(rssAtom, outputDir),
         writePosts(renderedPosts, outputDir),
         writeStaticPages(renderedStaticPages, outputDir),
         writeIndexPages(renderedIndexPages, outputDir),

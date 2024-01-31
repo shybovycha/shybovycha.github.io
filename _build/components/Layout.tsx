@@ -20,6 +20,8 @@ const Layout = ({ title, head = null, header = null, footer = null, children }: 
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>{title}</title>
 
+        <link rel="alternate" href="/atom.xml" type="application/atom+xml" title="RSS Atom feed" />
+
         <link rel="icon" href="/images/favicon-compressed.webp" />
         <link rel="shortcut icon" href="/images/favicon-compressed.webp" />
         <link rel="apple-touch-icon" href="/images/favicon-compressed.webp" />
