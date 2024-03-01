@@ -16,7 +16,7 @@ For that task, Clojure as a language was selected with a suite of libraries (to 
 * Liberator
 * SpeCLJ
 
-To this day, I find the code we built quite neat. This was mostly thanks to the combination of those libraries, which together created
+To this day, I find the code we built quite neat. This was to a large extent thanks to the combination of those libraries, which together created
 a nice framework to build a REST API.
 
 For once, the routes were defined in Sinatra / Express.js style:
@@ -27,15 +27,15 @@ For once, the routes were defined in Sinatra / Express.js style:
   (route/not-found "<h1>Page not found</h1>"))
 ```
 
-On top of that, the requests were enriched using middlewares (also very Express.js style):
+On top of that, the requests were enriched using middlewares (also very similar to Express.js style):
 
 ```clj
 (defn wrap-current-user-id [handler]
   (fn [request]
     (let [
-            user-id (-> request :session :user-id)
-            request2 (assoc request :user-id user-id)
-        ]
+        user-id (-> request :session :user-id)
+        request2 (assoc request :user-id user-id)
+      ]
       (handler request2))))
 ```
 
@@ -48,11 +48,11 @@ But the thing I want to touch the most upon is the way each request was handled 
 ```clj
 (defroutes app
   (ANY "/secret" []
-       (resource :available-media-types ["text/html"]
-                 :exists? (fn [ctx]
-                            (= "tiger" (get-in ctx [:request :params "word"])))
-                 :handle-ok "You found the secret word!"
-                 :handle-not-found "Uh, that's the wrong word. Guess again!")))
+    (resource :available-media-types ["text/html"]
+              :exists? (fn [ctx]
+                        (= "tiger" (get-in ctx [:request :params "word"])))
+              :handle-ok "You found the secret word!"
+              :handle-not-found "Uh, that's the wrong word. Guess again!")))
 ```
 
 This is the style implemented by Liberator.
@@ -69,13 +69,17 @@ Hence our entire application looked like this:
 (defn secret-exists? [ctx]
     (= "tiger" (get-in ctx [:request :params "word"])))
 
-(def secret-resource
-    (resource
-        :available-media-types ["text/html"]
-        :exists? secret-exists?
-        :handle-ok "You found the secret word!"
-        :handle-not-found "Uh, that's the wrong word. Guess again!"))
+(defresource secret-resource []
+  :available-media-types ["text/html"]
+  :exists? secret-exists?
+  :handle-ok "<html><body><h1>You found the secret word!</h1></body></html>"
+  :handle-not-found "Uh, that's the wrong word. Guess again!")
+
+(defresource odd-or-even-resource [n]
+  :available-media-types ["text/html"]
+  :handle-ok (format "<html><body><h1>%d is %s</h1></body></html>" n (if (odd? n) "odd" "even")))
 
 (defroutes app
-  (ANY "/secret" [] secret-resource))
+  (ANY "/secret" [] secret-resource)
+  (ANY "/odd-or-even/:n" [n] (odd-or-even-resource n)))
 ```
