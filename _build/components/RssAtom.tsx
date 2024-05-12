@@ -33,89 +33,94 @@ const createRssEntry = (post: Post, baseUrl: string) => {
         },
     });
 
-    const contentXml = parser.parse(content);
-    const excerptXml = excerpt && parser.parse(excerpt);
+    try {
+        const contentXml = parser.parse(content);
+        const excerptXml = excerpt && parser.parse(excerpt);
 
-    const builder = new XMLBuilder({
-        ignoreAttributes: false,
-        format: true,
-        preserveOrder: true,
-        processEntities: true,
-    });
+        const builder = new XMLBuilder({
+            ignoreAttributes: false,
+            format: true,
+            preserveOrder: true,
+            processEntities: true,
+        });
 
-    return builder.build([
-        {
-            entry: [
-                {
-                    title: [
-                        {
-                            '#text': title,
-                        },
-                    ],
-                },
-                {
-                    link: [],
-                    ':@': {
-                        '@_href': `${baseUrl}/${post.link.replaceAll(/[\/\\]+/g, '/')}`,
-                    },
-                },
-                {
-                    id: [
-                        {
-                            '#text': `urn:uuid:${uuidv5(post.link, uuidv5.URL)}`,
-                        },
-                    ],
-                },
-                {
-                    published: [
-                        {
-                            '#text': formatISO(post.timestamp),
-                        },
-                    ],
-                },
-                {
-                    updated: [
-                        {
-                            '#text': formatISO(post.timestamp),
-                        },
-                    ],
-                },
-                {
-                    summary:
-                        excerpt
-                            ? [{ div: excerptXml, ':@': { '@_xmlns': 'http://www.w3.org/1999/xhtml' } }]
-                            : [{ '#text': title }],
-                    ':@': {
-                        '@_type': excerpt ? 'xhtml' : 'text',
-                    },
-                },
-                {
-                    author: [
-                        {
-                            name: [
-                                {
-                                    '#text': 'Artem Shubovych',
-                                },
-                            ],
-                        },
-                    ],
-                },
-                {
-                    content: [
-                        {
-                            div: contentXml,
-                            ':@': {
-                                '@_xmlns': 'http://www.w3.org/1999/xhtml',
+        return builder.build([
+            {
+                entry: [
+                    {
+                        title: [
+                            {
+                                '#text': title,
                             },
-                        },
-                    ],
-                    ':@': {
-                        '@_type': 'xhtml',
+                        ],
                     },
-                },
-            ],
-        },
-    ]);
+                    {
+                        link: [],
+                        ':@': {
+                            '@_href': `${baseUrl}/${post.link.replaceAll(/[\/\\]+/g, '/')}`,
+                        },
+                    },
+                    {
+                        id: [
+                            {
+                                '#text': `urn:uuid:${uuidv5(post.link, uuidv5.URL)}`,
+                            },
+                        ],
+                    },
+                    {
+                        published: [
+                            {
+                                '#text': formatISO(post.timestamp),
+                            },
+                        ],
+                    },
+                    {
+                        updated: [
+                            {
+                                '#text': formatISO(post.timestamp),
+                            },
+                        ],
+                    },
+                    {
+                        summary:
+                            excerpt
+                                ? [{ div: excerptXml, ':@': { '@_xmlns': 'http://www.w3.org/1999/xhtml' } }]
+                                : [{ '#text': title }],
+                        ':@': {
+                            '@_type': excerpt ? 'xhtml' : 'text',
+                        },
+                    },
+                    {
+                        author: [
+                            {
+                                name: [
+                                    {
+                                        '#text': 'Artem Shubovych',
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                    {
+                        content: [
+                            {
+                                div: contentXml,
+                                ':@': {
+                                    '@_xmlns': 'http://www.w3.org/1999/xhtml',
+                                },
+                            },
+                        ],
+                        ':@': {
+                            '@_type': 'xhtml',
+                        },
+                    },
+                ],
+            },
+        ]);
+    } catch (e) {
+        console.error(`Failed to create RSS atom from post`, post, `because of an error`, e);
+        return '';
+    }
 };
 
 const RssAtom = (posts: Post[], baseUrl: string) => {

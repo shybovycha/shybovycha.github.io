@@ -374,18 +374,23 @@ const clean = (outputDir: string) =>
 
 const build = async () => {
     const postsDir = process.env.POSTS_DIR || config.postsDir;
+    const draftsDir = process.env.DRAFTS_DIR || config.draftsDir;
     const staticPagesDir = process.env.PAGES_DIR || config.staticPagesDir;
     const staticFilesDirs = process.env.STATIC_FILES_DIRS?.split(',') || config.staticFilesDirs;
     const otherFiles = process.env.OTHER_FILES?.split(',') || config.otherFiles;
     const outputDir = process.env.OUTPUT_DIR || config.outputDir;
     const pageSize = process.env.PAGE_SIZE ? parseInt(process.env.PAGE_SIZE) : config.pageSize;
     const baseUrl = process.env.BASE_URL || config.baseUrl;
+    const buildDrafts = (process.env.BUILD_DRAFTS === 'true') || config.buildDrafts;
     const staticPagesMap = config.staticPages || {};
 
-    const [posts, staticPages] = await Promise.all([
+    const [_posts, _drafts, staticPages] = await Promise.all([
         loadPosts(postsDir),
+        buildDrafts ? loadPosts(draftsDir) : Promise.resolve([]),
         loadStaticPages(staticPagesMap, staticPagesDir),
     ]);
+
+    const posts = [..._posts, ..._drafts];
 
     await clean(outputDir);
 

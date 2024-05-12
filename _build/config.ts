@@ -3,6 +3,8 @@ export interface Config {
     outputDir: string;
     pageSize: number;
     postsDir: string;
+    draftsDir: string;
+    buildDrafts: boolean;
     staticFilesDirs: string[];
     staticPagesDir: string;
     staticPages: Record<string, string>;
@@ -11,6 +13,8 @@ export interface Config {
 
 const config: Config = {
     postsDir: '_posts',
+    draftsDir: '_drafts',
+    buildDrafts: false,
     staticPagesDir: '.',
     staticFilesDirs: [
         'images',
