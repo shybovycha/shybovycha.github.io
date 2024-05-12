@@ -166,7 +166,7 @@ const loadPost = async (absoluteFilePath: string, postDir: string): Promise<Post
         return cached.post;
     }
 
-    const src = await fsPromise.readFile(absoluteFilePath, 'utf-8').catch(e => { logger.error(`Could not find post ${absoluteFilePath}`); throw e; });
+    const src = await Bun.file(absoluteFilePath, { type: 'text/plain;charset=utf-8' }).text().catch(e => { logger.error(`Could not find post ${absoluteFilePath}`); throw e; });
     const { frontMatter, excerpt, content } = await parsePostContent(src, { excerptSeparator: '<!--more-->' });
 
     const postLink = path.join(path.dirname(postPath), path.basename(postPath).replace(/^(\d+)-(\d+)-(\d+)-(.+)\.(md|html?)$/, '$1/$2/$3/$4.html')).replace('\\', '/').replace(/^[\\\/]+/, '');
@@ -231,7 +231,7 @@ const loadStaticPages = async (staticPages: Record<string, string>, staticPagesD
             .map(([ filePath, outputPath ]) => ([ path.join(staticPagesDir, filePath), outputPath ]))
             .map(async ([ filePath, outputPath ]) => {
                 try {
-                    const txt = await fsPromise.readFile(filePath, 'utf-8');
+                    const txt = await Bun.file(filePath, { type: 'text/plain;charset=utf-8' }).text();
                     const parsedContent = await parsePostContent(txt);
 
                     return { ...parsedContent, outputPath };
@@ -244,41 +244,83 @@ const loadStaticPages = async (staticPages: Record<string, string>, staticPagesD
 
 // ---
 
-const createPostDir = (post: Post, outputDir: string) => fsPromise.mkdir(path.join(outputDir, path.dirname(post.link)), { recursive: true });
+const createPostDir = async (post: Post, outputDir: string) => {
+    await fsPromise.mkdir(path.join(outputDir, path.dirname(post.link)), { recursive: true });
+};
 
-const writeSitemap = (sitemap: string, outputDir: string) => Bun.write(path.join(outputDir, 'sitemap.xml'), sitemap).catch(e => { logger.error(`Could not write sitemap`, e); throw e; });
+const writeSitemap = async (sitemap: string, outputDir: string) => {
+    try {
+        await Bun.write(path.join(outputDir, 'sitemap.xml'), sitemap);
+    } catch (e) {
+        logger.error(`Could not write sitemap`, e);
+        throw e;
+    }
+};
 
-const writeRobotsTxt = (robotsTxt: string, outputDir: string) => Bun.write(path.join(outputDir, 'robots.txt'), robotsTxt).catch(e => { logger.error(`Could not write robots.txt`, e); throw e; });
+const writeRobotsTxt = async (robotsTxt: string, outputDir: string) => {
+    try {
+        await Bun.write(path.join(outputDir, 'robots.txt'), robotsTxt)
+    } catch (e) {
+        logger.error(`Could not write robots.txt`, e);
+        throw e;
+    }
+};
 
-const writeRssAtom = (rssAtom: string, outputDir: string) => Bun.write(path.join(outputDir, 'atom.xml'), rssAtom).catch(e => { logger.error(`Could not write RSS atom`, e); throw e; });
+const writeRssAtom = async (rssAtom: string, outputDir: string) => {
+    try {
+        await Bun.write(path.join(outputDir, 'atom.xml'), rssAtom);
+    } catch (e) {
+        logger.error(`Could not write RSS atom`, e);
+        throw e;
+    }
+};
 
-const writeRssFeed = (rssFeed: string, outputDir: string) => Bun.write(path.join(outputDir, 'feed.rss'), rssFeed).catch(e => { logger.error(`Could not write RSS feed`, e); throw e; });
+const writeRssFeed = async (rssFeed: string, outputDir: string) => {
+    try {
+        await Bun.write(path.join(outputDir, 'feed.rss'), rssFeed);
+    } catch (e) {
+        logger.error(`Could not write RSS feed`, e);
+        throw e;
+    }
+};
 
 const writePosts = (renderedPosts: Post[], outputDir: string) =>
-    Promise.all(renderedPosts.map(post => {
+    Promise.all(renderedPosts.map(async post => {
         const filePath = path.join(outputDir, post.link);
 
         logger.log(`Writing post ${filePath}`);
 
-        return Bun.write(filePath, '<!DOCTYPE html>' + post.content).catch(e => { logger.error(`Could not write post ${filePath}`, e); throw e; });
+        try {
+            return await Bun.write(filePath, '<!DOCTYPE html>' + post.content);
+        } catch (e) {
+            logger.error(`Could not write post ${filePath}`, e); throw e;
+        }
     }));
 
 const writeStaticPages = (renderedStaticPages: StaticPage[], outputDir: string) =>
-    Promise.all(renderedStaticPages.map(({ content, outputPath }) => {
+    Promise.all(renderedStaticPages.map(async ({ content, outputPath }) => {
         const filePath = path.join(outputDir, outputPath);
 
         logger.log(`Writing static page ${filePath}`);
 
-        return Bun.write(filePath, '<!DOCTYPE html>' + content).catch(e => { logger.error(`Could not write static page ${filePath}`, e); throw e; });
+        try {
+            return await Bun.write(filePath, '<!DOCTYPE html>' + content);
+        } catch (e) {
+            logger.error(`Could not write static page ${filePath}`, e); throw e;
+        }
     }));
 
 const writeIndexPages = (renderedIndexPages: string[], outputDir: string) =>
-    Promise.all(renderedIndexPages.map((content, index) => {
+    Promise.all(renderedIndexPages.map(async (content, index) => {
         const filePath = path.join(outputDir, index == 0 ? 'index.html' : `page${index + 1}.html`);
 
         logger.log(`Writing page ${filePath}`);
 
-        return Bun.write(filePath, '<!DOCTYPE html>' + content).catch(e => { logger.error(`Could not write index page ${filePath}`, e); throw e; });
+        try {
+            return await Bun.write(filePath, '<!DOCTYPE html>' + content);
+        } catch (e) {
+            logger.error(`Could not write index page ${filePath}`, e); throw e;
+        }
     }));
 
 const copyStaticFiles = (staticDirs: string[], outputDir: string) =>
@@ -286,29 +328,44 @@ const copyStaticFiles = (staticDirs: string[], outputDir: string) =>
         staticDirs
             .flatMap(dir => getFilesRec(dir))
             .map(file => ([ file, path.join(outputDir, file) ]))
-            .map(([ src, dst ]) => {
+            .map(async ([ src, dst ]) => {
                 logger.log(`Copying ${src} -> ${dst}`);
 
-                return fsPromise.mkdir(path.dirname(dst), { recursive: true })
-                    .then(() => fsPromise.copyFile(src, dst))
-                    .catch(e => { logger.error(`Could not copy file ${src} to ${dst}`); throw e; });
+                try {
+                    await fsPromise.mkdir(path.dirname(dst), { recursive: true });
+                    return await fsPromise.copyFile(src, dst);
+                } catch (e) {
+                    logger.error(`Could not copy file ${src} to ${dst}`); throw e;
+                }
             }),
 
         [
             ['main_bundle.css', 'main.css'],
             ['prism.min_bundle.css', 'prism.min.css'],
             ['prism-twilight.min_bundle.css', 'prism-twilight.min.css'],
-        ].map(([file, alias]) =>
-            fsPromise
-                .copyFile(path.join('_build_tmp', file), path.join(outputDir, alias))
-                .catch(e => { logger.error(`Could not copy file ${file}`); throw e; })
-                .then(() => logger.log(`Copying ${file} -> ${path.join(outputDir, alias)}`))
-        ),
+        ].map(async ([file, alias]) => {
+            try {
+                await fsPromise.copyFile(path.join('_build_tmp', file), path.join(outputDir, alias));
+                logger.log(`Copying ${file} -> ${path.join(outputDir, alias)}`);
+            } catch (e) {
+                logger.error(`Could not copy file ${file}`);
+                throw e;
+            }
+        }),
     ]);
 
 const copyOtherFiles = (files: string[], outputDir: string) =>
     Promise.all(
-        files.map(file => fsPromise.copyFile(file, path.join(outputDir, path.basename(file))).then(() => logger.log(`Copying ${file} -> ${path.join(outputDir, path.basename(file))}`)).catch(e => { logger.error(`Could not copy file ${file}`); throw e; }))
+        files.map(async (file) => {
+            try {
+                await fsPromise.copyFile(file, path.join(outputDir, path.basename(file)));
+
+                logger.log(`Copying ${file} -> ${path.join(outputDir, path.basename(file))}`);
+            } catch (e) {
+                logger.error(`Could not copy file ${file}`);
+                throw e;
+            }
+        })
     );
 
 const clean = (outputDir: string) =>
