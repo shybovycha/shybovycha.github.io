@@ -19,6 +19,9 @@ import { chunk, isString } from 'lodash';
 import Prism from'prismjs';
 
 import 'prismjs/components/prism-c';
+import 'prismjs/components/prism-coffeescript';
+import 'prismjs/components/prism-latex';
+import 'prismjs/components/prism-kotlin';
 import 'prismjs/components/prism-cpp';
 import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-ruby';
@@ -169,7 +172,7 @@ const loadPost = async (absoluteFilePath: string, postDir: string): Promise<Post
     const src = await Bun.file(absoluteFilePath, { type: 'text/plain;charset=utf-8' }).text().catch(e => { logger.error(`Could not find post ${absoluteFilePath}`); throw e; });
     const { frontMatter, excerpt, content } = await parsePostContent(src, { excerptSeparator: '<!--more-->' });
 
-    const postLink = path.join(path.dirname(postPath), path.basename(postPath).replace(/^(\d+)-(\d+)-(\d+)-(.+)\.(md|html?)$/, '$1/$2/$3/$4.html')).replace('\\', '/').replace(/^[\\\/]+/, '');
+    const postLink = path.join(path.dirname(postPath), path.basename(postPath).replace(/^(\d+)-(\d+)-(\d+)-(.+)\.(md|markdown|html?)$/, '$1/$2/$3/$4.html')).replace('\\', '/').replace(/^[\\\/]+/, '').replace(/^(.+)\.(md|markdown|html?)$/, '$1.html');
 
     logger.log(`Processing post ${postPath} -> ${postLink}`);
 
@@ -222,7 +225,7 @@ const loadPosts = async (postDir: string): Promise<Post[]> => {
 
     const posts = await Promise.all(files.map((file) => loadPost(file, postDir)));
 
-    return posts.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    return posts;
 };
 
 const loadStaticPages = async (staticPages: Record<string, string>, staticPagesDir: string): Promise<StaticPage[]> =>
@@ -372,6 +375,20 @@ const clean = (outputDir: string) =>
     fsPromise.rm(outputDir, { recursive: true, force: true })
         .then(() => fsPromise.mkdir(outputDir, { recursive: true }));
 
+const loadDrafts = async (draftsDir: string, buildDrafts: boolean) => {
+    if (!buildDrafts) {
+        return Promise.resolve([]);
+    }
+
+    const drafts = await loadPosts(draftsDir);
+
+    return drafts.map(draft => ({
+        ...draft,
+        link: `_drafts/${draft.link}`,
+        excerpt: draft.excerpt || draft.content,
+    }));
+}
+
 const build = async () => {
     const postsDir = process.env.POSTS_DIR || config.postsDir;
     const draftsDir = process.env.DRAFTS_DIR || config.draftsDir;
@@ -386,11 +403,11 @@ const build = async () => {
 
     const [_posts, _drafts, staticPages] = await Promise.all([
         loadPosts(postsDir),
-        buildDrafts ? loadPosts(draftsDir) : Promise.resolve([]),
+        loadDrafts(draftsDir, buildDrafts),
         loadStaticPages(staticPagesMap, staticPagesDir),
     ]);
 
-    const posts = [..._posts, ..._drafts];
+    const posts = [..._posts, ..._drafts].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
     await clean(outputDir);
 

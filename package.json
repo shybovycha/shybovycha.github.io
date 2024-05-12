@@ -12,7 +12,8 @@
   },
   "scripts": {
     "build": "bun build _build/index.ts --outdir _build_tmp/ --target browser --entry-naming \"builder_bundle.[ext]\" --asset-naming \"[name]_bundle.[ext]\" && bun _build/index.ts",
-    "build-dev": "bun build _build/index.ts --outdir _build_tmp/ --target browser --entry-naming \"builder_bundle.[ext]\" --asset-naming \"[name]_bundle.[ext]\" && BUILD_DRAFTS=true  bun _build/index.ts"
+    "build-dev": "bun build _build/index.ts --outdir _build_tmp/ --target browser --entry-naming \"builder_bundle.[ext]\" --asset-naming \"[name]_bundle.[ext]\" && BUILD_DRAFTS=true  bun _build/index.ts",
+    "serve": "bun _build/server.ts"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.202",
