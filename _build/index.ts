@@ -245,6 +245,19 @@ const loadStaticPages = async (staticPages: Record<string, string>, staticPagesD
             })
     );
 
+const loadDrafts = async (draftsDir: string, buildDrafts: boolean) => {
+    if (!buildDrafts) {
+        return Promise.resolve([]);
+    }
+
+    const drafts = await loadPosts(draftsDir);
+
+    return drafts.map(draft => ({
+        ...draft,
+        link: `_drafts/${draft.link}`,
+    }));
+};
+
 // ---
 
 const createPostDir = async (post: Post, outputDir: string) => {
@@ -374,20 +387,6 @@ const copyOtherFiles = (files: string[], outputDir: string) =>
 const clean = (outputDir: string) =>
     fsPromise.rm(outputDir, { recursive: true, force: true })
         .then(() => fsPromise.mkdir(outputDir, { recursive: true }));
-
-const loadDrafts = async (draftsDir: string, buildDrafts: boolean) => {
-    if (!buildDrafts) {
-        return Promise.resolve([]);
-    }
-
-    const drafts = await loadPosts(draftsDir);
-
-    return drafts.map(draft => ({
-        ...draft,
-        link: `_drafts/${draft.link}`,
-        excerpt: draft.excerpt || draft.content,
-    }));
-}
 
 const build = async () => {
     const postsDir = process.env.POSTS_DIR || config.postsDir;
