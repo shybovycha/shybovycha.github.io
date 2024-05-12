@@ -75,4 +75,100 @@ This would be the best strategy for the most projects, migrating one bit at a ti
 
 The bigger issue is that most modern frontend apps I have seen are so mangled in mixing the business logic and the presentation layer, it would be challenging (to say the least) to get unmangle it to a reasonable code. Check how we handle UI action, triggering a HTTP request and updating both the UI (to display the request progress/status) and the application state (for other parts of the UI) at the same time.
 
-TODO: add an example of converting _a_ component from React codebase to PureScript (maybe with Halogen).
+TODO: add an example of converting _a_ component from React codebase to PureScript (maybe with Halogen). Assume a simple React app with a 3rd party component (like a date picker) and try calling PureScript logic from React component and then React component from PureScript code. [FFI example in PureScript book](https://book.purescript.org/chapter10.html):
+
+```purescript
+module Test where
+
+import Prelude
+
+-- import Effect (Effect)
+-- import Effect.Console (logShow)
+-- import TryPureScript (render, withConsole)
+
+gcd :: Int -> Int -> Int
+gcd 0 m = m
+gcd n 0 = n
+gcd n m
+  | n > m     = gcd (n - m) m
+  | otherwise = gcd (m – n) n
+
+data ZeroOrOne a = Zero | One a
+
+inc :: ZeroOrOne Int -> ZeroOrOne Int
+inc Zero = Zero
+inc (One n) = One (n + 1)
+
+_zero = Zero
+_one = One 1
+_two = One 2
+
+-- instance Show t => Show (ZeroOrOne t) where
+--   show Zero = "Zero"
+--   show (One n) = "One(" <> (show n) <> ")"
+
+-- main :: Effect Unit
+-- main = render =<< withConsole do
+--   logShow (inc _zero)
+--   logShow (inc _one)
+--   logShow (inc _two)
+```
+
+and then
+
+```js
+import Test from 'Test.js';
+
+Test.gcd(15)(20);
+
+const _zero = new Test.Zero();
+const _one = new Test.One(1);
+const _two = new Test.One(2);
+
+console.log(Test.inc(_zero));
+console.log(Test.inc(_one));
+console.log(Test.inc(_two));
+```
+
+And in the other direction:
+
+```js
+export const setItem = key => value => () =>
+  window.localStorage.setItem(key, value);
+
+export const getItem = key => () =>
+  window.localStorage.getItem(key);
+```
+
+and then
+
+```purescript
+foreign import setItem :: String -> String -> Effect Unit
+
+foreign import getItem :: String -> Effect Json
+
+import Data.Argonaut (class DecodeJson, class EncodeJson)
+import Data.Argonaut.Decode.Generic (genericDecodeJson)
+import Data.Argonaut.Encode.Generic (genericEncodeJson)
+import Data.Generic.Rep (class Generic)
+
+-- define PhoneType
+
+derive instance Generic PhoneType _
+
+instance EncodeJson PhoneType where encodeJson = genericEncodeJson
+instance DecodeJson PhoneType where decodeJson = genericDecodeJson
+
+processItem :: Json -> Either String Person
+processItem item = do
+  jsonString <- decodeJson item
+  j          <- jsonParser jsonString
+  decodeJson j
+
+main = do
+  initialPerson <- case processItem item of
+    Left  err -> do
+      log $ "Error: " <> err <> ". Loading examplePerson"
+      pure examplePerson
+    Right p   -> pure p
+```
