@@ -21,7 +21,7 @@ a nice framework to build a REST API.
 
 For once, the routes were defined in Sinatra / Express.js style:
 
-```clj
+```clojure
 (defroutes app
   (GET "/" [] "<h1>Hello World</h1>")
   (route/not-found "<h1>Page not found</h1>"))
@@ -29,7 +29,7 @@ For once, the routes were defined in Sinatra / Express.js style:
 
 On top of that, the requests were enriched using middlewares (also very similar to Express.js style):
 
-```clj
+```clojure
 (defn wrap-current-user-id [handler]
   (fn [request]
     (let [
@@ -45,7 +45,7 @@ The underlying HTTP framework was Ring, which allowed for all that goodiness.
 
 But the thing I want to touch the most upon is the way each request was handled in a RESTful manner:
 
-```clj
+```clojure
 (defroutes app
   (ANY "/secret" []
     (resource :available-media-types ["text/html"]
@@ -65,7 +65,7 @@ It is essentially a big state machine wich each state defined as "continue to ne
 
 Hence our entire application looked like this:
 
-```clj
+```clojure
 (defn secret-exists? [ctx]
     (= "tiger" (get-in ctx [:request :params "word"])))
 

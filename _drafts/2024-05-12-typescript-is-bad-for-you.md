@@ -1,5 +1,6 @@
 ---
 layout: post
+title: 'TypeScript is bad for you'
 ---
 
 Back in 2011 frontend was a very different thing - JavaScript had no `class`, `Object.entries` / `Object.keys`, promises were a proof of concept idea (unless 3rd party library [bluebird](https://github.com/petkaantonov/bluebird)) and Node was v0.10.

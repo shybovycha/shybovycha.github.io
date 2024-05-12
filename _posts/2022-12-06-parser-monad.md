@@ -137,7 +137,7 @@ There are few trivial parsers which to help on this endeavour:
 Since a parser is just a function `String -> Maybe (a, String)`, in order to actually __parse__ something, one needs to __run__ it.
 Running a parser is as easy as executing a function `parse`, passing it a parser and an input string:
 
-```ghci
+```hs
 >>> parse (success 1) "abc"
 Just (1,"abc")
 
@@ -212,7 +212,7 @@ With these building blocks, one can build more complex parsers:
 
 ### Parsing a digit
 
-```ghci
+```hs
 >>> digit = sat isDigit
 >>> parse digit "123abc"
 Just ('1',"23abc")
@@ -220,7 +220,7 @@ Just ('1',"23abc")
 
 ### Parsing a number (as a string)
 
-```ghci
+```hs
 >>> numberStr = oneOrMore (sat isDigit)
 >>> parse numberStr "123abc"
 Just ("123","abc")
@@ -230,7 +230,7 @@ Since `Parser` is an instance of `Monad`, you can use `fmap` or `<$>` to combine
 
 ### Parsing a number (as a non-negative number)
 
-```ghci
+```hs
 >>> naturalNumber :: Parser Integer; naturalNumber = read <$> oneOrMore (sat isDigit)
 >>> parse naturalNumber "123abc"
 Just (123,"abc")
@@ -238,7 +238,7 @@ Just (123,"abc")
 
 ### Parsiung a potentially negative number
 
-```ghci
+```hs
 >>> sign = fmap (maybe 1 (\_ -> -1)) (zeroOrOne (sat (== '-')))
 >>> intNumber = ((*) <$> sign) <*> naturalNumber
 >>> parse intNumber "-123abc"
@@ -259,7 +259,7 @@ Hence we need to cast this `Maybe Char` to something reasonable - a number would
 one is what would be returned if it is applied to `Nothing` and the second one is a function which will be called on the value wrapped in `Just`
 the thing is applied to:
 
-```ghci
+```hs
 >>> maybe 1 (\_ -> -1) (Just '-')
 -1
 >>> maybe 1 (\_ -> -1) Nothing
@@ -272,7 +272,7 @@ True
 
 The `fmap` bit then applies this function (returned by `maybe 1 (\_ -> -1)`) to the value wrapped by the next argument:
 
-```ghci
+```hs
 >>> fmap (maybe 1 (\_ -> -1)) (Just (Just '-'))
 Just (-1)
 >>> fmap (maybe 1 (\_ -> -1)) (Just Nothing)
@@ -307,7 +307,7 @@ returned by the `sign` parser and the value returned by the `number` parser.
 TL;DR: the whole thing _analyzes_ the first character of a string (without consuming it) and returns either `1` or `-1`; it then multiplies this value by the number
 returned by the `number` parser.
 
-```ghci
+```hs
 >>> parse intNumber "-123"
 Just (-123,"")
 >>> parse intNumber "123"
@@ -322,7 +322,7 @@ positiveNumber = read <$> oneOrMore (sat isDigit)
 number2 = negativeNumber <|> positiveNumber
 ```
 
-```ghci
+```hs
 >>> parse number2 "-42"
 Just (42,"")
 >>> parse number2 "123"
@@ -426,7 +426,7 @@ equation = do
 
 You can try it on the equation from the example above:
 
-```ghci
+```hs
 >> parse equation "-3x1 + 4*x2 = 5"
 Just (([(-3,"x1"),(4,"x2")],5),"")
 ```
