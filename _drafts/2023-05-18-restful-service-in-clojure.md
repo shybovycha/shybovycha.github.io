@@ -61,7 +61,7 @@ stage of the graph, it will be executed as a middleware.
 
 It is essentially a big state machine wich each state defined as "continue to next":
 
-<img data-src="/images/restful-service-in-clojure/decision-graph.svg" alt="Liberator request decision graph" />
+<img src="/images/restful-service-in-clojure/decision-graph.svg" alt="Liberator request decision graph" loading="lazy" />
 
 Hence our entire application looked like this:
 
