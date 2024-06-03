@@ -8,7 +8,7 @@ In PureScript world there are quite a few libraries for React. And all of them h
 
 Initial application structure:
 
-```haskell
+```purescript
 module Main where
 
 import Prelude
@@ -200,7 +200,7 @@ $ spago install purescript-web-dom purescript-web-html react-dom
 
 And adjust the code itself:
 
-```haskell
+```purescript
 module Main where
 
 import Prelude
@@ -563,7 +563,7 @@ Which is all about matching the return types and handling them properly:
 
 And finally, the version that _compiles_:
 
-```haskell
+```purescript
 module Main where
 
 import Prelude
@@ -848,7 +848,7 @@ And finally, if you run this, nothing will work.
 
 All because the return type of the `main` function is not really `Effect Unit`, but rather a function. To fix this:
 
-```haskell
+```purescript
 mountMain :: HTMLElement -> Effect Unit
 mountMain elt = do
   let container = toElement elt
@@ -866,7 +866,7 @@ main = do
 
 And the thing still won’t completely work, since we do not modify the state on input value change:
 
-```haskell
+```purescript
 import Data.Float.Parse (parseFloat)
 
 onValueChanged ctx evt = do
