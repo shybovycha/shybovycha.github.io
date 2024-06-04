@@ -24,7 +24,7 @@ The test is relatively big - it passes various numbers (integer and floating poi
 The implementations are made with:
 
 * Scala.js
-* ReasonML & BuckleScript → ReScript
+* ReasonML
 * F#
 * PureScript
 * TypeScript
@@ -58,7 +58,7 @@ object DarkenColor {
 }
 ```
 
-### ReScript
+### ReasonML
 
 ```ocaml
 type rgb = {
@@ -84,7 +84,7 @@ let hex2rgb = hex =>
 
 ### PureScript
 
-```haskell
+```purescript
 module DarkenColor where
 
 import Prelude (join, map, ($), (<#>), (>>=), (>>>))
