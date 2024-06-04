@@ -4,6 +4,17 @@ title: 'Strongly-typed front-end: introduction'
 date: '2021-04-19T08:36:15+09:00'
 ---
 
+### Contents
+
+1. [**Introduction (you are here)**](/strongly-typed-front-end/2021/04/19/introduction.html)
+2. [Experiment 1, darken_color](/strongly-typed-front-end/experiment-1/2021/04/19/experiment-1.html)
+3. Experiment 2, simple application
+    - [Elm](/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-elm.html)
+    - [F#](/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-fsharp.html)
+    - [PureScript & purescript-react-dom](/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-purescript.html)
+    - [PureScript & Halogen](/strongly-typed-front-end/experiment-2/2024/05/17/experiment-2-purescript-halogen.html)
+    - [ReasonML](/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-reasonml.html)
+
 In this little research project I describe my journey through a series of experiments trying out a number of technologies and clashing them against each other.
 
 I have always questioned the _real value_ all those languages that compile to JS, especially TypeScript or Flow, give you.

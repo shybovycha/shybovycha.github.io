@@ -4,6 +4,17 @@ title: 'Experiment #1: mismatching type handling & error helpfulness'
 date: '2021-04-19T08:56:24+09:00'
 ---
 
+### Contents
+
+1. [Introduction](/strongly-typed-front-end/2021/04/19/introduction.html)
+2. [**Experiment 1, darken_color  (you are here)**](/strongly-typed-front-end/experiment-1/2021/04/19/experiment-1.html)
+3. Experiment 2, simple application
+    - [Elm](/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-elm.html)
+    - [F#](/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-fsharp.html)
+    - [PureScript & purescript-react-dom](/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-purescript.html)
+    - [PureScript & Halogen](/strongly-typed-front-end/experiment-2/2024/05/17/experiment-2-purescript-halogen.html)
+    - [ReasonML](/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-reasonml.html)
+
 For a sake 🍶of <del>science</del> experiment, I have [converted](https://github.com/shybovycha/darken_color.js/tree/experiment/strong-typing) **one function** of a [library](https://github.com/shybovycha/darken_color.js) I created long time ago to multiple languages that compile to JS and called it with various values.
 
 The function is simple - it takes a color represented as a HEX string and converts it to `{ r, g, b }` object.

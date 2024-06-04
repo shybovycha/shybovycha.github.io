@@ -4,6 +4,17 @@ title: 'Strongly-typed front-end: experiment 2, simple application, in ReasonML'
 date: '2021-04-19T09:23:02+09:00'
 ---
 
+### Contents
+
+1. [Introduction](/strongly-typed-front-end/2021/04/19/introduction.html)
+2. [Experiment 1, darken_color](/strongly-typed-front-end/experiment-1/2021/04/19/experiment-1.html)
+3. Experiment 2, simple application
+    - [Elm](/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-elm.html)
+    - [F#](/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-fsharp.html)
+    - [PureScript & purescript-react-dom](/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-purescript.html)
+    - [PureScript & Halogen](/strongly-typed-front-end/experiment-2/2024/05/17/experiment-2-purescript-halogen.html)
+    - [ReasonML **(you are here)**](/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-reasonml.html)
+
 For the sake of experiment, I have decided to implement the very same application in ReasonML → ReScript by Facebook.
 
 Starting the React Hooks example on [Try ReasonML](https://reasonml.github.io/en/try) website, you get this code, which resembles some of the React features, just in a slightly weird syntax:

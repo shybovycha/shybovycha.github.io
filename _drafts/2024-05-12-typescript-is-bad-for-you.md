@@ -35,9 +35,10 @@ ages = for child, age of yearsOld
 
 Whilst it was still compiled to an inferior ES5 JavaScript, it helped to organise the code. A good tool for that task, if you ask me.
 
-Then came [Dart](https://dart.dev/) and TypeScript, which were also compiled to ES5 JavaScript, but they added not so much helper syntax features, but _types_, aiming to reduce the number of runtime errors by performing type checks at compile time.
+Then came [Dart](https://dart.dev/) and TypeScript, which were also compiled to ES5 JavaScript, but instead of adding new syntax features,
+they instead introduced _types_, aiming to reduce the number of runtime errors by performing type checks at compile time.
 
-Sounds good on paper, but they both suffered from the same issue as JavaScript itself and most common cause of runtime errors - the `null` and `undefined` still were a thing, causing same runtime errors. Not really a good tool for the job, if you ask me.
+Sounds good on paper, but they both suffered from the same issue as JavaScript itself and most common cause of runtime errors - the `null` and `undefined` still were a thing, causing the exact same runtime errors. Not really a good tool for the job, if you ask me.
 
 The one true benefit offered by TypeScript over the others was that it allowed to seamlessly use existing JavaScript code. And, provided you have the type signatures for that JavaScript code, it could even perform type checking on it too, effectively reducing the requirements for using TypeScript in the existing codebase.
 
@@ -45,7 +46,7 @@ Fast-forward to 2024 (**twelve** years since its first release) and TypeScript d
 
 TypeScript still does help in a small subset of highly-specific scenarios like navigating in the IDE and refactoring the code, but since IDEs matured as well, it is not so much of a useful feature anymore. It can prevent some really stupid errors at compile time (like using a number I stead of an object), but I don't think developers run into them these days - again, IDEs are really helpful these days.
 
-TODO: expander with a few more real-life issue examples, like lack of syntax for if/case expressions, "similar so good enough" matching types, OpenApi with its "is instance of This? Sure! (even if it's not)".
+_**TODO:** expander with a few more real-life issue examples, like lack of syntax for if/case expressions, "similar so good enough" matching types, OpenApi with its "is instance of This? Sure! (even if it's not)"._
 
 Let me raise a big question now: is it still worth using TypeScript?
 
@@ -63,9 +64,74 @@ On a bad note, it is not being developed since 2019, it comes with an entire run
 
 Here could have been a trivial Elm code sample, but what good would it do? Here's an entire Elm application!
 
-TODO: show how to use component-like structure with action/message type having a `ChartAction a` as a disjoint union variant. 
+_**TODO:** show how to use component-like structure with action/message type having a `ChartAction a` as a disjoint union variant._
 
 The next step on this journey would be PureScript. It is an actively developed language, it has a minimal footprint after compiled to JS (much smaller than Elm), it has a _very_ rich ecosystem and, best of all, it has a very simple interop with JS and it can compile just one module. Top it up with Halogen framework and you effectively got yourself Elm on steroids. The downside is that it is slightly more complex platform (language and framework) compared to Elm, so the learning curve is a bit steeper.
+
+The above example of CoffeeScript code could be written in plain PureScript like this:
+
+```purescript
+foreign import happy :: Boolean
+foreign import knowsIt :: Boolean
+foreign import sexy :: Boolean
+foreign import tooSexy :: Boolean
+foreign import chaChaCha :: String
+foreign import knowsItStr :: String
+foreign import removeShirt :: String
+foreign import showIt :: String
+
+import Data.Array ((..), mapWithIndex)
+import Data.Map as M
+import Data.Tuple (Tuple(..))
+
+-- if statements with multiple branches become pattern matching
+text
+  | happy && knowsIt = chaChaCha
+  | sexy = knowsItStr
+  | tooSexy = removeShirt
+  | otherwise = showIt
+
+-- list comprehensions become function application
+courses = [ "greens", "caviar", "truffles", "roast", "cake" ]
+
+-- string interpolation is possible via an external packages
+-- https://pursuit.purescript.org/packages/purescript-interpolate
+import Data.Interpolate as I
+menu' i dish = I.i "Menu Item " i ": " dish
+
+-- https://pursuit.purescript.org/packages/purescript-template-strings
+import Data.TemplateString.Unsafe ((<~>))
+menu'1 i dish = "Menu Item ${i}: ${dish}" <~> { i: i, dish: dish }
+
+import Data.TemplateString ((<->))
+import Data.Tuple.Nested ((/\))
+menu'2 i dish = "Menu Item ${i}: ${dish}" <-> [ "i" /\ i, "dish" /\ dish ]
+
+-- pure PureScript string interpolation
+menu i dish = "Menu Item " <> (show i) <> ": " <> dish
+
+x i dish = menu (i + 1) dish
+
+-- can not just call a function and ignore its result
+x' = mapWithIndex x courses
+
+-- ranges become Array monad
+-- countdown :: Array Int
+countdown = do
+  num <- 10 .. 1
+  pure num
+
+-- JavaScript objects exist in a separate package
+import Foreign.Object as FO
+yearsOld' = FO.fromHomogeneous { max: 10, ida: 9, tim: 11 }
+
+-- object as Map
+yearsOld = M.fromFoldable [Tuple "max" 10, Tuple "ida" 9, Tuple "tim" 11]
+
+y child age = (show child) <> " is " <> (show age)
+ages = map y yearsOld
+ages = map y yearsOld'
+```
 
 The real deal with this approach is how to migrate from an existing (most likely) React/TypeScript/(webpack | vite) ecosystem to PureScript?
 
@@ -75,16 +141,14 @@ This would be the best strategy for the most projects, migrating one bit at a ti
 
 The bigger issue is that most modern frontend apps I have seen are so mangled in mixing the business logic and the presentation layer, it would be challenging (to say the least) to get unmangle it to a reasonable code. Check how we handle UI action, triggering a HTTP request and updating both the UI (to display the request progress/status) and the application state (for other parts of the UI) at the same time.
 
-TODO: add an example of converting _a_ component from React codebase to PureScript (maybe with Halogen). Assume a simple React app with a 3rd party component (like a date picker) and try calling PureScript logic from React component and then React component from PureScript code. [FFI example in PureScript book](https://book.purescript.org/chapter10.html):
+_**TODO:** add an example of converting a component from React codebase to PureScript (maybe with Halogen). Assume a simple React app with a 3rd party component (like a date picker) and try calling PureScript logic from React component and then React component from PureScript code._
+
+[FFI example in PureScript book](https://book.purescript.org/chapter10.html):
 
 ```purescript
 module Test where
 
 import Prelude
-
--- import Effect (Effect)
--- import Effect.Console (logShow)
--- import TryPureScript (render, withConsole)
 
 gcd :: Int -> Int -> Int
 gcd 0 m = m
@@ -102,16 +166,6 @@ inc (One n) = One (n + 1)
 _zero = Zero
 _one = One 1
 _two = One 2
-
--- instance Show t => Show (ZeroOrOne t) where
---   show Zero = "Zero"
---   show (One n) = "One(" <> (show n) <> ")"
-
--- main :: Effect Unit
--- main = render =<< withConsole do
---   logShow (inc _zero)
---   logShow (inc _one)
---   logShow (inc _two)
 ```
 
 and then
@@ -166,6 +220,7 @@ processItem item = do
   decodeJson j
 
 main = do
+  item <- getItem "person"
   initialPerson <- case processItem item of
     Left  err -> do
       log $ "Error: " <> err <> ". Loading examplePerson"

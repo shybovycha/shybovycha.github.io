@@ -4,6 +4,17 @@ title: 'Strongly-typed front-end: experiment 2, simple application, in Elm'
 date: '2021-04-19T09:23:02+09:00'
 ---
 
+### Contents
+
+1. [Introduction](/strongly-typed-front-end/2021/04/19/introduction.html)
+2. [Experiment 1, darken_color](/strongly-typed-front-end/experiment-1/2021/04/19/experiment-1.html)
+3. Experiment 2, simple application
+    - [**Elm (you are here)**](/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-elm.html)
+    - [F#](/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-fsharp.html)
+    - [PureScript & purescript-react-dom](/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-purescript.html)
+    - [PureScript & Halogen](/strongly-typed-front-end/experiment-2/2024/05/17/experiment-2-purescript-halogen.html)
+    - [ReasonML](/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-reasonml.html)
+
 (Heavily over-opinionated statement) Elm forces you to handle error scenarios when writing the code.
 
 [Sandbox](https://codesandbox.io/s/inspiring-diffie-lq0u2)
