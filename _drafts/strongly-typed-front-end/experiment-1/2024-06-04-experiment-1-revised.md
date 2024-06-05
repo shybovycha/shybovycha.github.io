@@ -1,8 +1,55 @@
 ---
 layout: post
-title: 'Experiment #1 (revised), ReasonML'
+title: 'Experiment #1, revised'
 date: '2024-06-04T22:13:00+10:00'
 ---
+
+## TypeScript
+
+TypeScript got pretty much down to zero overhead - the code is very close to ESNext:
+
+```ts
+class RGBType {
+  constructor(public r: number, public g: number, public b: number) {}
+}
+
+const hex2rgb = (hex: string): RGBType | undefined => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+
+  if (!result) {
+    return undefined;
+  }
+
+  const [ , r, g, b ] = result;
+
+  return new RGBType(parseInt(r, 16),parseInt(g, 16),parseInt(b, 16));
+}
+
+export { type RGBType, hex2rgb };
+```
+
+The above TypeScript code produces the following ES6:
+
+```js
+class RGBType {
+    constructor(r, g, b) {
+        this.r = r;
+        this.g = g;
+        this.b = b;
+    }
+}
+const hex2rgb = (hex) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (!result) {
+        return undefined;
+    }
+    const [, r, g, b] = result;
+    return new RGBType(parseInt(r, 16), parseInt(g, 16), parseInt(b, 16));
+};
+export { hex2rgb };
+```
+
+## ReasonML
 
 ReasonML still exists, but lacks good documentation just as before.
 By reading the [documentation](https://reasonml.github.io/docs/en/compiling-to-js-with-melange) trying to re-write the `hex2rgb` function,
@@ -206,7 +253,109 @@ $ esbuild lib/hex2rgb.js --bundle --platform=node --outdir=dist --minify
 ⚡ Done in 14ms
 ```
 
+If we want a shorter code, we can inline some of the functions:
+
+```reason
+let parse_rgb = hex_str =>
+  hex_str
+  ->Js.Re.exec(re)
+  ->Belt.Option.map(Js.Re.captures)
+  ->Belt.Option.map(Array.map(Js.Nullable.toOption))
+  ->Belt.Option.flatMap(fn3)
+  ->Belt.Option.map(Array.map(parse_hex))
+  ->Belt.Option.flatMap(fn5);
+```
+
+Note how `Belt.Array.map` became `Array.map` - this is where the order of arguments in the stdlib functions starts to matter.
+
+The functions with pattern matching are slightly clunkier to inline:
+
+```reason
+let parse_rgb1 = hex_str =>
+  hex_str
+  ->Js.Re.exec(re)
+  ->Belt.Option.map(Js.Re.captures)
+  ->Belt.Option.map(Array.map(Js.Nullable.toOption))
+  ->(array_of_options =>
+  switch (array_of_options) {
+  | Some([|Some(a), Some(b), Some(c)|]) => Some([|a, b, c|])
+  | _ => None
+  })
+  ->Belt.Option.map(Array.map(parse_hex))
+  ->(array_of_ints =>
+  switch (array_of_ints) {
+  | Some([|r, g, b|]) => Some({r, g, b})
+  | _ => None
+  });
+```
+
+On top of that, we can reduce this even further by inlining the `parse_hex` call and constructing the `rgb` record:
+
+```reason
+let parse_rgb1 = hex_str =>
+  hex_str
+  ->Js.Re.exec(re)
+  ->Belt.Option.map(Js.Re.captures)
+  ->Belt.Option.map(Array.map(Js.Nullable.toOption))
+  ->(array_of_options =>
+  switch (array_of_options) {
+  | Some([|Some(a), Some(b), Some(c)|]) => Some({ r: parse_hex(a), g: parse_hex(b), b: parse_hex(c) })
+  | _ => None
+  });
+```
+
+This produces `9.3KB` of code. Interestingly enough, one third of it is parsing the numbers - since there is no stdlib function to parse an integer with a given number base. Replacing it with `parseInt(s, 16)` in the bundle directly cuts it down to `5.7KB`.
+
 All things considered, my first impression of ReasonML is a mixed bag - it is really good at inferring types, has reasonably helpful compile-time error messages (not shown here)
 and produces a rather small bundle. On the other hand, dealing with the documentation and trying to get your bearings is extremely clunky - the docs are all
 over the place, spread across multiple projects (either not cross-linked or linked to outdated). The standard libraries do make life easier once you adjust,
 but they are quite inconsistent.
+
+The generated code exports a `parse_hex(str)` function, so we can use it later for the tests.
+
+## F#
+
+Back in 2021 the bundle produced by F# was around `40KB`. The code looked like this:
+
+```fsharp
+module Hex2Rgb
+
+open System.Text.RegularExpressions
+
+type RGBType = { r: int16; g: int16; b: int16 }
+
+let hex2rgb (hex: string) =
+    let m = Regex.Match(hex, "^#?([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})$")
+    if m.Success then
+        m.Groups
+        |> Seq.cast<Group>
+        |> Seq.skip 1 // zero capture group is always the full string, when it matches
+        |> Seq.map (fun m -> m.Value)
+        |> Seq.map (fun x -> System.Convert.ToInt16(x, 16))
+        |> Seq.toList
+        |> (function
+            | r :: g :: b :: [] -> Some { r = r; g = g; b = b }
+            | _ -> None)
+    else None
+```
+
+Original solution contained quite a few sequence operations on the match result, so how about streamlining them:
+
+```fsharp
+let parse (g: Group) = System.Convert.ToInt16(g.Value, 16)
+
+let hex2rgb (hex: string) =
+    let m = Regex.Match(hex, "^#?([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})$")
+    if m.Success then
+        m.Groups
+        |> Seq.cast<Group>
+        |> Seq.toList
+        |> (function
+            | r_g :: g_g :: b_g :: [] -> Some { r = parse(r_g); g = parse(g_g); b = parse(b_g) }
+            | _ -> None)
+    else None
+```
+
+This sheds off barely `5KB` of the bundle size, down to `23.7KB`, which is still a lot.
+
+The output exports contain `hex2rgb` function and the `RGBType` class, they will be used later for the tests.

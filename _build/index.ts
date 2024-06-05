@@ -82,6 +82,7 @@ import 'prismjs/components/prism-dot';
 import 'prismjs/components/prism-scss';
 import 'prismjs/components/prism-less';
 import 'prismjs/components/prism-gherkin';
+import 'prismjs/components/prism-lisp';
 
 import {
     renderRobotsTxt,
