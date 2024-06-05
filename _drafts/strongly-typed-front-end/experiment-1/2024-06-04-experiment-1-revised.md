@@ -10,7 +10,7 @@ I realized it now relies on a new backend, [Melange](https://melange.re/), with 
 
 With a bit of struggling, I came up with the following implementation:
 
-```reasonml
+```reason
 type rgb = {
   r: int,
   g: int,
@@ -63,6 +63,49 @@ but has to rely on Melange and JS-specific APIs (instead of `Str` which is a bui
 Note that it is not required to provide type annotations for functions - OCaml / ReasonML is **very good** at inferring types on its own.
 I have done it so that I can see what goes wrong without the need to hover over each function all while trying to demystify the compiler errors in the
 [playground 1](https://reasonml.github.io/en/try) or [playground 2](https://melange.re/v2.0.0/playground/).
+
+So this is the very same code, just without type annotations:
+
+```reason
+type rgb = {
+  r: int,
+  g: int,
+  b: int,
+};
+
+let parse_hex = s => int_of_string("0x" ++ s);
+
+let re = Js.Re.fromString({|^#?([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})$|});
+
+let fn0 = hex_str => Js.Re.exec(hex_str, re);
+
+let fn1 = re_result => Js.Re.captures(re_result);
+
+let fn2 = array_of_nullables =>
+  Belt.Array.map(array_of_nullables, Js.Nullable.toOption);
+
+let fn3 = array_of_options =>
+  switch (array_of_options) {
+  | [|Some(a), Some(b), Some(c)|] => Some([|a, b, c|])
+  | _ => None
+  };
+
+let fn4 = array_of_hex => Belt.Array.map(array_of_hex, parse_hex);
+
+let fn5 = array_of_ints =>
+  switch (array_of_ints) {
+  | [|r, g, b|] => Some({r, g, b})
+  | _ => None
+  };
+
+let parse_rgb = hex_str =>
+  fn0(hex_str)
+  ->Belt.Option.map(fn1)
+  ->Belt.Option.map(fn2)
+  ->Belt.Option.flatMap(fn3)
+  ->Belt.Option.map(fn4)
+  ->Belt.Option.flatMap(fn5);
+```
 
 Also, note that there are at least two conflicting libraries - Belt and ReasonML / OCaml standard library.
 There are conflicts within the libraries itself (or rather a questionable design decisions, if you ask me):
@@ -139,7 +182,7 @@ Error (warning 6 [labels-omitted]): label str was omitted in the application of 
 This is due to the conflicting declarations of the `Js.Re.exec` function in many stdlibs - it would work in playground, but will fail in this simple project.
 Change it to have labelled argument `~str`:
 
-```ocaml
+```reason
 let fn0: string => option(Js.Re.result) =
   str => Js.Re.exec(~str, re);
 ```
@@ -151,14 +194,19 @@ Then you can / need to bundle the output without messing up the generated `node_
 I use `esbuils`:
 
 ```shell
-➜  output git:(master) esbuild lib/hex2rgb.js --bundle --platform=node --outdir=dist
+$ esbuild lib/hex2rgb.js --bundle --platform=node --outdir=dist
 
   dist/hex2rgb.js  9.8kb
 
 ⚡ Done in 12ms
-➜  output git:(master) ✗ esbuild lib/hex2rgb.js --bundle --platform=node --outdir=dist --minify
+$ esbuild lib/hex2rgb.js --bundle --platform=node --outdir=dist --minify
 
   dist/hex2rgb.js  4.1kb
 
 ⚡ Done in 14ms
 ```
+
+All things considered, my first impression of ReasonML is a mixed bag - it is really good at inferring types, has reasonably helpful compile-time error messages (not shown here)
+and produces a rather small bundle. On the other hand, dealing with the documentation and trying to get your bearings is extremely clunky - the docs are all
+over the place, spread across multiple projects (either not cross-linked or linked to outdated). The standard libraries do make life easier once you adjust,
+but they are quite inconsistent.

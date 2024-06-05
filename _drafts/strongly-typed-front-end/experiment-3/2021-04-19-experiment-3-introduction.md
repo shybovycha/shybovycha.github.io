@@ -32,7 +32,34 @@ const app = express();
 const PORT = 3000;
 
 app.get('/', (req, res) => {
-  res.json({ 'hello': 'cześć', 'world': 'świat' });
+  res.json({
+    translations: [
+      {
+        language: 'pl',
+        locale: 'pl',
+        strings: {
+          'hello': 'cześć',
+          'world': 'świat'
+        }
+      },
+      {
+        language: 'en',
+        locale: 'us',
+        strings: {
+          'hello': 'hello',
+          'world': 'world'
+        }
+      },
+      {
+        language: 'en',
+        locale: 'au',
+        strings: {
+          'hello': `g'day`,
+          'world': 'world'
+        }
+      }
+    ]
+  });
 });
 
 app.listen(port, () => {
