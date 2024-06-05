@@ -60,7 +60,7 @@ object DarkenColor {
 
 ### ReasonML
 
-```ocaml
+```reason
 type rgb = {
   r: int,
   g: int,

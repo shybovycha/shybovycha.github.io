@@ -72,6 +72,7 @@ import 'prismjs/components/prism-flow';
 import 'prismjs/components/prism-elixir';
 import 'prismjs/components/prism-d';
 import 'prismjs/components/prism-ocaml';
+import 'prismjs/components/prism-reason';
 import 'prismjs/components/prism-fsharp';
 import 'prismjs/components/prism-diff';
 import 'prismjs/components/prism-handlebars';

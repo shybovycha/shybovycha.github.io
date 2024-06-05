@@ -19,7 +19,7 @@ For the sake of experiment, I have decided to implement the very same applicatio
 
 Starting the React Hooks example on [Try ReasonML](https://reasonml.github.io/en/try) website, you get this code, which resembles some of the React features, just in a slightly weird syntax:
 
-```ocaml
+```reason
 [@bs.config {jsx: 3}];
 
 module Counter = {
@@ -41,7 +41,7 @@ ReactDOMRe.renderToElementWithId(<Counter name="Counter" />, "preview");
 
 Starting off by defining the enum type for shape:
 
-```ocaml
+```reason
 type Shape = Circle | Square;
 ```
 
@@ -53,13 +53,13 @@ Line 4:8-12 A type name must start with a lower-case letter or an underscore
 
 That one is easy to fix:
 
-```ocaml
+```reason
 type shape = Circle | Square;
 ```
 
 Now, add some markup:
 
-```ocaml
+```reason
 [@react.component]
 let make = (~name) => {
   let (_shape, setShape) = React.useState(() => None);
@@ -100,7 +100,7 @@ The variant constructor Choose can't be found.
 
 Not extremely helpful. Having to look into the OCaml code compiled from ReasonML:
 
-```ocaml
+```reason
 [@@@bs.config { jsx = 3 }]
 module Counter =
   struct
@@ -149,7 +149,7 @@ Seems that this JSX does not work well with strings. Looking into the original e
 
 And having to replace this everywhere in the JSX:
 
-```ocaml
+```reason
 [@react.component]
 let make = (~name) => {
   let (_shape, setShape) = React.useState(() => None);
@@ -187,7 +187,7 @@ You can convert a float to a string with string_of_float.
 
 Seems that `value={value}` does not work out of the box too, since the `value` variable has the type `float` and this version of React expects it to be `string`. Okay, let’s use that `string_of_float` function:
 
-```ocaml
+```reason
 <input value={string_of_float(value)} />
 ```
 
@@ -203,13 +203,13 @@ Please use Js.Float.toString instead, string_of_float generates unparseable floa
 
 So it should be
 
-```ocaml
+```reason
 <input value={Js.Float.toString(value)} />
 ```
 
 Okay, only the unused state setters left. Let’s implement the `shapeChanged` and the `calculateArea` helpers first:
 
-```ocaml
+```reason
 let shapeChanged = (shapeStr: string): option(shape) =>
       switch shapeStr {
         | "circle" => Some(Circle)
@@ -255,19 +255,19 @@ You can convert a float to a int with int_of_float.If this is a literal, you wan
 
 The error happens on this OCaml line:
 
-```ocaml
+```reason
 | Circle  -> (Js.Math._PI * value) * value
 ```
 
 Not helpful at all. The trick is that OCaml uses different operators for integer and floating-point math. This should do the trick:
 
-```ocaml
+```reason
 | Circle -> Js.Math._PI *. value *. value
 ```
 
 Now, the last bit: connecting the component to the state:
 
-```ocaml
+```reason
 <select onChange={ event => setShape(shapeChanged(event.target.value)) }>
 ```
 
@@ -286,13 +286,13 @@ If it's defined in another module or file, bring it into scope by:
 
 Apparently, this JSX implementation has [its own ways](https://reasonml.github.io/reason-react/docs/en/event) of accessing event’s props:
 
-```ocaml
+```reason
 ReactEvent.Form.target(event)##value
 ```
 
 The issue is that this code is a valid BuckleScript, but not ReasonML. These intuitions [described in docs](https://rescript-lang.org/docs/manual/latest/migrate-from-bucklescript-reason) won’t work:
 
-```ocaml
+```reason
 setShape(shapeChanged(ReactEvent.Form.target(event).value))
 ```
 
@@ -320,7 +320,7 @@ But somewhere wanted:
 
 I am yet to figure out WTF is going on there, but the rough solution would be to just smash some JS code in:
 
-```ocaml
+```reason
 <select onChange={ event => {
         let v: string = [%bs.raw {| event.target.value |}];
         let s: option(shape) = shapeChanged(v);
@@ -342,13 +342,13 @@ But somewhere wanted:
 
 This is because state setters take a function, not just a value:
 
-```ocaml
+```reason
 setShape(_ => s)
 ```
 
 And the whole event handler can be simplified a little bit:
 
-```ocaml
+```reason
 <select onChange={ event => {
         let v: string = [%bs.raw {| event.target.value |}];
         setShape(_ => shapeChanged(v))
@@ -359,7 +359,7 @@ This breaks some of the type checking benefits, but it just works ™️ ©
 
 Back to the other event handlers:
 
-```ocaml
+```reason
 <input value={Js.Float.toString(value)} onChange={ event => {
         let v: string = [%bs.raw {| event.target.value |}];
         setValue(_ => float_of_string(v));
@@ -368,7 +368,7 @@ Back to the other event handlers:
 
 Surprisingly enough, here ReasonML is totally fine with `float_of_string`.
 
-```ocaml
+```reason
 <button onClick={ _ => {
         setArea(_ => Belt.Option.mapWithDefault(_shape, 0.0, s => calculateArea(s, value)))
       }}>
@@ -418,7 +418,7 @@ Did you forget a `,` here?
 
 With a few changes following intuition (and not those useless error messages), one can get it to compile:
 
-```ocaml
+```reason
 // no more [%bs] annotations
 module Counter = {
   type shape = Circle | Square;
