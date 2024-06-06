@@ -279,8 +279,59 @@ const c: TableLocation = b; // not ok
 And the code to parse location from JSON is actually quite ugly. It would benefit so much from [`switch` expressions](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/switch-expression) or [pattern matching](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/pattern-matching)!
 
 And we still have to remember to handle those potentially `undefined` values whenever we use the helper functions.
+And here's an example from literally few days ago:
+
+```ts
+interface Job {
+    projectId: string;
+}
+
+const jobsInProgress: Job[];
+
+const message = useProjectStatus(
+    jobsInProgress[0]?.projectId ?? ''
+);
+
+const useProjectStatus = (projectId: string) {
+    const { data } = useQuery({ queryFn: () => fetch(`/project/${projectId}`) });
+
+    return data;
+};
+```
+
+The above code started throwing an error, since server responded with `500 Server Error`. Reason was quite simple - the `projectId`, which we recently started to validate on the server (expecting it to be a valid ID), was a blank string. Interesting thing: no one has questioned the very line causing the "default value" for `projectId` to become an empty string:
+
+```ts
+jobsInProgress[0]?.projectId ?? ''
+```
+
+And issues like these are unbelievably common in front-end world, while being quite tricky to detect and resolve.
+To fix this particular issue we added a client-side validation (to an extent) to run the query only when the `projectId` value is provided:
+
+```ts
+useQuery({
+  enabled: !!projectId,
+  queryFn: () => fetch(`/project/${projectId}`)
+})
+```
+
+The problem remains: it is really easy to miss this rather small fallback to an empty string.
 
 Can we do better than that? What if we had a powerful type system and syntax to support it? And, if possible, get rid of the `null` and `undefined` along the way?
+
+The problem of `null` and `undefined` can be mitigated to an extent by using some concepts of functional programming, similarly to how I [showcased some time ago](/2022/08/11/jargon-free-functional-programming-introduction-tldr.html). It would be quite hard to achieve, though, given the problem remains imbued in the language itself. Moreover, targeting the issues described above, it would take an entire standard library to really reduce the possibility of the issue:
+
+```ts
+const jobInProgressMaybe: Maybe<Job> = new List<Job>(jobsInProgress).first();
+const projectIdMaybe: Maybe<string> = jobInProgress.map(j => j.projectId);
+
+useQuery({
+  enabled: projectIdMaybe.isSome(),
+  queryFn: () => fetch(`/project/${projectIdMaybe.unsafe_get()}`)
+})
+```
+
+And it would take even more effort to make _all_ types uniquely identifiable (to solve the choice type problem).
 
 This is where I'd suggest to use another language altogether, which, similarly to CoffeeScript and TypeScript back in the day, solved some problems at compile time. And suggest I will.
 

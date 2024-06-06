@@ -359,3 +359,154 @@ let hex2rgb (hex: string) =
 This sheds off barely `5KB` of the bundle size, down to `23.7KB`, which is still a lot.
 
 The output exports contain `hex2rgb` function and the `RGBType` class, they will be used later for the tests.
+
+## PureScript
+
+I recreated the sample from scratch, using the more strict pattern matching and split the `hex2rgb` function into small typed sub-functions:
+
+```purescript
+import Prelude (bind, pure, join, map, ($), (<#>), (>>=), (>>>))
+
+import Data.Array (catMaybes)
+import Data.Array.NonEmpty (NonEmptyArray, drop)
+import Data.Array.NonEmpty.Internal (NonEmptyArray(..))
+import Data.Int (fromStringAs, hexadecimal)
+import Data.Maybe (Maybe(..))
+import Data.Nullable (Nullable, toNullable)
+import Data.Either (Either, hush)
+import Data.String.Regex (Regex, regex, match)
+import Data.String.Regex.Flags (ignoreCase)
+
+type RGB =
+  {
+    r :: Int,
+    g :: Int,
+    b :: Int
+  }
+
+r0 :: Either String Regex
+r0 = regex "^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$" ignoreCase
+
+r :: Maybe Regex
+r = hush r0
+
+x0 :: Regex -> String -> Maybe (NonEmptyArray (Maybe String))
+x0 re hexString = match re hexString
+
+x1 :: String -> Maybe (NonEmptyArray (Maybe String))
+x1 hexString = r >>= (\re -> x0 re hexString)
+
+flatten' :: forall a. NonEmptyArray (Maybe a) -> Maybe (NonEmptyArray a)
+flatten' (NonEmptyArray [(Just m_r), (Just m_g), (Just m_b)]) = Just (NonEmptyArray [ m_r, m_g, m_b ])
+flatten' _ = Nothing
+
+x3 :: NonEmptyArray String -> NonEmptyArray (Maybe Int)
+x3 = map (fromStringAs hexadecimal)
+
+x4 :: NonEmptyArray (Maybe String) -> Maybe (NonEmptyArray Int)
+x4 a = (flatten' a) <#> x3 >>= flatten'
+
+x5 :: NonEmptyArray Int -> Maybe RGB
+x5 (NonEmptyArray [ _r, _g, _b ]) = Just { r: _r, g: _g, b: _b }
+x5 _ = Nothing
+
+hex2rgb :: String -> Maybe RGB
+hex2rgb hexString = (x1 hexString) >>= x4 >>= x5
+```
+
+This code sparks "Haskell" into your face - it is quite hard to read and it reeks of those mysterious operators like `>>=`, `<#>` and so on.
+Using `do` notation makes it a bit less painful:
+
+```purescript
+x1 :: String -> Maybe (NonEmptyArray (Maybe String))
+x1 hexString = do
+  re <- r
+  x0 re hexString
+
+x2 :: forall a. NonEmptyArray (Maybe a) -> Maybe (NonEmptyArray a)
+x2 (NonEmptyArray [(Just m_r), (Just m_g), (Just m_b)]) = Just (NonEmptyArray [ m_r, m_g, m_b ])
+x2 _ = Nothing
+
+x3 :: NonEmptyArray String -> NonEmptyArray (Maybe Int)
+x3 = map (fromStringAs hexadecimal)
+
+x4 :: NonEmptyArray (Maybe String) -> Maybe (NonEmptyArray Int)
+x4 arr = do
+  a1 <- x2 arr
+  let a2 = x3 a1
+  x2 a2
+
+hex2rgb :: String -> Maybe RGB
+hex2rgb hexString = do
+  a1 <- x1 hexString
+  a2 <- x4 a1
+  a3 <- x5 a2
+  pure a3
+```
+
+Renaming few things here and there makes it even better:
+
+```purescript
+create_hex_regex :: Either String Regex
+create_hex_regex = regex "^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$" ignoreCase
+
+hex_regex_maybe :: Maybe Regex
+hex_regex_maybe = hush create_hex_regex
+
+run_regex :: Regex -> String -> Maybe (NonEmptyArray (Maybe String))
+run_regex re hexString = match re hexString
+
+match_hex_regex :: String -> Maybe (NonEmptyArray (Maybe String))
+match_hex_regex hexString = do
+  re <- hex_regex_maybe
+  run_regex re hexString
+
+filter_triple :: forall a. NonEmptyArray (Maybe a) -> Maybe (NonEmptyArray a)
+filter_triple (NonEmptyArray [(Just _r), (Just _g), (Just _b)]) = Just (NonEmptyArray [ _r, _g, _b ])
+filter_triple _ = Nothing
+
+parse_hex_array :: NonEmptyArray String -> NonEmptyArray (Maybe Int)
+parse_hex_array = map (fromStringAs hexadecimal)
+
+parse_hex_string :: NonEmptyArray (Maybe String) -> Maybe (NonEmptyArray Int)
+parse_hex_string arr = do
+  arr1 <- filter_triple arr
+  let arr2 = parse_hex_array arr1
+  filter_triple arr2
+
+triple_to_rgb :: NonEmptyArray Int -> Maybe RGB
+triple_to_rgb (NonEmptyArray [ _r, _g, _b ]) = Just { r: _r, g: _g, b: _b }
+triple_to_rgb _ = Nothing
+
+hex2rgb2 :: String -> Maybe RGB
+hex2rgb2 hexString = do
+  a1 <- match_hex_regex hexString
+  a2 <- parse_hex_string a1
+  a3 <- triple_to_rgb a2
+  pure a3
+```
+
+And if we wanted to inline most of the things:
+
+```purescript
+filter_triple :: forall a. NonEmptyArray (Maybe a) -> Maybe (NonEmptyArray a)
+filter_triple (NonEmptyArray [(Just _r), (Just _g), (Just _b)]) = Just (NonEmptyArray [ _r, _g, _b ])
+filter_triple _ = Nothing
+
+parse_hex_array :: NonEmptyArray String -> NonEmptyArray (Maybe Int)
+parse_hex_array = map (fromStringAs hexadecimal)
+
+triple_to_rgb :: NonEmptyArray Int -> Maybe RGB
+triple_to_rgb (NonEmptyArray [ _r, _g, _b ]) = Just { r: _r, g: _g, b: _b }
+triple_to_rgb _ = Nothing
+
+hex2rgb :: String -> Maybe RGB
+hex2rgb hexString = do
+  let regexEither = regex "^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$" ignoreCase
+  re <- hush regexEither
+  matchResult <- match re hexString
+  strTriple <- filter_triple matchResult
+  let hexArray = parse_hex_array strTriple
+  intTriple <- filter_triple hexArray
+  triple_to_rgb intTriple
+```
