@@ -18,7 +18,9 @@ Hardcore interviewer:
 
 <img src="/images/about/interview-stats.webp" alt="Interviews conducted up until now">
 
-## Boardgames in possession
+## Boardgames
+
+### In possession
 
 * [Arkham Horror LCG](https://boardgamegeek.com/boardgame/205637/arkham-horror-card-game) (+ [The Dunwich Legacy cycle](https://boardgamegeek.com/boardgame/208545/arkham-horror-card-game-dunwich-legacy-expansion))
 * [Lord of the Rings LCG](https://boardgamegeek.com/boardgame/77423/lord-rings-card-game)
@@ -45,20 +47,29 @@ Hardcore interviewer:
 * [Wingspan](https://boardgamegeek.com/boardgame/266192/wingspan)
 * [Hive](https://boardgamegeek.com/boardgame/2655/hive)
 * [Flick of Faith](https://boardgamegeek.com/boardgame/281194/flick-faith) (🇵🇱)
-* [Call to Adventure](https://boardgamegeek.com/boardgame/238992/call-adventure) (<span title="Considering">🤔</span>)
-* [Dale of Merchants](https://boardgamegeek.com/boardgame/176165/dale-merchants) (<span title="Considering">🤔</span>)
-* [Furnace](https://boardgamegeek.com/boardgame/318084/furnace) (<span title="Considering">🤔</span>)
-* [Spyfall](https://boardgamegeek.com/boardgame/166384/spyfall) (<span title="Considering">🤔</span>)
-* [Runebound: Unbreakable Bonds](https://boardgamegeek.com/boardgameexpansion/225275/runebound-third-edition-unbreakable-bonds/) (<span title="Looking for">🔍)
-* [8 Minute Empires](https://boardgamegeek.com/boardgame/131366/eight-minute-empire) (<span title="Looking for">🔍)
+
+### Looking for 🔍
+
+* [Runebound: Unbreakable Bonds](https://boardgamegeek.com/boardgameexpansion/225275/runebound-third-edition-unbreakable-bonds/)
+* [8 Minute Empires](https://boardgamegeek.com/boardgame/131366/eight-minute-empire)
+
+### Considering 🤔
+
+* [Call to Adventure](https://boardgamegeek.com/boardgame/238992/call-adventure)
+* [Dale of Merchants](https://boardgamegeek.com/boardgame/176165/dale-merchants)
+* [Furnace](https://boardgamegeek.com/boardgame/318084/furnace)
+* [Spyfall](https://boardgamegeek.com/boardgame/166384/spyfall)
 * [Oriflamme](https://boardgamegeek.com/boardgame/287084/oriflamme) (<span title="Wondering">❔</span>)
 * [Hansa Teutonica](https://boardgamegeek.com/boardgame/43015/hansa-teutonica) (<span title="Wondering">❔</span>)
 * [Undaunted: Normandy](https://boardgamegeek.com/boardgame/268864/undaunted-normandy) (<span title="Wondering">❔❔</span>)
-* [<del>Sword & Sorcery</del>](https://boardgamegeek.com/boardgame/170771/sword-sorcery) (<span title="Sold off">💸</span>)
-* [<del>Stone Age</del>](https://boardgamegeek.com/boardgame/34635/stone-age) (<span title="Sold off">💸</span>)
-* [<del>Castles of Burgundy (2011)</del>](https://boardgamegeek.com/boardgame/84876/castles-burgundy) (<span title="Sold off">💸</span>)
-* [<del>Small world</del>](https://boardgamegeek.com/boardgame/40692/small-world) (<span title="Sold off">💸</span>)
-* [<del>Noir: a deductive mystery game</del>](https://boardgamegeek.com/boardgame/102148/noir-deductive-mystery-game) (<span title="Sold off">💸</span>)
+
+### Gone 💸
+
+* [<del>Sword & Sorcery</del>](https://boardgamegeek.com/boardgame/170771/sword-sorcery)
+* [<del>Stone Age</del>](https://boardgamegeek.com/boardgame/34635/stone-age)
+* [<del>Castles of Burgundy (2011)</del>](https://boardgamegeek.com/boardgame/84876/castles-burgundy)
+* [<del>Small world</del>](https://boardgamegeek.com/boardgame/40692/small-world)
+* [<del>Noir: a deductive mystery game</del>](https://boardgamegeek.com/boardgame/102148/noir-deductive-mystery-game)
 
 ## Favourite books, music, movies & anime
 
