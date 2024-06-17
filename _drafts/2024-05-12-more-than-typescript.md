@@ -153,9 +153,9 @@ function TableLocationFromJSONTyped(json: any, ignoreDiscriminator: boolean): Ta
     };
 }
 
-type JobUpdateLocation = CollectionLocation | DocumentLocation | TableLocation;
+type JobLocation = CollectionLocation | DocumentLocation | TableLocation;
 
-function JobUpdateLocationFromJSONTyped(json: any, ignoreDiscriminator: boolean): JobUpdateLocation {
+function JobLocationFromJSONTyped(json: any, ignoreDiscriminator: boolean): JobLocation {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -223,9 +223,9 @@ function TableLocationFromJSONTyped(json: any): TableLocation | undefined {
     };
 }
 
-type JobUpdateLocation = CollectionLocation | DocumentLocation | TableLocation;
+type JobLocation = CollectionLocation | DocumentLocation | TableLocation;
 
-function JobUpdateLocationFromJSONTyped(json: any): JobUpdateLocation | undefined {
+function JobLocationFromJSONTyped(json: any): JobLocation | undefined {
     if ((json === undefined) || (json === null)) {
         return undefined;
     }
@@ -327,7 +327,10 @@ const projectIdMaybe: Maybe<string> = jobInProgress.map(j => j.projectId);
 
 useQuery({
   enabled: projectIdMaybe.isSome(),
-  queryFn: () => fetch(`/project/${projectIdMaybe.unsafe_get()}`)
+  queryFn: () =>
+    projectIdMaybe
+      .flatMap(projectId => fetch(`/project/${projectId}`))
+      .orElse(Promise.reject('no projectId'))
 })
 ```
 
