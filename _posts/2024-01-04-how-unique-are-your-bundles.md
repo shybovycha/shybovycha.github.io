@@ -752,13 +752,18 @@ Other than those, replacing the original bundle with the optimized one worked li
 
 The results? With the threshold of `20` duplicates or more:
 
-| Bundler | Before optimization ||||| After optimization |||||
-|        ^| Bundle size | Total functions | Unique functions | Unique functions, % | Duplicate code, % | Bundle size | Total functions | Unique |functions | Unique functions, % | Duplicate code, % |
-| ------- | ---- | ----- | ----- | ------ | ----- | ------------ | ------------ | ------------ | ---------------- | -------------- |
-| bun     | 6.2M | 8903  | 7443  | 83.6%  | 0.78% | 6.2M (same)  | 7865 (-1038) | 7355 (-88)   | 93.52% (+9.92%)  | 0.51% (-0.27%) |
-| esbuild | 8.7M | 13057 | 10250 | 78.5%  | 3.9%  | 8.5M (-0.2M) | 3265 (-9792) | 2990 (-7260) | 91.58% (+13.08%) | 0.62% (-3.28%) |
-| vite    | 3.9M | 3502  | 2365  | 67.53% | 6.39% | 3.6M (-0.3M) | 2483 (-1019) | 2277 (-88)   | 91.7% (+24.17%)  | 1.68% (-4.71%) |
-| webpack | 4.4M | 2898  | 1434  | 49.48% | 6.91% | 4.1M (-0.3M) | 1484 (-1414) | 1375 (-59)   | 92.65% (+43.17%) | 0.43% (-6.48%) |
+| Bundler | Before optimization |||||
+|        ^| Bundle size | Total functions | Unique functions | Unique functions, % | Duplicate code, % |
+| ------- | ---- | ----- | ----- | ------ | ----- |
+| bun     | 6.2M | 8903  | 7443  | 83.6%  | 0.78% |
+| esbuild | 8.7M | 13057 | 10250 | 78.5%  | 3.9%  |
+| vite    | 3.9M | 3502  | 2365  | 67.53% | 6.39% |
+| webpack | 4.4M | 2898  | 1434  | 49.48% | 6.91% |
+| **After optimization** ||||||
+| bun     | 6.2M (same)  | 7865 (-1038) | 7355 (-88)   | 93.52% (+9.92%)  | 0.51% (-0.27%) |
+| esbuild | 8.5M (-0.2M) | 3265 (-9792) | 2990 (-7260) | 91.58% (+13.08%) | 0.62% (-3.28%) |
+| vite    | 3.6M (-0.3M) | 2483 (-1019) | 2277 (-88)   | 91.7% (+24.17%)  | 1.68% (-4.71%) |
+| webpack | 4.1M (-0.3M) | 1484 (-1414) | 1375 (-59)   | 92.65% (+43.17%) | 0.43% (-6.48%) |
 
 In conclusion, the bundlers do a pretty average job at optimizing the bundles, even in production mode with some extra tuning.
 And if some brave soul is willing to invest even more time and effort than I did into developing a sophisticated solution

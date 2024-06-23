@@ -273,8 +273,12 @@ table code:not(pre > code) {
     width: fit-content;
 }
 
+ul, ol {
+    padding-left: 20px;
+}
+
 li:has(code) {
-    margin: 0.5em;
+    margin: 0.5em 0;
 }
 
 li code {
