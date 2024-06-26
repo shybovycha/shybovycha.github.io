@@ -68,7 +68,7 @@ function(e){for(var t=1;t<arguments.length;t++){var n=arguments[t];for(var r in 
 
 In fact, this exact same fragment of code repeats 137 times in the same piece of bundle chunk (same file):
 
-<img src="/images/how-unique-are-your-bundles/duplication1.webp" loading="lazy" alt="Repeated function definition in a single chunk of code">
+<img src="/images/how-unique-are-your-bundles/duplication1.webp" loading="lazy" alt="Repeated function definition in a single chunk of code"></img>
 
 By the way, this is a production build of our front-end, built using Vite, with minification enabled.
 
@@ -470,7 +470,7 @@ For the most part, the front-end can load faster for users - simply because ther
 On top of that, there are less functions to be created in memory. So _technically_, the front-end can _act_ faster.
 Although, on the modern machines the difference between having one function and few thousand of the same function is negligible.
 
-<div class="content-read-marker" data-fraction="50"></div>
+<div className="content-read-marker" data-fraction="50"></div>
 
 Here is a shortened list of top abusers from different bundlers for our tool:
 
@@ -636,7 +636,7 @@ This way I figured few issues with the naive approach:
     * `$q=function n(){return n=Object.assign&&Object.assign.bind(),n.apply(this,arguments)}`
 * some of the empty functions are actually used as constructors (ES5-compatible OOP model) which is only discovered by finding the expressions like `$FnName.prototype.something = somethingElse;`
 * some functions are named and then referenced later in the code
-* some functions are not used at all: <img src="/images/how-unique-are-your-bundles/unused-deduplicated-functions.webp" alt="Unused aliases">
+* some functions are not used at all: <img src="/images/how-unique-are-your-bundles/unused-deduplicated-functions.webp" alt="Unused aliases"></img>
 
 For the shorthand functions I first tried manually fixing them up - had to replace them with `$z=function(){return $z=Object.assign.bind(),$z.apply(this,arguments)}` alikes. This worked, so I created an AST transformer to handle these one-line return-only functions:
 
@@ -752,14 +752,19 @@ Other than those, replacing the original bundle with the optimized one worked li
 
 The results? With the threshold of `20` duplicates or more:
 
-| Bundler | Before optimization |||||
-|        ^| Bundle size  | Total functions | Unique functions | Unique functions, % | Duplicate code, % |
+**Before optimization**
+
+| Bundler | Bundle size  | Total functions | Unique functions | Unique functions, % | Duplicate code, % |
 | ------- | ------------ | --------------- | ---------------- | ------------------- | ----------------- |
 | bun     | 6.2M         | 8903            | 7443             | 83.6%               | 0.78%             |
 | esbuild | 8.7M         | 13057           | 10250            | 78.5%               | 3.9%              |
 | vite    | 3.9M         | 3502            | 2365             | 67.53%              | 6.39%             |
 | webpack | 4.4M         | 2898            | 1434             | 49.48%              | 6.91%             |
-| **After optimization** ||||||
+
+**After optimization**
+
+| Bundler | Bundle size  | Total functions | Unique functions | Unique functions, % | Duplicate code, % |
+| ------- | ------------ | --------------- | ---------------- | ------------------- | ----------------- |
 | bun     | 6.2M (same)  | 7865 (-1038)    | 7355 (-88)       | 93.52% (+9.92%)     | 0.51% (-0.27%)    |
 | esbuild | 8.5M (-0.2M) | 3265 (-9792)    | 2990 (-7260)     | 91.58% (+13.08%)    | 0.62% (-3.28%)    |
 | vite    | 3.6M (-0.3M) | 2483 (-1019)    | 2277 (-88)       | 91.7% (+24.17%)     | 1.68% (-4.71%)    |
@@ -774,41 +779,8 @@ In my humble opinion, Bun does produce the cleanest bundle. It might be not the 
 On top of that, it is the fastest tool in JS world I have ever used.
 By the way, this very blog is built using Bun and React SSR - on Github Actions it takes around a minute to build and publish:
 
-<img src="/images/how-unique-are-your-bundles/gh-pages-bun-build.webp" loading="lazy" alt="Github Actions build and publish with Bun">
+<img src="/images/how-unique-are-your-bundles/gh-pages-bun-build.webp" loading="lazy" alt="Github Actions build and publish with Bun"></img>
 
-<img src="/images/how-unique-are-your-bundles/gh-pages-action-breakdown.webp" loading="lazy" alt="Github Actions build breakdown">
+<img src="/images/how-unique-are-your-bundles/gh-pages-action-breakdown.webp" loading="lazy" alt="Github Actions build breakdown"></img>
 
-<div class="content-read-marker" data-fraction="100"></div>
-
-<style>
-    .center {
-        text-align: center;
-    }
-    .center:has(button) {
-        margin-top: 0.5em;
-    }
-</style>
-<script>
-[...document.querySelectorAll('table')].forEach((table, idx) => {
-    if (table.querySelectorAll('tbody tr').length < 10) {
-        return;
-    }
-    table.id = `table-${idx}`;
-    table.classList.add('expandable');
-    const div = document.createElement('div');
-    div.classList.add('center');
-    const btn = document.createElement('button');
-    btn.innerText = 'Show more';
-    div.appendChild(btn);
-    table.after(div);
-    btn.onclick = () => {
-        const tbl = document.querySelector(`table#${table.id}`);
-        tbl.classList.toggle('expand');
-        if (tbl.classList.contains('expand')) {
-            btn.innerText = 'Show less';
-        } else {
-            btn.innerText = 'Show more';
-        }
-    };
-});
-</script>
+<div className="content-read-marker" data-fraction="100"></div>
