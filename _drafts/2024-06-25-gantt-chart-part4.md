@@ -16,6 +16,8 @@ Last few attempts were alright, but I was never quite satisfied with the impleme
 
 With the recent introduction of grid layouts in CSS, now supported [in all browsers](https://caniuse.com/css-grid), now seems like a perfect time to revisit the old implementations once again.
 
+<img src="/images/gantt_chart_part4/rework9.png" loading="lazy" alt="Inline CSS and HTML in labels">
+
 <!--more-->
 
 The data for the tests is going to look like this:
@@ -521,4 +523,290 @@ And maybe add some grid lines for the rows:
 
 <img src="/images/gantt_chart_part4/rework5.png" loading="lazy" alt="Adding grid lines">
 
+Now let's add some padding to separate parent and child items of a chart:
+
+```tsx
+const LeftPaneRow = ({ level, id, name }) => {
+  const nestingPadding = `${level}rem`;
+
+  return (
+    <div className={style.row} style={{ "--label-padding": nestingPadding }}>
+      {name}
+    </div>
+  );
+};
+```
+
+```css
+.gantt .left_pane .row {
+  padding-left: var(--label-padding, 0);
+}
+```
+
+and fill out the `level` property when flattening the item tree:
+
+```tsx
+export const flattenTree = (items) => {
+  const queue = [];
+
+  items
+    .filter(({ parent }) => !parent)
+    .forEach((item) => queue.push({ level: 0, item }));
+
+  const result = [];
+  const visited = new Set();
+
+  while (queue.length > 0) {
+    const { level, item } = queue.shift();
+
+    if (visited.has(item.id)) {
+      continue;
+    }
+
+    result.push({ ...item, level });
+    visited.add(item.id);
+
+    items
+      .filter((child) => child.parent === item.id)
+      .forEach((child) => queue.unshift({ item: child, level: level + 1 }));
+  }
+
+  return result;
+};
+```
+
+<img src="/images/gantt_chart_part4/rework6.png" loading="lazy" alt="Shrinking right panel">
+
+And automate the number of columns calculation:
+
+```tsx
+export const Gantt = ({ items }) => {
+  const itemList = flattenTree(items);
+
+  const startsAndEnds = items.flatMap(({ start, end }) => [start, end]);
+  const columns = Math.max(...startsAndEnds) - Math.min(...startsAndEnds);
+
+  return (
+    <div className={style.gantt}>
+      <LeftPane items={itemList} />
+      <RightPane items={itemList} columns={columns} />
+    </div>
+  );
+};
+```
+
+In order to make chart panel scrollable, one can set a `width` CSS property for the `.right_panel` rule:
+
+```css
+.gantt .right_panel {
+  width: 2000px;
+}
+```
+
+But this might result in a weird behaviour where the left panel shrinks:
+
+<img src="/images/gantt_chart_part4/rework7.png" loading="lazy" alt="Shrinking right panel">
+
+To fix this we need to slightly change the grid template for the entire chart:
+
+```css
+.gantt {
+  grid-template: 1fr / auto minmax(0, 1fr);
+}
+```
+
+But this will make an entire page scroll, which we want to avoid too.
+
+So the only viable solution is to make both `.right_pane_rows` and `.right_pane_header_row` have `width` property set:
+
+```css
+.gantt .right_pane .right_pane_rows {
+  width: 2000px;
+}
+
+.gantt .right_pane .right_pane_header_row {
+  width: 2000px;
+}
+```
+
 The last bit for a this prototype would be to have a scale for the columns.
+
+Assume a chart item has an abstract start and end fields - these could be dates or some domain-specific numbers (like a week in a quarter or a sprint, etc.).
+Those will then need to be mapped onto column index. Then the chart width (in columns) would be the difference between the smallest `start` value and the biggest `end` value:
+
+```tsx
+export const Gantt = ({ items, scale }) => {
+  const itemList = flattenTree(items).map((item) => ({
+    ...item,
+    ...scale(item), // assuming `scale` function returns an object { start: number; end: number }
+  }));
+
+  const minStartItem = minBy(itemList, (item) => item.start);
+  const maxEndItem = maxBy(itemList, (item) => item.end);
+
+  const columns = maxEndItem.end - minStartItem.start;
+
+  return (
+    <div className={style.gantt}>
+      <LeftPane items={itemList} />
+      <RightPane items={itemList} columns={columns} />
+    </div>
+  );
+};
+```
+
+The `minBy` and `maxBy` helper functions could be either taken from `lodash` or manually defined like this:
+
+```ts
+const minBy = (items, selector) => {
+  if (items.length === 0) {
+    return undefined;
+  }
+
+  let minIndex = 0;
+
+  items.forEach((item, index) => {
+    if (selector(item) < selector(items[minIndex])) {
+      minIndex = index;
+    }
+  });
+
+  return items[minIndex];
+}
+```
+
+For better navigation around this code we can add some types:
+
+```tsx
+interface GanttChartItem {
+  id: string;
+  name: string;
+}
+
+interface GanttChartProps {
+  items: GanttChartItem[];
+  scale: (item: GanttChartItem) => { start: number; end: number };
+}
+
+function minBy<T>(items: T[], selector: (item: T) => number): T | undefined {
+  // ...
+}
+
+export const Gantt = ({ items, scale }: GanttChartProps) => {
+  // ...
+};
+
+export default function App() {
+  const scale = ({ start, end }) => {
+    return { start: start * 2, end: end * 2 };
+  };
+
+  return <Gantt items={data} scale={scale} />;
+}
+```
+
+We can extend this even further by adding an API to provide labels for columns:
+
+```tsx
+interface GanttChartProps {
+  // ...
+  scaleLabel: (column: number) => React.Element;
+}
+
+export const Gantt = ({ items, scale, scaleLabel }: GanttChartProps) => {
+  // ...
+
+  return (
+    <div className={style.gantt}>
+      <LeftPane items={itemList} />
+      <RightPane items={itemList} columns={columns} scaleLabel={scaleLabel} />
+    </div>
+  );
+};
+
+
+const RightPane = ({ items, columns, scaleLabel }) => {
+  const columnHeaders = [...Array(columns)].map((_, idx) => (
+    <RightPaneHeader>{scaleLabel(idx)}</RightPaneHeader>
+  ));
+
+  // ...
+};
+
+export default function App() {
+  const scale = ({ start, end }) => ({ start, end });
+  };
+
+  const scaleLabel = (col) => `${col}`;
+
+  return <Gantt items={data} scale={scale} scaleLabel={scaleLabel} />;
+}
+```
+
+This new API can then be utilized to show month names, for instance:
+
+```tsx
+export default function App() {
+  const scale = ({ start, end }) => {
+    return { start, end };
+  };
+
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  const scaleLabel = (col) => months[col % 12];
+
+  return <Gantt items={data} scale={scale} scaleLabel={scaleLabel} />;
+}
+```
+
+<img src="/images/gantt_chart_part4/rework8.png" loading="lazy" alt="Adding scale with labels">
+
+Moreover, it is now possible to inline HTML and CSS in the `name` of each chart item:
+
+```tsx
+export const LeftPaneRow = ({ level, name }) => {
+  const nestingPadding = `${level}rem`;
+
+  return (
+    <div className={style.row} style={{ "--label-padding": nestingPadding }}>
+      <span dangerouslySetInnerHTML={{__html: name}}></span>
+    </div>
+  );
+};
+```
+
+And then in `data.json` (note that FontAwesome requires its CSS on a page in order to work):
+
+```json
+[
+  {
+    id: 7,
+    name: '<i style="font-family: \'FontAwesome\';" class="fa fa-car"></i>&nbsp;story with FontAwesome',
+    parent: 2,
+    start: 4,
+    end: 6,
+  },
+  {
+    id: 9,
+    name: 'inline <em><b style="color: #5ebebe">CSS</b> color</em> <u style="border: 1px dashed #bebefe; padding: 2px; border-radius: 2px">works</u>',
+    parent: 5,
+    start: 5,
+    end: 6,
+  },
+]
+```
+
+<img src="/images/gantt_chart_part4/rework9.png" loading="lazy" alt="Inline HTML and CSS in labels">
