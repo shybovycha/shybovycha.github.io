@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Gantt chart. Part 4"
-date: '2024-06-25T14:01:24+10:00'
+date: '2024-06-27T22:54:24+10:00'
 ---
 
 Seems like every two years or so I hop on [my Gantt chart implementation](https://github.com/shybovycha/gantt-chart/) and rework it completely.
@@ -525,7 +525,7 @@ And maybe add some grid lines for the rows:
 
 Now let's add some padding to separate parent and child items of a chart:
 
-```tsx
+```jsx
 const LeftPaneRow = ({ level, id, name }) => {
   const nestingPadding = `${level}rem`;
 
@@ -545,7 +545,7 @@ const LeftPaneRow = ({ level, id, name }) => {
 
 and fill out the `level` property when flattening the item tree:
 
-```tsx
+```ts
 export const flattenTree = (items) => {
   const queue = [];
 
@@ -579,7 +579,7 @@ export const flattenTree = (items) => {
 
 And automate the number of columns calculation:
 
-```tsx
+```jsx
 export const Gantt = ({ items }) => {
   const itemList = flattenTree(items);
 
@@ -634,7 +634,7 @@ The last bit for a this prototype would be to have a scale for the columns.
 Assume a chart item has an abstract start and end fields - these could be dates or some domain-specific numbers (like a week in a quarter or a sprint, etc.).
 Those will then need to be mapped onto column index. Then the chart width (in columns) would be the difference between the smallest `start` value and the biggest `end` value:
 
-```tsx
+```jsx
 export const Gantt = ({ items, scale }) => {
   const itemList = flattenTree(items).map((item) => ({
     ...item,
@@ -677,7 +677,7 @@ const minBy = (items, selector) => {
 
 For better navigation around this code we can add some types:
 
-```tsx
+```ts
 interface GanttChartItem {
   id: string;
   name: string;
@@ -707,7 +707,7 @@ export default function App() {
 
 We can extend this even further by adding an API to provide labels for columns:
 
-```tsx
+```jsx
 interface GanttChartProps {
   // ...
   scaleLabel: (column: number) => React.Element;
@@ -745,7 +745,7 @@ export default function App() {
 
 This new API can then be utilized to show month names, for instance:
 
-```tsx
+```jsx
 export default function App() {
   const scale = ({ start, end }) => {
     return { start, end };
@@ -776,7 +776,7 @@ export default function App() {
 
 Moreover, it is now possible to inline HTML and CSS in the `name` of each chart item:
 
-```tsx
+```jsx
 export const LeftPaneRow = ({ level, name }) => {
   const nestingPadding = `${level}rem`;
 
