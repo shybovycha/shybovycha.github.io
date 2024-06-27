@@ -4,21 +4,18 @@ title: "Gantt chart. Part 4"
 date: '2024-06-27T22:54:24+10:00'
 ---
 
-Seems like every two years or so I hop on [my Gantt chart implementation](https://github.com/shybovycha/gantt-chart/) and rework it completely.
+Seems like every two years or so I hop on my [Gantt chart implementation](https://github.com/shybovycha/gantt-chart/) and rework it completely.
 
-Last few attempts were alright, but I was never quite satisfied with the implementation - be it SVG, which has a toll on a browser and has quite limited customization functionality or Canvas API, with same limited customization but being fast.
+Last few attempts ([rev. 1](/2017/04/09/gantt-chart-with-d3.html), [rev. 2](/2020/08/02/gantt-chart-part2.html), [rev. 3](/2021/03/04/gantt-chart-part3.html)) were alright, but I was never quite satisfied with the implementation - be it SVG, which has a toll on a browser and has quite limited customization functionality or Canvas API, with same limited customization but being fast.
 
-<img src="/images/gantt_chart_part3/gantt-chart-v1.webp" loading="lazy" alt="First revision of Gantt chart">
+With the recent introduction of grid layouts in CSS, now supported [in all browsers](https://caniuse.com/css-grid), now seems like a perfect time to revisit the old implementations once again:
 
-<img src="/images/gantt_chart_part3/gantt-chart-v2.webp" loading="lazy" alt="Second revision of Gantt chart">
+<img src="/images/gantt_chart_part4/rework10.png" loading="lazy" alt="Gantt chart, revision 4">
 
-<img src="/images/gantt_chart_part3/screenshot.webp" loading="lazy" alt="Third revision of Gantt chart">
+This revision now has a proper horizontal scrolling on the panel with bars - meaning the labels on the left panel stay in place whilst the left panel is scrollable.
+Moreover, the chart is now relies on pure HTML and CSS (being rendered with React though), making it is possible to use rich markup inside the bars and labels.
 
-With the recent introduction of grid layouts in CSS, now supported [in all browsers](https://caniuse.com/css-grid), now seems like a perfect time to revisit the old implementations once again.
-
-<img src="/images/gantt_chart_part4/rework9.png" loading="lazy" alt="Inline CSS and HTML in labels">
-
-<!--more-->
+## Implementation steps
 
 The data for the tests is going to look like this:
 
@@ -595,29 +592,7 @@ export const Gantt = ({ items }) => {
 };
 ```
 
-In order to make chart panel scrollable, one can set a `width` CSS property for the `.right_panel` rule:
-
-```css
-.gantt .right_panel {
-  width: 2000px;
-}
-```
-
-But this might result in a weird behaviour where the left panel shrinks:
-
-<img src="/images/gantt_chart_part4/rework7.png" loading="lazy" alt="Shrinking right panel">
-
-To fix this we need to slightly change the grid template for the entire chart:
-
-```css
-.gantt {
-  grid-template: 1fr / auto minmax(0, 1fr);
-}
-```
-
-But this will make an entire page scroll, which we want to avoid too.
-
-So the only viable solution is to make both `.right_pane_rows` and `.right_pane_header_row` have `width` property set:
+In order to make chart panel scrollable, one can set a `width` CSS property for the `.right_pane_rows` and `.right_pane_header_row`:
 
 ```css
 .gantt .right_pane .right_pane_rows {
@@ -809,4 +784,70 @@ And then in `data.json` (note that FontAwesome requires its CSS on a page in ord
 ]
 ```
 
-<img src="/images/gantt_chart_part4/rework9.png" loading="lazy" alt="Inline HTML and CSS in labels">
+The API can be further improved by providing the render function for the bars' labels:
+
+```jsx
+export const RightPane = ({ items, columns, scaleLabel, barLabel }) => {
+  const rows = items.map((item) => (
+    <RightPaneRow key={item.id} columns={columns}>
+      <RightPaneRowEntry {...item}>{barLabel ? barLabel(item) : <>{item.id}</>}</RightPaneRowEntry>
+    </RightPaneRow>
+  ));
+
+  // ...
+};
+
+export interface GanttChartProps {
+  items: GanttChartItem[];
+  scale: (item: GanttChartItem) => { start: number; end: number };
+  scaleLabel: (column: number) => React.Element;
+  barLabel: (item: GanttChartItem) => React.Element;
+}
+
+export const Chart = ({
+  items,
+  barLabel,
+  scale,
+  scaleLabel,
+}: GanttChartProps) => {
+  // ...
+  return (
+    <div className={style.gantt}>
+      <LeftPane items={itemList} />
+      <RightPane
+        items={itemList}
+        columns={columns}
+        scaleLabel={scaleLabel}
+        barLabel={barLabel}
+      />
+    </div>
+  );
+};
+```
+
+and then in `App` component:
+
+```jsx
+import pluralize from "pluralize";
+
+export default function App() {
+  const barLabel = ({ start, end }) => (
+    <>
+      {end - start} {pluralize("month", end - start)}
+    </>
+  );
+
+  // ...
+
+  return (
+    <Chart
+      items={data}
+      scale={scale}
+      scaleLabel={scaleLabel}
+      barLabel={barLabel}
+    />
+  );
+};
+```
+
+<img src="/images/gantt_chart_part4/rework10.png" loading="lazy" alt="More customized labels">
