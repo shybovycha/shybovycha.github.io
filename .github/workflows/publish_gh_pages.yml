@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v4.1.7
 
       - name: Use Bun instead of Node
-        uses: oven-sh/setup-bun@v1.2.1
+        uses: oven-sh/setup-bun@v2
 
       - run: bun install
 
@@ -50,8 +50,8 @@ jobs:
 
     steps:
       - name: Setup Pages
-        uses: actions/configure-pages@v4.0.0
+        uses: actions/configure-pages@v5.0.0
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4.0.4
+        uses: actions/deploy-pages@v4.0.5
