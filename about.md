@@ -120,8 +120,7 @@ Big hater of Avengers series and Disney's interpretation of Star Wars.
 <div class="inline-gallery">
   <div class="image"><img src="/images/about/game-gothic.webp" alt="Gothic, 2001"></div>
   <div class="image"><img src="/images/about/game-morrowind.webp" alt="TES3: Morrowind, 2002"></div>
-  <div class="image"><img src="/images/about/game-stone-soup.webp" alt="Dungeon Crawl: Stone Soup; My gargoyle fighter turned into a flying mushroom"></div>
-  <div class="image"><img src="/images/about/game-stone-soup-2.webp" alt="Dungeon Crawl: Stone Soup; wreaking havok in Vaults-5 with my +7 Firestarter great mace amidst poison and butterflies (from scrolls) to try and survive"></div>
+  <div class="image"><img src="/images/about/game-stone-soup.webp" alt="Dungeon Crawl: Stone Soup; My troll of Trog has been turned into a tree by drinking some suspicious potion"></div>
 </div>
 
 ## Photography
