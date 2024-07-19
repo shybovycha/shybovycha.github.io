@@ -8,7 +8,8 @@ Redux is generally considered a bad choice for state management on front-end.
 But check out an average application' React application (or a few fragments of it):
 
 ```jsx
-import { Provider, useAtom, useSetAtom } from 'jotai';
+import { Provider, useAtom } from 'jotai';
+import { useQuery } from 'react-query';
 
 const useInfo = () => {
   const { data, error, isLoading } = useQuery({
@@ -104,8 +105,127 @@ As I see it, there are two competing camps:
 There are some side-tracks like dealing with asynchronous actions (like fetching the data from server),
 changing the state of external components (like showing a toast message), reducing the unnecessary re-renders.
 
-Back in the day, Redux seemingly addressed these areas to a degree. In my opinion, Redux is not suitable for
-complex projects for a few reasons:
+Back in the day, Redux seemingly addressed these areas to a degree. Redux implements Flux architecture, which was
+compared to MVC (Model-View-Controller) architecture back in the day:
+
+<img src="/images/why-redux-is-bad/mvc-architecture.webp" loading="lazy" alt="Data flow in MVC architecture">
+<img src="/images/why-redux-is-bad/flux-architecture.webp" loading="lazy" alt="Data flow in Flux architecture">
+
+It became especially popular after Angular.JS' MVVM (Model-View-ViewModel) architecture implementation was considered slow with its
+dirty checks and constant re-rendering.
+
+It could be said that Redux is being shipped in recent versions of React itself - with the use of [`useReducer()`](https://react.dev/reference/react/useReducer) hook. One would rarely use Redux on its own, often sticking to a somewhat opinionated stack of reselect (for derived state), react-redux (to `connect()` components to the store) and redux-thunk or redux-sagas (for asynchronous `dispatch()` calls).
+
+The aforementioned component could be implemented with the "conventional" (old) Redux approach like so:
+
+```jsx
+import { createStore, combineReducers, applyMiddleware } from 'redux';
+import { connect } from 'react-redux';
+import { createSelector } from 'reselect';
+import { thunk } from 'redux-thunk';
+
+const infoReducer = (state = { isNewVersionAvailable: false }, action) => {
+  switch (action.type) {
+    case 'INFO_LOADED':
+      return { ...state, ...action.payload };
+
+    default:
+      return state;
+  }
+};
+
+const pageDataReducer = (state = { pageType: undefined }, action) => {
+  switch (action.type) {
+    case 'SET_PAGE_TYPE':
+      return { ...state, pageType: action.pageType };
+
+    default:
+      return state;
+  }
+};
+
+const toastReducer = (state = { isOpen: false, content: undefined }, action) => {
+  switch (action.type) {
+    case 'SHOW_TOAST':
+      return { ...state, isOpen: true, content: action.payload };
+
+    default:
+      return state;
+  }
+};
+
+const rootReducer = combineReducers({
+  info: infoReducer,
+  pageData: pageDataReducer,
+  toast: toastReducer,
+});
+
+const store = createStore(rootReducer, applyMiddleware(thunk));
+
+// Meet thunks.
+// A thunk in this context is a function that can be dispatched to perform async
+// activity and can dispatch actions and read state.
+// This is an action creator that returns a thunk:
+const loadInfoAction = () =>
+  (dispatch) =>
+    fetch('/info')
+      .then(r => r.json)
+      .then(payload => dispatch({ type: 'INFO_LOADED', payload }));
+
+const raiseToastAction = (content) =>
+  (dispatch) =>
+    dispatch({ type: 'SHOW_TOAST', payload: content });
+
+const setPageTypeAction = (pageType) =>
+  (dispatch) =>
+    dispatch({ type: 'SET_PAGE_TYPE', pageType });
+
+const Home = ({ info, pageType, loadInfo, raiseToast, setPageType }) => {
+  useEffect(() => {
+    loadInfo();
+  }, []);
+
+  useEffect(() => {
+    if (info.isNewVersionAvailable) {
+      raiseToast({
+        // ...
+      });
+    }
+  }, [info]);
+
+  return (
+    <div>...</div>
+  );
+};
+
+const mapStateToProps = ({ info, pageData: { pageType } }) => ({ info, pageType });
+
+const mapDispatchToProps = (dispatch) => ({
+  raiseToast: (content) => dispatch(raiseToastAction(content)),
+
+  setPageType: (pageType) => dispatch(setPageTypeAction(content)),
+
+  loadInfo: () => dispatch(loadInfoAction()),
+});
+
+const HomeContainer = connect(mapStateToProps, mapDispatchToProps)(Home);
+
+const Routes = () => (
+  <BrowserRouter>
+    <Suspense fallback={<Loader />}>
+      <Route element={<HomeContainer />} path="/" />
+    </Suspense>
+  </BrowserRouter>
+);
+
+const root = React.createRoot(document.getElementById('root'));
+
+root.render(
+  <Routes />
+);
+```
+
+In my opinion, Redux is not suitable for complex projects for a few reasons:
 
 - it combines all states (both local and global) in one big messy furball; managing it is quite a hurdle
     - as the project complexity grows, one can not just change a piece of state or selectors without affecting the entirety of the project (and teams)
@@ -113,10 +233,17 @@ complex projects for a few reasons:
 - it is easy for a component to be re-rendered on any change to the state; a lot of effort goes into making sure selectors are well memoized and not re-calculated
 - asynchronous actions are a big unresolved mystery (are you going to use thunks, flux, sagas or something else?)
 
-On a flip side, the idea itself could actually bring a lot of positives if cooked properly.
+On a flip side, the idea itself could actually bring a lot of positives if cooked properly:
+
+- there is only one possible flow of data: via `dispatch()` call, through the reducers and back to the components connected to the store via component props
+    - this is supposed to make following the data (e.g. debugging the application) easy
+- components are pretty much stateless at this point, encapsulated and not having side effects leaking everywhere
+- logic is nicely separated from the representation and is encapsulated in the reducers (and maybe, to a small extent, in selectors)
+
 Consider Elm architecture and how it compares to Redux:
 
 - all the states are still combined into one big cauldron of chaos
-- by default, any component is just a function returning an array; the entire application will be rerendered on each state change, which is still suboptimal
+- by default, any component is just a function returning an array; the entire application will be rerendered on each state change, which is still suboptimal, since literally all components are connected to the store
 - asynchronous actions are handled separately by the runtime in a similar way to synchronous actions; each action returns a new state and a command (triggering the asynchronous processing)
+    - since commands are handled by the runtime and there's a handful of commands, all of them will (eventually) circle back to dispatching messages just like components do, following the same one-way data flow
 - reducers are a lot faster, since they are essentially a big `switch..case` statement (which is cheap)
