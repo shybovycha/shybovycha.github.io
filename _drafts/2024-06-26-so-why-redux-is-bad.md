@@ -240,6 +240,8 @@ On a flip side, the idea itself could actually bring a lot of positives if cooke
 - components are pretty much stateless at this point, encapsulated and not having side effects leaking everywhere
 - logic is nicely separated from the representation and is encapsulated in the reducers (and maybe, to a small extent, in selectors)
 
+Elm utilizes the language features and its own runtime combined with Redux-like architecture to improve some aspects of the more traditional pure JS way of things, where there are only opinionated libraries and no one way of doing things.
+
 Consider Elm architecture and how it compares to Redux:
 
 - all the states are still combined into one big cauldron of chaos
@@ -247,3 +249,123 @@ Consider Elm architecture and how it compares to Redux:
 - asynchronous actions are handled separately by the runtime in a similar way to synchronous actions; each action returns a new state and a command (triggering the asynchronous processing)
     - since commands are handled by the runtime and there's a handful of commands, all of them will (eventually) circle back to dispatching messages just like components do, following the same one-way data flow
 - reducers are a lot faster, since they are essentially a big `switch..case` statement (which is cheap)
+
+The above component could be re-implemented in Elm as follows:
+
+```elm
+import Browser
+import Html exposing (..)
+import Html.Attributes exposing (style)
+import Html.Events exposing (..)
+import Http
+import Json.Decode exposing (Decoder, map, field, bool)
+
+main =
+  Browser.element
+    { init = init
+    , update = update
+    , subscriptions = subscriptions
+    , view = view
+    }
+
+type alias Model =
+  { info : Maybe (Result Http.Error Info)
+  , toast : Maybe Toast
+  , pageType : PageType
+  }
+
+type alias Info =
+  { quote : String
+  , source : String
+  , author : String
+  , year : Int
+  }
+
+type alias Toast =
+  { content : String }
+
+type PageType = Page1 | Page2
+
+init : () -> (Model, Cmd Msg)
+init _ =
+  ({ info = Nothing, toast = Nothing, pageType = Page1 }, loadInfo)
+
+type Msg
+  = GotInfo (Result Http.Error Info)
+  | ShowToast Toast
+  | SetPageType PageType
+
+update : Msg -> Model -> (Model, Cmd Msg)
+update msg model =
+  case msg of
+    GotInfo result ->
+      case result of
+        Ok info ->
+          ({ model | info = Just (Ok info) }, Cmd.none)
+
+        Err e ->
+          ({ model | info = Just (Err e) }, Cmd.none)
+
+    ShowToast t ->
+      ({ model | toast = Just t }, Cmd.none)
+
+    SetPageType p ->
+      ({ model | pageType = p }, Cmd.none)
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+  Sub.none
+
+view : Model -> Html Msg
+view model =
+  div []
+    [ h2 [] [ text "Demo App" ]
+    , viewInfo model.info
+    , viewToast model.toast
+    ]
+
+viewInfo : Maybe (Result Http.Error Info) -> Html Msg
+viewInfo mbInfoResult =
+  case mbInfoResult of
+    Nothing ->
+      text "Loading..."
+
+    Just infoResult ->
+      case infoResult of
+        Err _ ->
+          div []
+            [ text "Could not load info" ]
+
+        Ok info ->
+          div []
+            [ text "App loaded" ]
+
+viewToast : Maybe Toast -> Html Msg
+viewToast mbToast =
+  case mbToast of
+    Nothing ->
+      div [] []
+
+    Just toast ->
+      div [] [ text toast.content ]
+
+loadInfo : Cmd Msg
+loadInfo =
+  Http.get
+    { url = "/info"
+    , expect = Http.expectJson GotInfo infoDecoder
+    }
+
+infoDecoder : Decoder Info
+infoDecoder =
+  map Info
+    (field "isNewVersionAvailable" bool)
+```
+
+The good bits are:
+
+- forcing to handle all possible actions (messages) and results (HTTP success and error scenarios)
+- expressive language features (union types, strong typing, records, switch-case expressions) ensure robust code (as in this code does not leave room for mistakes like null/undefined/unhandled exceptions/unhandled code path/wrong value type)
+- no leeway for various ways to get things done (as in there is only one way to handle HTTP requests, only one way to handle asynchronous message dispatches, only one way to parse HTTP responses)
+
+But if Redux spreads things apart compared to modern React, Elm feels like it spreads things further apart by handling effect results separately (like sending HTTP request, parsing HTTP response and processing the result by dispatching another message).
