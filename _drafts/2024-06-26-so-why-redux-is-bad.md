@@ -369,3 +369,228 @@ The good bits are:
 - no leeway for various ways to get things done (as in there is only one way to handle HTTP requests, only one way to handle asynchronous message dispatches, only one way to parse HTTP responses)
 
 But if Redux spreads things apart compared to modern React, Elm feels like it spreads things further apart by handling effect results separately (like sending HTTP request, parsing HTTP response and processing the result by dispatching another message).
+
+One other example would be PureScript. It elevates the complexity to the skies and beyond, by making you dance with monads like a headless chicken. Consider "simple" example of sending a HTTP request:
+
+```purescript
+module Main where
+
+import Prelude
+
+import Affjax.Web as AX
+import Affjax.ResponseFormat as AXRF
+import Data.Either (hush)
+import Data.Maybe (Maybe(..))
+import Effect (Effect)
+import Effect.Aff.Class (class MonadAff)
+import Halogen as H
+import Halogen.Aff (awaitBody, runHalogenAff)
+import Halogen.HTML as HH
+import Halogen.HTML.Events as HE
+import Halogen.HTML.Properties as HP
+import Halogen.VDom.Driver (runUI)
+import Web.Event.Event (Event)
+import Web.Event.Event as Event
+
+main :: Effect Unit
+main = runHalogenAff do
+  body <- awaitBody
+  runUI component unit body
+
+type State =
+  { loading :: Boolean
+  , username :: String
+  , result :: Maybe String
+  }
+
+data Action
+  = SetUsername String
+  | MakeRequest Event
+
+component :: forall query input output m. MonadAff m => H.Component query input output m
+component =
+  H.mkComponent
+    { initialState
+    , render
+    , eval: H.mkEval $ H.defaultEval { handleAction = handleAction }
+    }
+
+initialState :: forall input. input -> State
+initialState _ = { loading: false, username: "", result: Nothing }
+
+render :: forall m. State -> H.ComponentHTML Action () m
+render st =
+  HH.form
+    [ HE.onSubmit \ev -> MakeRequest ev ]
+    [ HH.h1_ [ HH.text "Look up GitHub user" ]
+    , HH.label_
+        [ HH.div_ [ HH.text "Enter username:" ]
+        , HH.input
+            [ HP.value st.username
+            , HE.onValueInput \str -> SetUsername str
+            ]
+        ]
+    , HH.button
+        [ HP.disabled st.loading
+        , HP.type_ HP.ButtonSubmit
+        ]
+        [ HH.text "Fetch info" ]
+    , HH.p_
+        [ HH.text $ if st.loading then "Working..." else "" ]
+    , HH.div_
+        case st.result of
+          Nothing -> []
+          Just res ->
+            [ HH.h2_
+                [ HH.text "Response:" ]
+            , HH.pre_
+                [ HH.code_ [ HH.text res ] ]
+            ]
+    ]
+
+handleAction :: forall output m. MonadAff m => Action -> H.HalogenM State Action () output m Unit
+handleAction = case _ of
+  SetUsername username -> do
+    H.modify_ _ { username = username, result = Nothing }
+
+  MakeRequest event -> do
+    H.liftEffect $ Event.preventDefault event
+    username <- H.gets _.username
+    H.modify_ _ { loading = true }
+    response <- H.liftAff $ AX.get AXRF.string ("https://api.github.com/users/" <> username)
+    H.modify_ _ { loading = false, result = map _.body (hush response) }
+```
+
+Now add the `halogen-store` package to the mix to make use of Redux-like state management:
+
+```purescript
+module Main where
+
+import Prelude
+
+import Affjax.Web as AX
+import Affjax.ResponseFormat as AXRF
+import Data.Either (hush)
+import Data.Maybe (Maybe(..))
+import Effect (Effect)
+import Effect.Aff.Class (class MonadAff)
+import Halogen as H
+import Halogen.Aff as HA
+import Halogen.HTML as HH
+import Halogen.HTML.Events as HE
+import Halogen.HTML.Properties as HP
+import Halogen.VDom.Driver (runUI)
+import Web.Event.Event (Event)
+import Web.Event.Event as Event
+import Halogen.Store.Monad (class MonadStore, updateStore, runStoreT)
+import Halogen.Store.Connect (Connected, connect)
+import Halogen.Store.Select (selectAll)
+import Effect.Aff (launchAff_)
+
+data StoreAction
+  = StoreSetUsername String
+  | StoreMakeRequest
+  | StoreReceiveResponse (Maybe String)
+
+reduce :: State -> StoreAction -> State
+reduce store = case _ of
+  StoreSetUsername username ->
+    store { username = username, result = Nothing }
+  StoreMakeRequest ->
+    store { loading = true }
+  StoreReceiveResponse response ->
+    store { loading = false, result = response }
+
+initialStore :: State
+initialStore = { username: "", loading: false, result: Nothing }
+
+main :: Effect Unit
+main = launchAff_ do
+  body <- HA.awaitBody
+  root <- runStoreT initialStore reduce component
+  void $ runUI root unit body
+
+type State =
+  { loading :: Boolean
+  , username :: String
+  , result :: Maybe String
+  }
+
+data Action
+  = SetUsername String
+  | MakeRequest Event
+  | ReceiveState (Connected State Unit)
+
+deriveState :: Connected State Unit -> State
+deriveState { context: { username, loading, result }, input: _ } =
+  { username: username
+  , loading: loading
+  , result: result
+  }
+
+component :: forall query output m. MonadAff m => MonadStore StoreAction State m => H.Component query Unit output m
+component =
+  connect selectAll $ H.mkComponent
+    { initialState: deriveState
+    , render
+    , eval: H.mkEval $ H.defaultEval
+      { handleAction = handleAction
+      , receive = Just <<< ReceiveState
+      }
+    }
+
+render :: forall m. State -> H.ComponentHTML Action () m
+render st =
+  HH.form
+    [ HE.onSubmit \ev -> MakeRequest ev ]
+    [ HH.h1_ [ HH.text "Look up GitHub user" ]
+    , HH.label_
+        [ HH.div_ [ HH.text "Enter username:" ]
+        , HH.input
+            [ HP.value st.username
+            , HE.onValueInput \str -> SetUsername str
+            ]
+        ]
+    , HH.button
+        [ HP.disabled st.loading
+        , HP.type_ HP.ButtonSubmit
+        ]
+        [ HH.text "Fetch info" ]
+    , HH.p_
+        [ HH.text $ if st.loading then "Working..." else "" ]
+    , HH.div_
+        case st.result of
+          Nothing -> []
+          Just res ->
+            [ HH.h2_
+                [ HH.text "Response:" ]
+            , HH.pre_
+                [ HH.code_ [ HH.text res ] ]
+            ]
+    ]
+
+handleAction :: forall output m. MonadAff m => MonadStore StoreAction State m => Action -> H.HalogenM State Action () output m Unit
+handleAction = case _ of
+  SetUsername username -> do
+    updateStore $ StoreSetUsername username
+
+  MakeRequest event -> do
+    H.liftEffect $ Event.preventDefault event
+    username <- H.gets _.username
+    updateStore $ StoreMakeRequest
+    response <- H.liftAff $ AX.get AXRF.string ("https://api.github.com/users/" <> username)
+    updateStore $ StoreReceiveResponse (map _.body (hush response))
+
+  ReceiveState input ->
+    H.put $ deriveState input
+```
+
+The really nice things about this approach are:
+
+- components could be self-sufficient, as opposed to Elm:
+  - they can have both internal state and communicate with the external application via `Aff`
+  - they can be extracted into separate modules, making them actually reusable components
+- state selectors and connecting to a store are seamlessly implemented based on existing Halogen tools (subscriptions)
+- it feels like you do not have to worry about state growing big, since each component explicitly declares which parts of that messy furball it needs (derives)
+
+The bad news is that everything relies on monads and transformers - lifting, mapping, flat-mapping are just the very tip of the iceberg. Once you hit some mysterious error - it is quite tricky to understand what is going on. Unlike Elm, which has really nicely structured, formatted and presented both error message, its location and ways to fix it.
