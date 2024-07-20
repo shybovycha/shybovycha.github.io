@@ -594,3 +594,48 @@ The really nice things about this approach are:
 - it feels like you do not have to worry about state growing big, since each component explicitly declares which parts of that messy furball it needs (derives)
 
 The bad news is that everything relies on monads and transformers - lifting, mapping, flat-mapping are just the very tip of the iceberg. Once you hit some mysterious error - it is quite tricky to understand what is going on. Unlike Elm, which has really nicely structured, formatted and presented both error message, its location and ways to fix it.
+
+Just looking at the type definitions is nauseaing at best:
+
+```purescript
+handleAction :: forall output m. MonadAff m => MonadStore StoreAction State m => Action -> H.HalogenM State Action () output m Unit
+```
+
+And then there is this bit, lifting everything to the same monad and then mapping and flat-mapping it to get the response body:
+
+```purescript
+MakeRequest event -> do
+  H.liftEffect $ Event.preventDefault event
+  username <- H.gets _.username
+  updateStore $ StoreMakeRequest
+  response <- H.liftAff $ AX.get AXRF.string ("https://api.github.com/users/" <> username)
+  updateStore $ StoreReceiveResponse (map _.body (hush response))
+```
+
+And do not forget that this monad is merely describing the computation, you will have to run it at some point:
+
+```purescript
+main = runHalogenAff do
+  body <- HA.awaitBody
+  root <- runStoreT initialStore reduce component
+  let ui = runUI root unit body
+  ui
+```
+
+The example on `halogen-store` suggests using `launchAff_`, but then you will have to cast the return value type to match the monad of the `main` function (`Effect Unit`) or lift `runStoreT` to the `Effect Unit` monad - whichever you find suitable:
+
+```purescript
+main = launchAff_ do
+  body <- HA.awaitBody
+  root <- runStoreT initialStore reduce component
+  let ui = runUI root unit body
+  void ui
+```
+
+But having to worry about all these intricacies actually strengthens the point that PureScript is not for the faint-harted - Elm prevails here.
+
+The other drawback is that mixing logic in both component and the reducers is weird - it is not clear from the Flux architecture where the side-effects should live - like network calls, asynchronous actions, actions triggering other actions. Redux is known for suffering from all of these areas.
+
+Elm solves this nicely with commands.
+
+Halogen kind of takes a step backwards from Elm - it does have subscriptions, but it does not prevent you from issuing side effects from the `handleActions`. And `halogen-store` does not have a recipe for chained actions.
