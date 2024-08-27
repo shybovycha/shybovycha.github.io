@@ -12,6 +12,15 @@ With the recent introduction of grid layouts in CSS, now supported [in all brows
 
 <img src="/images/gantt_chart_part4/rework10.png" loading="lazy" alt="Gantt chart, revision 4">
 
+<iframe src="https://codesandbox.io/embed/89mcty?view=preview&module=%2Fsrc%2FGanttChart%2FRightPane%2FRightPane.tsx"
+style="width:100%; height: 500px; border:0; border-radius: 4px; overflow:hidden;"
+title="gantt-chart"
+allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+></iframe>
+
+[CodeSandbox / live demo](https://codesandbox.io/p/sandbox/cocky-panka-89mcty)
+
 This revision now has a proper horizontal scrolling on the panel with bars - meaning the labels on the left panel stay in place whilst the left panel is scrollable.
 Moreover, the chart is now relies on pure HTML and CSS (being rendered with React though), making it is possible to use rich markup inside the bars and labels.
 
