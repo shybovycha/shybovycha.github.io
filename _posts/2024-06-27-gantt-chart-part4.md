@@ -12,7 +12,7 @@ With the recent introduction of grid layouts in CSS, now supported [in all brows
 
 <img src="/images/gantt_chart_part4/rework10.png" loading="lazy" alt="Gantt chart, revision 4">
 
-<iframe src="https://codesandbox.io/embed/89mcty?view=preview&module=%2Fsrc%2FGanttChart%2FRightPane%2FRightPane.tsx"
+<iframe src="https://codesandbox.io/embed/89mcty?view=preview&module=%2Fsrc%2FGanttChart%2FRightPane%2FRightPane.tsx&hidenavigation=1"
 style="width:100%; height: 500px; border:0; border-radius: 4px; overflow:hidden;"
 title="gantt-chart"
 allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
