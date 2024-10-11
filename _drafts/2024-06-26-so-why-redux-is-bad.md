@@ -91,6 +91,7 @@ On top of those, there are less obvious state management systems:
 
 * `react-router` uses internal router state, which could be treated as global application state
 * `react-query` uses its internal cache for each query
+* `useFormContext` uses the form state of a component' ancestor (which could be declared on any level above the current component)
 
 In the pursuit of encapsulation, front-end developers came up with all of these solutions aiming to solve the problem
 of managing application state.
