@@ -91,10 +91,9 @@ On top of those, there are less obvious state management systems:
 
 * `react-router` uses internal router state, which could be treated as global application state
 * `react-query` uses its internal cache for each query
-* `useFormContext` uses the form state of a component' ancestor (which could be declared on any level above the current component)
+* `react-hook-form` uses the form state of a component' ancestor (which could be declared on any level above the current component)
 
-In the pursuit of encapsulation, front-end developers came up with all of these solutions aiming to solve the problem
-of managing application state.
+In the pursuit of encapsulation and reducing the boilerplate, front-end developers came up with all of these solutions aiming to solve the problem of managing application state.
 
 So what exactly is this problem? And what are the issues all of the aforementioned solutions try to address?
 
@@ -232,7 +231,7 @@ In my opinion, Redux is not suitable for complex projects for a few reasons:
     - as the project complexity grows, one can not just change a piece of state or selectors without affecting the entirety of the project (and teams)
     - combining reducers into one supermassive function makes any state update unreasonably long and complex process (remember: each reducer returns a new state instance; now imagine having even a hundred of reducers, each of which returns a new state)
 - it is easy for a component to be re-rendered on any change to the state; a lot of effort goes into making sure selectors are well memoized and not re-calculated
-- asynchronous actions are a big unresolved mystery (are you going to use thunks, flux, sagas or something else?)
+- asynchronous actions are a big unsolved mystery (are you going to use thunks, flux, sagas or something else?)
 
 On a flip side, the idea itself could actually bring a lot of positives if cooked properly:
 
@@ -241,7 +240,7 @@ On a flip side, the idea itself could actually bring a lot of positives if cooke
 - components are pretty much stateless at this point, encapsulated and not having side effects leaking everywhere
 - logic is nicely separated from the representation and is encapsulated in the reducers (and maybe, to a small extent, in selectors)
 
-Elm utilizes the language features and its own runtime combined with Redux-like architecture to improve some aspects of the more traditional pure JS way of things, where there are only opinionated libraries and no one way of doing things.
+[Elm](https://elm-lang.org/) utilizes the language features and its own runtime combined with Redux-like architecture to improve some aspects of the more traditional pure JS way of things, where there are only opinionated libraries and no one way of doing things.
 
 Consider Elm architecture and how it compares to Redux:
 
@@ -371,7 +370,7 @@ The good bits are:
 
 But if Redux spreads things apart compared to modern React, Elm feels like it spreads things further apart by handling effect results separately (like sending HTTP request, parsing HTTP response and processing the result by dispatching another message).
 
-One other example would be PureScript. It elevates the complexity to the skies and beyond, by making you dance with monads like a headless chicken. Consider "simple" example of sending a HTTP request:
+One other example would be [PureScript](https://www.purescript.org/) (or rather [Halogen](https://github.com/purescript-halogen/purescript-halogen)). Purescript itself elevates the complexity to the skies and beyond, by making you run around with monads like a headless chicken. Consider "simple" example of sending a HTTP request:
 
 ```purescript
 module Main where
@@ -462,7 +461,7 @@ handleAction = case _ of
     H.modify_ _ { loading = false, result = map _.body (hush response) }
 ```
 
-Now add the `halogen-store` package to the mix to make use of Redux-like state management:
+Now add the [`halogen-store`](https://github.com/thomashoneyman/purescript-halogen-store/) package to the mix to make use of Redux-like state management:
 
 ```purescript
 module Main where
@@ -639,4 +638,6 @@ The other drawback is that mixing logic in both component and the reducers is we
 
 Elm solves this nicely with commands.
 
-Halogen kind of takes a step backwards from Elm - it does have subscriptions, but it does not prevent you from issuing side effects from the `handleActions`. And `halogen-store` does not have a recipe for chained actions.
+Halogen kind of takes a step backwards from Elm - it does have subscriptions, but it does not prevent you from issuing side effects from the `handleActions`. And `halogen-store` does not have a recipe for complex chained actions.
+
+In my eyes, the four technologies (modern-day React, Redux, Elm and Purescript) all come with their own pros and massive cons and there is no good or one-size-fits-all solution among them.
