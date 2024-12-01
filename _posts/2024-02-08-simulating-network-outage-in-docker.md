@@ -4,7 +4,7 @@ title: "Simulating network outages in Docker"
 date: '2024-02-08T14:01:24+10:00'
 ---
 
-For my project I needed to simulate a system of ours going offline for a period of time (similar to having a network outage on a customer side).
+Recently, for my work project I needed to simulate a system of ours going offline for a period of time (similar to having a network outage on a customer side).
 
 I figured there are two ways to do it:
 
