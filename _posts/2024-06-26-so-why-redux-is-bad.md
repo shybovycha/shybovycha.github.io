@@ -640,4 +640,8 @@ Elm solves this nicely with commands.
 
 Halogen kind of takes a step backwards from Elm - it does have subscriptions, but it does not prevent you from issuing side effects from the `handleActions`. And `halogen-store` does not have a recipe for complex chained actions.
 
-In my eyes, the four technologies (modern-day React, Redux, Elm and Purescript) all come with their own pros and massive cons and there is no good or one-size-fits-all solution among them.
+Ultimately, I don't think Redux is bad - the idea to have a full visibility into all possible application interactions is scary in a complex project and it is hard to come up with a clean way to work around it, but single-way data flow is actually nice.
+
+Interesting how developers went from _"we don't want Angular.js dirty checks - it is not clear where the data is flowing"_ to _"we don't want a single point of contention for all application interactions"_.
+
+In my eyes, the four technologies (modern-day React, Redux, Elm and Purescript) all come with their own pros and massive cons and there is no good or one-size-fits-all solution among them. And none of them ultimately solves the problem of managing application state and interactions in a non-bloated way. Maybe Angular or React 19 have an answer?
