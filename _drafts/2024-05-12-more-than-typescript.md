@@ -3,9 +3,9 @@ layout: post
 title: 'More than TypeScript'
 ---
 
-Back in 2011 frontend was a very different thing - JavaScript had no `class`, `Object.entries` / `Object.keys`, promises were a proof of concept idea (unless 3rd party library [bluebird](https://github.com/petkaantonov/bluebird)) and Node was v0.10.
+Back in 2011 frontend was a very different thing - JavaScript had no `class`, `Object.entries` / `Object.keys`, promises were a proof of concept idea (unless you used 3rd party library [bluebird](https://github.com/petkaantonov/bluebird)) and Node was v0.10.
 
-Then came [CoffeeScript](https://coffeescript.org/), which added nice helper features to JavaScript - list comprehensions, classes and if _statements_ (meaning you could use them for variable assignment):
+Then came [CoffeeScript](https://coffeescript.org/), which added nice helper features to JavaScript - list comprehensions, classes, string interpolation and if _statements_ (meaning you could use them for variable assignment):
 
 ```coffeescript
 # if statements
@@ -33,22 +33,24 @@ ages = for child, age of yearsOld
   "#{child} is #{age}"
 ```
 
-Whilst it was still compiled to an inferior ES5 JavaScript, it helped to organise the code. A good tool for that task, if you ask me.
+Whilst it was still compiled to an inferior ES5 JavaScript, it helped to organise the code and make it substantially cleaner.
+A good tool for that task, if you ask me.
 
-Then came [Dart](https://dart.dev/) and TypeScript, which were also compiled to ES5 JavaScript, but instead of adding new syntax features,
-they instead aimed to solve a different problem - by introducing _types_ they sought to reduce the number of runtime errors with type checks at compile time.
+Then came [Dart](https://dart.dev/), [Flow](https://flow.org/) and TypeScript, which were also compiled to ES5 JavaScript,
+but instead of adding new syntax features, they aimed to solve a different problem - by introducing _types_ they sought to
+reduce the number of runtime errors with type checks at compile time.
 
-This sounded so good that many developers and companies immediately got on board. Alas, the new tech still suffered from the same issue as JavaScript itself and most common cause of runtime errors - the `null` and `undefined` still were a thing, causing the exact same runtime errors.
+This sounded so good that many developers and companies immediately got on board. Alas, the new tech still suffered from the same issue as JavaScript itself and most common cause of runtime errors - the `null` and `undefined` still was a thing, causing the exact same runtime errors.
 
 The one true benefit offered by TypeScript over the others was that it allowed to seamlessly use existing JavaScript code. And, provided you have the type signatures for that JavaScript code, it could even perform type checking on it too, effectively reducing the requirements for using TypeScript in the existing codebase. No wonder it was an easy buy-in for many projects.
 
 Fast-forward to 2024 (**twelve** years since its first release) and TypeScript dominates the frontend world. Over the years it seems to have been focused on improving the type system in terms of what can you do with types - union types, partial types, etc. It still suffers from the original issues though and there still are not too many new syntactic features to pair with its powerful type system (like pattern matching).
 
-With the new EcmaScript standards, classes and promises becoming the first-class citizens in all browsers (even Internet Explorer / Edge, despite not being around anymore), the APIs and syntax became more mature (`Object.entries`, `async / await` to reduce [callback hell](http://callbackhell.com/), `for .. of`, `const / let` and many others). There are still no list comprehensions or conditional expressions though.
+With the new EcmaScript standards, classes and promises becoming the first-class citizens in all browsers (even Internet Explorer / Edge, when it was still around), the APIs and syntax became more mature (`Object.entries`, `async / await` to reduce [callback hell](http://callbackhell.com/), `for .. of`, `const / let`, string interpolation and many others). There are still no list comprehensions or conditional expressions / pattern matching though.
 
-TypeScript still does help in what I think is a small subset of highly-specific scenarios like navigating the code (jump to definition / declaration / find usages) in the IDE and refactoring the code. But IDEs matured as well, it is not as much useful feature anymore as it used to be (in the era of Sublime Text). TypeScript can prevent some really naive errors at compile time like using a number I stead of an object, but I don't think developers run into them these days - because, again, IDEs are really powerful these days, even VSCode.
+TypeScript still does help in what I think is a small subset of highly-specific scenarios like navigating the code (jump to definition / declaration / find usages) in the IDE and refactoring the code. But IDEs matured as well, code navigation is not as much of a feature unique to TypeScript anymore as it used to be (in the era of Sublime Text). TypeScript can prevent some really naive errors at compile time like using a number instead of an object, but I don't think developers run into them these days - because, again, IDEs are really powerful these days, even VSCode and they help eliminate such mistakes to a large degree.
 
-Consider the following code, generated by OpenAPI for the following scenario: server returns one of three `LocationType`s - either a `Collection`, a `Document` (in a specific collection) or a `Table`. We need to handle each case differently (display them on the UI differently).
+Let's consider a real-world scenario (from my work project): server returns a list of `LocationType` objects. Each one of the objects can be either a `Collection`, a `Document` (in a specific collection) or a `Table`, each with its own subset of fields, specific to the type. We need to handle each case differently (display them on the UI differently).
 
 The OpenAPI spec:
 
@@ -87,7 +89,7 @@ location:
     - $ref: "#/components/documentLocation"
 ```
 
-and the corresponding TypeScript code:
+And the TypeScript code generated by OpenAPI for the above spec looks like this:
 
 ```ts
 interface CollectionLocation {
@@ -163,7 +165,7 @@ function JobLocationFromJSONTyped(json: any, ignoreDiscriminator: boolean): JobL
 }
 ```
 
-This might be a bit too harsh on TypeScript as a language, considering this is not the best implementation (in my opinion), but this highlights one of the issues: this very same code caused a number of runtime errors caught by users - not exceptions, not compilation errors, but wrong UI behaviour - all locations were displayed as a table location.
+This might be a bit too harsh on TypeScript as a language, considering this is not the best implementation (in my opinion), but this highlights one of the issues with TypeScript: this very same code caused a number of runtime errors caught by users - not exceptions, not compilation errors, but wrong UI behaviour - on the UI all locations were treated as a table location.
 
 The reason why this was happening is the code itself - it does not really handle the choice type `JobUpdateLocation` correctly and instead of a choice type it returns a union type, to put it roughly - instead of `oneOf` it returns essentially `allOf` object.
 
@@ -317,7 +319,33 @@ useQuery({
 
 The problem remains: it is really easy to miss this rather small fallback to an empty string.
 
-Can we do better than that? What if we had a powerful type system and syntax to support it? And, if possible, get rid of the `null` and `undefined` along the way?
+There is a solution in Scala world that somewhat addresses this issue - [refined types](https://github.com/fthomas/refined), which allows to have something along the lines of:
+
+```scala
+import eu.timepit.refined.*
+import eu.timepit.refined.api.Refined
+import eu.timepit.refined.string.*
+
+type NonBlankString = MatchesRegex[".+"]
+
+def useProjectStatus(projectId: String Refined NonBlankString) = ???
+```
+
+This would require wrapping all the values passed to `fetchData` in `refineV[NonBlankString]()` call and handling the case when the validation fails:
+
+```scala
+def generateId(): String = List("some", "").last
+
+def fetchData(id: String Refined NonBlankString) = println(s"fetching '$id'...")
+
+def main(args: Array[String]) = {
+  for {
+    id <- refineV[NonBlankString](generateId())
+  } yield fetchData(id)
+}
+```
+
+Can we do better in TypeScript? Something like `refined` in Scala? What if we had a powerful type system and syntax to support it? And, if possible, get rid of the `null` and `undefined` along the way?
 
 The problem of `null` and `undefined` can be mitigated to an extent by using some concepts of functional programming, similarly to how I [showcased some time ago](/2022/08/11/jargon-free-functional-programming-introduction-tldr.html). It would be quite hard to achieve, though, given the problem remains imbued in the language itself. Moreover, targeting the issues described above, it would take an entire standard library to really reduce the possibility of the issue:
 
@@ -334,7 +362,31 @@ useQuery({
 })
 ```
 
+We could _try_ to address the empty string issue with the extensive type system:
+
+```ts
+type NonEmptyString<T extends string> = '' extends T ? never : T;
+type MyString<T extends string> = T;
+
+function fetchData<T extends string>(id: NonEmptyString<T>) {
+  console.log(`Fetching ${id}`);
+}
+```
+
+But it would _only_ work if all the values are known at compile time, which is easily broken with the simplest test:
+
+```ts
+function generateId(): NonEmptyString<string> {
+  return ['moo', ''][1] as NonEmptyString<string>;
+}
+
+fetchData(''); // not ok
+fetchData(generateId()); // ok, but guaranteed undefined behaviour at runtime
+```
+
 And it would take even more effort to make _all_ types uniquely identifiable (to solve the choice type problem).
+
+The way most developers would approach solving similar issues in a real-world project would be (at best) adding some linters, checkers and relying on automated tests and high-quality code reviews. In my experience, this is a rather flimsy excuse rather than a real solution and it does not work most of the time - especially in edge case scenarios.
 
 This is where I'd suggest to use another language altogether, which, similarly to CoffeeScript and TypeScript back in the day, solved some problems at compile time. And suggest I will.
 
@@ -342,7 +394,7 @@ There is a big warning before I proceed though: another technology is a rather b
 
 Balance bike is a good tool to get you going - it gets you from walking to moving fast. But if you want to get faster and further, you have to drop it at some stage in favour of a more advanced bike.
 
-Similarly, TypeScript and ESNext got you from plain callback-hell-infested JavaScript code to a better place - you can refactor code faster, it saves you from a few errors at compile time, the code is much cleaner and conscise now. But if you really want to get further, you will have to make a leap of faith, make an investment into the future.
+Similarly to how TypeScript and ESNext got you from plain callback-hell-infested JavaScript code to a better place - you can refactor code faster, it saves you from a few errors at compile time, the code is much cleaner and conscise now. But if you really want to get even further, you will have to make a leap of faith, make an investment into the future.
 
 Here is my big controversial suggestion: a pure functional language, one with strong type system, which does not have a concept of null and undefined in the first place, with a nice sweet syntax.
 
@@ -352,9 +404,7 @@ Elm is like a very simplified Haskell - it is a pure functional language with a 
 
 On a bad note, it is not being developed since 2019, it comes with an entire runtime (saves you from runtime errors, but blows up the bundle size) and it is a all-or-nothing commitment for the project - it is an all-in-one platform and if you want to gradually update your application from React - sorry, you will have to rewrite entire parts of you application entirely in Elm. The good point turned bad, having all possible actions defined in one message type make complex applications _really_ complex (with one massive type definition, an issue very familiar to developers who had to deal with Redux).
 
-Here could have been a trivial Elm code sample, but what good would it do? Here's an entire Elm application!
-
-_**TODO:** show how to use component-like structure with action/message type having a `ChartAction a` as a disjoint union variant._
+_here could have been an Elm code sample_
 
 The next step on this journey would be PureScript. It is an actively developed language, it has a minimal footprint after compiled to JS (much smaller than Elm), it has a _very_ rich ecosystem and, best of all, it has a very simple interop with JS and it can compile just one module. Top it up with Halogen framework and you effectively got yourself Elm on steroids. The downside is that it is slightly more complex platform (language and framework) compared to Elm, so the learning curve is a bit steeper.
 
@@ -429,11 +479,11 @@ Expanding on Scott Wlaschin's talk, you can (and probably should) separate the p
 
 This would be the best strategy for the most projects, migrating one bit at a time and making the application less and less error prone whilst not wreaking the havok by rewriting everything from scratch (very few businesses will buy into that).
 
-The bigger issue is that most modern frontend apps I have seen are so mangled in mixing the business logic and the presentation layer, it would be challenging (to say the least) to get unmangle it to a reasonable code. Check how we handle UI action, triggering a HTTP request and updating both the UI (to display the request progress/status) and the application state (for other parts of the UI) at the same time.
+The bigger issue is that most modern frontend apps I have seen are so mangled in mixing the business logic and the presentation layer, it would be challenging (to say the least) to unmangle it back to a reasonable code. Check how we handle UI action, triggering a HTTP request and updating both the UI (to display the request progress/status) and the application state (for other parts of the UI) at the same time.
 
-_**TODO:** add an example of converting a component from React codebase to PureScript (maybe with Halogen). Assume a simple React app with a 3rd party component (like a date picker) and try calling PureScript logic from React component and then React component from PureScript code._
+_here could have been a real-world application interaction handling code sample_
 
-[FFI example in PureScript book](https://book.purescript.org/chapter10.html):
+Calling PureScript code from JavaScript (based on [FFI example in PureScript book](https://book.purescript.org/chapter10.html)):
 
 ```purescript
 module Test where
@@ -445,7 +495,7 @@ gcd 0 m = m
 gcd n 0 = n
 gcd n m
   | n > m     = gcd (n - m) m
-  | otherwise = gcd (m – n) n
+  | otherwise = gcd (m - n) n
 
 data ZeroOrOne a = Zero | One a
 
@@ -458,7 +508,7 @@ _one = One 1
 _two = One 2
 ```
 
-and then
+and then in JS:
 
 ```js
 import Test from 'Test.js';
@@ -474,7 +524,7 @@ console.log(Test.inc(_one));
 console.log(Test.inc(_two));
 ```
 
-And in the other direction:
+In the other direction (calling JS code from PureScript):
 
 ```js
 export const setItem = key => value => () =>
@@ -484,7 +534,7 @@ export const getItem = key => () =>
   window.localStorage.getItem(key);
 ```
 
-and then
+and then in PureScript:
 
 ```purescript
 foreign import setItem :: String -> String -> Effect Unit
@@ -517,3 +567,5 @@ main = do
       pure examplePerson
     Right p   -> pure p
 ```
+
+Just to reiterate, I do understand that converting the application (and developers) to this new weird technology is an almost impossible task, especially in a large long-lived project. One way to reason about it and justify the transition is the resilience requirements of a project (the need for actually error-prone code) and the amount of time and effort spent to date on finding and fixing those nasty bugs and undefined behaviours in an application.
