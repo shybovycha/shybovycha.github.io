@@ -34,7 +34,7 @@ ages = for child, age of yearsOld
 ```
 
 Whilst it was still compiled to an inferior ES5 JavaScript, it helped to organise the code and make it substantially cleaner.
-A good tool for that task, if you ask me.
+The one drawback is that it did not provide any type safety _(only added recently, via `@flow` and you would still have to duplicate your classes if you wanted to use it - once in coffeescript and once in `@flow` annotations)_. Anyhow, CoffeeScript was a good tool for the task, if you ask me.
 
 Then came [Dart](https://dart.dev/), [Flow](https://flow.org/) and TypeScript, which were also compiled to ES5 JavaScript,
 but instead of adding new syntax features, they aimed to solve a different problem - by introducing _types_ they sought to
@@ -344,6 +344,10 @@ def main(args: Array[String]) = {
   } yield fetchData(id)
 }
 ```
+
+But in the land of TypeScript, there is only so much you can do - TypeScript only works at compile time.
+
+The above examples might sound like very far-fetched edge case scenarios, but keep in mind: this is the code generated automatically by one of the most popular tools from a trivial schema. This is not as far-fetched as it might seem.
 
 Can we do better in TypeScript? Something like `refined` in Scala? What if we had a powerful type system and syntax to support it? And, if possible, get rid of the `null` and `undefined` along the way?
 

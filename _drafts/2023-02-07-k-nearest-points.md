@@ -1,8 +1,16 @@
-This is a review of some ways to solve the [K closest points to origin]() problem on LeetCode.
+This is a review of some ways to solve the [K closest points to origin](https://leetcode.com/problems/k-closest-points-to-origin/description/) problem on LeetCode.
 
 Problem statement:
 
+> Given an array of points where `points[i] = [xi, yi]` represents a point on the X-Y plane and an integer `k`, return the `k` closest points to the origin `(0, 0)`.
 >
+> The distance between two points on the X-Y plane is the Euclidean distance (i.e., `sqrt((x1 - x2)^2 + (y1 - y2)^2)`).
+>
+> You may return the answer in any order. The answer is guaranteed to be unique (except for the order that it is in).
+>
+> Constraints:
+> * `1 <= k <= points.length <= 10^4`
+> * `-10^4 <= xi, yi <= 10^4`
 
 The first idea I had was to use the priority queue:
 
@@ -387,3 +395,23 @@ for (int i = 0; i < k; ++i) {
 
 return resPointers;
 ```
+
+I even tried C++23 ranges:
+
+```cpp
+vector<vector<int>> kClosest(vector<vector<int>>& points, int k) {
+    std::array<std::array<int, 2>, 10000> arr{};
+
+    int i = 0;
+
+    for (auto& p : points) {
+        arr[i++] = std::array<int, 2>{ p[0], p[1] };
+    }
+
+    std::ranges::sort(arr.begin(), arr.end(), [](auto& p) { return (p[0] * p[0]) + (p[1] * p[1]); });
+
+    return arr | std::views::take(k);
+}
+```
+
+This solution beats `99.75%` others in terms of memory, but only `5.07%` in terms of time.
