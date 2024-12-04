@@ -4,6 +4,13 @@ title: "Gantt chart. Part 4"
 date: '2024-06-27T22:54:24+10:00'
 ---
 
+## Contents
+
+* [Gantt chart with D3](/2017/04/09/gantt-chart-with-d3.html)
+* [Gantt chart with D3. Part 2](/2020/08/02/gantt-chart-part2.html)
+* [Gantt chart with Canvas](/2021/03/04/gantt-chart-part3.html)
+* [**Gantt chart with CSS Grids (you are here)**](/2024/06/26/gantt-chart-part4.html)
+
 Seems like every two years or so I hop on my [Gantt chart implementation](https://github.com/shybovycha/gantt-chart/) and rework it completely.
 
 Last few attempts ([rev. 1](/2017/04/09/gantt-chart-with-d3.html), [rev. 2](/2020/08/02/gantt-chart-part2.html), [rev. 3](/2021/03/04/gantt-chart-part3.html)) were alright, but I was never quite satisfied with the implementation - be it SVG, which has a toll on a browser and has quite limited customization functionality or Canvas API, with same limited customization but being fast.

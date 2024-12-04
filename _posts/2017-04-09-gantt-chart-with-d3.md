@@ -4,6 +4,13 @@ title: Gantt chart with D3
 date: '2017-04-09T11:04:24+02:00'
 ---
 
+## Contents
+
+* [**Gantt chart with D3 (you are here)**](/2017/04/09/gantt-chart-with-d3.html)
+* [Gantt chart with D3. Part 2](/2020/08/02/gantt-chart-part2.html)
+* [Gantt chart with Canvas](/2021/03/04/gantt-chart-part3.html)
+* [Gantt chart with CSS Grids](/2024/06/26/gantt-chart-part4.html)
+
 At work, I've had a task to implement a Gantt chart diagram to show dependencies and order of some... let's say, milestones.
 Given this feature is in a very unstable beta in Google Charts, I thought to myself: *"Why don't I implement it on my own?"*.
 And tried to recall my D3 knowledge.

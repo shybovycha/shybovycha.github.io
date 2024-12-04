@@ -4,9 +4,12 @@ title: Gantt chart with D3. Part 2
 date: '2020-08-02T15:04:24+10:00'
 ---
 
-**UPDATE:** there is a follow-up to this blog, [Gantt chart with Canvas](/2021/03/04/gantt-chart-part3.html).
+## Contents
 
-This is a follow-up to the blog I wrote a bit over three years ago, [Gantt chart with D3](/2017/04/09/gantt-chart-with-d3.html)
+* [Gantt chart with D3](/2017/04/09/gantt-chart-with-d3.html)
+* [**Gantt chart with D3. Part 2 (you are here)**](/2020/08/02/gantt-chart-part2.html)
+* [Gantt chart with Canvas](/2021/03/04/gantt-chart-part3.html)
+* [Gantt chart with CSS Grids](/2024/06/26/gantt-chart-part4.html)
 
 In the original blog I claimed to implement something like this:
 
