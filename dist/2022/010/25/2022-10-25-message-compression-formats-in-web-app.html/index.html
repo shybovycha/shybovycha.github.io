@@ -1,0 +1,658 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-bvzihdzo> <head><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.0.3"><!-- Font preloads --><link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin><!-- Canonical URL --><link rel="canonical" href="https://shybovycha.github.io/2022/010/25/2022-10-25-message-compression-formats-in-web-app.html/"><!-- Primary Meta Tags --><title>Message compression formats in a web application</title><meta name="title" content="Message compression formats in a web application"><meta name="description"><link rel="stylesheet" href="/_astro/index.BvFNhZYw.css">
+<style>footer[data-astro-cid-sz7xmlte]{padding:2em 1em 6em;background:linear-gradient(var(--gray-gradient)) no-repeat;color:rgb(var(--gray));text-align:center}.social-links[data-astro-cid-sz7xmlte]{display:flex;justify-content:center;gap:1em;margin-top:1em}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]{text-decoration:none;color:rgb(var(--gray))}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]:hover{color:rgb(var(--gray-dark))}main[data-astro-cid-bvzihdzo]{width:calc(100% - 2em);max-width:100%;margin:0}.hero-image[data-astro-cid-bvzihdzo]{width:100%}.hero-image[data-astro-cid-bvzihdzo] img[data-astro-cid-bvzihdzo]{display:block;margin:0 auto;border-radius:12px;box-shadow:var(--box-shadow)}.prose[data-astro-cid-bvzihdzo]{width:720px;max-width:calc(100% - 2em);margin:auto;padding:1em;color:rgb(var(--gray-dark))}.title[data-astro-cid-bvzihdzo]{margin-bottom:1em;padding:1em 0;text-align:center;line-height:1}.title[data-astro-cid-bvzihdzo] h1[data-astro-cid-bvzihdzo]{margin:0 0 .5em}.date[data-astro-cid-bvzihdzo]{margin-bottom:.5em;color:rgb(var(--gray))}.last-updated-on[data-astro-cid-bvzihdzo]{font-style:italic}
+[data-astro-image]{width:100%;height:auto;object-fit:var(--fit);object-position:var(--pos);aspect-ratio:var(--w) / var(--h)}[data-astro-image=responsive]{max-width:calc(var(--w) * 1px);max-height:calc(var(--h) * 1px)}[data-astro-image=fixed]{width:calc(var(--w) * 1px);height:calc(var(--h) * 1px)}
+</style></head> <body data-astro-cid-bvzihdzo> <nav class="top"> <div class="links"> <a class="nav-link nav-item" href="/">Home</a> <a class="nav-link nav-item" href="/about.html">About</a> </div> </nav> <main data-astro-cid-bvzihdzo> <article data-astro-cid-bvzihdzo> <div class="hero-image" data-astro-cid-bvzihdzo>  </div> <div class="prose" data-astro-cid-bvzihdzo> <div class="title" data-astro-cid-bvzihdzo> <div class="date" data-astro-cid-bvzihdzo> <time datetime="2022-10-25T00:15:00.000Z"> Oct 25, 2022 </time>  </div> <h1 data-astro-cid-bvzihdzo>Message compression formats in a web application</h1> <hr data-astro-cid-bvzihdzo> </div>  <p>I have seen quite a few web applications which are passing heaps of data between client and server. Pretty much all of them use JSON for that purpose.
+And whilst that solves the business problem, some of those applications aim to provide nearly real-time user experience, and that’s where the issues arise.</p>
+<p>With the rise of web sockets, RTC and HTTP2 tech, the data transfer speed issues might be not so noticeable, but the more data app tries to transfer, the more
+pressing the matter gets. This issue also becomes more apparent on the server side - server has to process a lot more data in a request thread.</p>
+<p>At The Trade Desk I have observed an approach, where we are transferring a list of strings (later we converted them to integers to widen the bandwidth) between
+high-loaded services (think 15 million requests per second with a hard time bound on request processing of 100 milliseconds).</p>
+<p>I thought this is a cool concept, worth exploring deeper. For this matter, I have searched the Internet for similar approaches.</p>
+<p>One of the readings was an <a href="https://habr.com/ru/company/vk/blog/594633/">article</a> on the russian
+resource about speeding up a web application by switching from HTTP1 to HTTP2, utilizing various data compression formats: for static assets - WEBP, AVIF and
+progressive JPEG; for general data - various stream compression algorithms - GZIP, Brotli and ZSTD; alongside with different data serialization formats - MessagePack.</p>
+<p>I decided to expand my search in the direction of serialization formats. In this article I compare few of those and focus on their performance in serializing
+different kinds of data (lists, nested objects, integers and strings, large and small datasets)
+and the serialization &#x26; deserialization performance in browser and the compression rates.</p>
+<p>The formats covered are:</p>
+<ul>
+<li><a href="https://www.mongodb.com/json-and-bson">BSON</a></li>
+<li><a href="https://cbor.io/">CBOR</a></li>
+<li><a href="https://msgpack.org/">MessagePack</a></li>
+<li><a href="https://developers.google.com/protocol-buffers/">Protobuf</a></li>
+<li><a href="https://github.com/apache/thrift">Thrift</a></li>
+<li><a href="https://github.com/apache/avro">Avro</a></li>
+<li><a href="https://capnproto.org/">Cap’n’Proto</a></li>
+<li><a href="https://github.com/google/flatbuffers">FlatBuffers</a></li>
+</ul>
+<p>One of the optimizations we have achieved at The Trade Desk was 7 times reduction in data size by switching from string IDs to integer values.
+Think <code>"something-else"</code> we used to operate everywhere was assigned an integer ID of <code>4092</code>.
+Now that int is 4 bytes long, whereas the string value is 14 bytes long. That is more than 3x reduction in size, but you have to still store the mapping
+somewhere, which we already did (in our case).</p>
+<p>But the overall idea is worth researching too - how much compression each format provides when working with long lists of strings and long lists of ints.</p>
+<p>To make the thing more interesting, I came up with few various data types to be messed around:</p>
+<ul>
+<li>a simple object <code>Pet { name: string, kind: enum Kind { CAT, DOG } }</code></li>
+<li>an object with an array of string identifiers <code>StringIdsResource { ids: string[] }</code></li>
+<li>an object with an array of integer identifiers <code>StringIdsResource { ids: int[] }</code></li>
+</ul>
+<p>As mentioned before, the metrics I’m going to be focusing on are:</p>
+<ul>
+<li>encoding &#x26; decoding performance in browser environment</li>
+<li>encoded message length (raw, as UTF-8 string and base-64 encoded UTF-8 string)</li>
+<li>amount of runtime (bundled code) required to work with the format</li>
+</ul>
+<p>To make it quick and easy, here’s the summary <em>(time measured in browser, on a nested object with a list of <code>1000</code> children of various data types)</em>:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Serializer</th><th>Encoding time</th><th>Decoding time</th><th>Encoded data size (byte array)</th><th>Compression</th><th>Encoded data size (base-64 utf-8 encoded)</th><th>Bundle size</th></tr></thead><tbody><tr><td>Avro</td><td>12ms</td><td>4ms</td><td>30003</td><td>77.16%</td><td>40004</td><td>111.7kb</td></tr><tr><td>BSON</td><td>10ms</td><td>11ms</td><td>98912</td><td>24.71%</td><td>131884</td><td>98.0kb</td></tr><tr><td>CBOR</td><td>3ms</td><td>4ms</td><td>89017</td><td>32.24%</td><td>118692</td><td>30.1kb</td></tr><tr><td>MessagePack</td><td>3ms</td><td>3ms</td><td>89017</td><td>32.24%</td><td>118692</td><td>27.7kb</td></tr><tr><td>Protobuf</td><td>13ms</td><td>3ms</td><td>38000</td><td>71.07%</td><td>50668</td><td>76.6kb</td></tr><tr><td>Protobuf, compiled</td><td>6ms</td><td>1ms</td><td>38000</td><td>71.07%</td><td>50668</td><td>30.0kb</td></tr><tr><td>Flatbuffers</td><td>9ms</td><td>3ms</td><td>32052</td><td>75.60%</td><td>42736</td><td>3.1kb</td></tr><tr><td>Thrift (binary)</td><td>42ms</td><td>6ms</td><td>45009</td><td>65.74%</td><td>60012</td><td>109.7kb</td></tr><tr><td>Thrift (compact)</td><td>33ms</td><td>11ms</td><td>36005</td><td>72.59%</td><td>48008</td><td>109.7kb</td></tr></tbody></table>
+<p>Few learnings:</p>
+<ul>
+<li>Thrift is quite slow and not that straightforward to use (after all, it was designed to provide entire communication layer for an application), but provides decent compression rate</li>
+<li>Protobuf and Avro provide by far the most compact output (because of schema provided)</li>
+<li>Protobuf library (protobufjs), unlike Avro, can’t handle enumerations (Protobufjs requires raw integer values to be used whereas Avro supports semantic, string values)</li>
+<li>Cap’n’Proto seems outdated and its JS plugin did not get any support for few years now, have to check the TS version</li>
+<li>FlatBuffers is quite low-level and tricky to use (much more effort than those other tools)</li>
+</ul>
+<p>My take on these results is that:</p>
+<ul>
+<li>Protobuf, when using a compiled serialzier/deserializer for specific message(-s):
+<ul>
+<li>has a comfortable API</li>
+<li>fast serialization / deserialization in browser</li>
+<li>decent compression rate</li>
+<li>relatively small bundle size increase</li>
+</ul>
+</li>
+<li>Flatbuffers:
+<ul>
+<li>great compression rate</li>
+<li>tiny bundle size impact</li>
+<li>great performance in browser</li>
+<li>super-cumbersome API (well, that’s low-level trade-offs for ya)</li>
+</ul>
+</li>
+</ul>
+<p>The source code for the tests could be found on my <a href="https://github.com/shybovycha/webapp-data-serialization-formats-comparison">GitHub repo</a>.</p>
+<p>Under the cut you will find a stream of consciousness - my notes whilst implementing the tests for these tech.</p>
+<!--more-->
+<h2 id="preface">Preface</h2>
+<p>Some of the serialization tools listed in this blog require message (or rather data) schema to be defined beforehand.
+This might seem like unnecessary extra work, but if implemented correctly, it has quite a few benefits:</p>
+<ul>
+<li>no need to ship an entire runtime / parser</li>
+<li>type checking even in weakly typed languages</li>
+<li>contract enforcing becomes an option, no real need for contract testing</li>
+</ul>
+<p>Amongst technologies covered here, only three do not use data schema:</p>
+<ul>
+<li>CBOR</li>
+<li>BSON</li>
+<li>MessagePack</li>
+</ul>
+<p>But the others, which do use schemas, need the schema to be compiled before it is used.</p>
+<h3 id="avro">Avro</h3>
+<p>First time I’ve heard about Avro is when I had to work with Kafka - it was used to enforce message format across queues.</p>
+<p>With Avro, one does not really <em>have</em> to compile schema before it is used (although it is possible) - schema can be defined at runtime:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> avro</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> require</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'avsc/etc/browser/avsc-types'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> AvroType</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> avro.Type.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">forSchema</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  type: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'record'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  name: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'TimeframeResource'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  fields: [</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      name: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'dataPoints'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      type: {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        type: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'array'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        items: {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">          type: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'record'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">          name: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'DataPoint'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">          fields: [</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">              name: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'timestamp'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">              type: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'long'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">              name: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'values'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">              type: {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                type: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'record'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                name: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'TimeframeValues'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                fields: [</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                  {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                    name: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'category1'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                    type: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'double'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                  },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                  {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                    name: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'category2'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                    type: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'double'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                  },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                  {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                    name: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'category3'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                    type: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'double'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                  },</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                ],</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">              },</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            },</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">          ],</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        },</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        default: [],</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      },</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    },</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  ],</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">});</span></span>
+<span class="line"></span></code></pre>
+<p>The only trick with Avro is that <code>long</code> is not really a type, for whatever reason.
+The 64-bit wide integers are very useful when working with <code>DateTime</code> to reduce the message size (consider <code>31-Oct-2022T09:34:00+10:00</code> (26 characters = 26 bytes) vs <code>1667172840</code> (64 bit = 2 bytes)).
+And the way to define this type in Avro is a bit quirky:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> LongType</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> avro.types.LongType.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">__with</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    fromBuffer</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: (</span><span style="color:#E36209;--shiki-dark:#FFAB70">buf</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> buf.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">readBigInt64LE</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(),</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    toBuffer</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: (</span><span style="color:#E36209;--shiki-dark:#FFAB70">n</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> buf</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Buffer.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">alloc</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">8</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        buf.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">writeBigInt64LE</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">BigInt</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(n));</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> buf;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    },</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    fromJSON: Number,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    toJSON: Number,</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    isValid</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: (</span><span style="color:#E36209;--shiki-dark:#FFAB70">n</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#D73A49;--shiki-dark:#F97583"> typeof</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'number'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    compare</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: (</span><span style="color:#E36209;--shiki-dark:#FFAB70">n1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">n2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#D73A49;--shiki-dark:#F97583">return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n1 </span><span style="color:#D73A49;--shiki-dark:#F97583">===</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n2 </span><span style="color:#D73A49;--shiki-dark:#F97583">?</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#D73A49;--shiki-dark:#F97583"> :</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (n1 </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n2 </span><span style="color:#D73A49;--shiki-dark:#F97583">?</span><span style="color:#D73A49;--shiki-dark:#F97583"> -</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#D73A49;--shiki-dark:#F97583"> :</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">); }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">});</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> AvroType</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> avro.Type.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">forSchema</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  {</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    /* schema */</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  },</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    registry: { </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'long'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: LongType }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span></code></pre>
+<div class="content-read-marker" data-fraction="25"></div>
+<p>But then, serialization and deserialization are extremely simple:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> data</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  dataPoints: [</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"timestamp"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#D73A49;--shiki-dark:#F97583">new</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Date</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"2022-05-05T21:11:22+10:00"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">).</span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTime</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(),</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"values"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:{</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category1"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#D73A49;--shiki-dark:#F97583">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">5.207119058209394</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category2"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF">89.29685288758918</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category3"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF">35.90829865270196</span><span style="color:#24292E;--shiki-dark:#E1E4E8">}},</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"timestamp"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#D73A49;--shiki-dark:#F97583">new</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Date</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"2022-05-05T21:11:22+10:00"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">).</span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTime</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(),</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"values"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:{</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category1"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#D73A49;--shiki-dark:#F97583">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">43.35796609790218</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category2"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF">21.846789565420153</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category3"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF">124.58032201029741</span><span style="color:#24292E;--shiki-dark:#E1E4E8">}},</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  ],</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">};</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> buf</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> AvroType.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">toBuffer</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(data);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> obj</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> AvroType.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">fromBuffer</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(buf);</span></span>
+<span class="line"></span></code></pre>
+<h3 id="bson">BSON</h3>
+<p>BSON is a schema-less library, so usage is as straightforward as it can be:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> BSON</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> require</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'bson'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> data</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  dataPoints: [</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"timestamp"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#D73A49;--shiki-dark:#F97583">new</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Date</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"2022-05-05T21:11:22+10:00"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">).</span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTime</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(),</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"values"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:{</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category1"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#D73A49;--shiki-dark:#F97583">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">5.207119058209394</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category2"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF">89.29685288758918</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category3"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF">35.90829865270196</span><span style="color:#24292E;--shiki-dark:#E1E4E8">}},</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"timestamp"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#D73A49;--shiki-dark:#F97583">new</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Date</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"2022-05-05T21:11:22+10:00"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">).</span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTime</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(),</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"values"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:{</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category1"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#D73A49;--shiki-dark:#F97583">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">43.35796609790218</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category2"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF">21.846789565420153</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category3"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF">124.58032201029741</span><span style="color:#24292E;--shiki-dark:#E1E4E8">}},</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  ],</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">};</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> buf</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> BSON</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">serialize</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(data);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> obj</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> BSON</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">deserialize</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(buf);</span></span>
+<span class="line"></span></code></pre>
+<h3 id="cbor">CBOR</h3>
+<p>CBOR is very similar to BSON - it is a schema-less tool, so it is as straightforward as it gets:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> CBOR</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> require</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'cbor-x'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> data</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  dataPoints: [</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"timestamp"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#D73A49;--shiki-dark:#F97583">new</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Date</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"2022-05-05T21:11:22+10:00"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">).</span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTime</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(),</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"values"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:{</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category1"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#D73A49;--shiki-dark:#F97583">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">5.207119058209394</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category2"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF">89.29685288758918</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category3"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF">35.90829865270196</span><span style="color:#24292E;--shiki-dark:#E1E4E8">}},</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"timestamp"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#D73A49;--shiki-dark:#F97583">new</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Date</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"2022-05-05T21:11:22+10:00"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">).</span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTime</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(),</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"values"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:{</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category1"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#D73A49;--shiki-dark:#F97583">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">43.35796609790218</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category2"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF">21.846789565420153</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category3"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF">124.58032201029741</span><span style="color:#24292E;--shiki-dark:#E1E4E8">}},</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  ],</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">};</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> buf</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> CBOR</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">encode</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(data);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> obj</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> CBOR</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">decode</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(buf);</span></span>
+<span class="line"></span></code></pre>
+<h3 id="messagepack">MessagePack</h3>
+<p>MessagePack is the last one of the schema-less tools, so it is once again as straightforward as one might think:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> MessagePack</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> require</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'msgpackr'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> data</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  dataPoints: [</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"timestamp"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#D73A49;--shiki-dark:#F97583">new</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Date</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"2022-05-05T21:11:22+10:00"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">).</span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTime</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(),</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"values"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:{</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category1"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#D73A49;--shiki-dark:#F97583">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">5.207119058209394</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category2"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF">89.29685288758918</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category3"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF">35.90829865270196</span><span style="color:#24292E;--shiki-dark:#E1E4E8">}},</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"timestamp"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#D73A49;--shiki-dark:#F97583">new</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Date</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"2022-05-05T21:11:22+10:00"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">).</span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTime</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(),</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"values"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:{</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category1"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#D73A49;--shiki-dark:#F97583">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">43.35796609790218</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category2"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF">21.846789565420153</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category3"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF">124.58032201029741</span><span style="color:#24292E;--shiki-dark:#E1E4E8">}},</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  ],</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">};</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> buf</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> MessagePack.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pack</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(data);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> obj</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> MessagePack.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">unpack</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(buf);</span></span>
+<span class="line"></span></code></pre>
+<h3 id="protobuf">Protobuf</h3>
+<p>With Protobuf, the schema can be defined and parsed in runtime:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> protobuf</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> require</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'protobufjs'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> ProtobufProto</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> `syntax = "proto3";</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">package testpackage;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">message TimeframeValues {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    double category1 = 1;</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    double category2 = 2;</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    double category3 = 3;</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">message Timeframe {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    int64 timestamp = 1;</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    TimeframeValues values = 2;</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">message TimeframeData {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    repeated Timeframe dataPoints = 1;</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">}</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">`</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> ProtobufType</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> protobuf.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">parse</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(ProtobufProto).root.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">lookupType</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'testpackage.TimeframeData'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span></code></pre>
+<p>With parsing, one has to lookup the message type from the “root” type, before it can be used for serialization.</p>
+<p>The schema can also be compiled as a separate build step:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">yarn</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pbjs</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -t</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> static-module</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -w</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> commonjs</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -o</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ProtobufType.js</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ProtobufType.proto</span></span>
+<span class="line"></span></code></pre>
+<p>The serialization and deserialization then become quite straightforward:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> data</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  dataPoints: [</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"timestamp"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#D73A49;--shiki-dark:#F97583">new</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Date</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"2022-05-05T21:11:22+10:00"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">).</span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTime</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(),</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"values"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:{</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category1"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#D73A49;--shiki-dark:#F97583">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">5.207119058209394</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category2"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF">89.29685288758918</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category3"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF">35.90829865270196</span><span style="color:#24292E;--shiki-dark:#E1E4E8">}},</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"timestamp"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#D73A49;--shiki-dark:#F97583">new</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Date</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"2022-05-05T21:11:22+10:00"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">).</span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTime</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(),</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"values"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:{</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category1"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#D73A49;--shiki-dark:#F97583">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">43.35796609790218</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category2"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF">21.846789565420153</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"category3"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF">124.58032201029741</span><span style="color:#24292E;--shiki-dark:#E1E4E8">}},</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  ],</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">};</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> buf</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ProtobufType.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">encode</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(data).</span><span style="color:#6F42C1;--shiki-dark:#B392F0">finish</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> obj</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ProtobufType.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">decode</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(buf);</span></span>
+<span class="line"></span></code></pre>
+<h3 id="flatbuffers">FlatBuffers</h3>
+<p>Defining schema with FlatBuffers looks like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>namespace testpackage;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>table TimeframeValues {</span></span>
+<span class="line"><span>  category1: float32;</span></span>
+<span class="line"><span>  category2: float32;</span></span>
+<span class="line"><span>  category3: float32;</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>table Timeframe {</span></span>
+<span class="line"><span>  timestamp: int64;</span></span>
+<span class="line"><span>  values: TimeframeValues;</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>table TimeframeData {</span></span>
+<span class="line"><span>  dataPoints: [Timeframe];</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>root_type TimeframeData;</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>The schema is then compiled using the following command:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">flatc</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -o</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> flatbuffers-compiled-proto/</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --ts</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> TimeframeData.fbs</span></span>
+<span class="line"></span></code></pre>
+<p>One might think this is how to encode an object with FlatBuffers (which is a cumbersome low-level API already):</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> builder</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> new</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> flatbuffers.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">Builder</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">FlatbuffersTimeframeData.TimeframeData.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">startTimeframeData</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(builder);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">FlatbuffersTimeframeData.TimeframeData.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">startDataPointsVector</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(builder, dataPoints.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">length</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">dataPoints.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">forEach</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(({ </span><span style="color:#E36209;--shiki-dark:#FFAB70">timestamp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">values</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: { </span><span style="color:#E36209;--shiki-dark:#FFAB70">category1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">category2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">category3</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> } }) </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    FlatbuffersTimeframe.Timeframe.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">startTimeframe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(builder);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        FlatbuffersTimeframe.Timeframe.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">addTimestamp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(timestamp);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        FlatbuffersTimeframeValues.TimeframeValues.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">startTimeframeValues</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(builder);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            FlatbuffersTimeframeValues.TimeframeValues.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">addCategory1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(builder, category1);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            FlatbuffersTimeframeValues.TimeframeValues.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">addCategory2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(builder, category2);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            FlatbuffersTimeframeValues.TimeframeValues.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">addCategory3</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(builder, category3);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">            // alternatively: FlatbuffersTimeframeValues.TimeframeValues.createTimeframeValues(builder, category1, category2, category3);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> vs</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> FlatbuffersTimeframeValues.TimeframeValues.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">endTimeframeValues</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(builder);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        FlatbuffersTimeframe.Timeframe.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">addValues</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(builder, vs);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> tf</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> FlatbuffersTimeframe.Timeframe.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">endTimeframe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    FlatbuffersTimeframeData.TimeframeData.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">addDataPoints</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(builder, tf);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">});</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> offset</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> FlatbuffersTimeframeData.TimeframeData.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">endTimeframeData</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(builder);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">builder.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">finish</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(offset);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> builder.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">asUint8Array</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span></code></pre>
+<div class="content-read-marker" data-fraction="50"></div>
+<p>But this won’t do - an error would be thrown:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Uncaught Error: FlatBuffers: object serialization must not be nested.</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>With FlatBuffers serialization is like managing the memory in C98 - you first allocate the memory, then you fill it with data, then you use it elsewhere:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> builder</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> new</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> flatbuffers.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">Builder</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> tfs</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> dataPoints.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">map</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(({ </span><span style="color:#E36209;--shiki-dark:#FFAB70">timestamp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">values</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: { </span><span style="color:#E36209;--shiki-dark:#FFAB70">category1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">category2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">category3</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> } }) </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> vs</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> FlatbuffersTimeframeValues.TimeframeValues.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">createTimeframeValues</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(builder, category1, category2, category3);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    FlatbuffersTimeframe.Timeframe.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">startTimeframe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(builder);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        FlatbuffersTimeframe.Timeframe.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">addTimestamp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(builder, timestamp);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        FlatbuffersTimeframe.Timeframe.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">addValues</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(builder, vs);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> FlatbuffersTimeframe.Timeframe.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">endTimeframe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(builder);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">});</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> dps</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> FlatbuffersTimeframeData.TimeframeData.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">createDataPointsVector</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(builder, tfs);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">FlatbuffersTimeframeData.TimeframeData.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">startTimeframeData</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(builder);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">FlatbuffersTimeframeData.TimeframeData.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">addDataPoints</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(builder, dps);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> offset</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> FlatbuffersTimeframeData.TimeframeData.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">endTimeframeData</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(builder);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">builder.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">finish</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(offset);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> builder.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">asUint8Array</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span></code></pre>
+<p>Deserializing objects is also not all that similar with the other tech in this list - accessing each property is done via methods provided by the generated proto classes:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> buf</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> new</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> flatbuffers.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ByteBuffer</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(data);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> timeframeData</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> FlatbuffersTimeframeData.TimeframeData.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">getRootAsTimeframeData</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(buf);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">// accessing dataPoints: timeframeData.dataPoints(timeframeData.dataPointsLength() - 1).values().category1()</span></span>
+<span class="line"></span></code></pre>
+<p>This aspect makes FlatBuffers not so friendly to use. Meaning if you decide to incorporate it in your project, not only will you need to compile the schemas separately, but
+the effort to implement serialization might become a decisive factor against it, compared to other tools in this review.</p>
+<h3 id="thrift">Thrift</h3>
+<p>Schema for Thrift looks like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>struct TimeframeValues {</span></span>
+<span class="line"><span>  1: required double category1;</span></span>
+<span class="line"><span>  2: required double category2;</span></span>
+<span class="line"><span>  3: required double category3;</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>struct Timeframe {</span></span>
+<span class="line"><span>  1: required i32 timestamp;</span></span>
+<span class="line"><span>  2: required TimeframeValues values;</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>struct TimeframeData {</span></span>
+<span class="line"><span>  1: required list&#x3C;Timeframe> dataPoints;</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Compiling it uses tool <code>thrift-typescript</code> (for TypeScript &#x26; JS compilation):</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">yarn</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> thrift-typescript</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --outDir</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ./thrift-compiled-proto</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --rootDir</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> .</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --sourceDir</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> .</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> TimeframeData.thrift</span></span>
+<span class="line"></span></code></pre>
+<p>Thrift, similarly to FlatBuffers is a bit tricky to get running. First, it needs a <em>protocol</em> and a <em>transport</em> to operate.
+There are two protocols, <code>TBinaryProtocol</code>, which provides some level of compression and <code>TCompactProtocol</code>, which offers more compression.
+Then, similarly to FlatBuffers, the nested objects have to be serialized first.
+And finally, the API is not very user friendly - one might think using the constructors is sufficient, but in fact one has to rely on callbacks:</p>
+<p>This won’t do:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> buf</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> new</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Buffer</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> thriftTransport</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> new</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> thrift.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">TBufferedTransport</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(buf);</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> binaryThriftProtocol</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> new</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> thrift.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">TCompactProtocol</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(thriftTransport);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> obj</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> new</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ThriftType.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">TimeframeData</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(data);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">obj.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">write</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(binaryThriftProtocol);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">binaryThriftProtocol.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">flush</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> buf;</span></span>
+<span class="line"></span></code></pre>
+<p>Instead, one should use callback API and serialize nested objects first:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">let</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> thriftBuffer </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> null</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> thriftTransport</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> new</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> thrift.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">TBufferedTransport</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">null</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">res</span><span style="color:#D73A49;--shiki-dark:#F97583"> =></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> thriftBuffer </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> res);</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> binaryThriftProtocol</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> new</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> thrift.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">TCompactProtocol</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(thriftTransport);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> dataPoints</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> data.dataPoints.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">map</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">dp</span><span style="color:#D73A49;--shiki-dark:#F97583"> =></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> vs</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> new</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ThriftType.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">TimeframeValues</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(dp.values);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  return</span><span style="color:#D73A49;--shiki-dark:#F97583"> new</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ThriftType.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">Timeframe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({ timestamp: dp.timestamp, values: vs });</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">});</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> obj</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> new</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ThriftType.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">TimeframeData</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({ dataPoints });</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">obj.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">write</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(binaryThriftProtocol);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">binaryThriftProtocol.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">flush</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> thriftBuffer;</span></span>
+<span class="line"></span></code></pre>
+<p>Deserialization is also messed up by these low-level APIs:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">let</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> obj </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> null</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> tr</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> thrift.TBufferedTransport.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">receiver</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">transport</span><span style="color:#D73A49;--shiki-dark:#F97583"> =></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> protocol</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> new</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> thrift.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">TCompactProtocol</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(transport);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  obj </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ThriftType.TimeframeData.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">read</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(protocol);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">});</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">tr</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Buffer.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">from</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(data));</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> obj;</span></span>
+<span class="line"></span></code></pre>
+<h2 id="serialization-output">Serialization output</h2>
+<p>Let’s consider serializing &#x26; deserializing a simple object of type <code>Pet</code>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ts"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">enum</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> PetKind</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  CAT</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  DOG</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">interface</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Pet</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">  name</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> string</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">  kind</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> PetKind</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>And the object for the experiments:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{ </span><span style="color:#6F42C1;--shiki-dark:#B392F0">name</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'Rodrigo'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">kind</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'DOG'</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }</span></span>
+<span class="line"></span></code></pre>
+<p>First, let’s take a look at schema-less serialization libraries - CBOR, BSON and MessagePack:</p>
+<h3 id="cbor-1">CBOR</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>CBOR-encode: 0.779ms</span></span>
+<span class="line"><span>CBOR-decode: 0.587ms</span></span>
+<span class="line"><span>[CBOR]> pre-utf8 (25): &#x3C;Buffer b9 00 02 64 6e 61 6d 65 67 52 6f 64 72 69 67 6f 64 6b 69 6e 64 63 44 4f 47, dataView: DataView { byteLength: 25, byteOffset: 0, buffer: ArrayBuffer { [Uint8Contents]: &#x3C;b9 00 02 64 6e 61 6d 65 67 52 6f 64 72 69 67 6f 64 6b 69 6e 64 63 44 4f 47 00 06 00 05 00 04 00 0f 05 00 0f 10 04 00 04 00 25 c6 58 36 01 00 00 01 00 00 00 10 3e 58 0f 01 ff ff ff 31 00 00 00 c8 2e c6 58 36 01 00 00 09 00 00 00 00 ce 65 1c 01 3c c6 58 36 01 00 00 00 00 00 00 00 00 00 00 b0 80 cc 58 ... 8092 more bytes>, byteLength: 8192 } }></span></span>
+<span class="line"><span>[CBOR]> post-utf8 (23): 适dnamegRodrigodkindcDOG</span></span>
+<span class="line"><span>[CBOR]> base-64 (36): uQACZG5hbWVnUm9kcmlnb2RraW5kY0RPRw==</span></span>
+<span class="line"><span>[CBOR]> decoded: { name: 'Rodrigo', kind: 'DOG' }</span></span>
+<span class="line"><span></span></span></code></pre>
+<div class="content-read-marker" data-fraction="75"></div>
+<h3 id="bson-1">BSON</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>BSON-encode: 0.631ms</span></span>
+<span class="line"><span>BSON-decode: 1.079ms</span></span>
+<span class="line"><span>[BSON]> pre-utf8 (37): &#x3C;Buffer 25 00 00 00 02 6e 61 6d 65 00 08 00 00 00 52 6f 64 72 69 67 6f 00 02 6b 69 6e 64 00 04 00 00 00 44 4f 47 00 00></span></span>
+<span class="line"><span>[BSON]> post-utf8 (37): %☻namRodrigo☻kind♦DOG</span></span>
+<span class="line"><span>[BSON]> base-64 (52): JQAAAAJuYW1lAAgAAABSb2RyaWdvAAJraW5kAAQAAABET0cAAA==</span></span>
+<span class="line"><span>[BSON]> decoded: { name: 'Rodrigo', kind: 'DOG' }</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="messagepack-1">MessagePack</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>MessagePack-encode: 0.738ms</span></span>
+<span class="line"><span>MessagePack-decode: 0.664ms</span></span>
+<span class="line"><span>[MessagePack]> pre-utf8 (25): &#x3C;Buffer de 00 02 a4 6e 61 6d 65 a7 52 6f 64 72 69 67 6f a4 6b 69 6e 64 a3 44 4f 47, dataView: DataView { byteLength: 25, byteOffset: 0, buffer: ArrayBuffer { [Uint8Contents]: &#x3C;de 00 02 a4 6e 61 6d 65 a7 52 6f 64 72 69 67 6f a4 6b 69 6e 64 a3 44 4f 47 00 06 00 05 00 04 00 0f 05 00 0f 10 04 00 04 00 25 c6 58 36 01 00 00 01 00 00 00 10 3e 58 0f 01 ff ff ff 31 00 00 00 28 2e c6 58 36 01 00 00 08 00 00 00 00 ce 65 1c 01 fc c5 58 36 01 00 00 b0 2e c6 58 36 01 00 00 0c 00 00 00 ... 8092 more bytes>, byteLength: 8192 } }></span></span>
+<span class="line"><span>[MessagePack]> post-utf8 (16): ހ☻䮡me璯drigo䫩ndㄏG</span></span>
+<span class="line"><span>[MessagePack]> base-64 (36): 3gACpG5hbWWnUm9kcmlnb6RraW5ko0RPRw==</span></span>
+<span class="line"><span>[MessagePack]> decoded: { name: 'Rodrigo', kind: 'DOG' }</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Except for MessagePack, which seem to utilize the tight byte-packing, the idea of these tools is to put field name before the field value and just pack the data bytes as tightly as possible.</p>
+<p>Now, for the schema-enforced libraries:</p>
+<h3 id="avro-1">Avro</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Avro-encode: 0.199ms</span></span>
+<span class="line"><span>Avro-decode: 0.181ms</span></span>
+<span class="line"><span>[Avro]> pre-utf8 (9): &#x3C;Buffer 02 0e 52 6f 64 72 69 67 6f></span></span>
+<span class="line"><span>[Avro]> post-utf8 (9): ☻♫Rodrigo</span></span>
+<span class="line"><span>[Avro]> base-64 (12): Ag5Sb2RyaWdv</span></span>
+<span class="line"><span>[Avro]> decoded: Pet { kind: 'DOG', name: 'Rodrigo' }</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="protobuf-1">Protobuf</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Protobuf-encode: 2.723ms</span></span>
+<span class="line"><span>Protobuf-decode: 0.231ms</span></span>
+<span class="line"><span>[Protobuf]> pre-utf8 (11): &#x3C;Buffer 08 00 12 07 52 6f 64 72 69 67 6f></span></span>
+<span class="line"><span>[Protobuf]> post-utf8 (11):↕Rodrigo</span></span>
+<span class="line"><span>[Protobuf]> base-64 (16): CAASB1JvZHJpZ28=</span></span>
+<span class="line"><span>[Protobuf]> decoded: Pet { kind: 0, name: 'Rodrigo' }</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Since there is no need to transfer field names and field types are already known, the big difference with the schema-enforced libraries is that there is only need to send the start &#x26; end markers of the object’ data. Hence the big difference in message size.</p>
+<h2 id="build-time-and-bundle-size">Build time and bundle size</h2>
+<p>Since different tools require different stuff to run (like schema &#x26; message parsers, validators, etc.) and might require a separate build step to compile schemas, it might be valuable to know what you are dealing with.</p>
+<p>Consider the data type used in the previous experiments:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ts"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">interface</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> TimeframeValues</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">  category1</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> double</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">  category2</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> double</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">  category3</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> double</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">interface</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Timeframe</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">  timestamp</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> long</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">  values</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> TimeframeValues</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">interface</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> TimeframeData</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">  dataPoints</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Timeframe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[];</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Tech</th><th>Bundle size</th></tr></thead><tbody><tr><td>Avro</td><td>111.7kb</td></tr><tr><td>BSON</td><td>98.0kb</td></tr><tr><td>CBOR</td><td>30.1kb</td></tr><tr><td>MessagePack</td><td>27.7kb</td></tr><tr><td>Protobuf (parse schema)</td><td>76.6kb</td></tr><tr><td>Protobuf (compiled schema)</td><td>30.0kb</td></tr><tr><td>Flatbuffers</td><td>3.1kb</td></tr><tr><td>Thrift (compiled schema)</td><td>109.7kb</td></tr></tbody></table>
+<p>All of the above were build with TypeScript first and esbuild then with <code>--minify</code> option.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>As for the best technology out of the ones reviewed here, I think <strong>Protobuf</strong> is the most viable one - the data compression (71% on mixed data), the bundle size (+30kb), the serialization (6ms) &#x26; deserialization (1ms) times result in the best overall ratio out there.</p>
+<p>If your project needs to optimize on the transferred data amount without suffering from slowdowns (due to serialization &#x26; deserialization) or bigger client JS bundle, Protobuf is the way to go.</p>
+<p>Do not even consider BSON, CBOR and MessagePack - at the same bundle size increase, they give very little data compression, so optimization would be pretty much pointless. They do serialize the data faster (6ms with Protobuf vs 3ms with CBOR or MessagePack), but they also deserialize the data slower (lowest is 3ms with MessagePack vs 1ms with Protobuf).</p>
+<div class="content-read-marker" data-fraction="100"></div>  </div> </article> </main> <footer data-astro-cid-sz7xmlte>
+&copy; 2024 Your name here. All rights reserved.
+<div class="social-links" data-astro-cid-sz7xmlte> <a href="https://m.webtoo.ls/@astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Mastodon</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/mastodon" data-astro-cid-sz7xmlte><path fill="currentColor" d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://twitter.com/astrodotbuild" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Twitter</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/twitter" data-astro-cid-sz7xmlte><path fill="currentColor" d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://github.com/withastro/astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Go to Astro's GitHub repo</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/github" data-astro-cid-sz7xmlte><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" data-astro-cid-sz7xmlte></path></svg> </a> </div> </footer>  </body></html>

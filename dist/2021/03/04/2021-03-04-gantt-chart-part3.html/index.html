@@ -1,0 +1,131 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-bvzihdzo> <head><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.0.3"><!-- Font preloads --><link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin><!-- Canonical URL --><link rel="canonical" href="https://shybovycha.github.io/2021/03/04/2021-03-04-gantt-chart-part3.html/"><!-- Primary Meta Tags --><title>Gantt chart. Part 3</title><meta name="title" content="Gantt chart. Part 3"><meta name="description"><link rel="stylesheet" href="/_astro/index.BvFNhZYw.css">
+<style>footer[data-astro-cid-sz7xmlte]{padding:2em 1em 6em;background:linear-gradient(var(--gray-gradient)) no-repeat;color:rgb(var(--gray));text-align:center}.social-links[data-astro-cid-sz7xmlte]{display:flex;justify-content:center;gap:1em;margin-top:1em}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]{text-decoration:none;color:rgb(var(--gray))}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]:hover{color:rgb(var(--gray-dark))}main[data-astro-cid-bvzihdzo]{width:calc(100% - 2em);max-width:100%;margin:0}.hero-image[data-astro-cid-bvzihdzo]{width:100%}.hero-image[data-astro-cid-bvzihdzo] img[data-astro-cid-bvzihdzo]{display:block;margin:0 auto;border-radius:12px;box-shadow:var(--box-shadow)}.prose[data-astro-cid-bvzihdzo]{width:720px;max-width:calc(100% - 2em);margin:auto;padding:1em;color:rgb(var(--gray-dark))}.title[data-astro-cid-bvzihdzo]{margin-bottom:1em;padding:1em 0;text-align:center;line-height:1}.title[data-astro-cid-bvzihdzo] h1[data-astro-cid-bvzihdzo]{margin:0 0 .5em}.date[data-astro-cid-bvzihdzo]{margin-bottom:.5em;color:rgb(var(--gray))}.last-updated-on[data-astro-cid-bvzihdzo]{font-style:italic}
+[data-astro-image]{width:100%;height:auto;object-fit:var(--fit);object-position:var(--pos);aspect-ratio:var(--w) / var(--h)}[data-astro-image=responsive]{max-width:calc(var(--w) * 1px);max-height:calc(var(--h) * 1px)}[data-astro-image=fixed]{width:calc(var(--w) * 1px);height:calc(var(--h) * 1px)}
+</style></head> <body data-astro-cid-bvzihdzo> <nav class="top"> <div class="links"> <a class="nav-link nav-item" href="/">Home</a> <a class="nav-link nav-item" href="/about.html">About</a> </div> </nav> <main data-astro-cid-bvzihdzo> <article data-astro-cid-bvzihdzo> <div class="hero-image" data-astro-cid-bvzihdzo>  </div> <div class="prose" data-astro-cid-bvzihdzo> <div class="title" data-astro-cid-bvzihdzo> <div class="date" data-astro-cid-bvzihdzo> <time datetime="2021-03-04T08:46:24.000Z"> Mar 4, 2021 </time>  </div> <h1 data-astro-cid-bvzihdzo>Gantt chart. Part 3</h1> <hr data-astro-cid-bvzihdzo> </div>  <h2 id="contents">Contents</h2>
+<ul>
+<li><a href="/2017/04/09/gantt-chart-with-d3.html">Gantt chart with D3</a></li>
+<li><a href="/2020/08/02/gantt-chart-part2.html">Gantt chart with D3. Part 2</a></li>
+<li><a href="/2021/03/04/gantt-chart-part3.html"><strong>Gantt chart with Canvas (you are here)</strong></a></li>
+<li><a href="/2024/06/26/gantt-chart-part4.html">Gantt chart with CSS Grids</a></li>
+</ul>
+<p>I have been writing about and improving on <a href="https://github.com/shybovycha/gantt-chart/">my Gantt chart implementation</a> for quite some time now.</p>
+<p>It all started with this (<a href="/2017/04/09/gantt-chart-with-d3.html">blog</a>):</p>
+<img src="/images/gantt_chart_part3/gantt-chart-v1.webp" loading="lazy" alt="First revision of Gantt chart">
+<p>Then I added few features (<a href="/2020/08/02/gantt-chart-part2.html">blog</a>):</p>
+<img src="/images/gantt_chart_part3/gantt-chart-v2.webp" loading="lazy" alt="Second revision of Gantt chart">
+<p>Back then I have promised to re-write the implementation in Canvas. And so I did.</p>
+<p>Curious fact: I did not plan on doing this at this time - it was a private email from <em>darekeapp12</em> who wrote this:</p>
+<blockquote>
+I have looked at your blog for Gantt chart and implementation. I am doing a project using React and Node/Express and need to implement Gantt chart that is also draggable i.e. the bars can be moved and also resized from either end. I have researched heavily but could not find anything. I am thinking if there is no library, something could be built from scratch.
+</blockquote>
+<p>The sender seemed dodgy (<em>DAREKE app</em>) so I did not want to reply to avoid unnecessary spam subscriptions, but I was happy to improve my old project.</p>
+<p>Here are few new features and improvements added to the chart:</p>
+<ul>
+<li>scrolling and zooming in &#x26; out is now a thing</li>
+<li>you can drag the milestones around and stretch &#x26; shrink them</li>
+<li>an event will be fired whenever a milestone is changed (moved / stretched / shrinked)</li>
+<li>dependencies are now typed: start-to-start, end-to-end or end-to-start are the only supported types</li>
+</ul>
+<p>Here, you can even play around with it now!</p>
+<img src="/images/gantt_chart_part3/screenshot.webp" loading="lazy" id="gantt-chart-screenshot">
+<div class="chart-container" style="display:none;">
+  <div class="controls">
+    <button id="zoom-out">-</button>
+    <button id="zoom-in">+</button>
+  </div>
+  <div id="gantt-chart"></div>
+</div>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  const chartScreenshot = document.querySelector('#gantt-chart-screenshot');
+  const chartContainer = document.querySelector('.chart-container');
+
+  const bundle = document.createElement('script');
+
+  bundle.onload = () => {
+    chartContainer.style.display = 'block';
+    chartScreenshot.parentElement.removeChild(chartScreenshot);
+  };
+
+  bundle.src = '/js/gantt-chart.bundle.js';
+
+  document.body.appendChild(bundle);
+});
+</script>
+<p>More about the implementation specifics under the cut.</p>
+<!--more-->
+<div class="content-read-marker" data-fraction="50"></div>
+<p>The main goal I had in mind was getting rid of D3, since it is a rather heavy dependency which is only used for few rather simple functions.
+By the end of this rework I ended up adding a ton of visual and functional improvements to the implementation, but I’ll talk about it in detail later.</p>
+<p>To start with, I created a function to convert a timestamp into a position on canvas. This requires knowing the boundaries of timeline and canvas
+to be able to map the beginning of a timeline to a beginning of canvas. I started off by trying to figure out the formulae myself, but quickly realized
+it is not as simple as few additions and divisions (well, it actually is, but it is tricky to figure out from start). So I turned myself to the maths -
+linear interpolation, to be specific.</p>
+<p>If we know the beginning of a range and the end of a range and values they map to, in  order to figure out the corresponding mapping of a point on that
+range, we can utilize linear interpolation (given the range values changes linearly, which is true, since we work with time span on one hand and canvas
+coordinates on the other).</p>
+<p>Here’s a visual representation of what I am talking about:</p>
+<img src="/images/gantt_chart_part3/interpolation.png" loading="lazy" alt="Interpolation explained">
+<p>There’s a formulae to tell the <code>y</code> coordinate of a point on a line by its <code>x</code> coordinate if you know two points on that line.</p>
+<p>Now in our case, the two known points are the start and the end of the time span.
+<em>“But wait, why are we even taling about <code>x</code> and <code>y</code> coordinates?”</em> - you might ask.
+A given timestamp can be represented as a single number (number of milliseconds since Unix was started).
+That would give us the <code>x</code> coordinate of any given point. The <code>y</code> coordinate would be the <code>x</code> coordinate of the same point
+on canvas. We do not care about the <code>y</code> coordinate on canvas, since all the vertical layout will be done later and does not
+depend on the timestmap. We will have to arrange elements on the canvas vertically in a different order, so we can easily exclude it
+from the interpolation.</p>
+<p>Let’s reiterate the formulae:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>y = y1 + (x - x1) * ((y2 - y1) / (x2 - x1))</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Considering the explanation above:</p>
+<ul>
+<li><code>x1</code> is the first timestamp from the time span on a screen</li>
+<li><code>y1</code> is the lowest of canvas’ <code>x</code> coordinate (<code>0</code>)</li>
+<li><code>x2</code> is the last timestamp from the time span on a screen</li>
+<li><code>y2</code> is the highest of canvas’ <code>x</code> coordinate (<code>canvas.width</code>)</li>
+<li><code>x</code> is a numeric timestamp value</li>
+<li><code>y</code> is a corresponding <code>x</code> coordinate of that timestamp on canvas</li>
+</ul>
+<p>Substitute these in the formulae:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>y = 0 + (x - firstTimestamp) * ((canvas.width - 0) / (lastTimestamp - firstTimestamp))</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>And simplify it:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>y = (x - firstTimestamp) * (canvas.width / (lastTimestamp - firstTimestamp))</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>In terms of code, the interpolation function looks like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">scaleX</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(date, minStart, overallDuration, canvasWidth) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Math.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ceil</span><span style="color:#24292E;--shiki-dark:#E1E4E8">((date.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTime</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() </span><span style="color:#D73A49;--shiki-dark:#F97583">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> minStart) </span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (canvasWidth </span><span style="color:#D73A49;--shiki-dark:#F97583">/</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> overallDuration));</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>Now, for a given canvas size and time span range we can figure out the <code>x</code> coordinate of <em>any</em> date (even if it is far out from the time span -
+this will actually give us the ability to scroll the chart). Hence we can start drawing both milestones and current time line (marking “now” on a chart).
+It is as easy as figuring out the coresponding <code>y</code> coordinate of an object you want to render. For instance, the current time line would start with <code>y = 0</code> and
+end at <code>y = canvas.height</code>. The milestone bars, however, could have their <code>y</code> coordinate calculated as <code>y = milestoneIndex * (milestoneHeight + (verticalPadding * 2))</code>.</p>
+<p>And that is what makes the core of the new chart implementation. The rest is a ton of fanciness in form of pretty colors, drag&#x26;drop milestones (updating the underlying data)
+and scaling them, rendering connection lines between them. For the most part it is a combination of plain JS and Canvas API.</p>
+<p>The only trick-ier bit is moving and resizing the milestones - if you want to update the underlying milestone data, you will need to have an inverse
+of linear interpolation above - you will need to figure out the date based on <code>x</code> coordinate on canvas. This is as simple as swapping the parameters in the interpolation:
+instead of <code>y</code> variable representing the <code>x</code> coordinate on canvas, it should represent the date on the time span and <code>x</code> variable should represent the <code>x</code> coordinate
+on canvas:</p>
+<ul>
+<li><code>y1</code> is the first timestamp from the time span on a screen</li>
+<li><code>x1</code> is the lowest of canvas’ <code>x</code> coordinate (<code>0</code>)</li>
+<li><code>y2</code> is the last timestamp from the time span on a screen</li>
+<li><code>x2</code> is the highest of canvas’ <code>x</code> coordinate (<code>canvas.width</code>)</li>
+<li><code>y</code> is a numeric timestamp value</li>
+<li><code>x</code> is a corresponding <code>x</code> coordinate of that timestamp on canvas</li>
+</ul>
+<p>In JS it looks like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">scaleDate</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(x, minStart, overallDuration, canvasWidth) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Math.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ceil</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(minStart.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTime</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (x </span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (overallDuration </span><span style="color:#D73A49;--shiki-dark:#F97583">/</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> canvasWidth)));</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>Using Canvas for this project sounds reasonable, especially given the time span can potentially be very large. This also enables rendering nice controls and
+connection (dependency) lines.</p>
+<p>However, the big disadvantage of using Canvas is the complexity to use the custom HTML elements for description or other milestone details
+(for instance, to show the additional details about mileston - goal, assignee, etc.).</p>
+<p>This is the reason this implementation is still not a standalone React component - I am still trying to figure out the best way to render the chart.</p>
+<p>Anyhow, that’s it for now. I will improve this solution when the time comes.</p>
+<div class="content-read-marker" data-fraction="100"></div>  </div> </article> </main> <footer data-astro-cid-sz7xmlte>
+&copy; 2024 Your name here. All rights reserved.
+<div class="social-links" data-astro-cid-sz7xmlte> <a href="https://m.webtoo.ls/@astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Mastodon</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/mastodon" data-astro-cid-sz7xmlte><path fill="currentColor" d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://twitter.com/astrodotbuild" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Twitter</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/twitter" data-astro-cid-sz7xmlte><path fill="currentColor" d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://github.com/withastro/astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Go to Astro's GitHub repo</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/github" data-astro-cid-sz7xmlte><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" data-astro-cid-sz7xmlte></path></svg> </a> </div> </footer>  </body></html>

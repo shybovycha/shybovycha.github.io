@@ -1,0 +1,1972 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-bvzihdzo> <head><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.0.3"><!-- Font preloads --><link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin><!-- Canonical URL --><link rel="canonical" href="https://shybovycha.github.io/2024/01/04/2024-01-04-how-unique-are-your-bundles.html/"><!-- Primary Meta Tags --><title>How unique are your bundles?</title><meta name="title" content="How unique are your bundles?"><meta name="description"><link rel="stylesheet" href="/_astro/index.BvFNhZYw.css">
+<style>footer[data-astro-cid-sz7xmlte]{padding:2em 1em 6em;background:linear-gradient(var(--gray-gradient)) no-repeat;color:rgb(var(--gray));text-align:center}.social-links[data-astro-cid-sz7xmlte]{display:flex;justify-content:center;gap:1em;margin-top:1em}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]{text-decoration:none;color:rgb(var(--gray))}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]:hover{color:rgb(var(--gray-dark))}main[data-astro-cid-bvzihdzo]{width:calc(100% - 2em);max-width:100%;margin:0}.hero-image[data-astro-cid-bvzihdzo]{width:100%}.hero-image[data-astro-cid-bvzihdzo] img[data-astro-cid-bvzihdzo]{display:block;margin:0 auto;border-radius:12px;box-shadow:var(--box-shadow)}.prose[data-astro-cid-bvzihdzo]{width:720px;max-width:calc(100% - 2em);margin:auto;padding:1em;color:rgb(var(--gray-dark))}.title[data-astro-cid-bvzihdzo]{margin-bottom:1em;padding:1em 0;text-align:center;line-height:1}.title[data-astro-cid-bvzihdzo] h1[data-astro-cid-bvzihdzo]{margin:0 0 .5em}.date[data-astro-cid-bvzihdzo]{margin-bottom:.5em;color:rgb(var(--gray))}.last-updated-on[data-astro-cid-bvzihdzo]{font-style:italic}
+[data-astro-image]{width:100%;height:auto;object-fit:var(--fit);object-position:var(--pos);aspect-ratio:var(--w) / var(--h)}[data-astro-image=responsive]{max-width:calc(var(--w) * 1px);max-height:calc(var(--h) * 1px)}[data-astro-image=fixed]{width:calc(var(--w) * 1px);height:calc(var(--h) * 1px)}
+</style></head> <body data-astro-cid-bvzihdzo> <nav class="top"> <div class="links"> <a class="nav-link nav-item" href="/">Home</a> <a class="nav-link nav-item" href="/about.html">About</a> </div> </nav> <main data-astro-cid-bvzihdzo> <article data-astro-cid-bvzihdzo> <div class="hero-image" data-astro-cid-bvzihdzo>  </div> <div class="prose" data-astro-cid-bvzihdzo> <div class="title" data-astro-cid-bvzihdzo> <div class="date" data-astro-cid-bvzihdzo> <time datetime="2024-01-04T04:01:24.000Z"> Jan 4, 2024 </time>  </div> <h1 data-astro-cid-bvzihdzo>How unique are your bundles?</h1> <hr data-astro-cid-bvzihdzo> </div>  <p>In the modern front-end development we are all used to package managers, transpilation and bundling.
+These concepts are the biproduct of the tools which we hoped would simplify developer’ burden and
+speed up the development.</p>
+<p>However, how confident are you these tools are actually doing good job?</p>
+<p>Developers seem comfortable off-loading the processing power to users’ machine (browser, predominantly).
+We are not surprised by seeing slow websites anymore. A simple blog is downloading 55MB of JavaScript?
+Seems fine nowadays.</p>
+<p>I currently work on a fairly small tool (<a href="https://www.mongodb.com/products/relational-migrator">MongoDB Relational Migrator</a>),
+which also utilizes TypeScript, React and, of course, bundling.
+We use Vite for that. Our bundles are split into chunks (but I have accounted for that, too).</p>
+<p>I went ahead and wrote a rather <a href="https://github.com/shybovycha/js-unique-function-analyzer">simple script</a>
+which parses the bundles (using TypeScript compiler API, because why not),
+extracting the function definitions (both arrow functions and plain old <code>function</code>) and counts how many times they
+occur in the file. For this last bit, to make sure I am not counting <code>a => true</code> and <code>x => true</code> as different occurrences,
+I am minimizing the function definition with <code>uglifyjs</code> and counting the SHA256 hashes of the minimized functions
+(just to have a reasonable key in my hashmap instead of entire function code).</p>
+<p>These are my findings.</p>
+<p>Out of 54 chunks, 47 are not css-in-js chunks. Out of 47 remaining, 7 have any significant duplication (over 5%).
+But when they do, they do it hard: duplication varies between 18% and a whopping 42% of sheer file size.
+Absolute numbers are also astonishing: 33% to 59% functions are duplicates.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Found 15192 functions, 8963 are unique (59%)</span></span>
+<span class="line"><span>Duplicates length: 1518418 bytes out of 3537579 bytes are duplicate code (42.92%)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Found 1202 functions, 494 are unique (41.1%)</span></span>
+<span class="line"><span>Duplicates length: 130649 bytes out of 340227 bytes are duplicate code (38.4%)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Found 513 functions, 231 are unique (45.03%)</span></span>
+<span class="line"><span>Duplicates length: 50160 bytes out of 136057 bytes are duplicate code (36.87%)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Found 598 functions, 267 are unique (44.65%)</span></span>
+<span class="line"><span>Duplicates length: 57607 bytes out of 164737 bytes are duplicate code (34.97%)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Found 17 functions, 10 are unique (58.82%)</span></span>
+<span class="line"><span>Duplicates length: 1932 bytes out of 6532 bytes are duplicate code (29.58%)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Found 154 functions, 98 are unique (63.64%)</span></span>
+<span class="line"><span>Duplicates length: 11140 bytes out of 45135 bytes are duplicate code (24.68%)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Found 968 functions, 651 are unique (67.25%)</span></span>
+<span class="line"><span>Duplicates length: 52616 bytes out of 281406 bytes are duplicate code (18.7%)</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>I thought my code might be wrong, so I looked into the bundle code itself. Here’s a short excerpt:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">Object.assign.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">bind</span><span style="color:#24292E;--shiki-dark:#E1E4E8">():</span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">e</span><span style="color:#24292E;--shiki-dark:#E1E4E8">){</span><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> t</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;t</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">length</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;t</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">){</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[t];</span><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> r </span><span style="color:#D73A49;--shiki-dark:#F97583">in</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n)</span><span style="color:#005CC5;--shiki-dark:#79B8FF">Object</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">prototype</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.hasOwnProperty.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">call</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(n,r)</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(e[r]</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">n[r])}</span><span style="color:#D73A49;--shiki-dark:#F97583">return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> e},yR.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">apply</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">this</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)}</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Zce;</span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> bR</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(){</span><span style="color:#D73A49;--shiki-dark:#F97583">return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> bR</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">Object.assign</span><span style="color:#D73A49;--shiki-dark:#F97583">?</span><span style="color:#24292E;--shiki-dark:#E1E4E8">Object.assign.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">bind</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span><span style="color:#D73A49;--shiki-dark:#F97583">:function</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">e</span><span style="color:#24292E;--shiki-dark:#E1E4E8">){</span><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> t</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;t</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">length</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;t</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">){</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[t];</span><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> r </span><span style="color:#D73A49;--shiki-dark:#F97583">in</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n)</span><span style="color:#005CC5;--shiki-dark:#79B8FF">Object</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">prototype</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.hasOwnProperty.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">call</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(n,r)</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(e[r]</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">n[r])}</span><span style="color:#D73A49;--shiki-dark:#F97583">return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> e},bR.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">apply</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">this</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)}</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Wce;</span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> wR</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(){</span><span style="color:#D73A49;--shiki-dark:#F97583">return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> wR</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">Object.assign</span><span style="color:#D73A49;--shiki-dark:#F97583">?</span><span style="color:#24292E;--shiki-dark:#E1E4E8">Object.assign.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">bind</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span><span style="color:#D73A49;--shiki-dark:#F97583">:function</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">e</span><span style="color:#24292E;--shiki-dark:#E1E4E8">){</span><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> t</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;t</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">length</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;t</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">){</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[t];</span><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> r </span><span style="color:#D73A49;--shiki-dark:#F97583">in</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n)</span><span style="color:#005CC5;--shiki-dark:#79B8FF">Object</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">prototype</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.hasOwnProperty.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">call</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(n,r)</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(e[r]</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">n[r])}</span><span style="color:#D73A49;--shiki-dark:#F97583">return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> e},wR.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">apply</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">this</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)}</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Uce;</span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> $R</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(){</span><span style="color:#D73A49;--shiki-dark:#F97583">return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $R</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">Object.assign</span><span style="color:#D73A49;--shiki-dark:#F97583">?</span><span style="color:#24292E;--shiki-dark:#E1E4E8">Object.assign.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">bind</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span><span style="color:#D73A49;--shiki-dark:#F97583">:function</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">e</span><span style="color:#24292E;--shiki-dark:#E1E4E8">){</span><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> t</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;t</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">length</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;t</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">){</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[t];</span><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> r </span><span style="color:#D73A49;--shiki-dark:#F97583">in</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n)</span><span style="color:#005CC5;--shiki-dark:#79B8FF">Object</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">prototype</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.hasOwnProperty.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">call</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(n,r)</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(e[r]</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">n[r])}</span><span style="color:#D73A49;--shiki-dark:#F97583">return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> e},$R.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">apply</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">this</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)}</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Gce;</span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> OR</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(){</span><span style="color:#D73A49;--shiki-dark:#F97583">return</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> OR</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">Object.assign</span><span style="color:#D73A49;--shiki-dark:#F97583">?</span><span style="color:#24292E;--shiki-dark:#E1E4E8">Object.assign.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">bind</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span><span style="color:#D73A49;--shiki-dark:#F97583">:function</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">e</span><span style="color:#24292E;--shiki-dark:#E1E4E8">){</span><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> t</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;t</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">length</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;t</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">){</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[t];</span><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> r </span><span style="color:#D73A49;--shiki-dark:#F97583">in</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n)</span><span style="color:#005CC5;--shiki-dark:#79B8FF">Object</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">prototype</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.hasOwnProperty.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">call</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(n,r)</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(e[r]</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">n[r])}</span><span style="color:#D73A49;--shiki-dark:#F97583">return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> e},</span><span style="color:#005CC5;--shiki-dark:#79B8FF">OR</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">apply</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">this</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)}</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Kce;</span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> xR</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(){</span><span style="color:#D73A49;--shiki-dark:#F97583">return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> xR</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">Object.assign</span><span style="color:#D73A49;--shiki-dark:#F97583">?</span><span style="color:#24292E;--shiki-dark:#E1E4E8">Object.assign.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">bind</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span><span style="color:#D73A49;--shiki-dark:#F97583">:function</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">e</span><span style="color:#24292E;--shiki-dark:#E1E4E8">){</span><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> t</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;t</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">length</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;t</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">){</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[t];</span><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> r </span><span style="color:#D73A49;--shiki-dark:#F97583">in</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n)</span><span style="color:#005CC5;--shiki-dark:#79B8FF">Object</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">prototype</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.hasOwnProperty.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">call</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(n,r)</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(e[r]</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">n[r])}</span><span style="color:#D73A49;--shiki-dark:#F97583">return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> e},xR.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">apply</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">this</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)}</span></span>
+<span class="line"></span></code></pre>
+<p>See how the following fragment of code repeats multiple times:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">e</span><span style="color:#24292E;--shiki-dark:#E1E4E8">){</span><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> t</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;t</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">length</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;t</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">){</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[t];</span><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> r </span><span style="color:#D73A49;--shiki-dark:#F97583">in</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n)</span><span style="color:#005CC5;--shiki-dark:#79B8FF">Object</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">prototype</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.hasOwnProperty.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">call</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(n,r)</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(e[r]</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">n[r])}</span><span style="color:#D73A49;--shiki-dark:#F97583">return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> e}</span></span>
+<span class="line"></span></code></pre>
+<p>In fact, this exact same fragment of code repeats 137 times in the same piece of bundle chunk (same file):</p>
+<img src="/images/how-unique-are-your-bundles/duplication1.webp" loading="lazy" alt="Repeated function definition in a single chunk of code">
+<p>By the way, this is a production build of our front-end, built using Vite, with minification enabled.</p>
+<p>The raw length of this function code is <code>146</code> characters. So in a single place, in a single file, you have <code>136 * 146 = 19_992</code> bytes of waste.
+Meaning, browser has to load these 20KB of code, parse it and create 136 duplicating functions.</p>
+<p>Looking at the overall size of 3.5MB of code in this chunk and its insane 41% duplicated code (in sheer bytes, not occurrences, so 1.5MB wasted),
+imagine how much faster this single file <em>could</em> have been loaded in a browser.</p>
+<p>I was keen on seeing what functions get duplicated most often and ran my script on an entire build output directory.
+Here are top 80-ish offenders:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Function code (minimized)</th><th>Copies</th></tr></thead><tbody><tr><td><code>function(r){for(var t=1;t&#x3C;arguments.length;t++){var n,o=arguments[t];for(n in o)Object.prototype.hasOwnProperty.call(o,n)&#x26;&#x26;(r[n]=o[n])}return r}</code></td><td>2205</td></tr><tr><td><code>function n(){return Object.assign&#x26;&#x26;Object.assign.bind(),n.apply(this,arguments)}</code></td><td>1197</td></tr><tr><td><code>function n(){return Object.assign,n.apply(this,arguments)}</code></td><td>1008</td></tr><tr><td><code>function(){}</code></td><td>753</td></tr><tr><td><code>function(i){this.a=i}</code></td><td>250</td></tr><tr><td><code>function(n,e){if(null==n)return{};for(var r,t={},f=Object.keys(n),u=0;u&#x3C;f.length;u++)r=f[u],0&#x3C;=e.indexOf(r)||(t[r]=n[r]);return t}</code></td><td>191</td></tr><tr><td><code>function(e,r){if(null==e)return{};var t,n=function(e,r){if(null==e)return{};for(var t,n={},l=Object.keys(e),o=0;o&#x3C;l.length;o++)t=l[o],0&#x3C;=r.indexOf(t)||(n[t]=e[t]);return n}(e,r);if(Object.getOwnPropertySymbols)for(var l=Object.getOwnPropertySymbols(e),o=0;o&#x3C;l.length;o++)t=l[o],0&#x3C;=r.indexOf(t)||Object.prototype.propertyIsEnumerable.call(e,t)&#x26;&#x26;(n[t]=e[t]);return n}</code></td><td>187</td></tr><tr><td><code>function(e,r){return r=r||e.slice(0),Object.freeze(Object.defineProperties(e,{raw:{value:Object.freeze(r)}}))}</code></td><td>159</td></tr><tr><td><code>function(n){return this===n}</code></td><td>119</td></tr><tr><td><code>function(r,t){if("object"!=typeof r||null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return("string"===t?String:Number)(r);e=e.call(r,t||"default");if("object"!=typeof e)return e;throw new TypeError("@@toPrimitive must return a primitive value.")}</code></td><td>113</td></tr><tr><td><code>function(r,e,t){return i=function(r,e){if("object"!=typeof r||null===r)return r;var t=r[Symbol.toPrimitive];if(void 0===t)return String(r);t=t.call(r,e);if("object"!=typeof t)return t;throw new TypeError("@@toPrimitive must return a primitive value.")}(e,"string"),(e="symbol"==typeof i?i:String(i))in r?Object.defineProperty(r,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):r[e]=t,r;var i}</code></td><td>111</td></tr><tr><td><code>function(t){t=function(t,r){if("object"!=typeof t||null===t)return t;var i=t[Symbol.toPrimitive];if(void 0===i)return String(t);i=i.call(t,r);if("object"!=typeof i)return i;throw new TypeError("@@toPrimitive must return a primitive value.")}(t,"string");return"symbol"==typeof t?t:String(t)}</code></td><td>111</td></tr><tr><td><code>function(e,n,r){return n in e?Object.defineProperty(e,n,{value:r,enumerable:!0,configurable:!0,writable:!0}):e[n]=r,e}</code></td><td>104</td></tr><tr><td><code>function(c,i){He.call(this,c,i)}</code></td><td>94</td></tr><tr><td><code>function(n,r){(null==r||r&#x26;gt;n.length)&#x26;&#x26;(r=n.length);for(var e=0,l=new Array(r);e&#x3C;r;e++)l[e]=n[e];return l}</code></td><td>93</td></tr><tr><td><code>function(){return!0}</code></td><td>92</td></tr><tr><td><code>function(){return!1}</code></td><td>78</td></tr><tr><td><code>function(){return new gt(this)}</code></td><td>77</td></tr><tr><td><code>function(r){if(Array.isArray(r))return r}</code></td><td>77</td></tr><tr><td><code>function(){throw new TypeError(`Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.`)}</code></td><td>77</td></tr><tr><td><code>function(t){return t&#x26;&#x26;"object"==typeof t&#x26;&#x26;"default"in t?t:{default:t}}</code></td><td>76</td></tr><tr><td><code>function(i,t){this.a=i,this.b=t}</code></td><td>58</td></tr><tr><td><code>function(){return this.a}</code></td><td>49</td></tr><tr><td><code>function(t,e){var r,n=Object.keys(t);return Object.getOwnPropertySymbols&#x26;&#x26;(r=Object.getOwnPropertySymbols(t),e&#x26;&#x26;(r=r.filter(function(e){return Object.getOwnPropertyDescriptor(t,e).enumerable})),n.push.apply(n,r)),n}</code></td><td>49</td></tr><tr><td><code>function(e){var t;"default"!==e&#x26;&#x26;(t=Object.getOwnPropertyDescriptor(c,e),Object.defineProperty(y,e,t.get?t:{enumerable:!0,get:function(){return c[e]}}))}</code></td><td>49</td></tr><tr><td><code>function(){return c[b]}</code></td><td>49</td></tr><tr><td><code>function(a,e,i){var r,t=i["aria-label"],n=i["aria-labelledby"],c=i.title;switch(a){case"img":return t||n||c?(l(r={},"aria-labelledby",n),l(r,"aria-label",t),l(r,"title",c),r):{"aria-label":"".concat(e.replace(/([a-z])([A-Z])/g,"$1 $2")," Icon")};case"presentation":return{"aria-hidden":!0,alt:""}}}</code></td><td>49</td></tr><tr><td><code>function(i){Di(this,i)}</code></td><td>48</td></tr><tr><td><code>function(r){return Object.getOwnPropertyDescriptor(e,r).enumerable}</code></td><td>48</td></tr><tr><td><code>function(){throw M(new De)}</code></td><td>46</td></tr><tr><td><code>function(l,r){var t=null==l?null:typeof Symbol&#x3C;"u"&#x26;&#x26;l[Symbol.iterator]||l["@@iterator"];if(null!=t){var n,u,e=[],a=!0,o=!1;try{for(t=t.call(l);!(a=(n=t.next()).done)&#x26;&#x26;(e.push(n.value),!r||e.length!==r);a=!0);}catch(l){o=!0,u=l}finally{try{a||null==t.return||t.return()}finally{if(o)throw u}}return e}}</code></td><td>44</td></tr><tr><td><code>function(n){throw M(new De)}</code></td><td>39</td></tr><tr><td><code>function(r){var n;return r&#x26;&#x26;"object"==typeof r&#x26;&#x26;"default"in r?r:(n=Object.create(null),r&#x26;&#x26;Object.keys(r).forEach(function(e){var t;"default"!==e&#x26;&#x26;(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>39</td></tr><tr><td><code>function n(r){return n(r)}</code></td><td>38</td></tr><tr><td><code>function(n){return typeof n}</code></td><td>38</td></tr><tr><td><code>function(o){return o&#x26;&#x26;"function"==typeof Symbol&#x26;&#x26;o.constructor===Symbol&#x26;&#x26;o!==Symbol.prototype?"symbol":typeof o}</code></td><td>38</td></tr><tr><td><code>function(r){var n;return r&#x26;&#x26;r.__esModule?r:(n=Object.create(null),r&#x26;&#x26;Object.keys(r).forEach(function(e){var t;"default"!==e&#x26;&#x26;(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>37</td></tr><tr><td><code>function(){return this.b}</code></td><td>33</td></tr><tr><td><code>function(l,r){var t=null==l?null:typeof Symbol&#x3C;"u"&#x26;&#x26;l[Symbol.iterator]||l["@@iterator"];if(null!=t){var e,n,u,a,f=[],i=!0,o=!1;try{if(u=(t=t.call(l)).next,0===r){if(Object(t)!==t)return;i=!1}else for(;!(i=(e=u.call(t)).done)&#x26;&#x26;(f.push(e.value),f.length!==r);i=!0);}catch(l){o=!0,n=l}finally{try{if(!i&#x26;&#x26;null!=t.return&#x26;&#x26;(a=t.return(),Object(a)!==a))return}finally{if(o)throw n}}return f}}</code></td><td>33</td></tr><tr><td><code>function(t){Object.defineProperty(e,t,Object.getOwnPropertyDescriptor(n,t))}</code></td><td>32</td></tr><tr><td><code>function(n){return Ei(n)}</code></td><td>30</td></tr><tr><td><code>function(n){return L(fn,X,2,n,6,1)}</code></td><td>30</td></tr><tr><td><code>function(n){}</code></td><td>29</td></tr><tr><td><code>function(r){if(typeof Symbol&#x3C;"u"&#x26;&#x26;null!=r[Symbol.iterator]||null!=r["@@iterator"])return Array.from(r)}</code></td><td>28</td></tr><tr><td><code>function(){throw new TypeError(`Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.`)}</code></td><td>28</td></tr><tr><td><code>()=>{}</code></td><td>27</td></tr><tr><td><code>function(){return null}</code></td><td>27</td></tr><tr><td><code>function(n,o){e.exports=o(m,on(),dn)}</code></td><td>27</td></tr><tr><td><code>function(i){Fi(this,i)}</code></td><td>23</td></tr><tr><td><code>function(n,o){e.exports=o(dn,on(),m)}</code></td><td>22</td></tr><tr><td><code>function(){throw M(new Fe(Re((xe(),Ds))))}</code></td><td>21</td></tr><tr><td><code>function(){return this}</code></td><td>20</td></tr><tr><td><code>function(i,t){this.b=i,this.a=t}</code></td><td>19</td></tr><tr><td><code>function(n,e){throw M(new De)}</code></td><td>18</td></tr><tr><td><code>function(){return 0}</code></td><td>17</td></tr><tr><td><code>function(r){Object.defineProperty(e,r,Object.getOwnPropertyDescriptor(t,r))}</code></td><td>16</td></tr><tr><td><code>()=>{var l;return null!=(l=e.options.debugAll)?l:e.options.debugHeaders}</code></td><td>16</td></tr><tr><td><code>function(n){return n}</code></td><td>15</td></tr><tr><td><code>function(c){Kr.call(this,c)}</code></td><td>15</td></tr><tr><td><code>function(){return this.c}</code></td><td>15</td></tr><tr><td><code>function(){return this.d}</code></td><td>15</td></tr><tr><td><code>function(n,r){return n}</code></td><td>14</td></tr><tr><td><code>d=>d.id</code></td><td>14</td></tr><tr><td><code>function(){var r=function(t,o){return(r=Object.setPrototypeOf||({__proto__:[]}instanceof Array?function(t,o){t.__proto__=o}:function(t,o){for(var n in o)Object.prototype.hasOwnProperty.call(o,n)&#x26;&#x26;(t[n]=o[n])}))(t,o)};return function(t,o){if("function"!=typeof o&#x26;&#x26;null!==o)throw new TypeError("Class extends value "+String(o)+" is not a constructor or null");function n(){this.constructor=t}r(t,o),t.prototype=null===o?Object.create(o):(n.prototype=o.prototype,new n)}}</code></td><td>14</td></tr><tr><td><code>function(_,o){_.__proto__=o}</code></td><td>14</td></tr><tr><td><code>function(o,r){for(var t in r)Object.prototype.hasOwnProperty.call(r,t)&#x26;&#x26;(o[t]=r[t])}</code></td><td>14</td></tr><tr><td><code>function(n){return!1}</code></td><td>13</td></tr><tr><td><code>function(t){var l=-1,n=null==t?0:t.length;for(this.clear();++l&#x3C;n;){var r=t[l];this.set(r[0],r[1])}}</code></td><td>12</td></tr><tr><td><code>function(a,e,l){var i,r=l["aria-label"],t=l["aria-labelledby"],n=l.title;switch(a){case"img":return r||t||n?(f(i={},"aria-labelledby",t),f(i,"aria-label",r),f(i,"title",n),i):{"aria-label":"".concat(e.replace(/([a-z])([A-Z])/g,"$1 $2")," Icon")};case"presentation":return{"aria-hidden":!0,alt:""}}}</code></td><td>12</td></tr><tr><td><code>a=>a</code></td><td>12</td></tr><tr><td><code>a=>a()</code></td><td>12</td></tr><tr><td><code>function(n,a){n.a=a}</code></td><td>11</td></tr><tr><td><code>function(){ia.call(this)}</code></td><td>11</td></tr><tr><td><code>function(i,t,h){this.a=i,this.b=t,this.c=h}</code></td><td>11</td></tr><tr><td><code>function(n,r){return r}</code></td><td>11</td></tr><tr><td><code>function(){return this.a.gc()}</code></td><td>11</td></tr><tr><td><code>function(e){return e&#x26;&#x26;e.__esModule?e:{default:e}}</code></td><td>11</td></tr><tr><td><code>()=>n(!1)</code></td><td>11</td></tr><tr><td><code>function(i){this.b=i}</code></td><td>10</td></tr><tr><td><code>function(c){this.c=c}</code></td><td>10</td></tr><tr><td><code>function(){return this.f}</code></td><td>10</td></tr><tr><td><code>function(n){return n||"div"}</code></td><td>10</td></tr><tr><td><code>function(n,r,i){var l;return i=null!=(l=i)?l:"div",n||("string"==typeof(null==r?void 0:r.href)?"a":i)}</code></td><td>10</td></tr></tbody></table>
+<p>Let’s dive deeper, shall we?</p>
+<p>Imagine for a second that we could define the duplicated functions once and then just reuse the short name instead
+(sounds reasonable, does it not?).</p>
+<p>But not all of those functions could be de-duplicated in such way (at least not so easily).
+Some of these functions use the outer closure functions and variables (something defined outside of the function itself), so we can skip these.
+For instance, <code>function(i){Di(this,i)}</code> and <code>function(){throw M(new De)}</code> can be ignored.</p>
+<p>Then, there are function using <code>this</code>. These might be tricky (<code>this is not what you think</code> is a famous JavaScript mantra).</p>
+<p>Lastly, some (if not most) of the functions could be either replaced with arrow functions or standard library function.
+But that is uncertain - one must understand what a function does first.</p>
+<p>With those points in mind, let’s look at the offenders once again:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Function code (minimized)</th><th>Copies</th><th>Notes</th></tr></thead><tbody><tr><td><code>function(r){for(var t=1;t&#x3C;arguments.length;t++){var n,o=arguments[t];for(n in o)Object.prototype.hasOwnProperty.call(o,n)&#x26;&#x26;(r[n]=o[n])}return r}</code></td><td>2205</td><td>spread operator?</td></tr><tr><td><code>function n(){return Object.assign&#x26;&#x26;Object.assign.bind(),n.apply(this,arguments)}</code></td><td>1197</td><td><code>Object.assign</code> methods?</td></tr><tr><td><code>function n(){return Object.assign,n.apply(this,arguments)}</code></td><td>1008</td><td><code>Object.assign</code> properties?</td></tr><tr><td><code>function(){}</code></td><td>753</td><td>no-op</td></tr><tr><td><code>function(n,e){if(null==n)return{};for(var r,t={},f=Object.keys(n),u=0;u&#x3C;f.length;u++)r=f[u],0&#x3C;=e.indexOf(r)||(t[r]=n[r]);return t}</code></td><td>191</td><td>?</td></tr><tr><td><code>function(e,r){if(null==e)return{};var t,n=function(e,r){if(null==e)return{};for(var t,n={},l=Object.keys(e),o=0;o&#x3C;l.length;o++)t=l[o],0&#x3C;=r.indexOf(t)||(n[t]=e[t]);return n}(e,r);if(Object.getOwnPropertySymbols)for(var l=Object.getOwnPropertySymbols(e),o=0;o&#x3C;l.length;o++)t=l[o],0&#x3C;=r.indexOf(t)||Object.prototype.propertyIsEnumerable.call(e,t)&#x26;&#x26;(n[t]=e[t]);return n}</code></td><td>187</td><td>?</td></tr><tr><td><code>function(e,r){return r=r||e.slice(0),Object.freeze(Object.defineProperties(e,{raw:{value:Object.freeze(r)}}))}</code></td><td>159</td><td>?</td></tr><tr><td><code>function(r,t){if("object"!=typeof r||null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return("string"===t?String:Number)(r);e=e.call(r,t||"default");if("object"!=typeof e)return e;throw new TypeError("@@toPrimitive must return a primitive value.")}</code></td><td>113</td><td>?</td></tr><tr><td><code>function(r,e,t){return i=function(r,e){if("object"!=typeof r||null===r)return r;var t=r[Symbol.toPrimitive];if(void 0===t)return String(r);t=t.call(r,e);if("object"!=typeof t)return t;throw new TypeError("@@toPrimitive must return a primitive value.")}(e,"string"),(e="symbol"==typeof i?i:String(i))in r?Object.defineProperty(r,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):r[e]=t,r;var i}</code></td><td>111</td><td>?</td></tr><tr><td><code>function(t){t=function(t,r){if("object"!=typeof t||null===t)return t;var i=t[Symbol.toPrimitive];if(void 0===i)return String(t);i=i.call(t,r);if("object"!=typeof i)return i;throw new TypeError("@@toPrimitive must return a primitive value.")}(t,"string");return"symbol"==typeof t?t:String(t)}</code></td><td>111</td><td>?</td></tr><tr><td><code>function(e,n,r){return n in e?Object.defineProperty(e,n,{value:r,enumerable:!0,configurable:!0,writable:!0}):e[n]=r,e}</code></td><td>104</td><td>?</td></tr><tr><td><code>function(n,r){(null==r||r>n.length)&#x26;&#x26;(r=n.length);for(var e=0,l=new Array(r);e&#x3C;r;e++)l[e]=n[e];return l}</code></td><td>93</td><td>array spread?</td></tr><tr><td><code>function(){return!0}</code></td><td>92</td><td>always-true</td></tr><tr><td><code>function(){return!1}</code></td><td>78</td><td>always-false</td></tr><tr><td><code>function(r){if(Array.isArray(r))return r}</code></td><td>77</td><td>self explanatory</td></tr><tr><td><code>function(){throw new TypeError('Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.')}</code></td><td>77</td><td><code>isSymbol</code>?</td></tr><tr><td><code>function(t){return t&#x26;&#x26;"object"==typeof t&#x26;&#x26;"default"in t?t:{default:t}}</code></td><td>76</td><td>?</td></tr><tr><td><code>function(t,e){var r,n=Object.keys(t);return Object.getOwnPropertySymbols&#x26;&#x26;(r=Object.getOwnPropertySymbols(t),e&#x26;&#x26;(r=r.filter(function(e){return Object.getOwnPropertyDescriptor(t,e).enumerable})),n.push.apply(n,r)),n}</code></td><td>49</td><td>?</td></tr><tr><td><code>function(e){var t;"default"!==e&#x26;&#x26;(t=Object.getOwnPropertyDescriptor(c,e),Object.defineProperty(y,e,t.get?t:{enumerable:!0,get:function(){return c[e]}}))}</code></td><td>49</td><td>?</td></tr><tr><td><code>function(l,r){var t=null==l?null:typeof Symbol&#x3C;"u"&#x26;&#x26;l[Symbol.iterator]||l["@@iterator"];if(null!=t){var n,u,e=[],a=!0,o=!1;try{for(t=t.call(l);!(a=(n=t.next()).done)&#x26;&#x26;(e.push(n.value),!r||e.length!==r);a=!0);}catch(l){o=!0,u=l}finally{try{a||null==t.return||t.return()}finally{if(o)throw u}}return e}}</code></td><td>44</td><td>?</td></tr><tr><td><code>function(r){var n;return r&#x26;&#x26;"object"==typeof r&#x26;&#x26;"default"in r?r:(n=Object.create(null),r&#x26;&#x26;Object.keys(r).forEach(function(e){var t;"default"!==e&#x26;&#x26;(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>39</td><td>?</td></tr><tr><td><code>function n(r){return n(r)}</code></td><td>38</td><td><code>Function.apply</code>?</td></tr><tr><td><code>function(n){return typeof n}</code></td><td>38</td><td><code>typeof</code></td></tr><tr><td><code>function(o){return o&#x26;&#x26;"function"==typeof Symbol&#x26;&#x26;o.constructor===Symbol&#x26;&#x26;o!==Symbol.prototype?"symbol":typeof o}</code></td><td>38</td><td>?</td></tr><tr><td><code>function(r){var n;return r&#x26;&#x26;r.__esModule?r:(n=Object.create(null),r&#x26;&#x26;Object.keys(r).forEach(function(e){var t;"default"!==e&#x26;&#x26;(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>37</td><td><code>import</code>?</td></tr><tr><td><code>function(l,r){var t=null==l?null:typeof Symbol&#x3C;"u"&#x26;&#x26;l[Symbol.iterator]||l["@@iterator"];if(null!=t){var e,n,u,a,f=[],i=!0,o=!1;try{if(u=(t=t.call(l)).next,0===r){if(Object(t)!==t)return;i=!1}else for(;!(i=(e=u.call(t)).done)&#x26;&#x26;(f.push(e.value),f.length!==r);i=!0);}catch(l){o=!0,n=l}finally{try{if(!i&#x26;&#x26;null!=t.return&#x26;&#x26;(a=t.return(),Object(a)!==a))return}finally{if(o)throw n}}return f}}</code></td><td>33</td><td>?</td></tr><tr><td><code>function(n){}</code></td><td>29</td><td>no-op</td></tr><tr><td><code>function(r){if(typeof Symbol&#x3C;"u"&#x26;&#x26;null!=r[Symbol.iterator]||null!=r["@@iterator"])return Array.from(r)}</code></td><td>28</td><td>?</td></tr><tr><td><code>function(){throw new TypeError('Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.')}</code></td><td>28</td><td>?</td></tr><tr><td><code>()=>{}</code></td><td>27</td><td>no-op</td></tr><tr><td><code>function(){return null}</code></td><td>27</td><td>always-null</td></tr><tr><td><code>function(){return this}</code></td><td>20</td><td>always-this</td></tr><tr><td><code>function(){return 0}</code></td><td>17</td><td>always-zero</td></tr><tr><td><code>function(n){return n}</code></td><td>15</td><td>identity</td></tr><tr><td><code>function(n,r){return n}</code></td><td>14</td><td>always-first-argument</td></tr><tr><td><code>d=>d.id</code></td><td>14</td><td><code>.id</code></td></tr><tr><td><code>function(){var r=function(t,o){return(r=Object.setPrototypeOf||({__proto__:[]}instanceof Array?function(t,o){t.__proto__=o}:function(t,o){for(var n in o)Object.prototype.hasOwnProperty.call(o,n)&#x26;&#x26;(t[n]=o[n])}))(t,o)};return function(t,o){if("function"!=typeof o&#x26;&#x26;null!==o)throw new TypeError("Class extends value "+String(o)+" is not a constructor or null");function n(){this.constructor=t}r(t,o),t.prototype=null===o?Object.create(o):(n.prototype=o.prototype,new n)}}</code></td><td>14</td><td>?</td></tr><tr><td><code>function(_,o){_.__proto__=o}</code></td><td>14</td><td><code>Object.is_a</code>?</td></tr><tr><td><code>function(o,r){for(var t in r)Object.prototype.hasOwnProperty.call(r,t)&#x26;&#x26;(o[t]=r[t])}</code></td><td>14</td><td>?</td></tr><tr><td><code>function(n){return!1}</code></td><td>13</td><td>always-false</td></tr><tr><td><code>a=>a</code></td><td>12</td><td>identity</td></tr><tr><td><code>a=>a()</code></td><td>12</td><td>call first argument</td></tr><tr><td><code>function(n,a){n.a=a}</code></td><td>11</td><td>enum/const definition?</td></tr><tr><td><code>function(n,r){return r}</code></td><td>11</td><td>always-second-argument</td></tr><tr><td><code>function(e){return e&#x26;&#x26;e.__esModule?e:{default:e}}</code></td><td>11</td><td>import default</td></tr><tr><td><code>function(c){this.c=c}</code></td><td>10</td><td>enum/const definition?</td></tr></tbody></table>
+<p>As a matter of fact, someone on the internet did a very similar research few years ago.
+So I hoped to see the improvement in the build tools over the years.</p>
+<p>As I mentioned above, our front-end is bundled with Vite. Let’s see if using esbuild or bun
+(since both are fairly new and stand out in terms of architecture and performance) do a better job.</p>
+<p>With few small adjustments to make things fair (e.g. build the same thing in the same way),
+like disabling the plugins for Vite, setting up svgr loader,
+here are some build time stats:</p>
+<p><code>yarn install</code>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>➤ YN0000: Done with warnings in 17s 798ms</span></span>
+<span class="line"><span>yarn  12.11s user 19.69s system 175% cpu 18.122 total</span></span>
+<span class="line"><span></span></span></code></pre>
+<p><code>bun install</code>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>warn: esbuild's postinstall script took 748.9ms</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span> 1028 packages installed [1.82s]</span></span>
+<span class="line"><span>  Removed: 2</span></span>
+<span class="line"><span>bun install  0.22s user 0.65s system 47% cpu 1.849 total</span></span>
+<span class="line"><span></span></span></code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Bundler</th><th>Build time</th></tr></thead><tbody><tr><td>bun</td><td>0.43s</td></tr><tr><td>esbuild</td><td>2.57s</td></tr><tr><td>vite</td><td>85.04s</td></tr><tr><td>webpack</td><td>138.64s</td></tr></tbody></table>
+<p>And the analysis of the built bundles:</p>
+<p><code>vite</code>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Found 968 functions, 651 are unique (67.25%)</span></span>
+<span class="line"><span>Found 598 functions, 267 are unique (44.65%)</span></span>
+<span class="line"><span>Found 154 functions, 98 are unique (63.64%)</span></span>
+<span class="line"><span>Found 17 functions, 10 are unique (58.82%)</span></span>
+<span class="line"><span>Found 15192 functions, 8963 are unique (59%)</span></span>
+<span class="line"><span>Found 1202 functions, 494 are unique (41.1%)</span></span>
+<span class="line"><span>Found 513 functions, 231 are unique (45.03%)</span></span>
+<span class="line"><span>= Total 18644 functions, 10714 are unique (57.4%)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Duplicates length: 52616 bytes out of 281406 bytes are duplicate code (18.7%)</span></span>
+<span class="line"><span>Duplicates length: 57607 bytes out of 164737 bytes are duplicate code (34.97%)</span></span>
+<span class="line"><span>Duplicates length: 11140 bytes out of 45135 bytes are duplicate code (24.68%)</span></span>
+<span class="line"><span>Duplicates length: 1932 bytes out of 6532 bytes are duplicate code (29.58%)</span></span>
+<span class="line"><span>Duplicates length: 1518418 bytes out of 3537579 bytes are duplicate code (42.92%)</span></span>
+<span class="line"><span>Duplicates length: 130649 bytes out of 340227 bytes are duplicate code (38.4%)</span></span>
+<span class="line"><span>Duplicates length: 50160 bytes out of 136057 bytes are duplicate code (36.87%)</span></span>
+<span class="line"><span>= Total 1822522 out of 4511673 bytes are duplicate code (40.3%)</span></span>
+<span class="line"><span></span></span></code></pre>
+<p><code>esbuild</code>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Found 46654 functions, 28952 are unique (62.06%)</span></span>
+<span class="line"><span>Duplicates length: 6905599 bytes out of 9645594 bytes are duplicate code (71.59%)</span></span>
+<span class="line"><span></span></span></code></pre>
+<p><code>bun</code>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Found 31113 functions, 25755 are unique (82.78%)</span></span>
+<span class="line"><span>Duplicates length: 446020 bytes out of 5696964 bytes are duplicate code (7.83%)</span></span>
+<span class="line"><span></span></span></code></pre>
+<p><code>webpack</code>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Found 2898 functions, 1434 are unique (49.48%)</span></span>
+<span class="line"><span>Duplicates length: 320940 bytes out of 4645589 bytes are duplicate code (6.91%)</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>And a deeper analysis of the duplicated functions:</p>
+<p><code>esbuild</code>:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Function</th><th>Copies</th></tr></thead><tbody><tr><td><code>function(r){for(var t=1;t&#x3C;arguments.length;t++){var n,o=arguments[t];for(n in o)Object.prototype.hasOwnProperty.call(o,n)&#x26;&#x26;(r[n]=o[n])}return r}</code></td><td>2216</td></tr><tr><td><code>function n(){return Object.assign&#x26;&#x26;Object.assign.bind(),n.apply(this,arguments)}</code></td><td>1204</td></tr><tr><td><code>function n(){return Object.assign,n.apply(this,arguments)}</code></td><td>1010</td></tr><tr><td><code>function(){}</code></td><td>844</td></tr><tr><td><code>function(t){return t&#x26;&#x26;"object"==typeof t&#x26;&#x26;"default"in t?t:{default:t}}</code></td><td>260</td></tr><tr><td><code>function(i){this.a=i}</code></td><td>250</td></tr><tr><td><code>function(n,e){if(null==n)return{};for(var r,t={},f=Object.keys(n),u=0;u&#x3C;f.length;u++)r=f[u],0&#x3C;=e.indexOf(r)||(t[r]=n[r]);return t}</code></td><td>203</td></tr><tr><td><code>function(e,r){if(null==e)return{};var t,n=function(e,r){if(null==e)return{};for(var t,n={},l=Object.keys(e),o=0;o&#x3C;l.length;o++)t=l[o],0&#x3C;=r.indexOf(t)||(n[t]=e[t]);return n}(e,r);if(Object.getOwnPropertySymbols)for(var l=Object.getOwnPropertySymbols(e),o=0;o&#x3C;l.length;o++)t=l[o],0&#x3C;=r.indexOf(t)||Object.prototype.propertyIsEnumerable.call(e,t)&#x26;&#x26;(n[t]=e[t]);return n}</code></td><td>194</td></tr><tr><td><code>function(e,r){return r=r||e.slice(0),Object.freeze(Object.defineProperties(e,{raw:{value:Object.freeze(r)}}))}</code></td><td>160</td></tr><tr><td><code>function(r,t){if("object"!=typeof r||null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return("string"===t?String:Number)(r);e=e.call(r,t||"default");if("object"!=typeof e)return e;throw new TypeError("@@toPrimitive must return a primitive value.")}</code></td><td>137</td></tr><tr><td><code>function(r,e,t){return i=function(r,e){if("object"!=typeof r||null===r)return r;var t=r[Symbol.toPrimitive];if(void 0===t)return String(r);t=t.call(r,e);if("object"!=typeof t)return t;throw new TypeError("@@toPrimitive must return a primitive value.")}(e,"string"),(e="symbol"==typeof i?i:String(i))in r?Object.defineProperty(r,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):r[e]=t,r;var i}</code></td><td>134</td></tr><tr><td><code>function(t){t=function(t,r){if("object"!=typeof t||null===t)return t;var i=t[Symbol.toPrimitive];if(void 0===i)return String(t);i=i.call(t,r);if("object"!=typeof i)return i;throw new TypeError("@@toPrimitive must return a primitive value.")}(t,"string");return"symbol"==typeof t?t:String(t)}</code></td><td>134</td></tr><tr><td><code>()=>{}</code></td><td>129</td></tr><tr><td><code>function(n){return this===n}</code></td><td>119</td></tr><tr><td><code>function(e,n,r){return n in e?Object.defineProperty(e,n,{value:r,enumerable:!0,configurable:!0,writable:!0}):e[n]=r,e}</code></td><td>115</td></tr><tr><td><code>function(n,r){(null==r||r>n.length)&#x26;&#x26;(r=n.length);for(var e=0,l=new Array(r);e&#x3C;r;e++)l[e]=n[e];return l}</code></td><td>106</td></tr><tr><td><code>function(c,i){Bs.call(this,c,i)}</code></td><td>94</td></tr><tr><td><code>function(){return!0}</code></td><td>93</td></tr><tr><td><code>function(r){if(Array.isArray(r))return r}</code></td><td>83</td></tr><tr><td><code>function(){throw new TypeError(</code>Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a <a href="">Symbol.iterator</a> method.<code>)}</code></td><td>83</td></tr><tr><td><code>function(){return!1}</code></td><td>79</td></tr><tr><td><code>function(){return new cu(this)}</code></td><td>77</td></tr><tr><td><code>function(e){var t;"default"!==e&#x26;&#x26;(t=Object.getOwnPropertyDescriptor(b,e),Object.defineProperty(E,e,t.get?t:{enumerable:!0,get:function(){return b[e]}}))}</code></td><td>76</td></tr><tr><td><code>function(){return b[P]}</code></td><td>76</td></tr><tr><td><code>function(a,e,l){var i,r=l["aria-label"],t=l["aria-labelledby"],n=l.title;switch(a){case"img":return r||t||n?(s(i={},"aria-labelledby",t),s(i,"aria-label",r),s(i,"title",n),i):{"aria-label":"".concat(e.replace(/([a-z])([A-Z])/g,"$1 $2")," Icon")};case"presentation":return{"aria-hidden":!0,alt:""}}}</code></td><td>76</td></tr><tr><td><code>function(r){var n;return r&#x26;&#x26;r.__esModule?r:(n=Object.create(null),r&#x26;&#x26;Object.keys(r).forEach(function(e){var t;"default"!==e&#x26;&#x26;(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>67</td></tr><tr><td><code>function(n){return typeof n}</code></td><td>64</td></tr><tr><td><code>function(o){return o&#x26;&#x26;"function"==typeof Symbol&#x26;&#x26;o.constructor===Symbol&#x26;&#x26;o!==Symbol.prototype?"symbol":typeof o}</code></td><td>64</td></tr><tr><td><code>function n(r){return n(r)}</code></td><td>63</td></tr><tr><td><code>function(t,e){var r,n=Object.keys(t);return Object.getOwnPropertySymbols&#x26;&#x26;(r=Object.getOwnPropertySymbols(t),e&#x26;&#x26;(r=r.filter(function(e){return Object.getOwnPropertyDescriptor(t,e).enumerable})),n.push.apply(n,r)),n}</code></td><td>61</td></tr><tr><td><code>function(i,t){this.a=i,this.b=t}</code></td><td>58</td></tr><tr><td><code>function(r){var n;return r&#x26;&#x26;"object"==typeof r&#x26;&#x26;"default"in r?r:(n=Object.create(null),r&#x26;&#x26;Object.keys(r).forEach(function(e){var t;"default"!==e&#x26;&#x26;(t=Object.getOwnPropertyDescriptor(r,e),Object.defineProperty(n,e,t.get?t:{enumerable:!0,get:function(){return r[e]}}))}),n.default=r,Object.freeze(n))}</code></td><td>50</td></tr><tr><td><code>function(r){if(typeof Symbol&#x3C;"u"&#x26;&#x26;null!=r[Symbol.iterator]||null!=r["@@iterator"])return Array.from(r)}</code></td><td>49</td></tr><tr><td><code>function(){throw new TypeError(`Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.`)}</code></td><td>49</td></tr><tr><td><code>function(){return this.a}</code></td><td>49</td></tr><tr><td><code>function(i){p0(this,i)}</code></td><td>48</td></tr><tr><td><code>function(l,r){var t=null==l?null:typeof Symbol&#x3C;"u"&#x26;&#x26;l[Symbol.iterator]||l["@@iterator"];if(null!=t){var n,u,e=[],a=!0,o=!1;try{for(t=t.call(l);!(a=(n=t.next()).done)&#x26;&#x26;(e.push(n.value),!r||e.length!==r);a=!0);}catch(l){o=!0,u=l}finally{try{a||null==t.return||t.return()}finally{if(o)throw u}}return e}}</code></td><td>46</td></tr><tr><td><code>function(){throw St(new Ss)}</code></td><td>46</td></tr><tr><td><code>function(n){throw St(new Ss)}</code></td><td>39</td></tr><tr><td><code>()=>{"use strict";Vu(),Du()}</code></td><td>38</td></tr><tr><td><code>function(l,r){var t=null==l?null:typeof Symbol&#x3C;"u"&#x26;&#x26;l[Symbol.iterator]||l["@@iterator"];if(null!=t){var e,n,u,a,f=[],i=!0,o=!1;try{if(u=(t=t.call(l)).next,0===r){if(Object(t)!==t)return;i=!1}else for(;!(i=(e=u.call(t)).done)&#x26;&#x26;(f.push(e.value),f.length!==r);i=!0);}catch(l){o=!0,n=l}finally{try{if(!i&#x26;&#x26;null!=t.return&#x26;&#x26;(a=t.return(),Object(a)!==a))return}finally{if(o)throw n}}return f}}</code></td><td>37</td></tr><tr><td><code>function(){return this.b}</code></td><td>33</td></tr><tr><td><code>function(){X(x)}</code></td><td>32</td></tr><tr><td><code>function(n){}</code></td><td>31</td></tr><tr><td><code>a=>a()</code></td><td>30</td></tr><tr><td><code>function(n){return V1(n)}</code></td><td>30</td></tr><tr><td><code>function(n){return dn(oi,mr,2,n,6,1)}</code></td><td>30</td></tr><tr><td><code>function(){return null}</code></td><td>29</td></tr><tr><td><code>function(){return this}</code></td><td>24</td></tr><tr><td><code>()=>{"use strict";Du()}</code></td><td>23</td></tr><tr><td><code>function(i){g0(this,i)}</code></td><td>23</td></tr><tr><td><code>function(t,r){var e;if(t)return"string"==typeof t?k(t,r):"Map"===(e="Object"===(e=Object.prototype.toString.call(t).slice(8,-1))&#x26;&#x26;t.constructor?t.constructor.name:e)||"Set"===e?Array.from(t):"Arguments"===e||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(e)?k(t,r):void 0}</code></td><td>22</td></tr><tr><td><code>function(t,r){var e;if(t)return"string"==typeof t?P(t,r):"Map"===(e="Object"===(e=Object.prototype.toString.call(t).slice(8,-1))&#x26;&#x26;t.constructor?t.constructor.name:e)||"Set"===e?Array.from(t):"Arguments"===e||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(e)?P(t,r):void 0}</code></td><td>22</td></tr><tr><td><code>function(n){return null!=n&#x26;&#x26;n instanceof Array}</code></td><td>21</td></tr><tr><td><code>function(r){if(Array.isArray(r))return P(r)}</code></td><td>21</td></tr><tr><td><code>function(e){return e&#x26;&#x26;e.__esModule?e:{default:e}}</code></td><td>21</td></tr><tr><td><code>function(t,r){var e;if(t)return"string"==typeof t?Q(t,r):"Map"===(e="Object"===(e=Object.prototype.toString.call(t).slice(8,-1))&#x26;&#x26;t.constructor?t.constructor.name:e)||"Set"===e?Array.from(t):"Arguments"===e||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(e)?Q(t,r):void 0}</code></td><td>21</td></tr><tr><td><code>function(){throw St(new Os(il((qs(),_g))))}</code></td><td>21</td></tr><tr><td><code>function(n){return n}</code></td><td>20</td></tr><tr><td><code>function(n){return null!=n&#x26;&#x26;n.nodeType===Node.ELEMENT_NODE}</code></td><td>20</td></tr><tr><td><code>function(e){throw Error("Received unhandled value: ".concat(e))}</code></td><td>20</td></tr><tr><td><code>function(r,n){return Array.isArray(r)?r.concat(n):"string"==typeof r?r:void 0}</code></td><td>19</td></tr></tbody></table>
+<p><code>bun</code>:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Function</th><th>Copies</th></tr></thead><tbody><tr><td><code>function(){}</code></td><td>739</td></tr><tr><td><code>function(i){this.a=i}</code></td><td>250</td></tr><tr><td><code>function(r){for(var t=1;t&#x3C;arguments.length;t++){var n,o=arguments[t];for(n in o)Object.prototype.hasOwnProperty.call(o,n)&#x26;&#x26;(r[n]=o[n])}return r}</code></td><td>197</td></tr><tr><td><code>()=>{}</code></td><td>141</td></tr><tr><td><code>function(n){return this===n}</code></td><td>119</td></tr><tr><td><code>function(c,f){f7.call(this,c,f)}</code></td><td>94</td></tr><tr><td><code>function(){return!0}</code></td><td>91</td></tr><tr><td><code>function(){return new p9(this)}</code></td><td>77</td></tr><tr><td><code>function(){return!1}</code></td><td>76</td></tr><tr><td><code>function(i,t){this.a=i,this.b=t}</code></td><td>58</td></tr><tr><td><code>function(n,e){if(null==n)return{};for(var r,t={},f=Object.keys(n),u=0;u&#x3C;f.length;u++)r=f[u],0&#x3C;=e.indexOf(r)||(t[r]=n[r]);return t}</code></td><td>53</td></tr><tr><td><code>function(r,t){if("object"!=typeof r||null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return("string"===t?String:Number)(r);e=e.call(r,t||"default");if("object"!=typeof e)return e;throw new TypeError("@@toPrimitive must return a primitive value.")}</code></td><td>51</td></tr><tr><td><code>function(){return this.a}</code></td><td>49</td></tr><tr><td><code>function(e,r){if(null==e)return{};var t,n=function(e,r){if(null==e)return{};for(var t,n={},l=Object.keys(e),o=0;o&#x3C;l.length;o++)t=l[o],0&#x3C;=r.indexOf(t)||(n[t]=e[t]);return n}(e,r);if(Object.getOwnPropertySymbols)for(var l=Object.getOwnPropertySymbols(e),o=0;o&#x3C;l.length;o++)t=l[o],0&#x3C;=r.indexOf(t)||Object.prototype.propertyIsEnumerable.call(e,t)&#x26;&#x26;(n[t]=e[t]);return n}</code></td><td>48</td></tr><tr><td><code>function(r,e,t){return i=function(r,e){if("object"!=typeof r||null===r)return r;var t=r[Symbol.toPrimitive];if(void 0===t)return String(r);t=t.call(r,e);if("object"!=typeof t)return t;throw new TypeError("@@toPrimitive must return a primitive value.")}(e,"string"),(e="symbol"==typeof i?i:String(i))in r?Object.defineProperty(r,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):r[e]=t,r;var i}</code></td><td>48</td></tr><tr><td><code>function(t){t=function(t,r){if("object"!=typeof t||null===t)return t;var i=t[Symbol.toPrimitive];if(void 0===i)return String(t);i=i.call(t,r);if("object"!=typeof i)return i;throw new TypeError("@@toPrimitive must return a primitive value.")}(t,"string");return"symbol"==typeof t?t:String(t)}</code></td><td>48</td></tr><tr><td><code>function(i){T6(this,i)}</code></td><td>48</td></tr><tr><td><code>()=>{R3(),G3()}</code></td><td>46</td></tr><tr><td><code>function(){throw x0(new w7)}</code></td><td>46</td></tr><tr><td><code>function(e,r){return r=r||e.slice(0),Object.freeze(Object.defineProperties(e,{raw:{value:Object.freeze(r)}}))}</code></td><td>45</td></tr><tr><td><code>function(n,r){(null==r||r>n.length)&#x26;&#x26;(r=n.length);for(var e=0,l=new Array(r);e&#x3C;r;e++)l[e]=n[e];return l}</code></td><td>41</td></tr><tr><td><code>function(n){throw x0(new w7)}</code></td><td>39</td></tr><tr><td><code>function(r){if(Array.isArray(r))return r}</code></td><td>36</td></tr><tr><td><code>function(){throw new TypeError("Invalid attempt to destructure non-iterable instance.\\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}</code></td><td>36</td></tr><tr><td><code>function(){return this.b}</code></td><td>33</td></tr><tr><td><code>function(n){return n2(n)}</code></td><td>30</td></tr><tr><td><code>function(n){return J1($5,p1,2,n,6,1)}</code></td><td>30</td></tr><tr><td><code>function(t,e){var r,n=Object.keys(t);return Object.getOwnPropertySymbols&#x26;&#x26;(r=Object.getOwnPropertySymbols(t),e&#x26;&#x26;(r=r.filter(function(e){return Object.getOwnPropertyDescriptor(t,e).enumerable})),n.push.apply(n,r)),n}</code></td><td>29</td></tr><tr><td><code>function(l,r){var t=null==l?null:"undefined"!=typeof Symbol&#x26;&#x26;l[Symbol.iterator]||l["@@iterator"];if(null!=t){var e,n,u,f,i=[],a=!0,o=!1;try{if(u=(t=t.call(l)).next,0===r){if(Object(t)!==t)return;a=!1}else for(;!(a=(e=u.call(t)).done)&#x26;&#x26;(i.push(e.value),i.length!==r);a=!0);}catch(l){o=!0,n=l}finally{try{if(!a&#x26;&#x26;null!=t.return&#x26;&#x26;(f=t.return(),Object(f)!==f))return}finally{if(o)throw n}}return i}}</code></td><td>29</td></tr><tr><td><code>function(n){}</code></td><td>29</td></tr><tr><td><code>function(){return null}</code></td><td>28</td></tr><tr><td><code>function(e){return Object.getOwnPropertyDescriptor(Z,e).enumerable}</code></td><td>25</td></tr><tr><td><code>function(e){Object.defineProperty(Z,e,Object.getOwnPropertyDescriptor(W,e))}</code></td><td>25</td></tr><tr><td><code>function(n){return n}</code></td><td>23</td></tr><tr><td><code>function(i){C6(this,i)}</code></td><td>23</td></tr><tr><td><code>()=>{G3()}</code></td><td>22</td></tr><tr><td><code>function(){throw x0(new C7(n7((y7(),KG))))}</code></td><td>21</td></tr><tr><td><code>function(){return this}</code></td><td>19</td></tr><tr><td><code>function(i,t){this.b=i,this.a=t}</code></td><td>19</td></tr><tr><td><code>function(n){return!1}</code></td><td>18</td></tr><tr><td><code>function(n,w){throw x0(new w7)}</code></td><td>18</td></tr><tr><td><code>function(){return 0}</code></td><td>17</td></tr><tr><td><code>function(n){return typeof n}</code></td><td>17</td></tr><tr><td><code>function(o){return o&#x26;&#x26;"function"==typeof Symbol&#x26;&#x26;o.constructor===Symbol&#x26;&#x26;o!==Symbol.prototype?"symbol":typeof o}</code></td><td>17</td></tr><tr><td><code>()=>{R3()}</code></td><td>16</td></tr><tr><td><code>()=>{var e;return null!=(e=Z.options.debugAll)?e:Z.options.debugHeaders}</code></td><td>16</td></tr><tr><td><code>function(n,r){return n}</code></td><td>15</td></tr><tr><td><code>function(c){hX.call(this,c)}</code></td><td>15</td></tr><tr><td><code>function(){return this.c}</code></td><td>15</td></tr><tr><td><code>function(){return this.d}</code></td><td>15</td></tr><tr><td><code>function(e,n,r){return n in e?Object.defineProperty(e,n,{value:r,enumerable:!0,configurable:!0,writable:!0}):e[n]=r,e}</code></td><td>14</td></tr><tr><td><code>function(r){if("undefined"!=typeof Symbol&#x26;&#x26;null!=r[Symbol.iterator]||null!=r["@@iterator"])return Array.from(r)}</code></td><td>14</td></tr><tr><td><code>function(){throw new TypeError("Invalid attempt to spread non-iterable instance.\\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}</code></td><td>14</td></tr><tr><td><code>d=>d.id</code></td><td>14</td></tr><tr><td><code>()=>W(!1)</code></td><td>13</td></tr><tr><td><code>a=>a</code></td><td>12</td></tr><tr><td><code>function(t){var l=-1,n=null==t?0:t.length;for(this.clear();++l&#x3C;n;){var r=t[l];this.set(r[0],r[1])}}</code></td><td>12</td></tr><tr><td><code>function(n,c){}</code></td><td>12</td></tr><tr><td><code>function(n,r){return r}</code></td><td>11</td></tr><tr><td><code>function(n,a){n.a=a}</code></td><td>11</td></tr><tr><td><code>function(){_V.call(this)}</code></td><td>11</td></tr><tr><td><code>function(i,t,h){this.a=i,this.b=t,this.c=h}</code></td><td>11</td></tr><tr><td><code>function(){return this.a.gc()}</code></td><td>11</td></tr><tr><td><code>function(i){this.b=i}</code></td><td>10</td></tr><tr><td><code>function(c){this.c=c}</code></td><td>10</td></tr><tr><td><code>function(){return this.f}</code></td><td>10</td></tr></tbody></table>
+<p>Interestingly enough, all three tools handled the job bad in different aspects:</p>
+<ul>
+<li>vite was the slowest and produced second biggest bundle</li>
+<li>esbuild was the fastest and produced the largest bundle</li>
+<li>bun was slower than esbuild by a split of hair, but produced smallest bundle with least duplicates</li>
+</ul>
+<p>Bonus points to bun for installing node modules in a link of an eye.</p>
+<p>In terms of duplicates, however, all three failed miserably (in my opinion), with the best result being the bundle
+produced by bun with 18% duplicates and the rest having almost half the bundle wasted.</p>
+<p>For the most part, bundlers seem to be doing a pretty bad job at tree shaking and keep <em>a lot</em> of those utility functions’ duplicates.
+One can estimate how much of a wasted space these use, by multiplying the function code length by the number of duplicates minus one (for one definition).</p>
+<p>Let’s imagine some of the above functions could be de-duplicated. What are the benefit of that?
+For the most part, the front-end can load faster for users - simply because there is less bytes to transfer.
+On top of that, there are less functions to be created in memory. So <em>technically</em>, the front-end can <em>act</em> faster.
+Although, on the modern machines the difference between having one function and few thousand of the same function is negligible.</p>
+<div class="content-read-marker" data-fraction="50"></div>
+<p>Here is a shortened list of top abusers from different bundlers for our tool:</p>
+<p>| Function | vite     || esbuild  || bun      ||</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>^</th><th>#</th><th>Bytes</th><th>#</th><th>Bytes</th><th>#</th><th>Bytes</th></tr></thead><tbody><tr><td><code>function(){}</code></td><td>753</td><td>9036</td><td>844</td><td>10128</td><td>739</td><td>8868</td></tr><tr><td><code>function(){return!0}</code></td><td>92</td><td>1840</td><td>93</td><td>1860</td><td>91</td><td>1820</td></tr><tr><td><code>function(){return!1}</code></td><td>78</td><td>1560</td><td>79</td><td>1580</td><td>76</td><td>1520</td></tr><tr><td><code>function(){return null}</code></td><td>27</td><td>621</td><td>29</td><td>667</td><td>28</td><td>644</td></tr><tr><td><code>function(){return this}</code></td><td>20</td><td>460</td><td>24</td><td>552</td><td>19</td><td>437</td></tr><tr><td><code>function(){return 0}</code></td><td>17</td><td>340</td><td>n/a</td><td>0</td><td>n/a</td><td>0</td></tr><tr><td><code>function(n){return!1}</code></td><td>13</td><td>273</td><td>n/a</td><td>0</td><td>18</td><td>378</td></tr><tr><td><code>function(n){}</code></td><td>29</td><td>377</td><td>31</td><td>403</td><td>29</td><td>377</td></tr><tr><td><code>function(n){return n}</code></td><td>15</td><td>315</td><td>20</td><td>420</td><td>23</td><td>483</td></tr><tr><td><code>function(n){return typeof n}</code></td><td>n/a</td><td>0</td><td>64</td><td>1792</td><td>17</td><td>476</td></tr><tr><td><code>function(n){return this===n}</code></td><td>n/a</td><td>0</td><td>119</td><td>3332</td><td>119</td><td>3332</td></tr><tr><td><code>function(n,r){return n}</code></td><td>14</td><td>322</td><td>n/a</td><td>0</td><td>15</td><td>345</td></tr><tr><td><code>function(n,r){return r}</code></td><td>11</td><td>253</td><td>n/a</td><td>0</td><td>11</td><td>253</td></tr><tr><td><code>function(n,c){}</code></td><td>n/a</td><td>0</td><td>n/a</td><td>0</td><td>12</td><td>180</td></tr><tr><td><code>()=>{}</code></td><td>27</td><td>162</td><td>129</td><td>774</td><td>141</td><td>846</td></tr><tr><td><code>a=>a</code></td><td>12</td><td>48</td><td>n/a</td><td>0</td><td>12</td><td>48</td></tr><tr><td><code>a=>a()</code></td><td>12</td><td>72</td><td>n/a</td><td>0</td><td>n/a</td><td>0</td></tr><tr><td><code>function(r){for(var t=1;t&#x3C;arguments.length;t++){var n,o=arguments[t];for(n in o)Object.prototype.hasOwnProperty.call(o,n)&#x26;&#x26;(r[n]=o[n])}return r}</code></td><td>2205</td><td>317520</td><td>2216</td><td>319104</td><td>197</td><td>28368</td></tr><tr><td><code>function n(){return Object.assign&#x26;&#x26;Object.assign.bind(),n.apply(this,arguments)}</code></td><td>1197</td><td>95760</td><td>1204</td><td>96320</td><td>n/a</td><td>0</td></tr><tr><td><code>function n(){return Object.assign,n.apply(this,arguments)}</code></td><td>1008</td><td>58464</td><td>1010</td><td>58580</td><td>n/a</td><td>0</td></tr><tr><td><code>function(n,r){(null==r||r>n.length)&#x26;&#x26;(r=n.length);for(var e=0,l=new Array(r);e&#x3C;r;e++)l[e]=n[e];return l}</code></td><td>93</td><td>9672</td><td>106</td><td>11024</td><td>n/a</td><td>0</td></tr><tr><td><code>function(r){if(Array.isArray(r))return r}</code></td><td>77</td><td>3157</td><td>83</td><td>3403</td><td>36</td><td>1476</td></tr><tr><td><code>function(){throw new TypeError(&#x26;#39;Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.&#x26;#39;)}</code></td><td>77</td><td>13244</td><td>83</td><td>14276</td><td>36</td><td>6192</td></tr><tr><td><code>function(t){return t&#x26;&#x26;"object"==typeof t&#x26;&#x26;"default"in t?t:{default:t}}</code></td><td>76</td><td>5624</td><td>260</td><td>19240</td><td>n/a</td><td>0</td></tr><tr><td><code>function(_,o){_.__proto__=o}</code></td><td>14</td><td>392</td><td>n/a</td><td>0</td><td>n/a</td><td>0</td></tr><tr><td><code>function(o,r){for(var t in r)Object.prototype.hasOwnProperty.call(r,t)&#x26;&#x26;(o[t]=r[t])}</code></td><td>14</td><td>1176</td><td>n/a</td><td>0</td><td>n/a</td><td>0</td></tr><tr><td><code>function(e){return e&#x26;&#x26;e.__esModule?e:{default:e}}</code></td><td>11</td><td>539</td><td>21</td><td>1029</td><td>n/a</td><td>0</td></tr><tr><td><code>function(e,n,r){return n in e?Object.defineProperty(e,n,{value:r,enumerable:!0,configurable:!0,writable:!0}):e[n]=r,e}</code></td><td>n/a</td><td>0</td><td>115</td><td>13570</td><td>n/a</td><td>0</td></tr><tr><td><code>function(r,n){return Array.isArray(r)?r.concat(n):"string"==typeof r?r:void 0}</code></td><td>n/a</td><td>0</td><td>19</td><td>1520</td><td>n/a</td><td>0</td></tr><tr><td><code>function(n){return null!=n&#x26;&#x26;n instanceof Array}</code></td><td>n/a</td><td>0</td><td>21</td><td>987</td><td>n/a</td><td>0</td></tr><tr><td><code>function(n,e){if(null==n)return{};for(var r,t={},f=Object.keys(n),u=0;u&#x3C;f.length;u++)r=f[u],0&#x3C;=e.indexOf(r)||(t[r]=n[r]);return t} </code></td><td>n/a</td><td>0</td><td>n/a</td><td>0</td><td>53</td><td>6890</td></tr><tr><td><code>function(r,t){if("object"!=typeof r||null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return("string"===t?String:Number)(r);e=e.call(r,t||"default");if("object"!=typeof e)return e;throw new TypeError("@@toPrimitive must return a primitive value.")} </code></td><td>n/a</td><td>0</td><td>137</td><td>36853</td><td>51</td><td>13719</td></tr><tr><td><code>function(e,r){return r=r||e.slice(0),Object.freeze(Object.defineProperties(e,{raw:{value:Object.freeze(r)}}))}</code></td><td>n/a</td><td>0</td><td>160</td><td>17600</td><td>n/a</td><td>0</td></tr><tr><td><code>function(o){return o&#x26;&#x26;"function"==typeof Symbol&#x26;&#x26;o.constructor===Symbol&#x26;&#x26;o!==Symbol.prototype?"symbol":typeof o}</code></td><td>n/a</td><td>0</td><td>64</td><td>7424</td><td>n/a</td><td>0</td></tr><tr><td><code>function(r){if("undefined"!=typeof Symbol&#x26;&#x26;null!=r[Symbol.iterator]||null!=r["@@iterator"])return Array.from(r)}</code></td><td>n/a</td><td>0</td><td>n/a</td><td>0</td><td>14</td><td>1624</td></tr></tbody></table>
+<p>Interestingly enough, aside from a lot of <code>() => {}</code> and <code>(a, b) => a</code> and <code>() => true</code> (as I call them, utility) functions,
+there are a lot of ES6 / TypeScript helpers such as class definition and spread operator variants, presumingly made to be compatible with ES5-only browsers.
+Maybe if we had targeted only platforms supporting the latest ES features we would get better results?</p>
+<p>Well, not quite much:</p>
+<p>bundle sizes:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Bundler</th><th>Bundle size</th></tr></thead><tbody><tr><td>bun</td><td>5.4M</td></tr><tr><td>esbuild</td><td>9.2M</td></tr><tr><td>esbuild (tuned)</td><td>8.0M</td></tr><tr><td>vite</td><td>7.1M</td></tr><tr><td>vite (tuned)</td><td>3.8M</td></tr><tr><td>webpack</td><td>4.4M</td></tr></tbody></table>
+<p><code>vite</code>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Found 15983 functions, 9581 are unique (59.94%)</span></span>
+<span class="line"><span>Duplicates length: 1495985 bytes out of 4019326 bytes are duplicate code (37.22%)</span></span>
+<span class="line"><span></span></span></code></pre>
+<p><code>esbuild</code>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Found 41736 functions, 29224 are unique (70.02%)</span></span>
+<span class="line"><span>Duplicates length: 3406606 bytes out of 8347230 bytes are duplicate code (40.81%)</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>webpack is (should be) already using the <code>target</code> config option from <code>tsconfig.json</code> (which is set to <code>ESNext</code> in our case)
+and bun does not really have a whole lot of customization in this regard.</p>
+<p>One unlikely possibility when these duplicates can be faster than having just one function is that running the nearly-defined code
+(in terms of a single block of code) might be slightly faster than making code jumps.
+This is super far-fetched idea from low-level programming, when CPU does not have to jump thousands or millions of (assembly) instructions back and forth
+but literally a few instead.
+This won’t justify using verbose ES5-compatible code on ESnext browser, however.
+How about we run a very synthetic benchmark to check just this one theory?</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> f</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(){</span><span style="color:#D73A49;--shiki-dark:#F97583">return!</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">console.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">time</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'1'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> i</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;i</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#005CC5;--shiki-dark:#79B8FF">100000</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;i</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">){</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> a</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[];</span><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> t</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;t</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#005CC5;--shiki-dark:#79B8FF">20000</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;t</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)a.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">push</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Math.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">random</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1000000</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> x</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">a.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">filter</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(f).</span><span style="color:#005CC5;--shiki-dark:#79B8FF">length</span><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">console.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">timeEnd</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'1'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span></code></pre>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">console.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">time</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'2'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> i</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;i</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#005CC5;--shiki-dark:#79B8FF">100000</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;i</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">){</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> a</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[];</span><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> t</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;t</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#005CC5;--shiki-dark:#79B8FF">20000</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;t</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)a.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">push</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Math.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">random</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1000000</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> f</span><span style="color:#D73A49;--shiki-dark:#F97583">=function</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(){</span><span style="color:#D73A49;--shiki-dark:#F97583">return!</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">},x</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">a.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">filter</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(f).</span><span style="color:#005CC5;--shiki-dark:#79B8FF">length</span><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">console.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">timeEnd</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'2'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span></code></pre>
+<p>The results are actually quite stable:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>1: 17029ms</span></span>
+<span class="line"><span>1: 16998ms</span></span>
+<span class="line"><span>1: 16903ms</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>2: 21877ms</span></span>
+<span class="line"><span>2: 21811ms</span></span>
+<span class="line"><span>2: 21821ms</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Having just one function instance is approx. <code>23%</code> faster. But what happens at consequitive runs?</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>1: 9194ms</span></span>
+<span class="line"><span>1: 9159ms</span></span>
+<span class="line"><span>1: 14044ms</span></span>
+<span class="line"><span>1: 13882ms</span></span>
+<span class="line"><span>1: 13975ms</span></span>
+<span class="line"><span>1: 9205ms</span></span>
+<span class="line"><span>1: 14026ms</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>2: 21821ms</span></span>
+<span class="line"><span>2: 13843ms</span></span>
+<span class="line"><span>2: 13866ms</span></span>
+<span class="line"><span>2: 13854ms</span></span>
+<span class="line"><span>2: 13961ms</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>2: 21718ms</span></span>
+<span class="line"><span>2: 13952ms</span></span>
+<span class="line"><span>2: 13925ms</span></span>
+<span class="line"><span>2: 13923ms</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Seems like CPU does indeed do a little bit of instruction caching and branch prediction (first run is visibly slower than the subsequent runs).
+But the observation still holds: having one function definition instead of many copies (even “near” copies) has a much bigger impact.</p>
+<p>With that being said, there is one interesting thing to try here: what if we actually replace some of those bulky duplicates with one-time declarations, within the same bundle?</p>
+<p>Without performing an in-depth code analysis and optimization, I came up with the following naive implementation:</p>
+<ol>
+<li>analyze the code and pick a few functions (biggest abusers) to fix them up</li>
+<li>extract all function names, function parameter names (including potential destructuring objects in function params) and all variable and constant names</li>
+<li>for each function to be de-duplicated, create a unique name (using the variable and function parameter and function names to avoid any clashes)</li>
+<li>from the end of the file to the beginning, remove all occurrences of the function declaration and replace all function references with the unique name</li>
+<li>add the function declarations to the beginning of the file</li>
+</ol>
+<p>This approach is rather naive, since it does not account for a number of edge cases. For instance, if there are two functions to be replaced:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">e</span><span style="color:#24292E;--shiki-dark:#E1E4E8">){</span><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> r</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;r</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">length</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;r</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">){</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> t,l</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[r];</span><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(t </span><span style="color:#D73A49;--shiki-dark:#F97583">in</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> l)</span><span style="color:#005CC5;--shiki-dark:#79B8FF">Object</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">prototype</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.hasOwnProperty.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">call</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(l,t)</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(e[t]</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">l[t])}</span><span style="color:#D73A49;--shiki-dark:#F97583">return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> e}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> p</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(){</span><span style="color:#D73A49;--shiki-dark:#F97583">return</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(p</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">Object.assign</span><span style="color:#D73A49;--shiki-dark:#F97583">||function</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">e</span><span style="color:#24292E;--shiki-dark:#E1E4E8">){</span><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> r</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;r</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">length</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;r</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">){</span><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> t,l</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[r];</span><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(t </span><span style="color:#D73A49;--shiki-dark:#F97583">in</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> l)</span><span style="color:#005CC5;--shiki-dark:#79B8FF">Object</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">prototype</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.hasOwnProperty.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">call</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(l,t)</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(e[t]</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">l[t])}</span><span style="color:#D73A49;--shiki-dark:#F97583">return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> e}).</span><span style="color:#6F42C1;--shiki-dark:#B392F0">apply</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">this</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#005CC5;--shiki-dark:#79B8FF">arguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)}</span></span>
+<span class="line"></span></code></pre>
+<p>e.g. one includes the other, the algorithm could have potentially evicted cases like this.</p>
+<p>Before proceeding further, it is a good idea to test if the cleaned up bundle can safely replace the original one.
+Hence I just stuffed it in the static assets folder of our project and ran it with the modified bundle.</p>
+<p>This way I figured few issues with the naive approach:</p>
+<ul>
+<li>two function definitions are causing stack overflow:
+<ul>
+<li><code>$z=function n(){return Object.assign,n.apply(this,arguments)}</code></li>
+<li><code>$q=function n(){return n=Object.assign&#x26;&#x26;Object.assign.bind(),n.apply(this,arguments)}</code></li>
+</ul>
+</li>
+<li>some of the empty functions are actually used as constructors (ES5-compatible OOP model) which is only discovered by finding the expressions like <code>$FnName.prototype.something = somethingElse;</code></li>
+<li>some functions are named and then referenced later in the code</li>
+<li>some functions are not used at all: <img src="/images/how-unique-are-your-bundles/unused-deduplicated-functions.webp" alt="Unused aliases"></li>
+</ul>
+<p>For the shorthand functions I first tried manually fixing them up - had to replace them with <code>$z=function(){return $z=Object.assign.bind(),$z.apply(this,arguments)}</code> alikes. This worked, so I created an AST transformer to handle these one-line return-only functions:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> simplifyFunction</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#E36209;--shiki-dark:#FFAB70">code</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">fname</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> tmpFilename</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> '_tmp'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    fs.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">writeFileSync</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(tmpFilename, code, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'utf-8'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> root</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ts.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">createSourceFile</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        tmpFilename,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        code,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        ts.ScriptTarget.ESNext,</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        /* setParentNodes */</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> true</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    );</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    let</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> rootFnName </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> undefined</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    const</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> parse</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#E36209;--shiki-dark:#FFAB70">node</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (ts.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">isFunctionDeclaration</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(node) </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ts.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">isIdentifier</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(node.name) </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> node.name.escapedText </span><span style="color:#D73A49;--shiki-dark:#F97583">!==</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ''</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            rootFnName </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> node.name.escapedText;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            return</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        ts.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">forEachChild</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(node, </span><span style="color:#E36209;--shiki-dark:#FFAB70">child</span><span style="color:#D73A49;--shiki-dark:#F97583"> =></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (child) {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">                parse</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(child);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        });</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    };</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    parse</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(root);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8">rootFnName) {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        fs.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">rmSync</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(tmpFilename);</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> code;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    const</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> transformer</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#E36209;--shiki-dark:#FFAB70">ctx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#E36209;--shiki-dark:#FFAB70">sourceFile</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        const</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> visit</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#E36209;--shiki-dark:#FFAB70">node</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (ts.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">isIdentifier</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(node) </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> node.escapedText </span><span style="color:#D73A49;--shiki-dark:#F97583">===</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> rootFnName) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">                return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ts.factory.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">createIdentifier</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(fname);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                ts.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">isFunctionDeclaration</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(node) </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;&#x26;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                ts.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">isBlock</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(node.body) </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;&#x26;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                node.body.statements.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">length</span><span style="color:#D73A49;--shiki-dark:#F97583"> ===</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x26;&#x26;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                ts.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">isReturnStatement</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(node.body.statements[</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]) </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;&#x26;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                ts.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">isBinaryExpression</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(node.body.statements[</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">].expression)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            ) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">                const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> next</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ts.factory.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">createFunctionDeclaration</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                    [],</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">                    undefined</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">                    undefined</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                    [],</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                    [],</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">                    undefined</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                    ts.factory.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">createBlock</span><span style="color:#24292E;--shiki-dark:#E1E4E8">([</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                        ts.factory.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">createReturnStatement</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                            ts.factory.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">createComma</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                                ts.factory.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">createAssignment</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                                    ts.factory.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">createIdentifier</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(fname),</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                                    node.body.statements[</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">].expression.left</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                                ),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                                node.body.statements[</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">].expression.right</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                            )</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                        )</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                    ])</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                );</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">                return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ts.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">visitEachChild</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(next, visit, ctx);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ts.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">visitEachChild</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(node, visit, ctx);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        };</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ts.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">visitNode</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(sourceFile, visit);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    };</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> s</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ts.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">createSourceFile</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(tmpFilename, code, ts.ScriptTarget.ESNext);</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    const</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">transformed</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> } </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ts.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">transform</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(s, [ transformer ]);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> newCode</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ts.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">createPrinter</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({ omitTrailingSemicolon: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> })</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">printFile</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(transformed.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">find</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(({ </span><span style="color:#E36209;--shiki-dark:#FFAB70">fileName</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }) </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> fileName </span><span style="color:#D73A49;--shiki-dark:#F97583">===</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> tmpFilename));</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    fs.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">rmSync</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(tmpFilename);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> newCode;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">};</span></span>
+<span class="line"></span></code></pre>
+<p>The transformer is essentially a two-pass processor: it first parses the <code>code</code> and identifies the first function declaration.
+If none was found - it just returns the original code. If there was a so-called “root function” defined, it then replaces all
+identifier with that “root function” name with the alias provided as <code>fname</code>.
+It also replaces the return statements in form of a <code>return something &#x26;&#x26; something()</code> with <code>return alias = something, alias()</code>.</p>
+<p>This approach is different from simply using <code>uglifyjs</code> to just try and minimize the code - it is way more complex (compared to just one function call). It results in few extra whitespaces being added. But using <code>uglifyjs</code> messes things up again and TypeScript compiler does not have an option for minimizing the output. But few extra whitespaces are totally acceptable given the much bigger savings from this transformation.</p>
+<p>With the constructors I simply excluded them from being de-duplicated. This resulted in <code>155</code> fewer substitutions (in Vite mode), which is negligible on the overall scale of the problem.</p>
+<p>As for the named functions which are in the global scope and are referenced later down the line, I had to create a list of “backwards-compatible aliases”, mapping those old function names onto the new unique names.</p>
+<p>I ended up with a three-pass parser-transformer utility (not really “simple script” anymore). The passes being:</p>
+<ol>
+<li>figuring out the duplicate function declarations and replacing them from the end to the start of the code (to minimize the chance of writing over the just-changed code)</li>
+<li>removing the duplicate global-scope named functions and replacing them with shorthand aliases to the de-duplicated declarations</li>
+<li>replace the usages of all known aliases and shorthand-named de-duplicated functions with their corresponding new (generated) names</li>
+</ol>
+<p>Other than those, replacing the original bundle with the optimized one worked like a charm!</p>
+<p>The results? With the threshold of <code>20</code> duplicates or more:</p>
+<p>| Bundler | Before optimization |||||</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>^</th><th>Bundle size</th><th>Total functions</th><th>Unique functions</th><th>Unique functions, %</th><th>Duplicate code, %</th></tr></thead><tbody><tr><td>bun</td><td>6.2M</td><td>8903</td><td>7443</td><td>83.6%</td><td>0.78%</td></tr><tr><td>esbuild</td><td>8.7M</td><td>13057</td><td>10250</td><td>78.5%</td><td>3.9%</td></tr><tr><td>vite</td><td>3.9M</td><td>3502</td><td>2365</td><td>67.53%</td><td>6.39%</td></tr><tr><td>webpack</td><td>4.4M</td><td>2898</td><td>1434</td><td>49.48%</td><td>6.91%</td></tr><tr><td><strong>After optimization</strong></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>bun</td><td>6.2M (same)</td><td>7865 (-1038)</td><td>7355 (-88)</td><td>93.52% (+9.92%)</td><td>0.51% (-0.27%)</td></tr><tr><td>esbuild</td><td>8.5M (-0.2M)</td><td>3265 (-9792)</td><td>2990 (-7260)</td><td>91.58% (+13.08%)</td><td>0.62% (-3.28%)</td></tr><tr><td>vite</td><td>3.6M (-0.3M)</td><td>2483 (-1019)</td><td>2277 (-88)</td><td>91.7% (+24.17%)</td><td>1.68% (-4.71%)</td></tr><tr><td>webpack</td><td>4.1M (-0.3M)</td><td>1484 (-1414)</td><td>1375 (-59)</td><td>92.65% (+43.17%)</td><td>0.43% (-6.48%)</td></tr></tbody></table>
+<p>In conclusion, the bundlers do a pretty average job at optimizing the bundles, even in production mode with some extra tuning.
+And if some brave soul is willing to invest even more time and effort than I did into developing a sophisticated solution
+(potentially improving the existing tools, like uglifyjs or bundlers themselves), the numbers can be improved even further.
+It would be really interesting to see what would the results be running this optimizer on a bigger bundle.</p>
+<p>In my humble opinion, Bun does produce the cleanest bundle. It might be not the smallest one, but it has least unnecessary stuff.
+On top of that, it is the fastest tool in JS world I have ever used.
+By the way, this very blog is built using Bun and React SSR - on Github Actions it takes around a minute to build and publish:</p>
+<img src="/images/how-unique-are-your-bundles/gh-pages-bun-build.webp" loading="lazy" alt="Github Actions build and publish with Bun">
+<img src="/images/how-unique-are-your-bundles/gh-pages-action-breakdown.webp" loading="lazy" alt="Github Actions build breakdown">
+<div class="content-read-marker" data-fraction="100"></div>
+<style>
+    .center {
+        text-align: center;
+    }
+    .center:has(button) {
+        margin-top: 0.5em;
+    }
+</style>
+<script>
+[...document.querySelectorAll('table')].forEach((table, idx) => {
+    if (table.querySelectorAll('tbody tr').length < 10) {
+        return;
+    }
+    table.id = `table-${idx}`;
+    table.classList.add('expandable');
+    const div = document.createElement('div');
+    div.classList.add('center');
+    const btn = document.createElement('button');
+    btn.innerText = 'Show more';
+    div.appendChild(btn);
+    table.after(div);
+    btn.onclick = () => {
+        const tbl = document.querySelector(`table#${table.id}`);
+        tbl.classList.toggle('expand');
+        if (tbl.classList.contains('expand')) {
+            btn.innerText = 'Show less';
+        } else {
+            btn.innerText = 'Show more';
+        }
+    };
+});
+</script>  </div> </article> </main> <footer data-astro-cid-sz7xmlte>
+&copy; 2024 Your name here. All rights reserved.
+<div class="social-links" data-astro-cid-sz7xmlte> <a href="https://m.webtoo.ls/@astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Mastodon</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/mastodon" data-astro-cid-sz7xmlte><path fill="currentColor" d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://twitter.com/astrodotbuild" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Twitter</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/twitter" data-astro-cid-sz7xmlte><path fill="currentColor" d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://github.com/withastro/astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Go to Astro's GitHub repo</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/github" data-astro-cid-sz7xmlte><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" data-astro-cid-sz7xmlte></path></svg> </a> </div> </footer>  </body></html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-bvzihdzo> <head><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.0.3"><!-- Font preloads --><link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin><!-- Canonical URL --><link rel="canonical" href="https://shybovycha.github.io/2024/05/17/2024-05-17-bun-is-still-undercooked.html/"><!-- Primary Meta Tags --><title>Bun is still undercooked</title><meta name="title" content="Bun is still undercooked"><meta name="description"><link rel="stylesheet" href="/_astro/index.BvFNhZYw.css">
+<style>footer[data-astro-cid-sz7xmlte]{padding:2em 1em 6em;background:linear-gradient(var(--gray-gradient)) no-repeat;color:rgb(var(--gray));text-align:center}.social-links[data-astro-cid-sz7xmlte]{display:flex;justify-content:center;gap:1em;margin-top:1em}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]{text-decoration:none;color:rgb(var(--gray))}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]:hover{color:rgb(var(--gray-dark))}main[data-astro-cid-bvzihdzo]{width:calc(100% - 2em);max-width:100%;margin:0}.hero-image[data-astro-cid-bvzihdzo]{width:100%}.hero-image[data-astro-cid-bvzihdzo] img[data-astro-cid-bvzihdzo]{display:block;margin:0 auto;border-radius:12px;box-shadow:var(--box-shadow)}.prose[data-astro-cid-bvzihdzo]{width:720px;max-width:calc(100% - 2em);margin:auto;padding:1em;color:rgb(var(--gray-dark))}.title[data-astro-cid-bvzihdzo]{margin-bottom:1em;padding:1em 0;text-align:center;line-height:1}.title[data-astro-cid-bvzihdzo] h1[data-astro-cid-bvzihdzo]{margin:0 0 .5em}.date[data-astro-cid-bvzihdzo]{margin-bottom:.5em;color:rgb(var(--gray))}.last-updated-on[data-astro-cid-bvzihdzo]{font-style:italic}
+[data-astro-image]{width:100%;height:auto;object-fit:var(--fit);object-position:var(--pos);aspect-ratio:var(--w) / var(--h)}[data-astro-image=responsive]{max-width:calc(var(--w) * 1px);max-height:calc(var(--h) * 1px)}[data-astro-image=fixed]{width:calc(var(--w) * 1px);height:calc(var(--h) * 1px)}
+</style></head> <body data-astro-cid-bvzihdzo> <nav class="top"> <div class="links"> <a class="nav-link nav-item" href="/">Home</a> <a class="nav-link nav-item" href="/about.html">About</a> </div> </nav> <main data-astro-cid-bvzihdzo> <article data-astro-cid-bvzihdzo> <div class="hero-image" data-astro-cid-bvzihdzo>  </div> <div class="prose" data-astro-cid-bvzihdzo> <div class="title" data-astro-cid-bvzihdzo> <div class="date" data-astro-cid-bvzihdzo> <time datetime="2024-05-17T04:10:00.000Z"> May 17, 2024 </time>  </div> <h1 data-astro-cid-bvzihdzo>Bun is still undercooked</h1> <hr data-astro-cid-bvzihdzo> </div>  <p>my Skunkworks project was trying out <a href="https://bun.sh/">Bun</a>. it was not a successful project, but there are some learnings:</p>
+<p>TL;DR: I think Bun is still undercooked and despite being super cool and competitive on paper, it is a bit too early to use it in big projects. But hey, it works for my blog!</p>
+<h2 id="what-is-bun">What is Bun</h2>
+<p>Bun is a combined alternative for NodeJS, package manager (<code>npm</code> / <code>yarn</code> / <code>pnpm</code>), bundler (<code>vite</code> / <code>webpack</code> / <code>esbuild</code>) and test runner (<code>vite</code> / <code>jest</code>).</p>
+<h2 id="bun-is-ridiculously-fast">Bun is ridiculously fast</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Command</th><th>Yarn</th><th>Bun</th></tr></thead><tbody><tr><td><code>yarn install</code></td><td><code>49 sec</code></td><td><code>7.5 sec</code></td></tr><tr><td><code>vite build</code></td><td><code>14 sec</code></td><td><code>0.9 sec</code></td></tr><tr><td><code>vite test</code></td><td><code>forever</code></td><td><code>4.5 sec</code></td></tr></tbody></table>
+<p>This most likely has to do with what happens in those tools - Bun went with parsing files as ASTs, applying transformations and running them in memory (to the best of my knowledge, digging through the Bun code)</p>
+<h2 id="some-things-work-out-of-the-box">Some things work out of the box</h2>
+<p>Dependency management works like a charm. No questions asked. Bun is just 7x faster.
+Comparing the node_modules directories:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Only in node_modules_yarn:</span></span>
+<span class="line"><span>    .yarn-state.yml</span></span>
+<span class="line"><span>    @aashutoshrathi</span></span>
+<span class="line"><span>    @isaacs</span></span>
+<span class="line"><span>    @npmcli</span></span>
+<span class="line"><span>    @pkgjs</span></span>
+<span class="line"><span>    @tootallnate</span></span>
+<span class="line"><span>    abbrev</span></span>
+<span class="line"><span>    agentkeepalive</span></span>
+<span class="line"><span>    aggregate-error</span></span>
+<span class="line"><span>    aproba</span></span>
+<span class="line"><span>    are-we-there-yet</span></span>
+<span class="line"><span>    asynciterator.prototype</span></span>
+<span class="line"><span>    cacache</span></span>
+<span class="line"><span>    chownr</span></span>
+<span class="line"><span>    clean-stack</span></span>
+<span class="line"><span>    color-support</span></span>
+<span class="line"><span>    console-control-strings</span></span>
+<span class="line"><span>    deep-equal</span></span>
+<span class="line"><span>    delegates</span></span>
+<span class="line"><span>    depd</span></span>
+<span class="line"><span>    eastasianwidth</span></span>
+<span class="line"><span>    encoding</span></span>
+<span class="line"><span>    env-paths</span></span>
+<span class="line"><span>    err-code</span></span>
+<span class="line"><span>    es-get-iterator</span></span>
+<span class="line"><span>    exponential-backoff</span></span>
+<span class="line"><span>    foreground-child</span></span>
+<span class="line"><span>    fs-minipass</span></span>
+<span class="line"><span>    gauge</span></span>
+<span class="line"><span>    graceful-fs</span></span>
+<span class="line"><span>    has</span></span>
+<span class="line"><span>    has-unicode</span></span>
+<span class="line"><span>    humanize-ms</span></span>
+<span class="line"><span>    ip</span></span>
+<span class="line"><span>    is-lambda</span></span>
+<span class="line"><span>    jackspeak</span></span>
+<span class="line"><span>    jsonc-parser</span></span>
+<span class="line"><span>    make-fetch-happen</span></span>
+<span class="line"><span>    minipass-collect</span></span>
+<span class="line"><span>    minipass-fetch</span></span>
+<span class="line"><span>    minipass-flush</span></span>
+<span class="line"><span>    minipass-pipeline</span></span>
+<span class="line"><span>    minipass-sized</span></span>
+<span class="line"><span>    minizlib</span></span>
+<span class="line"><span>    mkdirp</span></span>
+<span class="line"><span>    negotiator</span></span>
+<span class="line"><span>    node-gyp</span></span>
+<span class="line"><span>    nopt</span></span>
+<span class="line"><span>    npmlog</span></span>
+<span class="line"><span>    object-is</span></span>
+<span class="line"><span>    p-map</span></span>
+<span class="line"><span>    promise-retry</span></span>
+<span class="line"><span>    retry</span></span>
+<span class="line"><span>    set-blocking</span></span>
+<span class="line"><span>    smart-buffer</span></span>
+<span class="line"><span>    socks</span></span>
+<span class="line"><span>    socks-proxy-agent</span></span>
+<span class="line"><span>    ssri</span></span>
+<span class="line"><span>    stop-iteration-iterator</span></span>
+<span class="line"><span>    string-width-cjs</span></span>
+<span class="line"><span>    strip-ansi-cjs</span></span>
+<span class="line"><span>    tar</span></span>
+<span class="line"><span>    unique-filename</span></span>
+<span class="line"><span>    unique-slug</span></span>
+<span class="line"><span>    wide-align</span></span>
+<span class="line"><span>    wrap-ansi-cjs</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Only in node_modules_bun:</span></span>
+<span class="line"><span>    confbox</span></span>
+<span class="line"><span>    es-object-atoms</span></span>
+<span class="line"><span>    word-wrap</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Curious to see if those packages missing in bun’s <code>node_modules</code> are actually used anywhere.</p>
+<h2 id="plugins">Plugins</h2>
+<p>In Relational Migrator we use few plugins with vite, namely <code>svgr</code>, <code>vanilla-extract</code> and <code>sentry</code>. Bun only supports limited esbuild plugins and does not have the aforementioned plugins. Some of them work with minimal changes, some of them do not work entirely.</p>
+<h3 id="svgr-plugin"><code>svgr</code> plugin</h3>
+<p><code>svgr</code> worked with minimal alterations:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ts"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> svgrEsbuildPlugin </span><span style="color:#D73A49;--shiki-dark:#F97583">from</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'esbuild-plugin-svgr'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">Bun.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">build</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    plugins: [</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        svgrEsbuildPlugin</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() </span><span style="color:#D73A49;--shiki-dark:#F97583">as</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> unknown</span><span style="color:#D73A49;--shiki-dark:#F97583"> as</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> BunPlugin</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    ]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">})</span></span>
+<span class="line"></span></code></pre>
+<p>But required to change the imports from</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ts"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { ReactComponent </span><span style="color:#D73A49;--shiki-dark:#F97583">as</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> DatabaseAccessImage } </span><span style="color:#D73A49;--shiki-dark:#F97583">from</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> './assets/database-access-image.svg'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span></code></pre>
+<p>to</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ts"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> DatabaseAccessImage </span><span style="color:#D73A49;--shiki-dark:#F97583">from</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> './assets/database-access-image.svg'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span></code></pre>
+<h3 id="vanilla-extract-plugin"><code>vanilla-extract</code> plugin</h3>
+<p>This one loads vite server to compile the CSS and does not work no matter what I tried, throwing the following errors all over the place:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>error: Styles were unable to be assigned to a file. This is generally caused by one of the following:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>- You may have created styles outside of a '.css.ts' context</span></span>
+<span class="line"><span>- You may have incorrect configuration. See https://vanilla-extract.style/documentation/getting-started</span></span>
+<span class="line"><span>      at getFileScope (.../frontend/node_modules/@vanilla-extract/css/fileScope/dist/vanilla-extract-css-fileScope.cjs.dev.js:35:11)</span></span>
+<span class="line"><span>      at generateIdentifier (.../frontend/node_modules/@vanilla-extract/css/dist/vanilla-extract-css.cjs.dev.js:175:7)</span></span>
+<span class="line"><span>      at style (.../frontend/node_modules/@vanilla-extract/css/dist/vanilla-extract-css.cjs.dev.js:374:19)</span></span>
+<span class="line"><span>      at .../frontend/src/shared/leafygreen-ui/badge/badge.css.ts:4:28</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Followed by</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>error: Module._load is not a function. (In 'Module._load(file, parentModule)', 'Module._load' is undefined)</span></span>
+<span class="line"><span>    at .../frontend/src/components/mapping-banner.css.ts:1:0</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="sentry-plugin"><code>sentry</code> plugin</h3>
+<p>This one was trivial and did not complain (I did not check if it actually works):</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ts"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">Bun.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">build</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    plugins: [</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        sentryEsbuildPlugin</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                disable: </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8">process.env.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">SENTRY_AUTH_TOKEN</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                org: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'mongodb-org'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                project: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'relational-migrator-frontend'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                telemetry: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">false</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                sourcemaps: {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                        filesToDeleteAfterUpload: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'**/*.map'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                },</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }) </span><span style="color:#D73A49;--shiki-dark:#F97583">as</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> unknown</span><span style="color:#D73A49;--shiki-dark:#F97583"> as</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> BunPlugin</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    ]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">})</span></span>
+<span class="line"></span></code></pre>
+<h2 id="bundling">Bundling</h2>
+<p>Bun is great to run bundling, testing or manage packages from CLI when things are relatively simple. When you need plugins (for instance), the interactions become tricky. For specifying and configuring bundle-time plugins one needs to use Bun’s JS/TS API and make a custom build script:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ts"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">await</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Bun.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">build</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({ </span><span style="color:#D73A49;--shiki-dark:#F97583">...</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> });</span></span>
+<span class="line"></span></code></pre>
+<p>By default, Bun does not log anything, which is actually quite inconvenient - not even build failures are logged. One has to get the result of <code>Bun.build()</code> and manually process them, which is a bit of a bummer:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ts"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> result</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> await</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Bun.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">build</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">...</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8">result.success) {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  console.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">error</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'Build failed'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> message</span><span style="color:#D73A49;--shiki-dark:#F97583"> of</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> result.logs) {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    console.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">error</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(message);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">} </span><span style="color:#D73A49;--shiki-dark:#F97583">else</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  console.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">info</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'Build succeeded'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<h2 id="configuration">Configuration</h2>
+<p>Another inconvenient interaction - some actions require entire scripts (like build configuration, serving files, etc.). Then there is a config file, <code>bunfig.toml</code> where users can specify some configurations for Bun.</p>
+<h2 id="running-tests">Running tests</h2>
+<p>This one had the most issues on my end.</p>
+<h3 id="react-testing-library"><code>react-testing-library</code></h3>
+<p>Bun declares support for <code>react-testing-library</code>, which worked as expected.</p>
+<h3 id="browser-apis">Browser APIs</h3>
+<p>Had to use <code>happy-dom</code> and configure it in the <code>bunfig.toml</code> to enable some of the UI testing features (such as access to the <code>window</code> object). Yet, <code>happy-dom</code> still <a href="https://github.com/capricorn86/happy-dom/issues/241">lacks support for Canvas API</a>, for instance.</p>
+<h3 id="testeach"><code>test.each</code></h3>
+<p>It is one example of Bun’s partial compatibility with Jest - with Jest one can use nice-ish string interpolation to generate test name:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ts"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">test.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">each</span><span style="color:#032F62;--shiki-dark:#9ECBFF">`</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    currentStep | lastCompletedStep | progressType</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    ${</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#032F62;--shiki-dark:#9ECBFF">}        | ${</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#032F62;--shiki-dark:#9ECBFF">}              | ${'active'}</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    ${</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#032F62;--shiki-dark:#9ECBFF">}        | ${</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#032F62;--shiki-dark:#9ECBFF">}              | ${'inactive'}</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    ${</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#032F62;--shiki-dark:#9ECBFF">}        | ${</span><span style="color:#005CC5;--shiki-dark:#79B8FF">2</span><span style="color:#032F62;--shiki-dark:#9ECBFF">}              | ${'checked'}</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  `</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    'returns $progressType for $currentStep and $lastCompletedStep'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    ({ </span><span style="color:#E36209;--shiki-dark:#FFAB70">currentStep</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">lastCompletedStep</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">progressType</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }) </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { })</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span></code></pre>
+<p>With <code>bun:test</code> it is slightly different - you can’t use arguments out of order, nor do you have access to their names. Neither can you use this nice syntactic sugar for defining test cases in a table manner.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ts"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> cases</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    // currentStep | lastCompletedStep | progressType</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    [ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'active'</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ],</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    [ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'inactive'</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ],</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    [ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'checked'</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ],</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  ];</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  test.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">each</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(cases)(</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    'For %p and %p returns %p'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    (</span><span style="color:#E36209;--shiki-dark:#FFAB70">currentStep</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">lastCompletedStep</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">progressType</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">      expect</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">getProgressType</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(currentStep, lastCompletedStep)).</span><span style="color:#6F42C1;--shiki-dark:#B392F0">toEqual</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        progressType</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      );</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  );</span></span>
+<span class="line"></span></code></pre>
+<p>Oh, and there is no <code>describe.each()</code> functionality at all, which makes defining suites of tests more tedious.</p>
+<h3 id="mocks">Mocks</h3>
+<p>Mocks work as expected, out of the box. There are mocks for system clock, which is nice. Had to replace <code>vi.fn()</code> with <code>mock()</code> and a corresponding <code>import { mock } from 'bun:test';</code>.</p>
+<h3 id="objectcontaining-matchers"><code>ObjectContaining</code> matchers</h3>
+<p>When using nested matchers in the <code>ObjectContaining</code>, some of them are missing in Jest compatibility (like <code>expect.toBeNumber</code>):</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ts"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">expect</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(nodes).</span><span style="color:#6F42C1;--shiki-dark:#B392F0">toEqual</span><span style="color:#24292E;--shiki-dark:#E1E4E8">([</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        expect.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">objectContaining</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">          id: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'node-1'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">          position: { x: expect.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">toBeNumber</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(), y: expect.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">toBeNumber</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() },</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }),</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">]);</span></span>
+<span class="line"></span></code></pre>
+<p>Had to use <code>expect.any(Number)</code> instead:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ts"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">expect</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(nodes).</span><span style="color:#6F42C1;--shiki-dark:#B392F0">toEqual</span><span style="color:#24292E;--shiki-dark:#E1E4E8">([</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        expect.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">objectContaining</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">          id: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'node-1'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">          position: { x: expect.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">any</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Number), y: expect.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">any</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Number) },</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }),</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">]);</span></span>
+<span class="line"></span></code></pre>
+<h3 id="using-fragment-import-alongside">Using <code>Fragment</code> import alongside <code>&#x3C;></code></h3>
+<p>If a component contains both <code>import { Fragment } from 'react'</code> and uses a shorthand <code>&#x3C;></code>, Bun will yell at test time (but not at build time, interestingly enough):</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>SyntaxError: Cannot declare an imported binding name twice: 'Fragment'.</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>If you specify a different <code>jsxFragmentFactory</code> in <code>tsconfig.json</code> <strong>and</strong> set <code>"jsx": "react"</code> (and <strong>not</strong> <code>"react-jsx"</code> or anything), you will get further.</p>
+<p>After meddling with Bun source code itself, I figured something (like it parses files’ AST and modifies them to add missing imports, like <code>Fragment</code> but it ends up with duplicates), but even after applying some crude hacks to prevent it from adding those duplicate statements, I could not get to fix the issues. Left a comment on Bun’s <a href="https://github.com/oven-sh/bun/issues/7576">Github issue</a>, but from my experience developers do not pay enough attention to those.</p>
+<p>Ended up manually changing sources for the libraries in question in <code>node_modules</code> folder directly (just for the test), which did actually help. Might be worth changing it in the libraries directly, but that won’t work with everything.</p>
+<h3 id="ace-editor">Ace editor</h3>
+<p>It still is kinda impossible to use UMD/AMD modules in conjunction with TS in Bun tests - the nature of UMD is that once the file is imported, it uses IIF to define stuff, but Bun does not tolerate this (I presume it only parses the AST of the imported file but does not actually execute it in the right order).</p>
+<p>Hence Ace editor, which uses UMDs, can not really be used as intended.</p>
+<h2 id="buns-meat-and-potatoes">Bun’s meat and potatoes</h2>
+<p>I did a bit of digging in Bun’s source code and it seems… immature - commented out code, ignored tests, thousand-line-functions and files (<code>js_parser.zig</code> has <code>23.3k LOC</code>). And this is on top of using Zig, which is still at version <code>0.12</code> (as of writing of this post, <code>10 May 2024</code>) and has quite limited standard library (no <code>remove</code> and <code>find</code> methods in lists, no hash sets, etc.).</p>
+<h2 id="bottom-line">Bottom line</h2>
+<p>My experience shows that Bun might fine to be used in new and low-risk projects, but it is not ready for a drop-in replacement in existing or more or less complex projects.</p>  </div> </article> </main> <footer data-astro-cid-sz7xmlte>
+&copy; 2024 Your name here. All rights reserved.
+<div class="social-links" data-astro-cid-sz7xmlte> <a href="https://m.webtoo.ls/@astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Mastodon</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/mastodon" data-astro-cid-sz7xmlte><path fill="currentColor" d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://twitter.com/astrodotbuild" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Twitter</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/twitter" data-astro-cid-sz7xmlte><path fill="currentColor" d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://github.com/withastro/astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Go to Astro's GitHub repo</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/github" data-astro-cid-sz7xmlte><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" data-astro-cid-sz7xmlte></path></svg> </a> </div> </footer>  </body></html>

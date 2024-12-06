@@ -1,0 +1,714 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-bvzihdzo> <head><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.0.3"><!-- Font preloads --><link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin><!-- Canonical URL --><link rel="canonical" href="https://shybovycha.github.io/2022/04/04/2022-04-04-distributed-erlang-example.html/"><!-- Primary Meta Tags --><title>Distributed Erlang example</title><meta name="title" content="Distributed Erlang example"><meta name="description"><link rel="stylesheet" href="/_astro/index.BvFNhZYw.css">
+<style>footer[data-astro-cid-sz7xmlte]{padding:2em 1em 6em;background:linear-gradient(var(--gray-gradient)) no-repeat;color:rgb(var(--gray));text-align:center}.social-links[data-astro-cid-sz7xmlte]{display:flex;justify-content:center;gap:1em;margin-top:1em}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]{text-decoration:none;color:rgb(var(--gray))}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]:hover{color:rgb(var(--gray-dark))}main[data-astro-cid-bvzihdzo]{width:calc(100% - 2em);max-width:100%;margin:0}.hero-image[data-astro-cid-bvzihdzo]{width:100%}.hero-image[data-astro-cid-bvzihdzo] img[data-astro-cid-bvzihdzo]{display:block;margin:0 auto;border-radius:12px;box-shadow:var(--box-shadow)}.prose[data-astro-cid-bvzihdzo]{width:720px;max-width:calc(100% - 2em);margin:auto;padding:1em;color:rgb(var(--gray-dark))}.title[data-astro-cid-bvzihdzo]{margin-bottom:1em;padding:1em 0;text-align:center;line-height:1}.title[data-astro-cid-bvzihdzo] h1[data-astro-cid-bvzihdzo]{margin:0 0 .5em}.date[data-astro-cid-bvzihdzo]{margin-bottom:.5em;color:rgb(var(--gray))}.last-updated-on[data-astro-cid-bvzihdzo]{font-style:italic}
+[data-astro-image]{width:100%;height:auto;object-fit:var(--fit);object-position:var(--pos);aspect-ratio:var(--w) / var(--h)}[data-astro-image=responsive]{max-width:calc(var(--w) * 1px);max-height:calc(var(--h) * 1px)}[data-astro-image=fixed]{width:calc(var(--w) * 1px);height:calc(var(--h) * 1px)}
+</style></head> <body data-astro-cid-bvzihdzo> <nav class="top"> <div class="links"> <a class="nav-link nav-item" href="/">Home</a> <a class="nav-link nav-item" href="/about.html">About</a> </div> </nav> <main data-astro-cid-bvzihdzo> <article data-astro-cid-bvzihdzo> <div class="hero-image" data-astro-cid-bvzihdzo>  </div> <div class="prose" data-astro-cid-bvzihdzo> <div class="title" data-astro-cid-bvzihdzo> <div class="date" data-astro-cid-bvzihdzo> <time datetime="2022-04-03T14:00:00.000Z"> Apr 4, 2022 </time>  </div> <h1 data-astro-cid-bvzihdzo>Distributed Erlang example</h1> <hr data-astro-cid-bvzihdzo> </div>  <p>As promised in <a href="/2020/11/07/erlang-example-2.html">my previous blog about Erlang</a>, I continue
+on a journey to more practical Erlang examples.</p>
+<p>This might sound super ambitious, but let us build a distributed database.</p>
+<p>For sake of simplicity, let’s make it a reduced version of Redis - a key-value distributed in-memory storage.
+Essentially, an over-engineered hashmap.</p>
+<p>To draw some boundaries around this, let’s focus on these key features:</p>
+<ul>
+<li>simple CRUD actions - get, set and delete a value; this should operate on REST-like API:
+<ul>
+<li><code>get(&#x3C;key>)</code> - get key value</li>
+<li><code>set(&#x3C;key>)</code> - use request body for value and associate the value with the key</li>
+<li><code>delete(&#x3C;key>)</code> - remove the key from the storage</li>
+</ul>
+</li>
+<li>running on multiple nodes (machines)</li>
+<li>synchronizing the data between the nodes; this should support:
+<ul>
+<li>ability to rotate the nodes in the cluster (switch off nodes and add new ones randomly) without the loss of data</li>
+<li>distributing the operations across the nodes to keep the data in sync</li>
+</ul>
+</li>
+</ul>
+<p>Sounds unbelievable, but with Erlang this is actually pretty simple.
+Erlang is actually a great choice for an application like this, since we do not have to worry about setting up the cluster
+and deal with communication protocols (as in how to pass data over the network between the nodes).</p>
+<p>We will need a “main” process, which will take the requests from the users and pass them to the nodes.
+Each node will store its own copy of the data in memory. On startup, each new node will receive the copy of the data
+from the first available node. If no nodes are available - that means the cluster is fresh and we can safely assume
+the data is empty (or the cluster has died altogether and that state is unrecoverable).</p>
+<h2 id="step-1-draw-a-circle">Step 1: draw a circle</h2>
+<p>Start simple: let us have a simple application which starts a background process and responds to some commands.
+It could be as simple as <code>ping - pong</code> application - the background process waits for a <code>ping</code> message and responds with <code>pong</code>
+upon receiving one.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="erlang"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#D73A49;--shiki-dark:#F97583">module</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">db_server</span><span style="color:#24292E;--shiki-dark:#E1E4E8">).</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#24292E;--shiki-dark:#E1E4E8">([</span><span style="color:#6F42C1;--shiki-dark:#B392F0">start</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">stop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">ping</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]).</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">start</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    Pid </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> spawn_link</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> () </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span><span style="color:#6F42C1;--shiki-dark:#B392F0"> loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() </span><span style="color:#D73A49;--shiki-dark:#F97583">end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    register</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">server</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Pid),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    ok</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">stop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    server</span><span style="color:#D73A49;--shiki-dark:#F97583"> !</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> stop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    ok</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">ping</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    server</span><span style="color:#D73A49;--shiki-dark:#F97583"> !</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">ping</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">self</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    receive</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">        pong</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#005CC5;--shiki-dark:#79B8FF">pong</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">ping</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Pid } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            Pid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> pong</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">        stop</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#005CC5;--shiki-dark:#79B8FF">ok</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span></code></pre>
+<p>This is a relatively simple application, but it has few quirks:</p>
+<ul>
+<li><code>spawn_link/1</code> (<code>spawn_link(loop)</code>) - this function spawns a new background process and links it to the current one, so that once the current process stops, the linked process also stops</li>
+<li><code>register/2</code> (<code>register(server, Pid)</code>) - registers a global (in the current module scope) symbol (<code>server</code> in this case) and associates it with the process PID passed as the second parameter (<code>Pid</code> in this case, the PID of the spawned process running the <code>loop</code> function)</li>
+<li>the <code>ping/0</code> function sends a message (<code>{ ping, self() }</code> tuple) containing the atom <code>ping</code> and current process’ PID to the process registered as <code>server</code>; it then starts waiting for <em>any process</em> to send a <code>pong</code> message to the current process, effectively blocking the current process until that message is received</li>
+<li>the <code>loop</code> function responds to two messages:
+<ul>
+<li><code>{ ping, Pid }</code> - by sending <code>pong</code> message to the process with PID set in the <code>Pid</code> constant and running itself recursively (turning the entire <code>loop/0</code> function into a <code>while</code> loop)</li>
+<li><code>stop</code> - by simply returning the <code>ok</code> atom and exiting (thus terminating the loop)</li>
+</ul>
+</li>
+</ul>
+<p>To run this application, start the Erlang shell with <code>erl</code> and type in few prompts:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>1> c(db_server).</span></span>
+<span class="line"><span>{ok,db_server}</span></span>
+<span class="line"><span>2> db_server:start().</span></span>
+<span class="line"><span>ok</span></span>
+<span class="line"><span>3> db_server:ping().</span></span>
+<span class="line"><span>pong</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>The benefit of this architecture is that once we have an Erlang shell open and run the <code>start/0</code> function, it will start the background process and exit immediately. But the background process will keep running and we will have the other functions available to interact with that process, without loosing the access to the Erlang shell.</p>
+<p>This protocol also highlights the concurrent aspect of the application - we send the current process’ PID to the callee and start listening for the messages from <em>anywhere</em>.
+Once we receive the message - we pass it to the other process. So the entire application is predominantly non-blocking and asynchronous in nature.</p>
+<h2 id="step-2-draw-a-second-circle">Step 2: draw a second circle</h2>
+<p>The application is surely awesome, but let’s make it actually useful to any extent. We are designing a key-value storage, so why not to have one?
+Instead of just reacting to the <code>ping</code> message, we can have a <code>map</code> and have a simple API to set value, get value and delete a value from the map while
+keeping the map on the child process.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="erlang"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#D73A49;--shiki-dark:#F97583">module</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">db_server</span><span style="color:#24292E;--shiki-dark:#E1E4E8">).</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#24292E;--shiki-dark:#E1E4E8">([ </span><span style="color:#6F42C1;--shiki-dark:#B392F0">start</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">stop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]).</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#24292E;--shiki-dark:#E1E4E8">([ </span><span style="color:#6F42C1;--shiki-dark:#B392F0">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/</span><span style="color:#005CC5;--shiki-dark:#79B8FF">2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]).</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">start</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    Pid </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> spawn_link</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> () </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span><span style="color:#6F42C1;--shiki-dark:#B392F0"> loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">new</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()) </span><span style="color:#D73A49;--shiki-dark:#F97583">end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    register</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">server</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Pid),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    ok</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">stop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    server</span><span style="color:#D73A49;--shiki-dark:#F97583"> !</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> stop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    ok</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Key, Value) </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    server</span><span style="color:#D73A49;--shiki-dark:#F97583"> !</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Value },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    ok</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Key) </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    server</span><span style="color:#D73A49;--shiki-dark:#F97583"> !</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">self</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Value } -> Value</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Key) </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    server</span><span style="color:#D73A49;--shiki-dark:#F97583"> !</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    ok</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Data) </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Value } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            NewData </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">put</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Key, Value, Data),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NewData);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Pid } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            Pid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Key, Data, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">none</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Data);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            NewData </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">remove</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Key, Data),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NewData);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">        stop</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#005CC5;--shiki-dark:#79B8FF">ok</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span></code></pre>
+<p>As you can see, there’s nothing special going on here - all is quite simple. We start the background process with some initial data (<code>maps:new()</code>)
+and in the <code>loop/1</code> function whenever we enter recursion, we pass the new version of the data to the recursive call.
+The only function which actually is blocking its execution until it receives a response from a callee is <code>get/1</code> - we wait for the background process
+to send the value to the current process.</p>
+<div class="content-read-marker" data-fraction="25"></div>
+<p>The interaction with this application could look like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>1> c(db_server).</span></span>
+<span class="line"><span>{ok,db_server}</span></span>
+<span class="line"><span>2> db_server:start().</span></span>
+<span class="line"><span>ok</span></span>
+<span class="line"><span>3> db_server:set(moo, -3.14).</span></span>
+<span class="line"><span>ok</span></span>
+<span class="line"><span>4> db_server:get(moo).</span></span>
+<span class="line"><span>-3.14</span></span>
+<span class="line"><span>5> db_server:delete(moo).</span></span>
+<span class="line"><span>ok</span></span>
+<span class="line"><span>6> db_server:get(moo).</span></span>
+<span class="line"><span>none</span></span>
+<span class="line"><span></span></span></code></pre>
+<h2 id="step-3-draw-the-rest-of-the-owl">Step 3: draw the rest of the owl</h2>
+<p>Now for the juicy bits: let us have a worker node, which will actually be a replica of the database.
+It is as simple as extracting the logic from <code>loop/1</code> function to a separate module and having a new process being started
+on a new node, once we decide to add it to the cluster:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="erlang"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#D73A49;--shiki-dark:#F97583">module</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">worker</span><span style="color:#24292E;--shiki-dark:#E1E4E8">).</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#24292E;--shiki-dark:#E1E4E8">([ </span><span style="color:#6F42C1;--shiki-dark:#B392F0">loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]).</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Data) </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Value } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            NewData </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">put</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Key, Value, Data),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NewData);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Pid } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            Pid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Key, Data, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">none</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Data);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            NewData </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">remove</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Key, Data),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NewData);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">        stop</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#005CC5;--shiki-dark:#79B8FF">ok</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span></code></pre>
+<p>The <code>db_server</code> module needs few changes:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="erlang"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#D73A49;--shiki-dark:#F97583">module</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">db_server</span><span style="color:#24292E;--shiki-dark:#E1E4E8">).</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#24292E;--shiki-dark:#E1E4E8">([ </span><span style="color:#6F42C1;--shiki-dark:#B392F0">start</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">stop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]).</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#24292E;--shiki-dark:#E1E4E8">([ </span><span style="color:#6F42C1;--shiki-dark:#B392F0">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/</span><span style="color:#005CC5;--shiki-dark:#79B8FF">2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]).</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#24292E;--shiki-dark:#E1E4E8">([ </span><span style="color:#6F42C1;--shiki-dark:#B392F0">add_node</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]).</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">start</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    Pid </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> spawn_link</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> () </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span><span style="color:#6F42C1;--shiki-dark:#B392F0"> loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">([]) </span><span style="color:#D73A49;--shiki-dark:#F97583">end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    register</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">server</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Pid),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    ok</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">stop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    server</span><span style="color:#D73A49;--shiki-dark:#F97583"> !</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> stop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    ok</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Key, Value) </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    server</span><span style="color:#D73A49;--shiki-dark:#F97583"> !</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Value },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    ok</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Key) </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    server</span><span style="color:#D73A49;--shiki-dark:#F97583"> !</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">self</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Value } -> Value</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Key) </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    server</span><span style="color:#D73A49;--shiki-dark:#F97583"> !</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    ok</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">add_node</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NodeAddr) </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    server</span><span style="color:#D73A49;--shiki-dark:#F97583"> !</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">add_node</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodeAddr },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    ok</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Nodes) </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Value } -></span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">foreach</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodePid }) -> NodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Value } </span><span style="color:#D73A49;--shiki-dark:#F97583">end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Nodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Nodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Pid } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            [{ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, FirstNodePid }|</span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Nodes,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            FirstNodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Pid },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Value } -> Pid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Value }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Nodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key } -></span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">foreach</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodePid }) -> NodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key } </span><span style="color:#D73A49;--shiki-dark:#F97583">end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Nodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Nodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">add_node</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodeAddr } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            Data </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">new</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            NodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> spawn</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NodeAddr, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">worker</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [ Data ]),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            monitor</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">process</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodePid),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            NewNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">append</span><span style="color:#24292E;--shiki-dark:#E1E4E8">([ { NodeAddr, NodePid } ], Nodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NewNodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">        stop</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#005CC5;--shiki-dark:#79B8FF">ok</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span></code></pre>
+<p>The public API of the <code>db_server</code> module does not really change - there’s a new function <code>add_node/1</code> but that’s about it - these
+exported (aka “public”) functions only send messages to the <code>server</code> process.</p>
+<p>The <code>loop/1</code> function on the other hand has most changes - instead of sending message to a single process, it now distributes them
+across the processes stored in the <code>Nodes</code> constant. This constant is a list of tuples <code>{ NodeAdd, NodePid }</code> where the <code>NodeAddr</code>
+(the first element of the tuple) is just to keep track of nodes added to the list (for debug purposes predominantly) and <code>NodePid</code>
+(the second element of the tuple) is what is actually used to communicate with the <code>db_server</code> process.</p>
+<p>All the control messages (<code>get</code>, <code>set</code> and <code>delete</code>) are passed to <em>all</em> nodes from the <code>Nodes</code> list.
+Exception being the <code>{ get, Key, Pid }</code> message - it only sends the message to the first node from the list.
+And since all the <code>worker</code> nodes are (supposed to be) just replicas of each other, it is sufficient.</p>
+<p>So far this should work. Start the <code>db_server</code> node with</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> erl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -sname</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> supervisor</span></span>
+<span class="line"></span></code></pre>
+<p>followed by the call to</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>(supervisor@MACHINENAME)> c(db_server).</span></span>
+<span class="line"><span>{ok,db_server}</span></span>
+<span class="line"><span>(supervisor@MACHINENAME)> db_server:start().</span></span>
+<span class="line"><span>ok</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Then, add few nodes to the cluster. For that, the node must be running and must use the same naming convention as the supervisor
+(short name, set with <code>-sname</code> param to the <code>erl</code> or long name, set with the <code>-name</code> param to the <code>erl</code>) - otherwise they won’t see each other.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> erl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -sname</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> subnode1</span></span>
+<span class="line"></span></code></pre>
+<p>followed by</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>(subnode1@MACHINENAME)> c(worker).</span></span>
+<span class="line"><span>{ok,worker}</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Note how you don’t need to do anything on the worker node except compile the module. The supervisor node will start processes on that node itself.</p>
+<p>Lastly, on the server node call</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>(supervisor@MACHINENAME)> server:add_node(subnode1@MACHINENAME).</span></span>
+<span class="line"><span>ok</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>The node name is printed out to the Erlang shell once you start <code>erl</code> with <code>-sname</code> or <code>-name</code> param provided.
+But you can also add <code>io:format("Started node at ~s~n", node())</code> as the first statement in the <code>loop/1</code> function in <code>worker</code> module -
+it will print out the node name to the Erlang shell once the function is started. You can then use it as a raw atom parameter to <code>server:add_node/1</code>.</p>
+<p>Now, the last piece to the system is keeping all the worker nodes in sync by copying the data from the first alive node to the new node once it is added
+to the supervisor.</p>
+<p>To do so, we will need to utilize the <code>net_adm</code> module, which conveniently has the <code>net_adm:ping/1</code> function, taking the node address and returning <code>pond</code>
+atom if the node is alive and is visible from the current node or <code>pang</code> otherwise.
+This way we can replace all the occurrences of the <code>Nodes</code> list in the <code>db_server:loop/1</code> function with the list of <em>alive</em> nodes:</p>
+<div class="content-read-marker" data-fraction="50"></div>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="erlang"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">% supervisor</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Nodes) </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    AliveNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> sets</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">filter</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ NodeAddr, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }) -> </span><span style="color:#6F42C1;--shiki-dark:#B392F0">net_adm</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ping</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NodeAddr) </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> pong</span><span style="color:#D73A49;--shiki-dark:#F97583"> end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Nodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Value } -></span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">foreach</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodePid }) -> NodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Value } </span><span style="color:#D73A49;--shiki-dark:#F97583">end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, AliveNodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(AliveNodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Pid } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            [ { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, FirstNodePid } | </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> AliveNodes,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            FirstNodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Pid },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Value } -> Pid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Value }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(AliveNodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key } -></span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">foreach</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodePid }) -> NodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key } </span><span style="color:#D73A49;--shiki-dark:#F97583">end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, AliveNodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(AliveNodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">add_node</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodeAddr } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            Data </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">new</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            NodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> spawn</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NodeAddr, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">worker</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [ Data ]),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            monitor</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">process</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodePid),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            NewNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">append</span><span style="color:#24292E;--shiki-dark:#E1E4E8">([ { NodeAddr, NodePid } ], AliveNodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NewNodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">        stop</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#005CC5;--shiki-dark:#79B8FF">ok</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span></code></pre>
+<p>Now to get the data from the node, we will need an extra message to be supported by the <code>worker</code> module:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="erlang"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">% worker</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Data) </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Value } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            NewData </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">put</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Key, Value, Data),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NewData);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Pid } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            Pid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Key, Data, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">none</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Data);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            NewData </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">remove</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Key, Data),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NewData);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get_all</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Pid } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            Pid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get_all</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Data },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Data);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">        stop</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#005CC5;--shiki-dark:#79B8FF">ok</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span></code></pre>
+<p>This way when we want to add a new node to the cluster, we will need to first get the data from the first available node
+and then send it to the newly added node in the <code>db_server</code> module. But if there are no nodes alive, we want the <code>maps:new()</code> to be the new data:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="erlang"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">% supervisor</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Nodes) </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    AliveNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">filter</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ NodeAddr, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }) -> </span><span style="color:#6F42C1;--shiki-dark:#B392F0">net_adm</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ping</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NodeAddr) </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> pong</span><span style="color:#D73A49;--shiki-dark:#F97583"> end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Nodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Value } -></span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">foreach</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodePid }) -> NodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Value } </span><span style="color:#D73A49;--shiki-dark:#F97583">end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, AliveNodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(AliveNodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Pid } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            [ { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, FirstNodePid } | </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> AliveNodes,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            FirstNodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Pid },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, ReceivedValue } -> ReceivedValue</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            Pid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Value },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(AliveNodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key } -></span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">foreach</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodePid }) -> NodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key } </span><span style="color:#D73A49;--shiki-dark:#F97583">end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, AliveNodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(AliveNodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">add_node</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodeAddr } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            Data </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> case</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> AliveNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">of</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                [ { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, FirstNodePid } | </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                    FirstNodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get_all</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">self</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">                    receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get_all</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NewData } -> NewData;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">                        _</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#6F42C1;--shiki-dark:#B392F0">maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">new</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">                    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">                _</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#6F42C1;--shiki-dark:#B392F0">maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">new</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            NodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> spawn</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NodeAddr, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">worker</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [ Data ]),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            monitor</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">process</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodePid),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            NewNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">append</span><span style="color:#24292E;--shiki-dark:#E1E4E8">([ { NodeAddr, NodePid } ], AliveNodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NewNodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">        stop</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#005CC5;--shiki-dark:#79B8FF">ok</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span></code></pre>
+<p>You may practice putting nodes on and off the running cluster, getting and setting the values at the same time.
+But occasionally you might stumble upon a <code>db_server:get/1</code> function hanging.
+This is what happens when there are no alive nodes on the cluster.
+In order to fix this, we can simply add a check for that instead of blindly taking the <em>first</em> node from the <code>AliveNodes</code> list:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="erlang"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">% supervisor</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Nodes) </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    AliveNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">filter</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ NodeAddr, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }) -> </span><span style="color:#6F42C1;--shiki-dark:#B392F0">net_adm</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ping</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NodeAddr) </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> pong</span><span style="color:#D73A49;--shiki-dark:#F97583"> end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Nodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Value } -></span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">foreach</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodePid }) -> NodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Value } </span><span style="color:#D73A49;--shiki-dark:#F97583">end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, AliveNodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(AliveNodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Pid } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            Value </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> case</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> AliveNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">of</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                [ { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, FirstNodePid } | </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                    FirstNodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">self</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">                    receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, ReceivedValue } -> ReceivedValue</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">                    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">                _</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#005CC5;--shiki-dark:#79B8FF">no_nodes</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            Pid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Value },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(AliveNodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key } -></span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">foreach</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodePid }) -> NodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key } </span><span style="color:#D73A49;--shiki-dark:#F97583">end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, AliveNodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(AliveNodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">add_node</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodeAddr } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            Data </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> case</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> AliveNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">of</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                [ { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, FirstNodePid } | </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                    FirstNodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get_all</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">self</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">                    receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get_all</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NewData } -> NewData;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">                        _</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#6F42C1;--shiki-dark:#B392F0">maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">new</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">                    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">                _</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#6F42C1;--shiki-dark:#B392F0">maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">new</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            NodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> spawn</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NodeAddr, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">worker</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [ Data ]),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            monitor</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">process</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodePid),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            NewNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">append</span><span style="color:#24292E;--shiki-dark:#E1E4E8">([ { NodeAddr, NodePid } ], AliveNodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NewNodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">        stop</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#005CC5;--shiki-dark:#79B8FF">ok</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span></code></pre>
+<div class="content-read-marker" data-fraction="75"></div>
+<p>This will still not work however. The issue is that we only assign the value to the <code>AliveNodes</code> once we enter the <code>db_server:loop/1</code> function.
+And that only happens <em>after</em> it processed a message. But the moment the value is actually needed is <em>right before processing a message</em>.
+See the difference? There might be a delay between processing (as in “receiving”) a message and figuring the list of actually alive nodes because
+the process is blocked waiting for new messages.</p>
+<p>One way to fix this is to move the <code>AliveNodes</code> assignment to <em>each branch</em> of the <code>receive</code> block:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="erlang"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">% supervisor</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Nodes) </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Value } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            AliveNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">filter</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ NodeAddr, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }) -> </span><span style="color:#6F42C1;--shiki-dark:#B392F0">net_adm</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ping</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NodeAddr) </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> pong</span><span style="color:#D73A49;--shiki-dark:#F97583"> end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Nodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">foreach</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodePid }) -> NodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Value } </span><span style="color:#D73A49;--shiki-dark:#F97583">end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, AliveNodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(AliveNodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Pid } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            AliveNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">filter</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ NodeAddr, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }) -> </span><span style="color:#6F42C1;--shiki-dark:#B392F0">net_adm</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ping</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NodeAddr) </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> pong</span><span style="color:#D73A49;--shiki-dark:#F97583"> end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Nodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            Value </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> case</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> AliveNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">of</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                [ { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, FirstNodePid } | </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                    FirstNodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">self</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">                    receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, ReceivedValue } -> ReceivedValue</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">                    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">                _</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#005CC5;--shiki-dark:#79B8FF">no_nodes</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            Pid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Value },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(AliveNodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            AliveNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">filter</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ NodeAddr, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }) -> </span><span style="color:#6F42C1;--shiki-dark:#B392F0">net_adm</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ping</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NodeAddr) </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> pong</span><span style="color:#D73A49;--shiki-dark:#F97583"> end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Nodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">foreach</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodePid }) -> NodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key } </span><span style="color:#D73A49;--shiki-dark:#F97583">end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, AliveNodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(AliveNodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">add_node</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodeAddr } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            AliveNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">filter</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ NodeAddr, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }) -> </span><span style="color:#6F42C1;--shiki-dark:#B392F0">net_adm</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ping</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NodeAddr) </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> pong</span><span style="color:#D73A49;--shiki-dark:#F97583"> end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Nodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            Data </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> case</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> AliveNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">of</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                [ { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, FirstNodePid } | </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                    FirstNodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get_all</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">self</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">                    receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get_all</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NewData } -> NewData;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">                        _</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#6F42C1;--shiki-dark:#B392F0">maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">new</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">                    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">                _</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#6F42C1;--shiki-dark:#B392F0">maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">new</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            NodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> spawn</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NodeAddr, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">worker</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [ Data ]),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            monitor</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">process</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodePid),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            NewNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">append</span><span style="color:#24292E;--shiki-dark:#E1E4E8">([ { NodeAddr, NodePid } ], AliveNodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NewNodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">        stop</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#005CC5;--shiki-dark:#79B8FF">ok</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span></code></pre>
+<p>Alternatively, we can utilize the <code>after</code> keyword which effectively implements a timeout mechanism:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="erlang"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">% supervisor</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Nodes) </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Value } -></span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">foreach</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodePid }) -> NodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Value } </span><span style="color:#D73A49;--shiki-dark:#F97583">end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Nodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Nodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Pid } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            Value </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> case</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Nodes </span><span style="color:#D73A49;--shiki-dark:#F97583">of</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                [ { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, FirstNodePid } | </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] -> FirstNodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">self</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">                    receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, ReceivedValue } -> ReceivedValue,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">                        _</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#005CC5;--shiki-dark:#79B8FF">none</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">                    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">                _</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#005CC5;--shiki-dark:#79B8FF">no_nodes</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            Pid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Value },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Nodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key } -></span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">foreach</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodePid }) -> NodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key } </span><span style="color:#D73A49;--shiki-dark:#F97583">end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Nodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Nodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">add_node</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodeAddr } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            Data </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> case</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Nodes </span><span style="color:#D73A49;--shiki-dark:#F97583">of</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                [ { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, FirstNodePid } | </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                    FirstNodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get_all</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">self</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">                    receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get_all</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NewData } -> NewData;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">                        _</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#6F42C1;--shiki-dark:#B392F0">maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">new</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">                    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">                _</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#6F42C1;--shiki-dark:#B392F0">maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">new</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            NodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> spawn</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NodeAddr, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">worker</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [ Data ]),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            monitor</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">process</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodePid),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            NewNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">append</span><span style="color:#24292E;--shiki-dark:#E1E4E8">([ { NodeAddr, NodePid } ], Nodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NewNodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">        stop</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#005CC5;--shiki-dark:#79B8FF">ok</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    after</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">        0</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            AliveNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">filter</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ NodeAddr, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }) -> </span><span style="color:#6F42C1;--shiki-dark:#B392F0">net_adm</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ping</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NodeAddr) </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> pong</span><span style="color:#D73A49;--shiki-dark:#F97583"> end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Nodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(AliveNodes)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span></code></pre>
+<p>This will make the <code>receive</code> expression of the <code>db_server:loop/1</code> function check if there are any messages in the internal message inbox (aka message queue)
+associated with the current function. And if there are no messages after <code>0</code> (as in this case) time since the check started - the code in the corresponding
+matching expression will be executed. In our scenario, we figure the new list of alive nodes and restart the <code>loop</code> function. This way the time the process
+is sitting blocked waiting for messages is bare minimal.</p>
+<p>On the other hand, if you look carefully at all those <code>receive</code> statements within the <code>loop</code> function, you might just notice… that you don’t need them
+in fact - the worker nodes might just communicate with each other! So instead of sending <code>self()</code> PID to each worker node (for ex. for <code>get</code> message or <code>get_all</code> message),
+you can just send the received node PID (which is a part of the message) to the worker node. This will make the code highly asynchronous:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="erlang"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">% supervisor</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Nodes) </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    AliveNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">filter</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ NodeAddr, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }) -> </span><span style="color:#6F42C1;--shiki-dark:#B392F0">net_adm</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ping</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NodeAddr) </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> pong</span><span style="color:#D73A49;--shiki-dark:#F97583"> end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Nodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Value } -></span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">foreach</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodePid }) -> NodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Value } </span><span style="color:#D73A49;--shiki-dark:#F97583">end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, AliveNodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(AliveNodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Pid } -></span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            case</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> AliveNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">of</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                [ { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, FirstNodePid } | </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] -> FirstNodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Pid };</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">                _</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> Pid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">no_nodes</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(AliveNodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key } -></span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">foreach</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">fun</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ({ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodePid }) -> NodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key } </span><span style="color:#D73A49;--shiki-dark:#F97583">end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, AliveNodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(AliveNodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">add_node</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodeAddr } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            NodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> spawn</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NodeAddr, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">worker</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [ Data ]),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            monitor</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">process</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodePid),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            NewNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> lists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">append</span><span style="color:#24292E;--shiki-dark:#E1E4E8">([ { NodeAddr, NodePid } ], AliveNodes),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            case</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> AliveNodes </span><span style="color:#D73A49;--shiki-dark:#F97583">of</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                [ { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, FirstNodePid } | </span><span style="color:#005CC5;--shiki-dark:#79B8FF">_</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] -> FirstNodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get_all</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NodePid };</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">                _</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> NodePid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">got_all</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">new</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NewNodes);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">        stop</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#005CC5;--shiki-dark:#79B8FF">ok</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span></code></pre>
+<p>This will need a tiny adjustment to the <code>worker</code> module (to support that <code>{ got_all, Data }</code> messages), but the benefits are more than worth it!</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="erlang"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">% worker</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Data) </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Value } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            NewData </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">put</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Key, Value, Data),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NewData);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key, Pid } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            Pid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Key, Data, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">none</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Data);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">delete</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Key } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            NewData </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> maps</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">remove</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Key, Data),</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NewData);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get_all</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Pid } -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            Pid </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">get_all</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, Data },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Data);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">got_all</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, NewData } -></span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NewData);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">        stop</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -> </span><span style="color:#005CC5;--shiki-dark:#79B8FF">ok</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span></code></pre>
+<h2 id="wrap-up">Wrap-up</h2>
+<p>The cherry on top of this cake would be to create an actual REST API (or any non-Erlang API for that matter) so that this database could be used
+from the outside world without starting an Erlang shell. But I’d rather save it for a later blog.</p>
+<p>For now you can actually plug and unplug nodes from the cluster, and while there is at least one node alive, the data integrity is guaranteed.</p>
+<p>The highly asynchronous architecture of the solution allows for non-blocking calls all over the place.</p>
+<p>For me, this is a great example on how to <em>actually</em> use Erlang!</p>
+<p>The slightly built-up code is hosted <a href="https://github.com/shybovycha/distributed-key-value-db">on GitHub</a>.</p>
+<div class="content-read-marker" data-fraction="100"></div>  </div> </article> </main> <footer data-astro-cid-sz7xmlte>
+&copy; 2024 Your name here. All rights reserved.
+<div class="social-links" data-astro-cid-sz7xmlte> <a href="https://m.webtoo.ls/@astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Mastodon</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/mastodon" data-astro-cid-sz7xmlte><path fill="currentColor" d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://twitter.com/astrodotbuild" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Twitter</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/twitter" data-astro-cid-sz7xmlte><path fill="currentColor" d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://github.com/withastro/astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Go to Astro's GitHub repo</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/github" data-astro-cid-sz7xmlte><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" data-astro-cid-sz7xmlte></path></svg> </a> </div> </footer>  </body></html>

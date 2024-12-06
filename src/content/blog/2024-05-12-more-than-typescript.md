@@ -1,0 +1,576 @@
+---
+layout: post
+title: 'More than TypeScript'
+date: '2024-05-12T00:00:00+10:00'
+---
+
+Back in 2011 frontend was a very different thing - JavaScript had no `class`, `Object.entries` / `Object.keys`, promises were a proof of concept idea (unless you used 3rd party library [bluebird](https://github.com/petkaantonov/bluebird)) and Node was v0.10.
+
+Then came [CoffeeScript](https://coffeescript.org/), which added nice helper features to JavaScript - list comprehensions, classes, string interpolation and if _statements_ (meaning you could use them for variable assignment):
+
+```coffeescript
+# if statements
+text = if happy and knowsIt
+  chaChaCha()
+else if sexy
+  knowsIt()
+else if tooSexy
+  removeShirt()
+else
+  showIt()
+
+# list comprehensions
+courses = [ 'greens', 'caviar', 'truffles', 'roast', 'cake' ]
+menu = (i, dish) -> "Menu Item #{i}: #{dish}"
+menu i + 1, dish for dish, i in courses
+
+# ranges and list comprehensions
+countdown = (num for num in [10..1])
+
+# iterating over object entries
+yearsOld = max: 10, ida: 9, tim: 11
+
+ages = for child, age of yearsOld
+  "#{child} is #{age}"
+```
+
+Whilst it was still compiled to an inferior ES5 JavaScript, it helped to organise the code and make it substantially cleaner.
+The one drawback is that it did not provide any type safety _(only added recently, via `@flow` and you would still have to duplicate your classes if you wanted to use it - once in coffeescript and once in `@flow` annotations)_. Anyhow, CoffeeScript was a good tool for the task, if you ask me.
+
+Then came [Dart](https://dart.dev/), [Flow](https://flow.org/) and TypeScript, which were also compiled to ES5 JavaScript,
+but instead of adding new syntax features, they aimed to solve a different problem - by introducing _types_ they sought to
+reduce the number of runtime errors with type checks at compile time.
+
+This sounded so good that many developers and companies immediately got on board. Alas, the new tech still suffered from the same issue as JavaScript itself and most common cause of runtime errors - the `null` and `undefined` still was a thing, causing the exact same runtime errors.
+
+The one true benefit offered by TypeScript over the others was that it allowed to seamlessly use existing JavaScript code. And, provided you have the type signatures for that JavaScript code, it could even perform type checking on it too, effectively reducing the requirements for using TypeScript in the existing codebase. No wonder it was an easy buy-in for many projects.
+
+Fast-forward to 2024 (**twelve** years since its first release) and TypeScript dominates the frontend world. Over the years it seems to have been focused on improving the type system in terms of what can you do with types - union types, partial types, etc. It still suffers from the original issues though and there still are not too many new syntactic features to pair with its powerful type system (like pattern matching).
+
+With the new EcmaScript standards, classes and promises becoming the first-class citizens in all browsers (even Internet Explorer / Edge, when it was still around), the APIs and syntax became more mature (`Object.entries`, `async / await` to reduce [callback hell](http://callbackhell.com/), `for .. of`, `const / let`, string interpolation and many others). There are still no list comprehensions or conditional expressions / pattern matching though.
+
+TypeScript still does help in what I think is a small subset of highly-specific scenarios like navigating the code (jump to definition / declaration / find usages) in the IDE and refactoring the code. But IDEs matured as well, code navigation is not as much of a feature unique to TypeScript anymore as it used to be (in the era of Sublime Text). TypeScript can prevent some really naive errors at compile time like using a number instead of an object, but I don't think developers run into them these days - because, again, IDEs are really powerful these days, even VSCode and they help eliminate such mistakes to a large degree.
+
+Let's consider a real-world scenario (from my work project): server returns a list of `LocationType` objects. Each one of the objects can be either a `Collection`, a `Document` (in a specific collection) or a `Table`, each with its own subset of fields, specific to the type. We need to handle each case differently (display them on the UI differently).
+
+The OpenAPI spec:
+
+```yaml
+tableLocation:
+  type: object
+  required:
+    - table
+  properties:
+    table:
+      type: string
+
+collectionLocation:
+  type: object
+  required:
+    - collection
+  properties:
+    collection:
+      type: string
+
+documentLocation:
+  type: object
+  required:
+    - collection
+    - document
+  properties:
+    collection:
+      type: string
+    document:
+      type: string
+
+location:
+  oneOf:
+    - $ref: "#/components/tableLocation"
+    - $ref: "#/components/collectionLocation"
+    - $ref: "#/components/documentLocation"
+```
+
+And the TypeScript code generated by OpenAPI for the above spec looks like this:
+
+```ts
+interface CollectionLocation {
+    collection: string;
+}
+
+interface DocumentLocation {
+    collection: string;
+    document: string;
+}
+
+interface TableLocation {
+    table: string;
+}
+
+function instanceOfCollectionLocation(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "collection" in value;
+
+    return isInstance;
+}
+
+function instanceOfDocumentLocation(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "collection" in value;
+    isInstance = isInstance && "document" in value;
+
+    return isInstance;
+}
+
+function instanceOfTableLocation(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "table" in value;
+
+    return isInstance;
+}
+
+function CollectionLocationFromJSONTyped(json: any, ignoreDiscriminator: boolean): CollectionLocation {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        'collection': json['collection'],
+    };
+}
+
+function DocumentLocationFromJSONTyped(json: any, ignoreDiscriminator: boolean): DocumentLocation {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        'collection': json['collection'],
+        'document': json['document'],
+    };
+}
+
+function TableLocationFromJSONTyped(json: any, ignoreDiscriminator: boolean): TableLocation {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        'table': json['table'],
+    };
+}
+
+type JobLocation = CollectionLocation | DocumentLocation | TableLocation;
+
+function JobLocationFromJSONTyped(json: any, ignoreDiscriminator: boolean): JobLocation {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return { ...CollectionLocationFromJSONTyped(json, true), ...DocumentLocationFromJSONTyped(json, true), ...TableLocationFromJSONTyped(json, true) };
+}
+```
+
+This might be a bit too harsh on TypeScript as a language, considering this is not the best implementation (in my opinion), but this highlights one of the issues with TypeScript: this very same code caused a number of runtime errors caught by users - not exceptions, not compilation errors, but wrong UI behaviour - on the UI all locations were treated as a table location.
+
+The reason why this was happening is the code itself - it does not really handle the choice type `JobUpdateLocation` correctly and instead of a choice type it returns a union type, to put it roughly - instead of `oneOf` it returns essentially `allOf` object.
+
+Now, even if we were to rewrite it by hand (which would defeat the purpose of using OpenAPI and could be harder to keep in sync between client and server code), we would end up with something like this:
+
+```ts
+type CollectionLocation = {
+    collection: string;
+}
+
+type DocumentLocation = {
+    collection: string;
+    document: string;
+}
+
+type TableLocation = {
+    table: string;
+}
+
+function instanceOfCollectionLocation(value: object): boolean {
+    return ("collection" in value) && !("document" in value);
+}
+
+function instanceOfDocumentLocation(value: object): boolean {
+    return ("collection" in value) && ("document" in value);
+}
+
+function instanceOfTableLocation(value: object): boolean {
+    return ("table" in value);
+}
+
+function CollectionLocationFromJSONTyped(json: any): CollectionLocation | undefined {
+    if ((json === undefined) || (json === null)) {
+        return undefined;
+    }
+    return {
+        'collection': json['collection'],
+    };
+}
+
+function DocumentLocationFromJSONTyped(json: any): DocumentLocation | undefined {
+    if ((json === undefined) || (json === null)) {
+        return undefined;
+    }
+    return {
+        'collection': json['collection'],
+        'document': json['document'],
+    };
+}
+
+function TableLocationFromJSONTyped(json: any): TableLocation | undefined {
+    if ((json === undefined) || (json === null)) {
+        return undefined;
+    }
+    return {
+        'table': json['table'],
+    };
+}
+
+type JobLocation = CollectionLocation | DocumentLocation | TableLocation;
+
+function JobLocationFromJSONTyped(json: any): JobLocation | undefined {
+    if ((json === undefined) || (json === null)) {
+        return undefined;
+    }
+    if (instanceOfCollectionLocation(json) && !instanceOfDocumentLocation(json) && !instanceOfTableLocation(json)) {
+      return CollectionLocationFromJSONTyped(json);
+    }
+    if (instanceOfDocumentLocation(json) && !instanceOfCollectionLocation(json) && !instanceOfTableLocation(json)) {
+      return DocumentLocationFromJSONTyped(json);
+    }
+    if (instanceOfTableLocation(json) && !instanceOfCollectionLocation(json) && !instanceOfDocumentLocation(json)) {
+      return TableLocationFromJSONTyped(json);
+    }
+    return undefined;
+}
+```
+
+This is quite a verbose code, with few bad practices in place (the use of `any` and `object`, need to always be conscious of `undefined`), but this is literally what we ended up doing (the helpers, not redefining the types).
+
+The types in TypeScript (or rather classes and interfaces) are also a point of a few confusing tricks you have to keep in mind - if we were to use `class` instead of `type`, as follows
+
+```ts
+class CollectionLocation {
+    constructor(public collection: string) {}
+}
+
+class DocumentLocation {
+    constructor(public collection: string, document: string) {}
+}
+
+class TableLocation {
+    constructor(public table: string) {}
+}
+```
+
+we would eventually run into the similar bug at runtime, which is a perfectly valid behaviour from the perspective of TypeScript, because of [type compatibility](https://www.typescriptlang.org/docs/handbook/type-compatibility.html), meaning `DocumentLocation` and `CollectionLocation` could be used interchangeably, since they have a subset of compatible fields:
+
+```ts
+const a: CollectionLocation = new DocumentLocation('col', 'doc'); // ok
+const b: DocumentLocation = new CollectionLocation('col'); // also ok
+const c: TableLocation = a; // not ok
+```
+
+This would not work if `CollectionLocation`, `DocumentLocation` and `TableLocation` were _types_ instead:
+
+```ts
+const a: CollectionLocation = { collection: 'col', document: 'doc' }; // not ok
+const b: DocumentLocation = { collection: 'col' }; // not ok
+const c: TableLocation = b; // not ok
+```
+
+And the code to parse location from JSON is actually quite ugly. It would benefit so much from [`switch` expressions](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/switch-expression) or [pattern matching](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/pattern-matching)!
+
+And we still have to remember to handle those potentially `undefined` values whenever we use the helper functions.
+And here's an example from literally few days ago:
+
+```ts
+interface Job {
+    projectId: string;
+}
+
+const jobsInProgress: Job[];
+
+const message = useProjectStatus(
+    jobsInProgress[0]?.projectId ?? ''
+);
+
+const useProjectStatus = (projectId: string) {
+    const { data } = useQuery({ queryFn: () => fetch(`/project/${projectId}`) });
+
+    return data;
+};
+```
+
+The above code started throwing an error, since server responded with `500 Server Error`. Reason was quite simple - the `projectId`, which we recently started to validate on the server (expecting it to be a valid ID), was a blank string. Interesting thing: no one has questioned the very line causing the "default value" for `projectId` to become an empty string:
+
+```ts
+jobsInProgress[0]?.projectId ?? ''
+```
+
+And issues like these are unbelievably common in front-end world, while being quite tricky to detect and resolve.
+To fix this particular issue we added a client-side validation (to an extent) to run the query only when the `projectId` value is provided:
+
+```ts
+useQuery({
+  enabled: !!projectId,
+  queryFn: () => fetch(`/project/${projectId}`)
+})
+```
+
+The problem remains: it is really easy to miss this rather small fallback to an empty string.
+
+There is a solution in Scala world that somewhat addresses this issue - [refined types](https://github.com/fthomas/refined), which allows to have something along the lines of:
+
+```scala
+import eu.timepit.refined.*
+import eu.timepit.refined.api.Refined
+import eu.timepit.refined.string.*
+
+type NonBlankString = MatchesRegex[".+"]
+
+def useProjectStatus(projectId: String Refined NonBlankString) = ???
+```
+
+This would require wrapping all the values passed to `fetchData` in `refineV[NonBlankString]()` call and handling the case when the validation fails:
+
+```scala
+def generateId(): String = List("some", "").last
+
+def fetchData(id: String Refined NonBlankString) = println(s"fetching '$id'...")
+
+def main(args: Array[String]) = {
+  for {
+    id <- refineV[NonBlankString](generateId())
+  } yield fetchData(id)
+}
+```
+
+But in the land of TypeScript, there is only so much you can do - TypeScript only works at compile time.
+
+The above examples might sound like very far-fetched edge case scenarios, but keep in mind: this is the code generated automatically by one of the most popular tools from a trivial schema. This is not as far-fetched as it might seem.
+
+Can we do better in TypeScript? Something like `refined` in Scala? What if we had a powerful type system and syntax to support it? And, if possible, get rid of the `null` and `undefined` along the way?
+
+The problem of `null` and `undefined` can be mitigated to an extent by using some concepts of functional programming, similarly to how I [showcased some time ago](/2022/08/11/jargon-free-functional-programming-introduction-tldr.html). It would be quite hard to achieve, though, given the problem remains imbued in the language itself. Moreover, targeting the issues described above, it would take an entire standard library to really reduce the possibility of the issue:
+
+```ts
+const jobInProgressMaybe: Maybe<Job> = new List<Job>(jobsInProgress).first();
+const projectIdMaybe: Maybe<string> = jobInProgress.map(j => j.projectId);
+
+useQuery({
+  enabled: projectIdMaybe.isSome(),
+  queryFn: () =>
+    projectIdMaybe
+      .flatMap(projectId => fetch(`/project/${projectId}`))
+      .orElse(Promise.reject('no projectId'))
+})
+```
+
+We could _try_ to address the empty string issue with the extensive type system:
+
+```ts
+type NonEmptyString<T extends string> = '' extends T ? never : T;
+type MyString<T extends string> = T;
+
+function fetchData<T extends string>(id: NonEmptyString<T>) {
+  console.log(`Fetching ${id}`);
+}
+```
+
+But it would _only_ work if all the values are known at compile time, which is easily broken with the simplest test:
+
+```ts
+function generateId(): NonEmptyString<string> {
+  return ['moo', ''][1] as NonEmptyString<string>;
+}
+
+fetchData(''); // not ok
+fetchData(generateId()); // ok, but guaranteed undefined behaviour at runtime
+```
+
+And it would take even more effort to make _all_ types uniquely identifiable (to solve the choice type problem).
+
+The way most developers would approach solving similar issues in a real-world project would be (at best) adding some linters, checkers and relying on automated tests and high-quality code reviews. In my experience, this is a rather flimsy excuse rather than a real solution and it does not work most of the time - especially in edge case scenarios.
+
+This is where I'd suggest to use another language altogether, which, similarly to CoffeeScript and TypeScript back in the day, solved some problems at compile time. And suggest I will.
+
+There is a big warning before I proceed though: another technology is a rather big decision, not to be taken lightly. Some might see it as an impossible switch, only few small or indie developers on rather unimportant projects would make. But remember it was the same story with ES6, TypeScript, bundlers and pretty much any significant upgrade in the past.
+
+Balance bike is a good tool to get you going - it gets you from walking to moving fast. But if you want to get faster and further, you have to drop it at some stage in favour of a more advanced bike.
+
+Similarly to how TypeScript and ESNext got you from plain callback-hell-infested JavaScript code to a better place - you can refactor code faster, it saves you from a few errors at compile time, the code is much cleaner and conscise now. But if you really want to get even further, you will have to make a leap of faith, make an investment into the future.
+
+Here is my big controversial suggestion: a pure functional language, one with strong type system, which does not have a concept of null and undefined in the first place, with a nice sweet syntax.
+
+Before landing on a specific choice, check out Elm (dead, but a good starting point) and PureScript, in that order. Let me explain.
+
+Elm is like a very simplified Haskell - it is a pure functional language with a subset of Haskell syntax. It has a nice compiler with really good error messages. It enforces a structure for your application (redux-like). It gives you a gentle introduction to the functional programming concepts and it targets browsers (web applications). With its architecture, you can look at the message (action from redux) type and see exactly what are all possible operations in the application (which makes reading code and getting to know new codebases much easier).
+
+On a bad note, it is not being developed since 2019, it comes with an entire runtime (saves you from runtime errors, but blows up the bundle size) and it is a all-or-nothing commitment for the project - it is an all-in-one platform and if you want to gradually update your application from React - sorry, you will have to rewrite entire parts of you application entirely in Elm. The good point turned bad, having all possible actions defined in one message type make complex applications _really_ complex (with one massive type definition, an issue very familiar to developers who had to deal with Redux).
+
+_here could have been an Elm code sample_
+
+The next step on this journey would be PureScript. It is an actively developed language, it has a minimal footprint after compiled to JS (much smaller than Elm), it has a _very_ rich ecosystem and, best of all, it has a very simple interop with JS and it can compile just one module. Top it up with Halogen framework and you effectively got yourself Elm on steroids. The downside is that it is slightly more complex platform (language and framework) compared to Elm, so the learning curve is a bit steeper.
+
+The above example of CoffeeScript code could be written in plain PureScript like this:
+
+```purescript
+foreign import happy :: Boolean
+foreign import knowsIt :: Boolean
+foreign import sexy :: Boolean
+foreign import tooSexy :: Boolean
+foreign import chaChaCha :: String
+foreign import knowsItStr :: String
+foreign import removeShirt :: String
+foreign import showIt :: String
+
+import Data.Array ((..), mapWithIndex)
+import Data.Map as M
+import Data.Tuple (Tuple(..))
+
+-- if statements with multiple branches become pattern matching
+text
+  | happy && knowsIt = chaChaCha
+  | sexy = knowsItStr
+  | tooSexy = removeShirt
+  | otherwise = showIt
+
+-- list comprehensions become function application
+courses = [ "greens", "caviar", "truffles", "roast", "cake" ]
+
+-- string interpolation is possible via an external packages
+-- https://pursuit.purescript.org/packages/purescript-interpolate
+import Data.Interpolate as I
+menu' i dish = I.i "Menu Item " i ": " dish
+
+-- https://pursuit.purescript.org/packages/purescript-template-strings
+import Data.TemplateString.Unsafe ((<~>))
+menu'1 i dish = "Menu Item ${i}: ${dish}" <~> { i: i, dish: dish }
+
+import Data.TemplateString ((<->))
+import Data.Tuple.Nested ((/\))
+menu'2 i dish = "Menu Item ${i}: ${dish}" <-> [ "i" /\ i, "dish" /\ dish ]
+
+-- pure PureScript string interpolation
+menu i dish = "Menu Item " <> (show i) <> ": " <> dish
+
+x i dish = menu (i + 1) dish
+
+-- can not just call a function and ignore its result
+x' = mapWithIndex x courses
+
+-- ranges become Array monad
+-- countdown :: Array Int
+countdown = do
+  num <- 10 .. 1
+  pure num
+
+-- JavaScript objects exist in a separate package
+import Foreign.Object as FO
+yearsOld' = FO.fromHomogeneous { max: 10, ida: 9, tim: 11 }
+
+-- object as Map
+yearsOld = M.fromFoldable [Tuple "max" 10, Tuple "ida" 9, Tuple "tim" 11]
+
+y child age = (show child) <> " is " <> (show age)
+ages = map y yearsOld
+ages = map y yearsOld'
+```
+
+The real deal with this approach is how to migrate from an existing (most likely) React/TypeScript/(webpack | vite) ecosystem to PureScript?
+
+Expanding on Scott Wlaschin's talk, you can (and probably should) separate the pure application logic from IO, potentially utilising the foreign imported functions to interact with the existing JS code (libraries). This way you keep your application logic error-free, and all the errors that can happen are shifted towards the presentation layer (MVC/MVP, remember this concept?).
+
+This would be the best strategy for the most projects, migrating one bit at a time and making the application less and less error prone whilst not wreaking the havok by rewriting everything from scratch (very few businesses will buy into that).
+
+The bigger issue is that most modern frontend apps I have seen are so mangled in mixing the business logic and the presentation layer, it would be challenging (to say the least) to unmangle it back to a reasonable code. Check how we handle UI action, triggering a HTTP request and updating both the UI (to display the request progress/status) and the application state (for other parts of the UI) at the same time.
+
+_here could have been a real-world application interaction handling code sample_
+
+Calling PureScript code from JavaScript (based on [FFI example in PureScript book](https://book.purescript.org/chapter10.html)):
+
+```purescript
+module Test where
+
+import Prelude
+
+gcd :: Int -> Int -> Int
+gcd 0 m = m
+gcd n 0 = n
+gcd n m
+  | n > m     = gcd (n - m) m
+  | otherwise = gcd (m - n) n
+
+data ZeroOrOne a = Zero | One a
+
+inc :: ZeroOrOne Int -> ZeroOrOne Int
+inc Zero = Zero
+inc (One n) = One (n + 1)
+
+_zero = Zero
+_one = One 1
+_two = One 2
+```
+
+and then in JS:
+
+```js
+import Test from 'Test.js';
+
+Test.gcd(15)(20);
+
+const _zero = new Test.Zero();
+const _one = new Test.One(1);
+const _two = new Test.One(2);
+
+console.log(Test.inc(_zero));
+console.log(Test.inc(_one));
+console.log(Test.inc(_two));
+```
+
+In the other direction (calling JS code from PureScript):
+
+```js
+export const setItem = key => value => () =>
+  window.localStorage.setItem(key, value);
+
+export const getItem = key => () =>
+  window.localStorage.getItem(key);
+```
+
+and then in PureScript:
+
+```purescript
+foreign import setItem :: String -> String -> Effect Unit
+
+foreign import getItem :: String -> Effect Json
+
+import Data.Argonaut (class DecodeJson, class EncodeJson)
+import Data.Argonaut.Decode.Generic (genericDecodeJson)
+import Data.Argonaut.Encode.Generic (genericEncodeJson)
+import Data.Generic.Rep (class Generic)
+
+-- define PhoneType
+
+derive instance Generic PhoneType _
+
+instance EncodeJson PhoneType where encodeJson = genericEncodeJson
+instance DecodeJson PhoneType where decodeJson = genericDecodeJson
+
+processItem :: Json -> Either String Person
+processItem item = do
+  jsonString <- decodeJson item
+  j          <- jsonParser jsonString
+  decodeJson j
+
+main = do
+  item <- getItem "person"
+  initialPerson <- case processItem item of
+    Left  err -> do
+      log $ "Error: " <> err <> ". Loading examplePerson"
+      pure examplePerson
+    Right p   -> pure p
+```
+
+Just to reiterate, I do understand that converting the application (and developers) to this new weird technology is an almost impossible task, especially in a large long-lived project. One way to reason about it and justify the transition is the resilience requirements of a project (the need for actually error-prone code) and the amount of time and effort spent to date on finding and fixing those nasty bugs and undefined behaviours in an application.

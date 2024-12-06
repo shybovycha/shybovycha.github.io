@@ -1,0 +1,277 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-bvzihdzo> <head><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.0.3"><!-- Font preloads --><link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin><!-- Canonical URL --><link rel="canonical" href="https://shybovycha.github.io/2015/09/21/2015-09-20-two-sides-of-web-application-part-1.html/"><!-- Primary Meta Tags --><title>Two sides of web application. Part 1: the tools</title><meta name="title" content="Two sides of web application. Part 1: the tools"><meta name="description"><link rel="stylesheet" href="/_astro/index.BvFNhZYw.css">
+<style>footer[data-astro-cid-sz7xmlte]{padding:2em 1em 6em;background:linear-gradient(var(--gray-gradient)) no-repeat;color:rgb(var(--gray));text-align:center}.social-links[data-astro-cid-sz7xmlte]{display:flex;justify-content:center;gap:1em;margin-top:1em}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]{text-decoration:none;color:rgb(var(--gray))}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]:hover{color:rgb(var(--gray-dark))}main[data-astro-cid-bvzihdzo]{width:calc(100% - 2em);max-width:100%;margin:0}.hero-image[data-astro-cid-bvzihdzo]{width:100%}.hero-image[data-astro-cid-bvzihdzo] img[data-astro-cid-bvzihdzo]{display:block;margin:0 auto;border-radius:12px;box-shadow:var(--box-shadow)}.prose[data-astro-cid-bvzihdzo]{width:720px;max-width:calc(100% - 2em);margin:auto;padding:1em;color:rgb(var(--gray-dark))}.title[data-astro-cid-bvzihdzo]{margin-bottom:1em;padding:1em 0;text-align:center;line-height:1}.title[data-astro-cid-bvzihdzo] h1[data-astro-cid-bvzihdzo]{margin:0 0 .5em}.date[data-astro-cid-bvzihdzo]{margin-bottom:.5em;color:rgb(var(--gray))}.last-updated-on[data-astro-cid-bvzihdzo]{font-style:italic}
+[data-astro-image]{width:100%;height:auto;object-fit:var(--fit);object-position:var(--pos);aspect-ratio:var(--w) / var(--h)}[data-astro-image=responsive]{max-width:calc(var(--w) * 1px);max-height:calc(var(--h) * 1px)}[data-astro-image=fixed]{width:calc(var(--w) * 1px);height:calc(var(--h) * 1px)}
+</style></head> <body data-astro-cid-bvzihdzo> <nav class="top"> <div class="links"> <a class="nav-link nav-item" href="/">Home</a> <a class="nav-link nav-item" href="/about.html">About</a> </div> </nav> <main data-astro-cid-bvzihdzo> <article data-astro-cid-bvzihdzo> <div class="hero-image" data-astro-cid-bvzihdzo>  </div> <div class="prose" data-astro-cid-bvzihdzo> <div class="title" data-astro-cid-bvzihdzo> <div class="date" data-astro-cid-bvzihdzo> <time datetime="2015-09-20T19:18:39.000Z"> Sep 21, 2015 </time>  </div> <h1 data-astro-cid-bvzihdzo>Two sides of web application. Part 1: the tools</h1> <hr data-astro-cid-bvzihdzo> </div>  <div class="row" style="justify-content: space-between">
+  <div class="col-md-6 col-xs-12">
+    <div class="card">
+      <div class="card-header">
+        Article series
+      </div>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+          <a href="/2015/09/20/two-sides-of-web-application-part-1.html">
+            Part 1: The Tools
+          </a>
+        </li>
+        <li class="list-group-item">
+          <a href="/2016/02/11/two-sides-of-web-application-part-2.html">
+            Part 2: Sketching
+          </a>
+        </li>
+        <li class="list-group-item">
+          <a href="/2016/02/11/two-sides-of-web-application-part-3.html">
+            Part 3: Communication Layer
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-6 col-xs-12 text-xs-center text-md-right">
+    <img src="/images/two-sides-of-web-application/chocolate_tools.webp" class="img-responsive" style="max-height: 150px">
+  </div>
+</div>
+<h2 id="prologue">Prologue</h2>
+<p>How do we usually create a web application? We run a bootstrapping script, which provides us with a skeleton of our application and then we just extend it with the features we need.</p>
+<p>That’s exactly what we did at the last hackathon we were attending - we started with <code>rails new twf</code> and spent half of the day integrating our blank app with Angular, Paperclip, creating API methods and so on. But the effort we needed to accomplish our goal (quite a simple web app) was really huge.</p>
+<p>So I decided to find the best combination of backend and frontend technologies that would cause less pain.</p>
+<p>At the project I was recently introduced to, the line between frontend and backend is distinguished very clearly: we have an API, written in Clojure and thin frontend application, made with Angular that works on a generated set of static assets - HTMLs, CSS and JS files <em>(but under the hood we are using HAML and SCSS)</em>.</p>
+<p>The application I will be implementing throughout the whole article has the same architecture: it has RESTful API and MVVM on the frontend, made with Angular. I welcome you to the journey of research and new technologies!</p>
+<!--more-->
+<h2 id="why-not-go-with-rails">Why not go with Rails?</h2>
+<p>Because Rails is often overused. Especially if you install all of frontend libraries
+<em>(like Angular, Bootstrap, some Angular plugins, etc.)</em> as RubyGems. Frontend should stay
+on the front end of the application; you should not lock your application at some precise
+version of the JS script, provided by a gem and rely on author’s way to integrate it with
+Rails.</p>
+<p>In our case, Rails is too heavy - when all you need is database + routing + a couple of
+lightweight controllers, all Rails’ features will become a ballast to our app, which
+must be small, by design.</p>
+<h2 id="the-goal">The goal</h2>
+<p>Before we start, let’s think of what we’ll be creating. Will it be a web shop? Or a blog?
+No, we need something outstanding! Something we’ve done never before…</p>
+<p>After an hour of imaging what it may be, I decided to go with web analytics tool. A prototype,
+which will be able to tell how many visitors your web application gained recently.</p>
+<p>It shouldn’t be too complicated, because, you know, it’s just a tutorial… So we’ll be
+tracking users’ location and browser only. And we’ll be displaying those analytics as a chart
+<em>(values like total visitors, browser usage)</em> and in a table <em>(the same info as the chart)</em>.</p>
+<h2 id="architecture-preview">Architecture preview</h2>
+<p>We will be developing our application with two layers (or two sides) - front-end and back-end:</p>
+<div class="text-center">
+    <img src="/images/two-sides-of-web-application/general_architecture.webp" loading="lazy" class="img-responsive">
+</div>
+<p>The front-end part is the one the user sees and uses - the web page, mobile or desktop application. The back-end part is the one, which does all the magic - prepares data for the front-end side to display, performs data operations as a reaction on user’s actions, etc. Thus we could easily replace either the back-end part or the front-end one or even both and replace them with all brand-new implementation. This architecture allows us to do that really easily.</p>
+<h2 id="build-with-the-right-tools">Build with the right tools!</h2>
+<p>Now, since we separated our frontend part of application from the backend part, we may use different preprocessing
+languages to write stylesheets and views. And even controllers! So let’s take the most from 2015 and use the newest
+tool set: <em>Jade</em>, <em>ES6+</em> and <em>SCSS</em>. And put them all together with <em>Bower</em> and <em>Gulp</em>.</p>
+<p>All those Jade, SCSS and ES6 are not supported by a browser out-of-the box. They must be compiled to HTML, CSS and JS in order to be recognized by the browser. But they are here to help you writing code quickly. I listed some of their key features below.</p>
+<h3 id="jade">Jade</h3>
+<p>Jade is a template rendering engine with its own markup language. It is somewhat similar to Haml and Slim - it
+nests XHTML nodes with indentation, closes tags automatically… But it is especially good at writing complex web
+pages, consisting of <em>layouts</em> and <em>partials</em>.</p>
+<p><em>Layouts</em> are big templates, containing placeholders, where
+concrete partials will be placed. So, for example, you may create a separate layout for your webshop’ landing
+page, account page and shopping cart. They will be different. And all of them will use different sets of partials.
+But, for example, a footer and a quick shopping cart preview or user account widget (the one with a link to user’s
+account page) will be the same. To prevent duplicating those widgets’ code on each of the layouts, we extract them
+to separate files, called <em>partials</em> and then just make a reference (a placeholder) in our layouts, saying
+<em>“place that partial’s content here”</em>.</p>
+<p>In case of Jade, we may override or extend existing partials in a layout, without touching partial’s file itself.
+So, for example, if we want to make user’s avatar to be shown in a user account widget only on a product page, we just override user widget partial on a product page, removing the part with the avatar.</p>
+<h3 id="scss">SCSS</h3>
+<p>SCSS is a way to simplify writing CSS. It is so simple, yet so powerful, that you will fall in love with it
+after the first few stylesheets! See, in CSS when you write a long selector, specifying many parents, you may
+find your stylesheets ugly and huge, when describing different children of one, deeply nested parent.</p>
+<p>So, let’s say you are having a user widget. And it may be placed both on page’s header, footer and sidebar. But
+the avatar image will look differently on each of those - it must be smaller in header and footer. So you
+start writing selectors like <code>.sidebar .user-widget .avatar img</code> and <code>.header .user-widget .avatar img</code>.
+That’s painful, but not that much, if you have just a couple of those. However, as your website grows, you
+start getting really, really upset about that.</p>
+<p>And here’s where SCSS is just a revelation: its great power is in its <em>selectors</em>, <em>variables</em> and <em>mixins</em>.</p>
+<p><em>Selectors</em> allow you to describe selector’ nesting just as you’d be writing C code:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="scss"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">.header</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    // header styles</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    .user-widget</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        // header user-widget styles</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        .avatar</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">            // maybe something differs in avatar itself?</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            img</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">                // ah! here's it!</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p><em>Variables</em> allow you to get rid of all those magic values. So if you use one color many times across your styles,
+you just extract it into a named constant and use the pretty named value everywhere!</p>
+<p><em>Mixins</em> allow even more: you may extract the parts of the styles into a named and even <strong>parametrized</strong> function!</p>
+<p>Relating on all of those, you may re-write your user widget as follows:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="scss"><code><span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">$header-avatar-size</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">50</span><span style="color:#D73A49;--shiki-dark:#F97583">px</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">$sidebar-avatar-size</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">150</span><span style="color:#D73A49;--shiki-dark:#F97583">px</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">@mixin</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> avatar</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">$avatar_size</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    max-width</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#E36209;--shiki-dark:#FFAB70">$avatar_size</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    max-height</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#E36209;--shiki-dark:#FFAB70">$avatar_size</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">.header</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    .user-widget</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> .avatar</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        @include</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> avatar</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">$header-avatar-size</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">.sidebar</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    .user-widget</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> .avatar</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        @include</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> avatar</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">$sidebar-avatar-size</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<h3 id="gulp">Gulp</h3>
+<p>I found Gulp to be super-easy for tasks like compiling stylesheets, views and javascripts. But before
+we continue with Gulp, let’s initialize an NPM project with <code>npm init</code> and install the plugins required:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">npm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -g</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> gulp</span></span>
+<span class="line"></span></code></pre>
+<p>And Gulp plugins:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">npm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --save-dev</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> gulp</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> gulp-babel</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> gulp-scss</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> gulp-jade</span></span>
+<span class="line"></span></code></pre>
+<p>I will describe how Gulp works and how we can use it in our project in a minute. For now, let’s
+just install the frontend dependencies.</p>
+<h3 id="bower">Bower</h3>
+<p>Let’s fix our frontend on specific versions of frontend libraries, so when we update the whole project, nothing gets broken. To make our development quick, we’ll use <em>Twitter Bootstrap</em>. All the frontend dependencies will be managed by a tool called <em>Bower</em>.</p>
+<p>Bower is a tool like <code>npm</code>, but used strictly with frontend libraries like <em>jQuery</em>, <em>Angular</em>, <em>Twitter Bootstrap</em> and many others. It’s important to keep frontend libraries separate from the backend ones, so we can keep our backend application completely separate from frontend one.</p>
+<p>Bower comes with a command-line tool, <code>bower</code>, which we’ll use to fill out the <code>bower.json</code> file. It is used by Bower to specify which libraries does our application require:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">npm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -g</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bower</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">bower</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> init</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">bower</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --save</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bootstrap</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> angular</span></span>
+<span class="line"></span></code></pre>
+<p>These commands create a directory <code>bower_components</code>, containing all the dependencies installed, each in its own sub-directory. With that in mind, we’ll be referencing our frontend dependencies, relatively to their catalogs within the <code>bower_components</code> directory.</p>
+<p>Now let’s write a build task for Gulp. Gulp is a streamed build tool. That means, that each operation you perform, passes its result to another operation as the input argument. So, for example, if you run <code>gulp.src('src/styles/*.scss')</code>, it’ll return you an object with the list of all the SCSS files and the magic <code>pipe()</code> method. And when you call the <code>gulp.src(...).pipe(scss())</code>, Gulp will pass that list to the SCSS compiler plugin, so you will get a compiled CSS code. That is, not a CSS file itself, but a compressed, merged, CSS file’ content.</p>
+<p>And that describes the second important feature of Gulp: it does not store the intermediate operation results. It is almost like a functional programming - you just have the input data. Then you call a chain of functions on it,
+passing the result of one function call to the next function as its input. Same happens here, but in
+a manner not that strict - since we are using Javascript, we can store the intermediate results in the memory. But to store
+the results in the files, we should pass them to the <code>gulp.dest(...)</code> function. Depending on the function, looking
+to store its results, <code>gulp.dest()</code> may point to a directory or a single file, where the results will be stored.</p>
+<p>Below is our first Gulp task. Write this code in the <code>gulpfile.js</code>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> gulp </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> require</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'gulp'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    sass </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> require</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'gulp-scss'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    babel </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> require</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'gulp-babel'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    jade </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> require</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'gulp-jade'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">gulp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">task</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'build'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> () {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    gulp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">src</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'src/views/**/*.jade'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pipe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">jade</span><span style="color:#24292E;--shiki-dark:#E1E4E8">())</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pipe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(gulp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">dest</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'public/'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    gulp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">src</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'src/javascripts/**/*.js'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pipe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">babel</span><span style="color:#24292E;--shiki-dark:#E1E4E8">())</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pipe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(gulp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">dest</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'public/javascripts'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    gulp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">src</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'src/stylesheets/**/*.scss'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pipe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">sass</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({ style: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'expanded'</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }))</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pipe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(gulp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">dest</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'public/stylesheets'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">});</span></span>
+<span class="line"></span></code></pre>
+<p>This tells Gulp to define <code>build</code> task, which compiles all the Jade, SCSS and ES6+ files into HTML, CSS
+and JS files, correspondingly. Compiled files are placed within the <code>public/</code> directory, so we may
+easily render them with almost any web-server. But first things first, we need to prepare directory structure
+like this for our task:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">.</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">|</span><span style="color:#6F42C1;--shiki-dark:#B392F0">____bower.json</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">|</span><span style="color:#6F42C1;--shiki-dark:#B392F0">____gulpfile.js</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">|</span><span style="color:#6F42C1;--shiki-dark:#B392F0">____package.json</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">|</span><span style="color:#6F42C1;--shiki-dark:#B392F0">____public</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">|</span><span style="color:#6F42C1;--shiki-dark:#B392F0">____src</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">|</span><span style="color:#D73A49;--shiki-dark:#F97583"> |</span><span style="color:#6F42C1;--shiki-dark:#B392F0">____javascripts</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">|</span><span style="color:#D73A49;--shiki-dark:#F97583"> |</span><span style="color:#6F42C1;--shiki-dark:#B392F0">____stylesheets</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">|</span><span style="color:#D73A49;--shiki-dark:#F97583"> |</span><span style="color:#6F42C1;--shiki-dark:#B392F0">____views</span></span>
+<span class="line"></span></code></pre>
+<p>This may seem odd to the paragraph, dedicated to build tools, but let’s check how our tasks work.
+To do this, we need to write some test files to check our <code>build</code> task. So let’s create one of each kind:</p>
+<p><em><code>src/views/index.jade</code>:</em></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="pug"><code><span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">html</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">lang</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"en"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">head</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">    meta</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">charset</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"UTF-8"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">    title</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> OurStats</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">    link</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">rel</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"stylesheet"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> href</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"/stylesheets/main.css"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">    script</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"text/javascript"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> src</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"/javascripts/main.js"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">body</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">    h1</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Hello, world!</span></span>
+<span class="line"></span></code></pre>
+<p><em><code>src/stylesheets/main.scss</code>:</em></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="scss"><code><span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">h1</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    padding</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 10</span><span style="color:#D73A49;--shiki-dark:#F97583">px</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    border-bottom</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#D73A49;--shiki-dark:#F97583">px</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> solid</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> #dedede</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p><em><code>src/javascripts/main.js</code>:</em></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> timeout</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">ms</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  return</span><span style="color:#D73A49;--shiki-dark:#F97583"> new</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Promise</span><span style="color:#24292E;--shiki-dark:#E1E4E8">((</span><span style="color:#E36209;--shiki-dark:#FFAB70">res</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#6F42C1;--shiki-dark:#B392F0"> setTimeout</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(res, ms));</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">async</span><span style="color:#D73A49;--shiki-dark:#F97583"> function</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> f</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  console.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">log</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  await</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> timeout</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1000</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  console.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">log</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  await</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> timeout</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1000</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  console.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">log</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">3</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">f</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"></span></code></pre>
+<p><a href="https://github.com/shybovycha/two-sides-of-web-application/tree/10f770a5ca64fad1cb6e58bc957e5210bc95bda3" class="btn btn-info">Full code of these steps</a></p>
+<p>And to actually check our task, we need to run it with</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">gulp</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> build</span></span>
+<span class="line"></span></code></pre>
+<p>Now, you may open the HTML generated from Jade in a browser, but it’ll look ugly, because your
+browser will doubtfully find stylesheets and javascripts that easily. To make the magic happen, we
+will use another Gulp plugin, <code>gulp-server-livereload</code>. Generally, the development process with
+different build tools looks very similar nowadays: you set up the environment, find the plugins
+you need, install and configure them - and violà!</p>
+<p>I’ve chosen that server plugin because it comes with one handy feature: it automatically reloads
+the opened pages in your web-browser if any of the files you are browsing has changed. Here’s
+the code of our serving task:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">gulp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">task</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'serve'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> () {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    gulp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">src</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'public/'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pipe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">server</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            livereload: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            directoryListing: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">false</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            open: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }));</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">});</span></span>
+<span class="line"></span></code></pre>
+<p>But if you remember, we are compiling our sources from SCSS/Jade into the <code>public/</code> directory.
+So how the server would know if anything changed in our <code>*.scss</code> or <code>*.jade</code> files? We need to
+reload the page in web-browser if anything changes in those files. To do that, we’ll write one
+more task, which will re-build our source files if anything changes:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">gulp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">task</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'watch'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> () {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    gulp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">watch</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'src/**/*'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [ </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'build'</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ])</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">});</span></span>
+<span class="line"></span></code></pre>
+<p>Here we used two new features of Gulp: <em>watching for file changes</em> and <em>running existing tasks from another task</em>.
+Simple? Yeah, <strong>that</strong> simple! So we just tell Gulp: <em>keep an eye on those files - if anything happens - run
+those tasks immediately!</em> - and the magic happens.</p>
+<p>But why should we run two tasks? Let’s merge them into one so we just run <code>gulp serve</code> and get both live reload
+and live re-compilation:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">gulp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">task</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'serve'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> () {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    gulp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">watch</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'src/**/*'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [ </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'build'</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ])</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    gulp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">src</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'public/'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pipe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">server</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            port: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">3000</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            livereload: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            directoryListing: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">false</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            open: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }));</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">});</span></span>
+<span class="line"></span></code></pre>
+<p>This task first defines a watcher for our sources and then starts server, which will react to any changes
+in the <code>public/</code> directory. To check how this awesomeness works, start <code>gulp serve</code>, open the
+<a href="localhost:3000/test.html"><code>localhost:3000/test.html</code></a> page and then change, for example,
+color for the <code>h1</code> tag to green. Save the SCSS file and just switch to the browser window, <strong>don’t reload
+it manually</strong>.</p>
+<p><a href="https://github.com/shybovycha/two-sides-of-web-application/tree/07f6cda21da377719861f41f89064a414e808268" class="btn btn-info">Full code of these steps</a></p>  </div> </article> </main> <footer data-astro-cid-sz7xmlte>
+&copy; 2024 Your name here. All rights reserved.
+<div class="social-links" data-astro-cid-sz7xmlte> <a href="https://m.webtoo.ls/@astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Mastodon</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/mastodon" data-astro-cid-sz7xmlte><path fill="currentColor" d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://twitter.com/astrodotbuild" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Twitter</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/twitter" data-astro-cid-sz7xmlte><path fill="currentColor" d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://github.com/withastro/astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Go to Astro's GitHub repo</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/github" data-astro-cid-sz7xmlte><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" data-astro-cid-sz7xmlte></path></svg> </a> </div> </footer>  </body></html>

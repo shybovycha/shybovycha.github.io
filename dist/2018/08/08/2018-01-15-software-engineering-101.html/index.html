@@ -1,0 +1,729 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-bvzihdzo> <head><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.0.3"><!-- Font preloads --><link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin><!-- Canonical URL --><link rel="canonical" href="https://shybovycha.github.io/2018/08/08/2018-01-15-software-engineering-101.html/"><!-- Primary Meta Tags --><title>Software Engineering 101: how computer works</title><meta name="title" content="Software Engineering 101: how computer works"><meta name="description"><link rel="stylesheet" href="/_astro/index.BvFNhZYw.css">
+<style>footer[data-astro-cid-sz7xmlte]{padding:2em 1em 6em;background:linear-gradient(var(--gray-gradient)) no-repeat;color:rgb(var(--gray));text-align:center}.social-links[data-astro-cid-sz7xmlte]{display:flex;justify-content:center;gap:1em;margin-top:1em}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]{text-decoration:none;color:rgb(var(--gray))}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]:hover{color:rgb(var(--gray-dark))}main[data-astro-cid-bvzihdzo]{width:calc(100% - 2em);max-width:100%;margin:0}.hero-image[data-astro-cid-bvzihdzo]{width:100%}.hero-image[data-astro-cid-bvzihdzo] img[data-astro-cid-bvzihdzo]{display:block;margin:0 auto;border-radius:12px;box-shadow:var(--box-shadow)}.prose[data-astro-cid-bvzihdzo]{width:720px;max-width:calc(100% - 2em);margin:auto;padding:1em;color:rgb(var(--gray-dark))}.title[data-astro-cid-bvzihdzo]{margin-bottom:1em;padding:1em 0;text-align:center;line-height:1}.title[data-astro-cid-bvzihdzo] h1[data-astro-cid-bvzihdzo]{margin:0 0 .5em}.date[data-astro-cid-bvzihdzo]{margin-bottom:.5em;color:rgb(var(--gray))}.last-updated-on[data-astro-cid-bvzihdzo]{font-style:italic}
+[data-astro-image]{width:100%;height:auto;object-fit:var(--fit);object-position:var(--pos);aspect-ratio:var(--w) / var(--h)}[data-astro-image=responsive]{max-width:calc(var(--w) * 1px);max-height:calc(var(--h) * 1px)}[data-astro-image=fixed]{width:calc(var(--w) * 1px);height:calc(var(--h) * 1px)}
+</style></head> <body data-astro-cid-bvzihdzo> <nav class="top"> <div class="links"> <a class="nav-link nav-item" href="/">Home</a> <a class="nav-link nav-item" href="/about.html">About</a> </div> </nav> <main data-astro-cid-bvzihdzo> <article data-astro-cid-bvzihdzo> <div class="hero-image" data-astro-cid-bvzihdzo>  </div> <div class="prose" data-astro-cid-bvzihdzo> <div class="title" data-astro-cid-bvzihdzo> <div class="date" data-astro-cid-bvzihdzo> <time datetime="2018-08-08T10:20:00.000Z"> Aug 8, 2018 </time>  </div> <h1 data-astro-cid-bvzihdzo>Software Engineering 101: how computer works</h1> <hr data-astro-cid-bvzihdzo> </div>  <p>There is some bit of information about computers which I was never told in school or at the university.
+This writing is trying to cover these bits in details for those interested out there.</p>
+<h2 id="processors-guts">Processor’s guts</h2>
+<p>In essence, processor consists of these main blocks:</p>
+<ul>
+<li><strong>instruction decoder</strong>, which decodes the operation code (see below) and tells processor what it should do next</li>
+<li><strong>ALU</strong> <em>(arithmetical-logic unit)</em> - the device, which performs all the operations a processor is capable of - arithmetic <em>(addition, subtraction, multiplication)</em> and logical <em>(bitwise OR, AND, XOR, NOT; comparing numbers)</em></li>
+<li><strong>registers</strong> are the places, where processor takes the input data for each operation and stores the results of each operations</li>
+<li><strong>data bus</strong> - the place, which passes data to or from memory (RAM, peripheral devices and other types of memory)</li>
+<li><strong>address bus</strong> passes memory addresses between processor and memory (to be read from or written to)</li>
+</ul>
+<p>To best illustrate our examples, consider this much simplified processor model:</p>
+<img src="/images/software-engineering-101/simplified-processor-architecture.webp" loading="lazy" alt="">
+<p>It has only three registers, ALU and data/address buses. I will explain all the examples below in reference to this processor.</p>
+<h2 id="workflow">Workflow</h2>
+<p>Processor works <strong>discretely</strong>, meaning it executes commands at certain points in time <em>(as opposed to <strong>continuous</strong> work, where something works all the time)</em>. Those points in time are marked by <strong>clock signals</strong> <em>(or simply, clocks)</em>. Processor is connected to <em>(or has an internal one)</em> <strong>clock signal generator</strong>, which regularly tells processor to operate. <em>Operation</em> is nothing but a change of the internal processor’ state.</p>
+<p>So how does processor knows what to do next? On the first clock signal, CPU loads the command with the help of instruction decoder. On the next clock tick, processor starts executing an instruction <em>(or a command)</em> - it either copies data to / from registers or RAM, or involves ALU. On the next clock, processor increases the command counter by one and hence proceeds to the next instruction from the pool.</p>
+<p>In reality, this mechanism is somewhat more complex and involves more steps to just even read the command from the pool. And the pool itself is a unit on a processor chip as well and acts as another register. But to explain the processor operation, I’ve simplified that.</p>
+<p><em>Read more to where I explain how a program in Assembly language is transformed to ones and zeroes; show a sample processor instruction set and how a program in C could be compiled to that instruction set.</em></p>
+<!--more-->
+<h2 id="assembly-language">Assembly language</h2>
+<p>Each processor instruction is a chain of ones and zeros. Assume we have these commands processor can understand:</p>
+<ul>
+<li>adding the values in registers A and B and storing the sum in register C and the information about <em>possible</em> register overflow in register S <em>(this occurs when we do not have enough memory in register to store the result: say we have only 4 bits in each register, then what will the sum of <code>1111</code> and <code>0001</code>? <code>10000</code>, which takes <code>5</code> bits - more than we have in a register; we can then set the result to <code>10000 - 1111 == 0001</code> and proclaim “we have come over the size of register”)</em></li>
+<li>subtract the values in registers A and B and handling overflows the same way as in addition <em>(imagine subtracting 0001 - 0001 with only 4-bit-wide registers)</em></li>
+<li>multiply registers A and B</li>
+<li>divide registers A and B (A / B)</li>
+<li>perform bitwise operations AND, OR, NOT and XOR on registers A and B and store the value in register C</li>
+<li>set the value of a register (either A or B) to a specific constant value</li>
+<li>move a value from register C to either register A or register B</li>
+<li>load data from memory under the address specified to a specific register (A or B)</li>
+<li>save data from register A or B to a memory under the address specified</li>
+<li>compare the values in registers A and B and set the corresponding flag in register C <em>(whether the values are equal or A > B or B > A)</em></li>
+<li>go to a specific instruction of a program</li>
+<li>go to a specific instruction of a program, based on comparison flags in register C</li>
+</ul>
+<p>Let us name these commands:</p>
+<ol>
+<li><code>ADD</code> = A + B -> C</li>
+<li><code>SUB</code> = A - B -> C</li>
+<li><code>MUL</code> = A * B -> C</li>
+<li><code>DIV</code> = A / B -> C</li>
+<li><code>NOTA</code> = NOT A</li>
+<li><code>NOTB</code> = NOT B</li>
+<li><code>AND</code> = A AND B -> C</li>
+<li><code>OR</code> = A OR B -> C</li>
+<li><code>XOR</code> = A XOR B -> C</li>
+<li><code>SHR</code> = A >> B -> C (bitwise shift right)</li>
+<li><code>SHL</code> = A &#x3C;&#x3C; B -> C (bitwise shift left)</li>
+<li><code>MOV A, const</code> = const -> A</li>
+<li><code>MOV B, const</code> = const -> B</li>
+<li><code>MOV C, A</code> = C -> A</li>
+<li><code>MOV C, B</code> = C -> B</li>
+<li><code>MOV A, C</code> = A -> C</li>
+<li><code>MOV B, C</code> = B -> C</li>
+<li><code>LOAD addr, A</code> = memory[addr] -> A</li>
+<li><code>LOAD addr, B</code> = memory[addr] -> B</li>
+<li><code>LOADB</code> = memory[A] -> B</li>
+<li><code>SAVEB</code> = B -> memory[A]</li>
+<li><code>CMP</code> = A &#x3C;=> B -> C</li>
+<li><code>JMP line</code> = GOTO line</li>
+<li><code>JL line</code> = if A &#x3C; B (from comparison flags in C) then GOTO line</li>
+<li><code>JLE line</code> = if A &#x3C;= B then GOTO line</li>
+<li><code>JEQ line</code> = if A == B then GOTO line</li>
+<li><code>JNEQ line</code> = if A != B then GOTO line</li>
+<li><code>JGE line</code> = if A >= B then GOTO line</li>
+<li><code>JG line</code> = if A > B then GOTO line</li>
+<li><code>NOP</code> = do nothing</li>
+</ol>
+<p>This is a great subset of Assembly language commands! Just think about it: you can actually represent pretty much any program using only these 30 instructions! All the modern processors’ instructions are mostly optimized variations of the commands listed above.</p>
+<p>You can notice each command has its own number. We have fit all our commands in 25 numbers, which is great - in order to represent them in binary number we will only need 5 bits of data (<code>2^5 == 32; 32 > 30</code>). Now, commands have at maximum one argument. Let’s say it could be at maximum 8-bit number (both addresses and lines are numbers; and since processor can only operate numbers - constants are also only numbers; when you need to represent a number as a character or vice versa - just use its ASCII code). Hence we can define an <strong>operation code</strong> format:</p>
+<ol>
+<li>fixed-width number of 8 bits, containing instruction number</li>
+<li>optional 8-bit argument</li>
+</ol>
+<p>Assembly language is not invented separatedly from processor design, so assume all the integrated units and transistors inside our processor are aligned in a way so that when a processor receives our operation code - all of its components begin to operate immediately, according to the operation logic. In other words, processor is designed in a way which allows it to “understand” operation and its argument and set the results of its execution straight in place, when it arrives at processor’s inputs.</p>
+<p>Now let us describe the process of a program execution. The program will calculate the sum of some memory cells and store the result in a memory address:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> sum</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#D73A49;--shiki-dark:#F97583"> *</span><span style="color:#E36209;--shiki-dark:#FFAB70">a</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#E36209;--shiki-dark:#FFAB70"> n</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    int</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> i </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    int</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> result </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    while</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (i </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n) {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        result </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> result </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#E36209;--shiki-dark:#FFAB70"> a</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[i];</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        i </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> i </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> result;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>We now will represent this program in our simple Assembly language dialect. But first we need to design a few conventions, function call conventions. Our processor has a very limited number of registers, but is capable of operating a very big amount of RAM memory. This amount is actually determined by three factors:</p>
+<ol>
+<li>the size of an address bus, which determines the maximum memory address which can be represented using ones and zeros (and thus transferred to a processor via wires)</li>
+<li>the size of a data bus, which determines the maximum amount of data which can be sent to processor</li>
+<li>the capability of ALU, which determins the maximum amount of data which ALU can take in and give out</li>
+</ol>
+<p>So if the address bus has the size of 8 bits, processor is only capable of addressing <code>2^8 == 256</code> memory cells. But if both data bus and ALU are capable of transporting and operating 32 bits of data - then the amount of data we are able to process is <code>256 cells of 32 bit == 256 * 32 == 8192 bits == 8 MB</code>.</p>
+<p>Back to our function call convention, we need to determine how function arguments will be passed in and how the results will be passed out. The better question is not “how” but rather “where” - we have either three registers or memory cells to choose from. Thus we can either pass up to two arguments to a function or act more clever - assume the program’ memory starts at <code>0x0000</code> and has the following format:</p>
+<ul>
+<li><code>0x0000</code> - the number of program arguments</li>
+<li><code>0x0000 + ((n + 1) * 8)</code> - the <code>n-th</code> argument</li>
+</ul>
+<p>Then we need to determine how many arguments a function can take in and where to store the result of a function. Let us limit the amount of memory dedicated to function arguments to 10. Then we can determine the address of a function result: <code>0x0000 + ((10 + 1) * 8) == 0x0000 + 88 == 0x0058</code>. Everything beyond this address is treated as a program internal memory (used for storing intermediate data, variables, etc.).</p>
+<p>In order to define the <code>GOTO</code> operator better and not worry about line numbers we shall use labels (but only during composing programs - assume compiler will substitute them with the actual line number values). Labels will be used like this: <code>LABEL_NAME: &#x3C;instruction></code>.</p>
+<p>It would also be nice to be able to comment out some code. To comment the line (and thus do not take it into account when processing) we will use the semicolon symbol: <code>; comment</code>.</p>
+<p>Now that we have everything we need to componse a full program we can finally translate our <code>sum</code> function in C to our Assembly dialect:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">; program bootstrap:</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">; these 3 steps are done by the callee (operating system or other function)</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">; - load the number of arguments, 2, to memory[0x0000]</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">; - load the address `*a` to memory[0x0008]</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">; - load the value of `n` to memory[0x00F0]</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">; assumptions:</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">; - i &#x3C;=> memory[0x0058 + 8] == memory[0x0060]</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">; - result &#x3C;=> memory[0x0058] == memory[0x0058] - we can just use the defined-by-convention memory cell in-place</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">MOV</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> A, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0x0060</span><span style="color:#6A737D;--shiki-dark:#6A737D">        ; A = &#x26;i</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">MOV</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> B, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0x0000</span><span style="color:#6A737D;--shiki-dark:#6A737D">        ; B = 0</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">SAVEB                </span><span style="color:#6A737D;--shiki-dark:#6A737D">; move B -> memory[A] &#x3C;=> i = 0</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">MOV</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> A, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0x0058</span><span style="color:#6A737D;--shiki-dark:#6A737D">        ; A = &#x26;result</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">MOV</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> B, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0x0000</span><span style="color:#6A737D;--shiki-dark:#6A737D">        ; B = 0</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">SAVEB                </span><span style="color:#6A737D;--shiki-dark:#6A737D">; move B -> memory[A] &#x3C;=> result = 0</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">LOOP</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: LOAD A, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0x0060</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; i -> A</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">LOAD B, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0x00F0</span><span style="color:#6A737D;--shiki-dark:#6A737D">       ; n -> B</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">CMP</span><span style="color:#6A737D;--shiki-dark:#6A737D">                  ; A &#x3C;=> B => C</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">JGE</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> RETURN           </span><span style="color:#6A737D;--shiki-dark:#6A737D">; if i >= n then GOTO RETURN</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">LOAD B, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0x0060</span><span style="color:#6A737D;--shiki-dark:#6A737D">       ; B = i</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">MOV</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> A, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0x0004</span><span style="color:#6A737D;--shiki-dark:#6A737D">        ; A = 4</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">MUL</span><span style="color:#6A737D;--shiki-dark:#6A737D">                  ; C = A * B &#x3C;=> C = i * 4</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">MOV</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> C, A             </span><span style="color:#6A737D;--shiki-dark:#6A737D">; A = C &#x3C;=> A = i * 4</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">MOV</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> B, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0x0004</span><span style="color:#6A737D;--shiki-dark:#6A737D">        ; B = *a (the beginning of array `a`)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">ADD</span><span style="color:#6A737D;--shiki-dark:#6A737D">                  ; C = A + B &#x3C;=> C = &#x26;a + i * 4 == a[i]</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">MOV</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> C, A             </span><span style="color:#6A737D;--shiki-dark:#6A737D">; A = a[i]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">LOAD B, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0x0058</span><span style="color:#6A737D;--shiki-dark:#6A737D">       ; B = memory[0x0058] &#x3C;=> B = result</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">ADD</span><span style="color:#6A737D;--shiki-dark:#6A737D">                  ; C = A + B &#x3C;=> C = result + a[i]</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">MOV</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> C, B             </span><span style="color:#6A737D;--shiki-dark:#6A737D">; B = C</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">MOV</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> A, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0x0058</span><span style="color:#6A737D;--shiki-dark:#6A737D">        ; A = &#x26;result</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">SAVEB                </span><span style="color:#6A737D;--shiki-dark:#6A737D">; memory[0x0058] = B &#x3C;=> result = B &#x3C;=> result == result + a[i]</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">LOAD </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0x0060</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, B       </span><span style="color:#6A737D;--shiki-dark:#6A737D">; B = i</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">MOV</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> A, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0x0001</span><span style="color:#6A737D;--shiki-dark:#6A737D">        ; A = 1</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">ADD</span><span style="color:#6A737D;--shiki-dark:#6A737D">                  ; C = A + B &#x3C;=> C = i + 1</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">MOV</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> C, B             </span><span style="color:#6A737D;--shiki-dark:#6A737D">; B = C &#x3C;=> B = i + 1</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">MOV</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> A, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0x0060</span><span style="color:#6A737D;--shiki-dark:#6A737D">        ; A = &#x26;i</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">SAVEB                </span><span style="color:#6A737D;--shiki-dark:#6A737D">; memory[0x0060] = B &#x3C;=> i = B &#x3C;=> i = i + 1</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">JMP</span><span style="color:#D73A49;--shiki-dark:#F97583"> LOOP</span><span style="color:#6A737D;--shiki-dark:#6A737D">             ; GOTO LOOP</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">RETURN:</span><span style="color:#D73A49;--shiki-dark:#F97583"> NOP</span><span style="color:#6A737D;--shiki-dark:#6A737D">          ; program shutdown:</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">                     ; store the `result` value in memory[0x0058] - we operate on `result` through this address already, nothing to do here</span></span>
+<span class="line"></span></code></pre>
+<p>For processor to run this code it needs to be compiled to opcodes first. For example, the <code>MOV A, 0x0060</code> instruction will be converted (according to our convention) as:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>0000 1100    0110 0000</span></span>
+<span class="line"><span>~~~~~~~~~    ~~~~~~~~~</span></span>
+<span class="line"><span>    ^            ^</span></span>
+<span class="line"><span>    |            |</span></span>
+<span class="line"><span>    |    0x0060 -┘</span></span>
+<span class="line"><span>    |</span></span>
+<span class="line"><span>    └- MOV A, const</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>To quickly recap, here is our processor instruction list together with its opcodes:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>No.</th><th>Instruction</th><th>Operation code</th></tr></thead><tbody><tr><td>1</td><td><code>ADD</code></td><td><code>0000 0001 0000 0000</code></td></tr><tr><td>2</td><td><code>SUB</code></td><td><code>0000 0010 0000 0000</code></td></tr><tr><td>3</td><td><code>MUL</code></td><td><code>0000 0011 0000 0000</code></td></tr><tr><td>4</td><td><code>DIV</code></td><td><code>0000 0100 0000 0000</code></td></tr><tr><td>5</td><td><code>NOT A</code></td><td><code>0000 0101 0000 0000</code></td></tr><tr><td>6</td><td><code>NOT B</code></td><td><code>0000 0110 0000 0000</code></td></tr><tr><td>7</td><td><code>AND</code></td><td><code>0000 0111 0000 0000</code></td></tr><tr><td>8</td><td><code>OR</code></td><td><code>0000 1000 0000 0000</code></td></tr><tr><td>9</td><td><code>XOR</code></td><td><code>0000 1001 0000 0000</code></td></tr><tr><td>10</td><td><code>SHR</code></td><td><code>0000 1010 0000 0000</code></td></tr><tr><td>11</td><td><code>SHL</code></td><td><code>0000 1011 0000 0000</code></td></tr><tr><td>12</td><td><code>MOV A, const</code></td><td><code>0000 1100 xxxx xxxx</code></td></tr><tr><td>13</td><td><code>MOV B, const</code></td><td><code>0000 1101 xxxx xxxx</code></td></tr><tr><td>14</td><td><code>MOV C, A</code></td><td><code>0000 1110 0000 0000</code></td></tr><tr><td>15</td><td><code>MOV C, B</code></td><td><code>0000 1111 0000 0000</code></td></tr><tr><td>16</td><td><code>MOV A, C</code></td><td><code>0001 0000 0000 0000</code></td></tr><tr><td>17</td><td><code>MOV B, C</code></td><td><code>0001 0001 0000 0000</code></td></tr><tr><td>18</td><td><code>LOAD A, addr</code></td><td><code>0001 0010 xxxx xxxx</code></td></tr><tr><td>19</td><td><code>LOAD B, addr</code></td><td><code>0001 0011 xxxx xxxx</code></td></tr><tr><td>20</td><td><code>LOADB</code></td><td><code>0001 0100 0000 0000</code></td></tr><tr><td>21</td><td><code>SAVEB</code></td><td><code>0001 0101 0000 0000</code></td></tr><tr><td>22</td><td><code>CMP</code></td><td><code>0001 0110 0000 0000</code></td></tr><tr><td>23</td><td><code>JMP line</code></td><td><code>0001 0111 xxxx xxxx</code></td></tr><tr><td>24</td><td><code>JLE line</code></td><td><code>0001 1000 xxxx xxxx</code></td></tr><tr><td>25</td><td><code>JL line</code></td><td><code>0001 1001 xxxx xxxx</code></td></tr><tr><td>26</td><td><code>JEQ line</code></td><td><code>0001 1010 xxxx xxxx</code></td></tr><tr><td>27</td><td><code>JNEQ line</code></td><td><code>0001 1011 xxxx xxxx</code></td></tr><tr><td>28</td><td><code>JGE line</code></td><td><code>0001 1100 xxxx xxxx</code></td></tr><tr><td>29</td><td><code>JG line</code></td><td><code>0001 1101 xxxx xxxx</code></td></tr><tr><td>30</td><td><code>NOP</code></td><td><code>0001 1110 0000 0000</code></td></tr></tbody></table>
+<p>We will also need to extract only effective lines from our code and number each line (in order to operate with JMP-like instructions). And then all we need to do - is to substitute the commands in the source code with the ones from a table above and replace all those <code>xxxx xxxx</code> values (which stand for 8 bits of instruction’ argument):</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Line no.</th><th>Code</th><th>Instruction code</th><th>Argument</th><th>Argument (binary)</th><th>Instruction + argument</th></tr></thead><tbody><tr><td>0</td><td><code>MOV A, 0x0060</code></td><td><code>0000 1100 xxxx xxxx</code></td><td><code>0x0060</code></td><td><code>0110 0000</code></td><td><code>0000 1100 0110 0000</code></td></tr><tr><td>1</td><td><code>MOV B, 0x0000</code></td><td><code>0000 1101 xxxx xxxx</code></td><td><code>0x0000</code></td><td><code>0000 0000</code></td><td><code>0000 1101 0000 0000</code></td></tr><tr><td>2</td><td><code>SAVEB</code></td><td><code>0001 0101 0000 0000</code></td><td></td><td></td><td><code>0001 0101 0000 0000</code></td></tr><tr><td>3</td><td><code>MOV A, 0x0058</code></td><td><code>0000 1100 xxxx xxxx</code></td><td><code>0x0058</code></td><td><code>0101 1000</code></td><td><code>0000 1100 0101 1000</code></td></tr><tr><td>4</td><td><code>MOV B, 0x0000</code></td><td><code>0000 1101 xxxx xxxx</code></td><td><code>0x0000</code></td><td><code>0000 0000</code></td><td><code>0000 1101 0000 0000</code></td></tr><tr><td>5</td><td><code>SAVEB</code></td><td><code>0001 0101 0000 0000</code></td><td></td><td></td><td><code>0001 0101 0000 0000</code></td></tr><tr><td>6</td><td><code>LOOP: LOAD A, 0x0060</code></td><td><code>0001 0010 xxxx xxxx</code></td><td><code>0x0060</code></td><td><code>0110 0000</code></td><td><code>0001 0010 0110 0000</code></td></tr><tr><td>7</td><td><code>LOAD B, 0x00F0</code></td><td><code>0001 0011 xxxx xxxx</code></td><td><code>0x00F0</code></td><td><code>1111 0000</code></td><td><code>0001 0011 1111 0000</code></td></tr><tr><td>8</td><td><code>CMP</code></td><td><code>0001 0110 0000 0000</code></td><td></td><td></td><td><code>0001 0110 0000 0000</code></td></tr><tr><td>9</td><td><code>JGE RETURN</code></td><td><code>0001 1100 xxxx xxxx</code></td><td><code>29</code></td><td><code>0001 1101</code></td><td><code>0001 1100 0001 1101</code></td></tr><tr><td>10</td><td><code>LOAD B, 0x0060</code></td><td><code>0001 0011 xxxx xxxx</code></td><td><code>0x0060</code></td><td><code>0110 0000</code></td><td><code>0001 0011 0110 0000</code></td></tr><tr><td>11</td><td><code>MOV A, 0x0004</code></td><td><code>0000 1100 xxxx xxxx</code></td><td><code>0x0004</code></td><td><code>0000 0100</code></td><td><code>0000 1100 0000 0100</code></td></tr><tr><td>12</td><td><code>MUL</code></td><td><code>0000 0011 0000 0000</code></td><td></td><td></td><td><code>0000 0011 0000 0000</code></td></tr><tr><td>13</td><td><code>MOV C, A</code></td><td><code>0000 1110 0000 0000</code></td><td></td><td></td><td><code>0000 1110 0000 0000</code></td></tr><tr><td>14</td><td><code>MOV B, 0x0004</code></td><td><code>0000 1101 xxxx xxxx</code></td><td><code>0x0004</code></td><td><code>0000 0100</code></td><td><code>0000 1101 0000 0100</code></td></tr><tr><td>15</td><td><code>ADD</code></td><td><code>0000 0001 0000 0000</code></td><td></td><td></td><td><code>0000 0001 0000 0000</code></td></tr><tr><td>16</td><td><code>MOV C, A</code></td><td><code>0000 1110 0000 0000</code></td><td></td><td></td><td><code>0000 1110 0000 0000</code></td></tr><tr><td>17</td><td><code>LOAD B, 0x0058</code></td><td><code>0001 0011 xxxx xxxx</code></td><td><code>0x0058</code></td><td><code>0101 1000</code></td><td><code>0001 0011 0101 1000</code></td></tr><tr><td>18</td><td><code>ADD</code></td><td><code>0000 0001 0000 0000</code></td><td></td><td></td><td><code>0000 0001 0000 0000</code></td></tr><tr><td>19</td><td><code>MOV C, B</code></td><td><code>0000 1111 0000 0000</code></td><td></td><td></td><td><code>0000 1111 0000 0000</code></td></tr><tr><td>20</td><td><code>MOV A, 0x0058</code></td><td><code>0000 1100 xxxx xxxx</code></td><td><code>0x0058</code></td><td><code>0101 1000</code></td><td><code>0000 1100 0101 1000</code></td></tr><tr><td>21</td><td><code>SAVEB</code></td><td><code>0001 0101 0000 0000</code></td><td></td><td></td><td><code>0001 0101 0000 0000</code></td></tr><tr><td>22</td><td><code>LOAD B, 0x0060</code></td><td><code>0001 0011 xxxx xxxx</code></td><td><code>0x0060</code></td><td><code>0110 0000</code></td><td><code>0001 0011 0110 0000</code></td></tr><tr><td>23</td><td><code>MOV A, 0x0001</code></td><td><code>0000 1100 xxxx xxxx</code></td><td><code>0x0001</code></td><td><code>0000 0001</code></td><td><code>0000 1100 0000 0001</code></td></tr><tr><td>24</td><td><code>ADD</code></td><td><code>0000 0001 0000 0000</code></td><td></td><td></td><td><code>0000 0001 0000 0000</code></td></tr><tr><td>25</td><td><code>MOV C, B</code></td><td><code>0000 1111 0000 0000</code></td><td></td><td></td><td><code>0000 1111 0000 0000</code></td></tr><tr><td>26</td><td><code>MOV A, 0x0060</code></td><td><code>0000 1100 xxxx xxxx</code></td><td><code>0x0060</code></td><td><code>0110 0000</code></td><td><code>0000 1100 0110 0000</code></td></tr><tr><td>27</td><td><code>SAVEB</code></td><td><code>0001 0101 0000 0000</code></td><td></td><td></td><td><code>0001 0101 0000 0000</code></td></tr><tr><td>28</td><td><code>JMP LOOP</code></td><td><code>0001 0111 xxxx xxxx</code></td><td><code>6</code></td><td><code>0000 0110</code></td><td><code>0001 0111 0000 0110</code></td></tr><tr><td>29</td><td><code>RETURN: NOP</code></td><td><code>0001 1110 0000 0000</code></td><td></td><td></td><td><code>0001 1110 0000 0000</code></td></tr></tbody></table>
+<p>We have just did the same job a compiler does for us when we write code in a high-level language like C. You can see the code is verbose, what is caused by us and the limitations / conventions we have agreed on. But we can extend either the assembly language by adding new instructions, which will simplify writing programs or by extending the processor architecture by introducing stack and increasing the power of ALU etc. For instance, we could have changed the moving data between memory and registers and thus reduce the amount of both registers needed to do that and the amount of commands needed for the operation:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">MOV</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> A, addr</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">MOV</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> B, value</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">SAVEB</span></span>
+<span class="line"></span></code></pre>
+<p>could become</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">MOV</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> B, [addr]</span></span>
+<span class="line"></span></code></pre>
+<p>Or we could have agreed on opcode size and skip the 8 bits of data for instructions without arguments and thus reduce the size of compiled programs.</p>
+<h2 id="processing-programs">Processing programs</h2>
+<p>What happens when we run a program on our PC? There is a little bit of magic which must happen first. You run a program
+(most of the time) from an operating system. And this operating system needs to perform some actions
+before it can send your program’s commands straight to a processor - reserve some memory, make scheduling…
+And since most operating systems are meant to be multi-tasked (allow multiple programs to run simultaneously),
+OS can not allow your program to just send all of its commands to a processor, one by one - if your program is faulty then
+any other program might have never been executed again, even the OS itself! That’s why operating system decides
+when to send the next command to a processor to execute it. This also allows for optimizations on multi-core
+and multi-processor systems - when two operations could be executed simultaneously, whithout overwriting memory used
+by another one - it can be run on a different core or processor to speed up the execution.</p>
+<p>That’s why our program will not contain programmer-defined commands only. Let’s have a look at the
+standard Windows executable file (PE32) structure:</p>
+<img src="/images/functional-programming-in-a-real-world/pe32-diagram.webp" loading="lazy" alt="">
+<p>You can see it has lots of <em>headers</em>, which describe different aspects of a program and
+two major <em>sections</em> - <strong>text</strong> (containing the code itself) and <strong>data</strong> (containing all
+the constant definitions and allocations). Each executable can also contain resources like images,
+sounds and others - if needed.</p>
+<p>We all know how to write a program in, say, C. But how a program in C (or any other language) is “understood”
+(and thus, executed) by a processor? One may have heard of Assembly language. This is a low-level programming
+language (in opposite to C, which is a high-level programming language). <em>“Low-level”</em> means that a programmer
+writes instructions for the processor in the order processor will pick them up and execute, one by one, exactly as
+they are set in a program, ommiting syntactic sugar constructions like loops, if-then-else operators and so on.
+Usually in such programming languages programmers operate memory addresses and numbers only.
+On the other hand, <em>high-level</em> programs, containing all the syntactic sugar features, are first translated
+to something processor can “understand” and execute - processors commands (instructions). The program is also being
+in terms of removing unused and unreacheable code, replacing expressions which can be pre-calculated into the results
+of pre-calculation (like the expression <code>x * 2 * 32</code> could be simply written as <code>x * 64</code> or <code>x &#x3C;&#x3C; 4</code>, which most
+of the compilers will do by default because of performance reasons - binary shift operation is way more faster than
+multiplication; but for programmer it might be required to stay explicit in order to highlight some calculations or
+just to stay clear for other programmers).</p>
+<p>Let us have a look at how programs are compiled. Consider this program in C:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> product</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#E36209;--shiki-dark:#FFAB70"> a</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#E36209;--shiki-dark:#FFAB70"> b</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> a </span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> b;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>It will be compiled into this assembly code:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">product(</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">):</span><span style="color:#6A737D;--shiki-dark:#6A737D"> # @product(int, int)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  imul</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> edi</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">esi</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> eax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">edi</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  ret</span></span>
+<span class="line"></span></code></pre>
+<p>Looks simple, huh?</p>
+<p>In essence, each line of a program in assembly language looks like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">label:</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> command operand1, operand2</span><span style="color:#6A737D;--shiki-dark:#6A737D"> # comment</span></span>
+<span class="line"></span></code></pre>
+<p>Both label, operands and comment are optional with the exception that operands requirements
+depend on command.</p>
+<p>Operands could be either numbers, registers (refer to processor registers) or memory addresses.</p>
+<p>Registers represent cells in processor memory, those are very limited in number and size, but are directly
+accessed by processor and thus are very, very fast. There are eight general-purpose registers, common for
+majority of processors: AX, BX, CX, DX, SP, BP, SI, DI. There are other registers, but we will cover them later.
+Each command will store its result in one of
+these registers. These registers have size of one word (2 bytes, 16 bits). Each register has “lower byte” and,
+correspondingly, “higher byte” - for AX they are AL (low) and AH (high), representing first and last 8 bits of
+a register. These registers are available for all 16-bit processors. More modern 32-bit processors have extended
+versions of each register, for AX it is EAX, for CX its ECX and so on. They are twice as big as their non-extended
+versions (32 bit, 2 words). Nowadays 64-bit systems have extended versions of extended registers, having 4 words
+and precended with letter R: RAX, RBX and so on. There are also 16 registers worth 128 bit each, XMM0 .. XMM15.</p>
+<p>Addressing memory refers to the computer’s RAM; in order to operate with RAM processor first copies the
+data from RAM to its registers and then performs operation on data in registers. Processor is unable
+to operate with RAM data directly. You can see clearly such operations require additional actions
+from processor, namely - copy data from RAM to registers before executing operation and copy the data
+back to RAM after the operation execution (usually this step is stated separatedly by a programmer).
+This is time-consuming. And since RAM is not that fast as processor’s registers, it makes operations slow.
+Memory is addressed using one of these syntaxes:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">[address] </span><span style="color:#6A737D;--shiki-dark:#6A737D">; [0x12345]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">[register] </span><span style="color:#6A737D;--shiki-dark:#6A737D">; [RAX] - takes address, contained in register RAX</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">[register + number] </span><span style="color:#6A737D;--shiki-dark:#6A737D">; [RAX + 2]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">[register + register * number] </span><span style="color:#6A737D;--shiki-dark:#6A737D">; [RAX + RBX * 3]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">[register + register * number + number] </span><span style="color:#6A737D;--shiki-dark:#6A737D">; [RBX + EAX * 4 + 3]</span></span>
+<span class="line"></span></code></pre>
+<p>You can also do more tricky thing: define a named constant - give a literal name to a number and then refer
+to a value by its name. But first you need to reserve a memory for it:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">constant_name:</span><span style="color:#D73A49;--shiki-dark:#F97583"> db</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0x123</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; define one byte value (0x123) and give it a name "constant_name"</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">constant2:</span><span style="color:#D73A49;--shiki-dark:#F97583"> dw</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 'ab' </span><span style="color:#6A737D;--shiki-dark:#6A737D">; define one word (two bytes) of values 0x61 and 0x62, correspondingly</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">const3:</span><span style="color:#D73A49;--shiki-dark:#F97583"> dd</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 'abcd' </span><span style="color:#6A737D;--shiki-dark:#6A737D">; define double-word (four bytes)</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">const4:</span><span style="color:#D73A49;--shiki-dark:#F97583"> dq</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0x123456789abcdef0</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; 8-byte wide constant</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">const5:</span><span style="color:#D73A49;--shiki-dark:#F97583"> dq</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1.234567e20</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; double-precision constant</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">const6:</span><span style="color:#D73A49;--shiki-dark:#F97583"> dt</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1.234567e20</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; extended-precision constant</span></span>
+<span class="line"></span></code></pre>
+<p>Note I’m constantly mentioning numbers, but never characters or strings. That’s because eventually all this
+data is just a number (character code or a pointer to a memory - effectively, an address of a memory). And
+processor can only operate on numbers, nothing else. Compiler will convert all these characters and floating-point
+values to hexadecimal integer values anyway.</p>
+<p>You can also reserve a bunch of memory cells using <code>res</code> command:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">const1:</span><span style="color:#D73A49;--shiki-dark:#F97583"> resb</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 2</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; reserve 2 bytes</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">const2:</span><span style="color:#D73A49;--shiki-dark:#F97583"> resw</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 16</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; reserve 16 words</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">const3:</span><span style="color:#D73A49;--shiki-dark:#F97583"> resq</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 7</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; reserve seven 8-byte cells</span></span>
+<span class="line"></span></code></pre>
+<p>This way each constant will point to the first of the reserved array’ cells in RAM.</p>
+<p>Let’s take a look at our example again:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> product</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#E36209;--shiki-dark:#FFAB70"> a</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#E36209;--shiki-dark:#FFAB70"> b</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> a </span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> b;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>Its assembly code is:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">product(</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">):</span><span style="color:#6A737D;--shiki-dark:#6A737D"> # @product(int, int)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  imul</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> edi</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">esi</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> eax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">edi</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  ret</span></span>
+<span class="line"></span></code></pre>
+<p>This program has exactly three effective lines:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">imul</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> edi</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">esi</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; multiply the data in two registers, EDI and ESI and store the result of multiplication in EAX register</span></span>
+<span class="line"></span></code></pre>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> eax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">edi</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; copy the data from EAX to EDI</span></span>
+<span class="line"></span></code></pre>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">ret</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; restore pointer to the currently running command and the values in registers from stack</span></span>
+<span class="line"></span></code></pre>
+<p>See, assembly is still a somewhat high-level language - one command does a little bit of “magic” like
+storing the result somewhere, or restoring the processor state (<code>ret</code>) or storing its state and moving to the
+different command or sub-routing or function (<code>call</code>). Each processor has its own set of commands, which might
+be more optimized for this particular processor. That’s why it is really hard to get each program run best
+on all possible computers when distributing it. But the “basic set” of commands is quite common for majority
+of processors and you can be quite confident about them.</p>
+<p>So after the program is written in Assembly (which is the lowest reasonable language we can more or less easily
+write code in) it is compiled into… something… <em>Binary code</em> is what you might have been thinking of.
+And you are totally correct - programs are essentially just a set of ones and zeros. But more interesting question
+is how a computer executes them?</p>
+<p>If we compile our function into binary file - we will get each Assembly command translated into a long
+hexadecimal (or binary - if you split a long list of ones and zeros into chunks of 16 digits - you will be able to
+write them down as one character, which is much more compach, right?) value, describing the opcode of a command
+and its arguments. Each Assembly command has its own code, just like character in a string. And each register has
+its own code too. Combine them - and you will get a long number. Convert it to binary - and you will get a line of
+machine codes.</p>
+<p>Processor then reads the operation code and acts exactly as it says - if it would be <code>imul RAX, RBX</code> - processor
+will do just exactly as it says - multiply the value in register <code>RAX</code> by the value in register <code>RBX</code> and then
+save the result in register <code>RAX</code>. To explain how processor actually multiplies values from registers and stores
+them - we need to go one level lower - and get familiar with how processor does that on the electonics level.
+But we won’t do that. Instead, we will just scratch the surface by describing how <em>fast</em> those operations could be.</p>
+<p>You might have heard about <em>processor’s frequency</em> or <em>clock rate</em>. This is a number, showing how frequently an
+electronic impulse is sent over all the processor’s schematic to enforce its state update. Effectively, what it means is each processor operation like multiplication, addition, subtraction, moving the data around and others, need to change the state of different electronic components, mainly - triggers and transistors. When talking about addition of two registers, for example, processor will need to calculate the sum of each bit pair in registers given, handling overflows, different register lengths and clearing the state of the resutl register beforehand. Some processors are designed to do that in one cycle, but mainly addition will be done in several <em>clocks</em>. Hence a processor with a clock rate of 1 GHz <strong>will not</strong> make 1 billion additions, subtractions, multiplications or other operations per second. For a reference, here is a diagram, showing how many clocks does each operation takes in average</p>
+<p>Remember I have mentioned optimization a while ago? Here’s a sample table of how many clocks do some processor
+instructions take (in average):</p>
+<img src="/images/functional-programming-in-a-real-world/cpu-operations-cost.webp" loading="lazy" alt="">
+<p>With this knowledge we can easily talk about more high-level things.</p>
+<p><em>Based on <a href="https://computer.howstuffworks.com/microprocessor2.htm">How stuff works</a></em></p>  </div> </article> </main> <footer data-astro-cid-sz7xmlte>
+&copy; 2024 Your name here. All rights reserved.
+<div class="social-links" data-astro-cid-sz7xmlte> <a href="https://m.webtoo.ls/@astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Mastodon</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/mastodon" data-astro-cid-sz7xmlte><path fill="currentColor" d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://twitter.com/astrodotbuild" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Twitter</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/twitter" data-astro-cid-sz7xmlte><path fill="currentColor" d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://github.com/withastro/astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Go to Astro's GitHub repo</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/github" data-astro-cid-sz7xmlte><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" data-astro-cid-sz7xmlte></path></svg> </a> </div> </footer>  </body></html>

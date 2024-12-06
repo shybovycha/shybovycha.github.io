@@ -1,0 +1,792 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-bvzihdzo> <head><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.0.3"><!-- Font preloads --><link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin><!-- Canonical URL --><link rel="canonical" href="https://shybovycha.github.io/2021/04/19/2021-04-19-experiment-2-purescript.html/"><!-- Primary Meta Tags --><title>Strongly-typed front-end: experiment 2, simple application, in PureScript</title><meta name="title" content="Strongly-typed front-end: experiment 2, simple application, in PureScript"><meta name="description"><link rel="stylesheet" href="/_astro/index.BvFNhZYw.css">
+<style>footer[data-astro-cid-sz7xmlte]{padding:2em 1em 6em;background:linear-gradient(var(--gray-gradient)) no-repeat;color:rgb(var(--gray));text-align:center}.social-links[data-astro-cid-sz7xmlte]{display:flex;justify-content:center;gap:1em;margin-top:1em}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]{text-decoration:none;color:rgb(var(--gray))}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]:hover{color:rgb(var(--gray-dark))}main[data-astro-cid-bvzihdzo]{width:calc(100% - 2em);max-width:100%;margin:0}.hero-image[data-astro-cid-bvzihdzo]{width:100%}.hero-image[data-astro-cid-bvzihdzo] img[data-astro-cid-bvzihdzo]{display:block;margin:0 auto;border-radius:12px;box-shadow:var(--box-shadow)}.prose[data-astro-cid-bvzihdzo]{width:720px;max-width:calc(100% - 2em);margin:auto;padding:1em;color:rgb(var(--gray-dark))}.title[data-astro-cid-bvzihdzo]{margin-bottom:1em;padding:1em 0;text-align:center;line-height:1}.title[data-astro-cid-bvzihdzo] h1[data-astro-cid-bvzihdzo]{margin:0 0 .5em}.date[data-astro-cid-bvzihdzo]{margin-bottom:.5em;color:rgb(var(--gray))}.last-updated-on[data-astro-cid-bvzihdzo]{font-style:italic}
+[data-astro-image]{width:100%;height:auto;object-fit:var(--fit);object-position:var(--pos);aspect-ratio:var(--w) / var(--h)}[data-astro-image=responsive]{max-width:calc(var(--w) * 1px);max-height:calc(var(--h) * 1px)}[data-astro-image=fixed]{width:calc(var(--w) * 1px);height:calc(var(--h) * 1px)}
+</style></head> <body data-astro-cid-bvzihdzo> <nav class="top"> <div class="links"> <a class="nav-link nav-item" href="/">Home</a> <a class="nav-link nav-item" href="/about.html">About</a> </div> </nav> <main data-astro-cid-bvzihdzo> <article data-astro-cid-bvzihdzo> <div class="hero-image" data-astro-cid-bvzihdzo>  </div> <div class="prose" data-astro-cid-bvzihdzo> <div class="title" data-astro-cid-bvzihdzo> <div class="date" data-astro-cid-bvzihdzo> <time datetime="2021-04-19T00:47:48.000Z"> Apr 19, 2021 </time>  </div> <h1 data-astro-cid-bvzihdzo>Strongly-typed front-end: experiment 2, simple application, in PureScript</h1> <hr data-astro-cid-bvzihdzo> </div>  <h3 id="contents">Contents</h3>
+<ol>
+<li><a href="/strongly-typed-front-end/2021/04/19/introduction.html">Introduction</a></li>
+<li><a href="/strongly-typed-front-end/experiment-1/2021/04/19/experiment-1.html">Experiment 1, darken_color</a></li>
+<li>Experiment 2, simple application
+<ul>
+<li><a href="/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-elm.html">Elm</a></li>
+<li><a href="/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-fsharp.html">F#</a></li>
+<li><a href="/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-purescript.html"><strong>PureScript &#x26; purescript-react-dom (you are here)</strong></a></li>
+<li><a href="/strongly-typed-front-end/experiment-2/2024/05/17/experiment-2-purescript-halogen.html">PureScript &#x26; Halogen</a></li>
+<li><a href="/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-reasonml.html">ReasonML</a></li>
+</ul>
+</li>
+</ol>
+<p>In PureScript world there are quite a few libraries for React. And all of them have terrible (or rather non-existent) documentation, so I had to use as much intuition as outdated and barely working code samples. In this case I have picked <a href="https://pursuit.purescript.org/packages/purescript-react-dom/8.0.0">purescript-react-dom</a>.</p>
+<p>Initial application structure:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="purescript"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">module</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Main</span><span style="color:#D73A49;--shiki-dark:#F97583"> where</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Prelude</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Control.Monad.Eff</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Data.Maybe</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Data.Maybe.Unsafe</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">fromJust</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Data.Nullable</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">toMaybe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Effect</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">Effect</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Effect.Console</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">log</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> DOM</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">DOM</span><span style="color:#24292E;--shiki-dark:#E1E4E8">())</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> DOM.HTML</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">window</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> DOM.HTML.Document</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">body</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> DOM.HTML.Types</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">htmlElementToElement</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> DOM.HTML.Window</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">document</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> DOM.Node.Types</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">Element</span><span style="color:#24292E;--shiki-dark:#E1E4E8">())</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> React</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> React.DOM</span><span style="color:#D73A49;--shiki-dark:#F97583"> as</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> DOM</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> React.DOM.Props</span><span style="color:#D73A49;--shiki-dark:#F97583"> as</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Props</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">type</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Shape</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Circle</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> | </span><span style="color:#6F42C1;--shiki-dark:#B392F0">Square</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">calculateArea</span><span style="color:#D73A49;--shiki-dark:#F97583"> ::</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Maybe</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Shape</span><span style="color:#D73A49;--shiki-dark:#F97583"> -></span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Float</span><span style="color:#D73A49;--shiki-dark:#F97583"> -></span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Float</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">calculateArea </span><span style="color:#22863A;--shiki-dark:#85E89D">Nothing</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> _ </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">calculateArea (</span><span style="color:#22863A;--shiki-dark:#85E89D">Just</span><span style="color:#22863A;--shiki-dark:#85E89D"> Circle</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) value </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> pi </span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> value </span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> value</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">calculateArea (</span><span style="color:#22863A;--shiki-dark:#85E89D">Just</span><span style="color:#22863A;--shiki-dark:#85E89D"> Square</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) value </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> value </span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> value</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">getShape</span><span style="color:#D73A49;--shiki-dark:#F97583"> ::</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> String</span><span style="color:#D73A49;--shiki-dark:#F97583"> -></span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Maybe</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Shape</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">getShape </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"circle"</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#22863A;--shiki-dark:#85E89D"> Just</span><span style="color:#22863A;--shiki-dark:#85E89D"> Circle</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">getShape </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"square"</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#22863A;--shiki-dark:#85E89D"> Just</span><span style="color:#22863A;--shiki-dark:#85E89D"> Square</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">getShape _ </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#22863A;--shiki-dark:#85E89D"> Nothing</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">onShapeChanged ctx evt </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> do</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  writeState ctx { shape</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> getShape ((unsafeCoerce evt)</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">target</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">value) }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">onCalculateAreaClicked ctx evt </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> do</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  { shape, value } </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> readState ctx</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  writeState ctx { area</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> calculateArea shape value }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">areaCalculator </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> createClass </span><span style="color:#D73A49;--shiki-dark:#F97583">$</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> spec { shape</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#22863A;--shiki-dark:#85E89D"> Nothing</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, value</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, area</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> } </span><span style="color:#D73A49;--shiki-dark:#F97583">\</span><span style="color:#24292E;--shiki-dark:#E1E4E8">ctx </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span><span style="color:#D73A49;--shiki-dark:#F97583"> do</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  { shape, value, area } </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> readState ctx</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  return </span><span style="color:#D73A49;--shiki-dark:#F97583">$</span><span style="color:#22863A;--shiki-dark:#85E89D"> DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">div [] [</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">    DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">div [] [</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">      DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">select [ </span><span style="color:#22863A;--shiki-dark:#85E89D">Props</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">onChange (onShapeChanged ctx) ] [</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">          DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">option [ </span><span style="color:#22863A;--shiki-dark:#85E89D">Props</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">value </span><span style="color:#032F62;--shiki-dark:#9ECBFF">""</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] [ </span><span style="color:#22863A;--shiki-dark:#85E89D">DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">text </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Select shape"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ],</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">          DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">option [ </span><span style="color:#22863A;--shiki-dark:#85E89D">Props</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">value </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"circle"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] [ </span><span style="color:#22863A;--shiki-dark:#85E89D">DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">text </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Circle"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ],</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">          DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">option [ </span><span style="color:#22863A;--shiki-dark:#85E89D">Props</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">value </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"square"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] [ </span><span style="color:#22863A;--shiki-dark:#85E89D">DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">text </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Square"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      ],</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">      DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">input [ </span><span style="color:#22863A;--shiki-dark:#85E89D">Props</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">value (show value) ] [],</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">      DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">button [ </span><span style="color:#22863A;--shiki-dark:#85E89D">Props</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">onClick (onCalculateAreaClicked ctx) ] [ </span><span style="color:#22863A;--shiki-dark:#85E89D">DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">text </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Calculate area"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    ],</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">    DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">div [] [</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">      DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">text (</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Area: "</span><span style="color:#D73A49;--shiki-dark:#F97583"> ++</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (show area))</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    ]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    ]</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">main </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> container </span><span style="color:#D73A49;--shiki-dark:#F97583">>>=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> render ui</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  where</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  ui</span><span style="color:#D73A49;--shiki-dark:#F97583"> ::</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> ReactElement</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  ui </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> createFactory areaCalculator {}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  container</span><span style="color:#D73A49;--shiki-dark:#F97583"> ::</span><span style="color:#D73A49;--shiki-dark:#F97583"> forall</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> eff. </span><span style="color:#6F42C1;--shiki-dark:#B392F0">Eff</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (dom </span><span style="color:#D73A49;--shiki-dark:#F97583">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> DOM</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> | eff) </span><span style="color:#6F42C1;--shiki-dark:#B392F0">Element</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  container </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> do</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    win </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> window</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    doc </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> document win</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    elt </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> fromJust </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;$></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> toMaybe </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;$></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> body doc</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    return </span><span style="color:#D73A49;--shiki-dark:#F97583">$</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> htmlElementToElement elt</span></span>
+<span class="line"></span></code></pre>
+<!--more-->
+<p>Immediately the flaws of the infrastructure come out:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>$ spago build                                                                                                                                                                                                                                           1 ↵</span></span>
+<span class="line"><span>Error 1 of 8:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  in module Main</span></span>
+<span class="line"><span>  at src/Main.purs:5:1 - 5:25 (line 5, column 1 - line 5, column 25)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    Module Control.Monad.Eff was not found.</span></span>
+<span class="line"><span>    Make sure the source file exists, and that it has been provided as an input to the compiler.</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  See https://github.com/purescript/documentation/blob/master/errors/ModuleNotFound.md for more information,</span></span>
+<span class="line"><span>  or to contribute content related to this error.</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Error 2 of 8:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  in module Main</span></span>
+<span class="line"><span>  at src/Main.purs:8:1 - 8:36 (line 8, column 1 - line 8, column 36)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    Module Data.Maybe.Unsafe was not found.</span></span>
+<span class="line"><span>    Make sure the source file exists, and that it has been provided as an input to the compiler.</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  See https://github.com/purescript/documentation/blob/master/errors/ModuleNotFound.md for more information,</span></span>
+<span class="line"><span>  or to contribute content related to this error.</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Error 3 of 8:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  in module Main</span></span>
+<span class="line"><span>  at src/Main.purs:14:1 - 14:19 (line 14, column 1 - line 14, column 19)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    Module DOM was not found.</span></span>
+<span class="line"><span>    Make sure the source file exists, and that it has been provided as an input to the compiler.</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  See https://github.com/purescript/documentation/blob/master/errors/ModuleNotFound.md for more information,</span></span>
+<span class="line"><span>  or to contribute content related to this error.</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Error 4 of 8:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  in module Main</span></span>
+<span class="line"><span>  at src/Main.purs:15:1 - 15:25 (line 15, column 1 - line 15, column 25)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    Module DOM.HTML was not found.</span></span>
+<span class="line"><span>    Make sure the source file exists, and that it has been provided as an input to the compiler.</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  See https://github.com/purescript/documentation/blob/master/errors/ModuleNotFound.md for more information,</span></span>
+<span class="line"><span>  or to contribute content related to this error.</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Error 5 of 8:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  in module Main</span></span>
+<span class="line"><span>  at src/Main.purs:16:1 - 16:32 (line 16, column 1 - line 16, column 32)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    Module DOM.HTML.Document was not found.</span></span>
+<span class="line"><span>    Make sure the source file exists, and that it has been provided as an input to the compiler.</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  See https://github.com/purescript/documentation/blob/master/errors/ModuleNotFound.md for more information,</span></span>
+<span class="line"><span>  or to contribute content related to this error.</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Error 6 of 8:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  in module Main</span></span>
+<span class="line"><span>  at src/Main.purs:17:1 - 17:45 (line 17, column 1 - line 17, column 45)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    Module DOM.HTML.Types was not found.</span></span>
+<span class="line"><span>    Make sure the source file exists, and that it has been provided as an input to the compiler.</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  See https://github.com/purescript/documentation/blob/master/errors/ModuleNotFound.md for more information,</span></span>
+<span class="line"><span>  or to contribute content related to this error.</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Error 7 of 8:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  in module Main</span></span>
+<span class="line"><span>  at src/Main.purs:18:1 - 18:34 (line 18, column 1 - line 18, column 34)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    Module DOM.HTML.Window was not found.</span></span>
+<span class="line"><span>    Make sure the source file exists, and that it has been provided as an input to the compiler.</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  See https://github.com/purescript/documentation/blob/master/errors/ModuleNotFound.md for more information,</span></span>
+<span class="line"><span>  or to contribute content related to this error.</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Error 8 of 8:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  in module Main</span></span>
+<span class="line"><span>  at src/Main.purs:20:1 - 20:34 (line 20, column 1 - line 20, column 34)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    Module DOM.Node.Types was not found.</span></span>
+<span class="line"><span>    Make sure the source file exists, and that it has been provided as an input to the compiler.</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  See https://github.com/purescript/documentation/blob/master/errors/ModuleNotFound.md for more information,</span></span>
+<span class="line"><span>  or to contribute content related to this error.</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>[error] Failed to build.</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Well, the error messages kind of point you to the source of error - the modules have not been provided to the compiler.</p>
+<p>Had to use documentation for each of the packages to match the types and fix the imports (since the <a href="https://github.com/ethul/purescript-react#example">example</a> I have relied upon is way out of date):</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> spago</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> purescript-web-dom</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> purescript-web-html</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> react-dom</span></span>
+<span class="line"></span></code></pre>
+<p>And adjust the code itself:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="purescript"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">module</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Main</span><span style="color:#D73A49;--shiki-dark:#F97583"> where</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Prelude</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Effect</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">Effect</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Data.Maybe</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Web.HTML</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">window</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Web.HTML.HTMLDocument</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">body</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Web.HTML.HTMLElement</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">toElement</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Web.HTML.Window</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">document</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Web.DOM.Element</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">Element</span><span style="color:#24292E;--shiki-dark:#E1E4E8">())</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> React</span><span style="color:#D73A49;--shiki-dark:#F97583"> as</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> React</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> ReactDOM</span><span style="color:#D73A49;--shiki-dark:#F97583"> as</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> ReactDOM</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> React.DOM</span><span style="color:#D73A49;--shiki-dark:#F97583"> as</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> DOM</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> React.DOM.Props</span><span style="color:#D73A49;--shiki-dark:#F97583"> as</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Props</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">type</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Shape</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Circle</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> | </span><span style="color:#6F42C1;--shiki-dark:#B392F0">Square</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">calculateArea</span><span style="color:#D73A49;--shiki-dark:#F97583"> ::</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Maybe</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Shape</span><span style="color:#D73A49;--shiki-dark:#F97583"> -></span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Float</span><span style="color:#D73A49;--shiki-dark:#F97583"> -></span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Float</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">calculateArea </span><span style="color:#22863A;--shiki-dark:#85E89D">Nothing</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> _ </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">calculateArea (</span><span style="color:#22863A;--shiki-dark:#85E89D">Just</span><span style="color:#22863A;--shiki-dark:#85E89D"> Circle</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) value </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> pi </span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> value </span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> value</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">calculateArea (</span><span style="color:#22863A;--shiki-dark:#85E89D">Just</span><span style="color:#22863A;--shiki-dark:#85E89D"> Square</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) value </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> value </span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> value</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">getShape</span><span style="color:#D73A49;--shiki-dark:#F97583"> ::</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> String</span><span style="color:#D73A49;--shiki-dark:#F97583"> -></span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Maybe</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Shape</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">getShape </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"circle"</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#22863A;--shiki-dark:#85E89D"> Just</span><span style="color:#22863A;--shiki-dark:#85E89D"> Circle</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">getShape </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"square"</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#22863A;--shiki-dark:#85E89D"> Just</span><span style="color:#22863A;--shiki-dark:#85E89D"> Square</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">getShape _ </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#22863A;--shiki-dark:#85E89D"> Nothing</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">onShapeChanged ctx evt </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> do</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  writeState ctx { shape</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> getShape ((unsafeCoerce evt)</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">target</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">value) }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">onCalculateAreaClicked ctx evt </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> do</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  { shape, value } </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;-</span><span style="color:#22863A;--shiki-dark:#85E89D"> React</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">readState ctx</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  writeState ctx { area</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> calculateArea shape value }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">areaCalculator</span><span style="color:#D73A49;--shiki-dark:#F97583"> ::</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> React.ReactClass</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">areaCalculator </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#22863A;--shiki-dark:#85E89D"> React</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">component </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"AreaCalculator"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> component</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  where</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  component ctx </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> pure { state</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { shape</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#22863A;--shiki-dark:#85E89D"> Nothing</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, value</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, area</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }, render</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> renderFn ctx }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  where</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    renderFn ctx </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      { shape, value, area } </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;-</span><span style="color:#22863A;--shiki-dark:#85E89D"> React</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">readState ctx</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      return </span><span style="color:#D73A49;--shiki-dark:#F97583">$</span><span style="color:#22863A;--shiki-dark:#85E89D"> DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">div [] [</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">        DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">div [] [</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">          DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">select [ </span><span style="color:#22863A;--shiki-dark:#85E89D">Props</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">onChange (onShapeChanged ctx) ] [</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">              DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">option [ </span><span style="color:#22863A;--shiki-dark:#85E89D">Props</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">value </span><span style="color:#032F62;--shiki-dark:#9ECBFF">""</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] [ </span><span style="color:#22863A;--shiki-dark:#85E89D">DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">text </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Select shape"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ],</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">              DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">option [ </span><span style="color:#22863A;--shiki-dark:#85E89D">Props</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">value </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"circle"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] [ </span><span style="color:#22863A;--shiki-dark:#85E89D">DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">text </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Circle"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ],</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">              DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">option [ </span><span style="color:#22863A;--shiki-dark:#85E89D">Props</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">value </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"square"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] [ </span><span style="color:#22863A;--shiki-dark:#85E89D">DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">text </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Square"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">          ],</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">          DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">input [ </span><span style="color:#22863A;--shiki-dark:#85E89D">Props</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">value (show value) ] [],</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">          DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">button [ </span><span style="color:#22863A;--shiki-dark:#85E89D">Props</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">onClick (onCalculateAreaClicked ctx) ] [ </span><span style="color:#22863A;--shiki-dark:#85E89D">DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">text </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Calculate area"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        ],</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">        DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">div [] [</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">          DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">text (</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Area: "</span><span style="color:#D73A49;--shiki-dark:#F97583"> ++</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (show area))</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        ]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        ]</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">main </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> container </span><span style="color:#D73A49;--shiki-dark:#F97583">>>=</span><span style="color:#22863A;--shiki-dark:#85E89D"> ReactDOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">render componentInstance</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  where</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  componentInstance </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#22863A;--shiki-dark:#85E89D"> React</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">createLeafElement areaCalculator {}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  container</span><span style="color:#D73A49;--shiki-dark:#F97583"> ::</span><span style="color:#D73A49;--shiki-dark:#F97583"> forall</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> eff. </span><span style="color:#6F42C1;--shiki-dark:#B392F0">Effect</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (dom </span><span style="color:#D73A49;--shiki-dark:#F97583">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> DOM</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> | eff) </span><span style="color:#6F42C1;--shiki-dark:#B392F0">Element</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  container </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> do</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    win </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> window</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    doc </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> document win</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    elt </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> body doc</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    return </span><span style="color:#D73A49;--shiki-dark:#F97583">$</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> toElement elt</span></span>
+<span class="line"></span></code></pre>
+<p>To get yet another error:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Error found:</span></span>
+<span class="line"><span>at src/Main.purs:22:21 - 22:22 (line 22, column 21 - line 22, column 22)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  Unable to parse module:</span></span>
+<span class="line"><span>  Unexpected token '|'</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>That’s my bad, it is more Haskell than Elm or F#:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="diff"><code><span class="line"><span style="color:#B31D28;--shiki-dark:#FDAEB7"><span style="user-select: none;">-</span> type Shape = Circle | Square</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D"><span style="user-select: none;">+</span> data Shape = Circle | Square</span></span>
+<span class="line"></span></code></pre>
+<p>And yet another one:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Error found:</span></span>
+<span class="line"><span>at src/Main.purs:45:3 - 45:8 (line 45, column 3 - line 45, column 8)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  Unable to parse module:</span></span>
+<span class="line"><span>  Unexpected token 'where'</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Because I did not indent my code enough.</p>
+<p>And yet another one:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Error found:</span></span>
+<span class="line"><span>at src/Main.purs:47:32 - 47:34 (line 47, column 32 - line 47, column 34)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  Unable to parse module:</span></span>
+<span class="line"><span>  Unexpected "&#x3C;-" in expression, perhaps due to a missing 'do' or 'ado' keyword</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Because <code>React.readState</code> does not return effect, but rather the value itself, so no need to unpack it:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="diff"><code><span class="line"><span style="color:#B31D28;--shiki-dark:#FDAEB7"><span style="user-select: none;">-</span> { shape, value, area } &#x3C;- React.readState ctx</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D"><span style="user-select: none;">+</span> let { shape, value, area } = React.readState ctx</span></span>
+<span class="line"></span></code></pre>
+<p>And yet another one:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Error found:</span></span>
+<span class="line"><span>at src/Main.purs:48:9 - 48:15 (line 48, column 9 - line 48, column 15)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  Unable to parse module:</span></span>
+<span class="line"><span>  Unexpected token 'return'</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Because I have forgot the <code>do</code> keyword:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="diff"><code><span class="line"><span style="color:#B31D28;--shiki-dark:#FDAEB7"><span style="user-select: none;">-</span> renderFn ctx =</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D"><span style="user-select: none;">+</span> renderFn ctx = do</span></span>
+<span class="line"></span></code></pre>
+<p>Few small errors resolved:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Compiling Main</span></span>
+<span class="line"><span>Error 1 of 2:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  in module Main</span></span>
+<span class="line"><span>  at src/Main.purs:26:33 - 26:38 (line 26, column 33 - line 26, column 38)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    Unknown type Float</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span># replace Float with Number, as Float is not really a type in PureScript</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Error 2 of 2:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  in module Main</span></span>
+<span class="line"><span>  at src/Main.purs:61:32 - 61:34 (line 61, column 32 - line 61, column 34)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    Unknown operator (++)</span></span>
+<span class="line"><span>    </span></span>
+<span class="line"><span># replace ++ with + as ++ is not really an operator in PureScript</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>To end up with type errors hell:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Error found:</span></span>
+<span class="line"><span>in module Main</span></span>
+<span class="line"><span>at src/Main.purs:60:13 - 60:54 (line 60, column 13 - line 60, column 54)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  Could not match type</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    ReactElement</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  with type</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    Array t0 -> t1</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>while applying a function input [ value ((...) value)</span></span>
+<span class="line"><span>                                ]</span></span>
+<span class="line"><span>  of type ReactElement</span></span>
+<span class="line"><span>  to argument []</span></span>
+<span class="line"><span>while checking that expression (input [ value (...)</span></span>
+<span class="line"><span>                                      ]</span></span>
+<span class="line"><span>                               )</span></span>
+<span class="line"><span>                               []</span></span>
+<span class="line"><span>  has type ReactElement</span></span>
+<span class="line"><span>in value declaration areaCalculator</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>where t0 is an unknown type</span></span>
+<span class="line"><span>      t1 is an unknown type</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>What this tells you is that input function <a href="https://pursuit.purescript.org/packages/purescript-react/8.0.0/docs/React.DOM#v:input">does not take</a> a second argument (which would normally be similar to <code>React.DOM.div [ attributes ] [ children ]</code>).</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="diff"><code><span class="line"><span style="color:#B31D28;--shiki-dark:#FDAEB7"><span style="user-select: none;">-</span> DOM.input [ Props.value (show value) ] []</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D"><span style="user-select: none;">+</span> DOM.input [ Props.value (show value) ]</span></span>
+<span class="line"></span></code></pre>
+<p>Earlier I have mentioned type hell. Well, that was just the small example. Here’s the next error in the code:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Error found:</span></span>
+<span class="line"><span>in module Main</span></span>
+<span class="line"><span>at src/Main.purs:46:18 - 46:50 (line 46, column 18 - line 46, column 50)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  Could not match type</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    Int</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  with type</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    Number</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>while trying to match type</span></span>
+<span class="line"><span>                             ( area :: Int</span></span>
+<span class="line"><span>                             , shape :: Maybe t3</span></span>
+<span class="line"><span>                             , value :: Int</span></span>
+<span class="line"><span>                             ...</span></span>
+<span class="line"><span>                             )</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  with type</span></span>
+<span class="line"><span>              ( area :: Number</span></span>
+<span class="line"><span>              , shape :: Maybe Shape</span></span>
+<span class="line"><span>              , value :: Number</span></span>
+<span class="line"><span>              ...</span></span>
+<span class="line"><span>              | t1</span></span>
+<span class="line"><span>              )</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>while solving type class constraint</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  Prim.Row.Nub t0</span></span>
+<span class="line"><span>               ( componentDidCatch :: Error</span></span>
+<span class="line"><span>                                      -> { componentStack :: String</span></span>
+<span class="line"><span>                                         }</span></span>
+<span class="line"><span>                                         -> Effect Unit</span></span>
+<span class="line"><span>               , componentDidMount :: Effect Unit</span></span>
+<span class="line"><span>               , componentDidUpdate :: Record ()</span></span>
+<span class="line"><span>                                       -> { area :: Number</span></span>
+<span class="line"><span>                                          , shape :: ...</span></span>
+<span class="line"><span>                                          , value :: Number</span></span>
+<span class="line"><span>                                          | t1</span></span>
+<span class="line"><span>                                          }</span></span>
+<span class="line"><span>                                          -> t2 -> ...</span></span>
+<span class="line"><span>               , componentWillUnmount :: Effect Unit</span></span>
+<span class="line"><span>               , getSnapshotBeforeUpdate :: Record ()</span></span>
+<span class="line"><span>                                            -> { area :: Number</span></span>
+<span class="line"><span>                                               , shape :: ...</span></span>
+<span class="line"><span>                                               , value :: Number</span></span>
+<span class="line"><span>                                               | t1</span></span>
+<span class="line"><span>                                               }</span></span>
+<span class="line"><span>                                               -> Effect t2</span></span>
+<span class="line"><span>               , render :: Effect ReactElement</span></span>
+<span class="line"><span>               , shouldComponentUpdate :: Record ()</span></span>
+<span class="line"><span>                                          -> { area :: Number</span></span>
+<span class="line"><span>                                             , shape :: ...</span></span>
+<span class="line"><span>                                             , value :: Number</span></span>
+<span class="line"><span>                                             | t1</span></span>
+<span class="line"><span>                                             }</span></span>
+<span class="line"><span>                                             -> Effect Boolean</span></span>
+<span class="line"><span>               , state :: { area :: Number</span></span>
+<span class="line"><span>                          , shape :: Maybe Shape</span></span>
+<span class="line"><span>                          , value :: Number</span></span>
+<span class="line"><span>                          | t1</span></span>
+<span class="line"><span>                          }</span></span>
+<span class="line"><span>               , unsafeComponentWillMount :: Effect Unit</span></span>
+<span class="line"><span>               , unsafeComponentWillReceiveProps :: Record () -> Effect Unit</span></span>
+<span class="line"><span>               , unsafeComponentWillUpdate :: Record ()</span></span>
+<span class="line"><span>                                              -> { area :: Number</span></span>
+<span class="line"><span>                                                 , shape :: ...</span></span>
+<span class="line"><span>                                                 , value :: Number</span></span>
+<span class="line"><span>                                                 | t1</span></span>
+<span class="line"><span>                                                 }</span></span>
+<span class="line"><span>                                                 -> Effect Unit</span></span>
+<span class="line"><span>               )</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>while inferring the type of component "AreaCalculator"</span></span>
+<span class="line"><span>in value declaration areaCalculator</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>where t1 is an unknown type</span></span>
+<span class="line"><span>      t3 is an unknown type</span></span>
+<span class="line"><span>      t0 is an unknown type</span></span>
+<span class="line"><span>      t2 is an unknown type</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>See https://github.com/purescript/documentation/blob/master/errors/TypesDoNotUnify.md for more information,</span></span>
+<span class="line"><span>or to contribute content related to this error.</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Basically compiler is trying to say the initial state provided has a type <code>( area :: Int, value :: Int, shape :: Maybe t3 )</code> but what is expected (down in the code) is <code>( area :: Number, value :: Number, shape :: Maybe Shape )</code>. Quite an explanation.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="diff"><code><span class="line"><span style="color:#22863A;--shiki-dark:#85E89D"><span style="user-select: none;">+</span> initialState :: AreaCalculatorState</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D"><span style="user-select: none;">+</span> initialState = { shape: Nothing, value: 0.0, area: 0.0 }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B31D28;--shiki-dark:#FDAEB7"><span style="user-select: none;">-</span> componentImpl ctx = pure { state: { shape: Nothing, value: 0.0, area: 0.0 }, render: renderFn ctx }</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D"><span style="user-select: none;">+</span> componentImpl ctx = pure { state: initialState, render: renderFn ctx }</span></span>
+<span class="line"></span></code></pre>
+<p>And back to a new error:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Error found:</span></span>
+<span class="line"><span>in module Main</span></span>
+<span class="line"><span>at src/Main.purs:70:23 - 70:45 (line 70, column 23 - line 70, column 45)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  No type class instance was found for</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    Data.Semiring.Semiring String</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>while applying a function add</span></span>
+<span class="line"><span>  of type Semiring t0 => t0 -> t0 -> t0</span></span>
+<span class="line"><span>  to argument "Area: "</span></span>
+<span class="line"><span>while inferring the type of add "Area: "</span></span>
+<span class="line"><span>in value declaration areaCalculator</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>where t0 is an unknown type</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>See https://github.com/purescript/documentation/blob/master/errors/NoInstanceFound.md for more information,</span></span>
+<span class="line"><span>or to contribute content related to this error.</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Which means the <code>+</code> operator (function) does not apply to strings. The <code>&#x3C;></code> is the string concatenation operator in this case. Although very hectic, it is described in <a href="https://pursuit.purescript.org/packages/purescript-prelude/4.1.1/docs/Data.Semigroup#v:(%3C%3E)">the docs</a>.</p>
+<p>And yet another error:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Error found:</span></span>
+<span class="line"><span>in module Main</span></span>
+<span class="line"><span>at src/Main.purs:78:21 - 78:29 (line 78, column 21 - line 78, column 29)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  Could not match type</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    Effect</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  with type</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    Maybe</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>while trying to match type Effect (Maybe HTMLElement)</span></span>
+<span class="line"><span>  with type Maybe t0</span></span>
+<span class="line"><span>while checking that expression body doc</span></span>
+<span class="line"><span>  has type Maybe t0</span></span>
+<span class="line"><span>in value declaration main</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>where t0 is an unknown type</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>See https://github.com/purescript/documentation/blob/master/errors/TypesDoNotUnify.md for more information,</span></span>
+<span class="line"><span>or to contribute content related to this error.</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Which is all about matching the return types and handling them properly:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="diff"><code><span class="line"><span style="color:#B31D28;--shiki-dark:#FDAEB7"><span style="user-select: none;">-</span> elt &#x3C;- toElement elt</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D"><span style="user-select: none;">+</span> let elt = fromJust eltMaybe</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D"><span style="user-select: none;">+</span> let container = toElement elt</span></span>
+<span class="line"></span></code></pre>
+<p>And finally, the version that <em>compiles</em>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="purescript"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">module</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Main</span><span style="color:#D73A49;--shiki-dark:#F97583"> where</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Prelude</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Effect</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">Effect</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Data.Maybe</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Math</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pi</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Web.HTML</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">window</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Web.HTML.HTMLDocument</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">body</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Web.HTML.HTMLElement</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">toElement</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Web.HTML.Window</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">document</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Web.DOM.Element</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">Element</span><span style="color:#24292E;--shiki-dark:#E1E4E8">())</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Unsafe.Coerce</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">unsafeCoerce</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> React</span><span style="color:#D73A49;--shiki-dark:#F97583"> as</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> React</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> ReactDOM</span><span style="color:#D73A49;--shiki-dark:#F97583"> as</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> ReactDOM</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> React.DOM</span><span style="color:#D73A49;--shiki-dark:#F97583"> as</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> DOM</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> React.DOM.Props</span><span style="color:#D73A49;--shiki-dark:#F97583"> as</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Props</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">data</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Shape</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#22863A;--shiki-dark:#85E89D"> Circle</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> | </span><span style="color:#22863A;--shiki-dark:#85E89D">Square</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">calculateArea</span><span style="color:#D73A49;--shiki-dark:#F97583"> ::</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Maybe</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Shape</span><span style="color:#D73A49;--shiki-dark:#F97583"> -></span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Number</span><span style="color:#D73A49;--shiki-dark:#F97583"> -></span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Number</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">calculateArea </span><span style="color:#22863A;--shiki-dark:#85E89D">Nothing</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> _ </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0.0</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">calculateArea (</span><span style="color:#22863A;--shiki-dark:#85E89D">Just</span><span style="color:#22863A;--shiki-dark:#85E89D"> Circle</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) value </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> pi </span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> value </span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> value</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">calculateArea (</span><span style="color:#22863A;--shiki-dark:#85E89D">Just</span><span style="color:#22863A;--shiki-dark:#85E89D"> Square</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) value </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> value </span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> value</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">getShape</span><span style="color:#D73A49;--shiki-dark:#F97583"> ::</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> String</span><span style="color:#D73A49;--shiki-dark:#F97583"> -></span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Maybe</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Shape</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">getShape </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"circle"</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#22863A;--shiki-dark:#85E89D"> Just</span><span style="color:#22863A;--shiki-dark:#85E89D"> Circle</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">getShape </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"square"</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#22863A;--shiki-dark:#85E89D"> Just</span><span style="color:#22863A;--shiki-dark:#85E89D"> Square</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">getShape _ </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#22863A;--shiki-dark:#85E89D"> Nothing</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">onShapeChanged ctx evt </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> do</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">  React</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">setState ctx { shape</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> getShape ((unsafeCoerce evt)</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">target</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">value) }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">onCalculateAreaClicked ctx evt </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> do</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  { shape, value } </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;-</span><span style="color:#22863A;--shiki-dark:#85E89D"> React</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">getState ctx</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">  React</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">setState ctx { area</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> calculateArea shape value }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">type</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> AreaCalculatorState</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> {</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> shape</span><span style="color:#D73A49;--shiki-dark:#F97583"> ::</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Maybe</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Shape</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">value</span><span style="color:#D73A49;--shiki-dark:#F97583"> ::</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Number</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">area</span><span style="color:#D73A49;--shiki-dark:#F97583"> ::</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Number</span><span style="color:#D73A49;--shiki-dark:#F97583"> }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">initialState</span><span style="color:#D73A49;--shiki-dark:#F97583"> ::</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> AreaCalculatorState</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">initialState </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { shape</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#22863A;--shiki-dark:#85E89D"> Nothing</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, value</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0.0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, area</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0.0</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">areaCalculator</span><span style="color:#D73A49;--shiki-dark:#F97583"> ::</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> React.ReactClass</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">areaCalculator </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#22863A;--shiki-dark:#85E89D"> React</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">component </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"AreaCalculator"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> componentImpl</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  where</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  componentImpl ctx </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> pure { state</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> initialState, render</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> renderFn ctx }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    where</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      renderFn ctx' </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> do</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { shape, value, area } </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;-</span><span style="color:#22863A;--shiki-dark:#85E89D"> React</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">getState ctx'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        pure </span><span style="color:#D73A49;--shiki-dark:#F97583">$</span><span style="color:#22863A;--shiki-dark:#85E89D"> DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">div [] [</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">          DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">div [] [</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">select [ </span><span style="color:#22863A;--shiki-dark:#85E89D">Props</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">onChange (onShapeChanged ctx') ] [</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">option [ </span><span style="color:#22863A;--shiki-dark:#85E89D">Props</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">value </span><span style="color:#032F62;--shiki-dark:#9ECBFF">""</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] [ </span><span style="color:#22863A;--shiki-dark:#85E89D">DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">text </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Select shape"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ],</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">option [ </span><span style="color:#22863A;--shiki-dark:#85E89D">Props</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">value </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"circle"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] [ </span><span style="color:#22863A;--shiki-dark:#85E89D">DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">text </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Circle"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ],</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">option [ </span><span style="color:#22863A;--shiki-dark:#85E89D">Props</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">value </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"square"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] [ </span><span style="color:#22863A;--shiki-dark:#85E89D">DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">text </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Square"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            ],</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">input [ </span><span style="color:#22863A;--shiki-dark:#85E89D">Props</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">value (show value) ],</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">button [ </span><span style="color:#22863A;--shiki-dark:#85E89D">Props</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">onClick (onCalculateAreaClicked ctx') ] [ </span><span style="color:#22863A;--shiki-dark:#85E89D">DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">text </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Calculate area"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">          ],</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">          DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">div [] [</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            DOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">text (</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Area: "</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (show area))</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">          ]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        ]</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">main </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> do</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  let</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> componentInstance </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#22863A;--shiki-dark:#85E89D"> React</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">createLeafElement areaCalculator {}</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  win </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> window</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  doc </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> document win</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  eltMaybe </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> body doc</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  let</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> elt </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> fromJust eltMaybe</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  let</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> container </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> toElement elt</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">  ReactDOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">render componentInstance container</span></span>
+<span class="line"></span></code></pre>
+<p>Of course, there are few warnings and few sloppy solutions worth fixing:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Warning 1 of 7:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  in module Main</span></span>
+<span class="line"><span>  at src/Main.purs:7:1 - 7:18 (line 7, column 1 - line 7, column 18)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    Module Data.Maybe has unspecified imports, consider using the explicit form:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>      import Data.Maybe (Maybe(..), fromJust)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  See https://github.com/purescript/documentation/blob/master/errors/ImplicitImport.md for more information,</span></span>
+<span class="line"><span>  or to contribute content related to this warning.</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Warning 2 of 7:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  in module Main</span></span>
+<span class="line"><span>  at src/Main.purs:5:1 - 5:23 (line 5, column 1 - line 5, column 23)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    The import of Effect is redundant</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  See https://github.com/purescript/documentation/blob/master/errors/UnusedImport.md for more information,</span></span>
+<span class="line"><span>  or to contribute content related to this warning.</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Warning 3 of 7:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  in module Main</span></span>
+<span class="line"><span>  at src/Main.purs:3:1 - 3:15 (line 3, column 1 - line 3, column 15)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    Module Prelude has unspecified imports, consider using the explicit form:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>      import Prelude (bind, pure, show, ($), (*), (&#x3C;>))</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  See https://github.com/purescript/documentation/blob/master/errors/ImplicitImport.md for more information,</span></span>
+<span class="line"><span>  or to contribute content related to this warning.</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Warning 4 of 7:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  in module Main</span></span>
+<span class="line"><span>  at src/Main.purs:16:1 - 16:35 (line 16, column 1 - line 16, column 35)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    The import of Web.DOM.Element is redundant</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  See https://github.com/purescript/documentation/blob/master/errors/UnusedImport.md for more information,</span></span>
+<span class="line"><span>  or to contribute content related to this warning.</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Warning 5 of 7:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  in module Main</span></span>
+<span class="line"><span>  at src/Main.purs:38:1 - 39:75 (line 38, column 1 - line 39, column 75)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    No type declaration was provided for the top-level declaration of onShapeChanged.</span></span>
+<span class="line"><span>    It is good practice to provide type declarations as a form of documentation.</span></span>
+<span class="line"><span>    The inferred type of onShapeChanged was:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>      forall t10 t14 t8.</span></span>
+<span class="line"><span>        ReactThis t10</span></span>
+<span class="line"><span>          { shape :: ...</span></span>
+<span class="line"><span>          | t8</span></span>
+<span class="line"><span>          }</span></span>
+<span class="line"><span>        -> t14 -> Effect Unit</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  in value declaration onShapeChanged</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  See https://github.com/purescript/documentation/blob/master/errors/MissingTypeDeclaration.md for more information,</span></span>
+<span class="line"><span>  or to contribute content related to this warning.</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Warning 6 of 7:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  in module Main</span></span>
+<span class="line"><span>  at src/Main.purs:41:1 - 43:57 (line 41, column 1 - line 43, column 57)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    No type declaration was provided for the top-level declaration of onCalculateAreaClicked.</span></span>
+<span class="line"><span>    It is good practice to provide type declarations as a form of documentation.</span></span>
+<span class="line"><span>    The inferred type of onCalculateAreaClicked was:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>      forall t24 t37 t39.</span></span>
+<span class="line"><span>        ReactThis t37</span></span>
+<span class="line"><span>          { area :: Number</span></span>
+<span class="line"><span>          , shape :: ...</span></span>
+<span class="line"><span>          , value :: Number</span></span>
+<span class="line"><span>          | t39</span></span>
+<span class="line"><span>          }</span></span>
+<span class="line"><span>        -> t24 -> Effect Unit</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  in value declaration onCalculateAreaClicked</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  See https://github.com/purescript/documentation/blob/master/errors/MissingTypeDeclaration.md for more information,</span></span>
+<span class="line"><span>  or to contribute content related to this warning.</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Warning 7 of 7:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  in module Main</span></span>
+<span class="line"><span>  at src/Main.purs:74:1 - 81:46 (line 74, column 1 - line 81, column 46)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    No type declaration was provided for the top-level declaration of main.</span></span>
+<span class="line"><span>    It is good practice to provide type declarations as a form of documentation.</span></span>
+<span class="line"><span>    The inferred type of main was:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>      Partial => Effect (Maybe ReactComponent)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  in value declaration main</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  See https://github.com/purescript/documentation/blob/master/errors/MissingTypeDeclaration.md for more information,</span></span>
+<span class="line"><span>  or to contribute content related to this warning.</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Essentially,</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Module Data.Maybe has unspecified imports, consider using the explicit form:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>      import Data.Maybe (Maybe(..), fromJust)</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>is fixed with the suggested code:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>import Data.Maybe (Maybe(..), fromJust)</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Same with the unnecessary imports.</p>
+<p>This one looks neat:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Warning 5 of 7:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  in module Main</span></span>
+<span class="line"><span>  at src/Main.purs:38:1 - 39:75 (line 38, column 1 - line 39, column 75)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    No type declaration was provided for the top-level declaration of onShapeChanged.</span></span>
+<span class="line"><span>    It is good practice to provide type declarations as a form of documentation.</span></span>
+<span class="line"><span>    The inferred type of onShapeChanged was:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>      forall t10 t14 t8.</span></span>
+<span class="line"><span>        ReactThis t10</span></span>
+<span class="line"><span>          { shape :: ...</span></span>
+<span class="line"><span>          | t8</span></span>
+<span class="line"><span>          }</span></span>
+<span class="line"><span>        -> t14 -> Effect Unit</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  in value declaration onShapeChanged</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  See https://github.com/purescript/documentation/blob/master/errors/MissingTypeDeclaration.md for more information,</span></span>
+<span class="line"><span>  or to contribute content related to this warning.</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Compiler asks you to explicitly type the function declaration. But I don’t care about that for now.</p>
+<p>In order to run the app, few actions are still needed:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> yarn</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> add</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -D</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> spago</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> purescript</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> parcel</span></span>
+<span class="line"></span></code></pre>
+<p>Then, one will need an entry point:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="html"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;!</span><span style="color:#22863A;--shiki-dark:#85E89D">DOCTYPE</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> html</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">html</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> lang</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"en"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">head</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">meta</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> charset</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"UTF-8"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">meta</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> name</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"viewport"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> content</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"width=device-width, initial-scale=1.0"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">title</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>Document&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">title</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">head</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">body</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">script</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> src</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"index.js"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">script</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">body</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">html</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"></span></code></pre>
+<p>with a script:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Main</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> require</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'./output/Main'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">Main.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">main</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span></code></pre>
+<p>To build that whole thing now:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> yarn</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> spago</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> build</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> &#x26;&#x26; </span><span style="color:#6F42C1;--shiki-dark:#B392F0">yarn</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> parcel</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> index.html</span></span>
+<span class="line"></span></code></pre>
+<p>And finally, if you run this, nothing will work.</p>
+<p>All because the return type of the <code>main</code> function is not really <code>Effect Unit</code>, but rather a function. To fix this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="purescript"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">mountMain</span><span style="color:#D73A49;--shiki-dark:#F97583"> ::</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> HTMLElement</span><span style="color:#D73A49;--shiki-dark:#F97583"> -></span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Effect</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Unit</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">mountMain elt </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> do</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  let</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> container </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> toElement elt</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  let</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> componentInstance </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#22863A;--shiki-dark:#85E89D"> React</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">createLeafElement areaCalculator {}</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  let</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> componentMaybe </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#22863A;--shiki-dark:#85E89D"> ReactDOM</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">render componentInstance container</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  void componentMaybe</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">main</span><span style="color:#D73A49;--shiki-dark:#F97583"> ::</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Effect</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Unit</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">main </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> do</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  win </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> window</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  doc </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> document win</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  eltMaybe </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> body doc</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  maybe (pure unit) mount eltMaybe</span></span>
+<span class="line"></span></code></pre>
+<p>And the thing still won’t completely work, since we do not modify the state on input value change:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="purescript"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Data.Float.Parse</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">parseFloat</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">onValueChanged ctx evt </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> do</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  let</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> newValue </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> fromMaybe </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0.0</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (parseFloat ((unsafeCoerce evt)</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">target</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">value))</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">  React</span><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">setState ctx { value</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> newValue }</span></span>
+<span class="line"></span></code></pre>
+<p>Final solution is available on <a href="https://codesandbox.io/s/purescript-test1-02wf4">sandbox</a>.</p>  </div> </article> </main> <footer data-astro-cid-sz7xmlte>
+&copy; 2024 Your name here. All rights reserved.
+<div class="social-links" data-astro-cid-sz7xmlte> <a href="https://m.webtoo.ls/@astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Mastodon</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/mastodon" data-astro-cid-sz7xmlte><path fill="currentColor" d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://twitter.com/astrodotbuild" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Twitter</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/twitter" data-astro-cid-sz7xmlte><path fill="currentColor" d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://github.com/withastro/astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Go to Astro's GitHub repo</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/github" data-astro-cid-sz7xmlte><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" data-astro-cid-sz7xmlte></path></svg> </a> </div> </footer>  </body></html>

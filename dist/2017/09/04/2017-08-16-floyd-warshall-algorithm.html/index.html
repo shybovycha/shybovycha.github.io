@@ -1,0 +1,851 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-bvzihdzo> <head><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.0.3"><!-- Font preloads --><link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin><!-- Canonical URL --><link rel="canonical" href="https://shybovycha.github.io/2017/09/04/2017-08-16-floyd-warshall-algorithm.html/"><!-- Primary Meta Tags --><title>Floyd-Warshall algorithm</title><meta name="title" content="Floyd-Warshall algorithm"><meta name="description"><link rel="stylesheet" href="/_astro/index.BvFNhZYw.css">
+<style>footer[data-astro-cid-sz7xmlte]{padding:2em 1em 6em;background:linear-gradient(var(--gray-gradient)) no-repeat;color:rgb(var(--gray));text-align:center}.social-links[data-astro-cid-sz7xmlte]{display:flex;justify-content:center;gap:1em;margin-top:1em}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]{text-decoration:none;color:rgb(var(--gray))}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]:hover{color:rgb(var(--gray-dark))}main[data-astro-cid-bvzihdzo]{width:calc(100% - 2em);max-width:100%;margin:0}.hero-image[data-astro-cid-bvzihdzo]{width:100%}.hero-image[data-astro-cid-bvzihdzo] img[data-astro-cid-bvzihdzo]{display:block;margin:0 auto;border-radius:12px;box-shadow:var(--box-shadow)}.prose[data-astro-cid-bvzihdzo]{width:720px;max-width:calc(100% - 2em);margin:auto;padding:1em;color:rgb(var(--gray-dark))}.title[data-astro-cid-bvzihdzo]{margin-bottom:1em;padding:1em 0;text-align:center;line-height:1}.title[data-astro-cid-bvzihdzo] h1[data-astro-cid-bvzihdzo]{margin:0 0 .5em}.date[data-astro-cid-bvzihdzo]{margin-bottom:.5em;color:rgb(var(--gray))}.last-updated-on[data-astro-cid-bvzihdzo]{font-style:italic}
+[data-astro-image]{width:100%;height:auto;object-fit:var(--fit);object-position:var(--pos);aspect-ratio:var(--w) / var(--h)}[data-astro-image=responsive]{max-width:calc(var(--w) * 1px);max-height:calc(var(--h) * 1px)}[data-astro-image=fixed]{width:calc(var(--w) * 1px);height:calc(var(--h) * 1px)}
+</style></head> <body data-astro-cid-bvzihdzo> <nav class="top"> <div class="links"> <a class="nav-link nav-item" href="/">Home</a> <a class="nav-link nav-item" href="/about.html">About</a> </div> </nav> <main data-astro-cid-bvzihdzo> <article data-astro-cid-bvzihdzo> <div class="hero-image" data-astro-cid-bvzihdzo>  </div> <div class="prose" data-astro-cid-bvzihdzo> <div class="title" data-astro-cid-bvzihdzo> <div class="date" data-astro-cid-bvzihdzo> <time datetime="2017-09-04T00:38:24.000Z"> Sep 4, 2017 </time>  </div> <h1 data-astro-cid-bvzihdzo>Floyd-Warshall algorithm</h1> <hr data-astro-cid-bvzihdzo> </div>  <style>
+    table td {
+        padding: 0.25em 1em;
+        text-align: center;
+    }
+</style>
+<h2 id="update">Update</h2>
+<p>There is <a href="/2023/01/12/floyd-warshall-revised.html">a revised version of this blog</a>, showing how an algorithm implementation could be optimized.</p>
+<h2 id="the-story-behind-this-post">The story behind this post</h2>
+<p>Recently I’ve received <code>+10</code> karma on StackOverflow. I was curious for what question or answer and clicked to check this. It appeared
+to be a <a href="https://stackoverflow.com/a/4526639/330471"><strong>seven-year-old</strong> answer</a> about a Floyd-Warshall algorithm. I was surprised with both my bad English (back those days…) and the very small value the answer had. So I’ve revised it and here it is — the brand-new version!</p>
+<h2 id="the-definitions">The definitions</h2>
+<p>Let us have a graph, described by matrix <code>D</code>, where <code>D[i][j]</code> is the length of the edge <code>(i -> j)</code> <em>(from graph’s vertex with index <code>i</code> to the vertex with index <code>j</code>)</em>.</p>
+<p>Matrix <code>D</code> has the size of <code>N * N</code>, where <code>N</code> is a total number of vertices in a graph because we can reach the maximum of paths by connecting each graph’s vertex to each other.</p>
+<p>Also, we’ll need matrix <code>R</code>, where we will store the vertices of the shortest paths (<code>R[i][j]</code> contains the index of a vertex, where the shortest path from vertex <code>i</code> to vertex <code>j</code> lies).</p>
+<p>Matrix <code>R</code> has the same size as <code>D</code>.</p>
+<p>The Floyd-Warshall algorithm performs these steps:</p>
+<ol>
+<li>
+<p>initialize the matrix of all the paths between any two pairs of vertices in a graph with the edge’s end vertex <em>(this is important since this value will be used for path reconstruction)</em></p>
+</li>
+<li>
+<p>for each pair of connected vertices <em>(read: for each edge <code>(u -> v)</code>)</em>, <code>u</code> and <code>v</code>, find the vertex, which forms shortest path between them: if the vertex <code>k</code> defines two valid edges <code>(u -> k)</code> and <code>(k -> v)</code> <em>(if they are present in the graph)</em>, which are together shorter than path <code>(u -> v)</code>, then assume the shortest path between <code>u</code> and <code>v</code> lies through <code>k</code>; set the shortest pivot point in matrix <code>R</code> for edge <code>(u -> v)</code> to be the corresponding pivot point for edge <code>(u -> k)</code></p>
+</li>
+</ol>
+<p>But how do we read the matrix <code>D</code>?</p>
+<!--more-->
+<h2 id="inputs">Inputs</h2>
+<p>Take sample graph:</p>
+<img src="/images/floyd-warshall/floyd-warshall-graph-sample.webp" loading="lazy" alt="">
+<p>In <em>GraphViz</em> it would be described as follows:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="mermaid"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">digraph G {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    layout = "circo";</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    0->2 [label = "1"];</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    2->3 [label = "5"];</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    3->1 [label = "2"];</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    1->2 [label = "6"];</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    1->0 [label = "7"];</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>We first create a two-dimensional array of size <code>4</code> <em>(since there are exactly <code>4</code> vertices in our graph)</em>.</p>
+<p>We initialize its main diagonal <em>(the items, whose indices are equal, for ex. <code>G[0, 0]</code>, <code>G[1, 1]</code>, etc.)</em> with zeros, because
+the shortest path from vertex to itself has the length <code>0</code> and the other elements with a very large number <em>(to indicate there is no edge or an infinitely long edge between them)</em>. The defined elements, corresponding to graph’s edges, we fill with edges’ lengths:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="csharp"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> N</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[,] </span><span style="color:#6F42C1;--shiki-dark:#B392F0">D</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> new</span><span style="color:#D73A49;--shiki-dark:#F97583"> int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[N, N];</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> i</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; i </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> N; i</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> t</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; t </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> N; t</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (i </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> t) {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            D[i, t] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        } </span><span style="color:#D73A49;--shiki-dark:#F97583">else</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            D[i, t] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 9999</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>And let’s say we initialize our <code>D</code> matrix by hand:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="csharp"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">D[</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">D[</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 7</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">D[</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 6</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">D[</span><span style="color:#005CC5;--shiki-dark:#79B8FF">2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">3</span><span style="color:#24292E;--shiki-dark:#E1E4E8">] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 5</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">D[</span><span style="color:#005CC5;--shiki-dark:#79B8FF">3</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span></code></pre>
+<h2 id="the-algorithm-itself">The algorithm itself</h2>
+<p>Now that we are on a same page with definitions, algorithm can be implemented like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="csharp"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[,] </span><span style="color:#6F42C1;--shiki-dark:#B392F0">R</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> new</span><span style="color:#D73A49;--shiki-dark:#F97583"> int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[N, N];</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">// Initialise the routes matrix R, essentially saying "the shortest path from u to v is straight"</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> i</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; i </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> N; i</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> t</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; t </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> N; t</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        R[i, t] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> t;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">// Floyd-Warshall algorithm; note the order of iterators DOES matter:</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> k</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; k </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> N; k</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> u</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; u </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> N; u</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> v</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; v </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> N; v</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">            // check if the shortest path from "u" to "v" is actually through "k"</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (D[u, v] </span><span style="color:#D73A49;--shiki-dark:#F97583">></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> D[u, k] </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> D[k, v]) {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                D[u, v] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> D[u, k] </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> D[k, v];</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                R[u, v] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> R[u, k];</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>Let’s “animate” this algorithm in few steps for the sample graph from above:</p>
+<h3 id="initial-state">Initial state</h3>
+<ul>
+<li>the <code>D</code> matrix contains distance from vertex <code>u</code> to vertex <code>v</code>, where both <code>u</code> and <code>v</code> are indexes of those vertices in a graph and <code>u</code> is the index of a row and <code>v</code> is the index of the column in any of the matrices <code>R</code> and <code>D</code></li>
+<li>path from <code>u</code> to <code>u</code> is thought to be infinitely long meaning we do not allow this type of paths</li>
+<li>in matrix <code>R</code> we define the shortest path from <code>u</code> to <code>v</code> to lie through <code>v</code></li>
+</ul>
+<div class="row space-between">
+    <div class="col">
+        <table>
+            <tbody>
+                <tr>
+                    <td rowspan="2"></td>
+                    <td colspan="5" class="center head">D</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td class="head">1</td>
+                    <td class="head">2</td>
+                    <td class="head">3</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td>0</td>
+                    <td>∞</td>
+                    <td>1</td>
+                    <td>∞</td>
+                </tr>
+                <tr>
+                    <td class="head">1</td>
+                    <td>7</td>
+                    <td>0</td>
+                    <td>6</td>
+                    <td>∞</td>
+                </tr>
+                <tr>
+                    <td class="head">2</td>
+                    <td>∞</td>
+                    <td>∞</td>
+                    <td>0</td>
+                    <td>5</td>
+                </tr>
+                <tr>
+                    <td class="head">3</td>
+                    <td>∞</td>
+                    <td>2</td>
+                    <td>∞</td>
+                    <td>0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col">
+        <table>
+            <tbody>
+                <tr>
+                    <td rowspan="2"></td>
+                    <td colspan="5" class="center head">R</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td class="head">1</td>
+                    <td class="head">2</td>
+                    <td class="head">3</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="head">1</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="head">2</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="head">3</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<h3 id="step-1">Step 1</h3>
+<div class="content-read-marker" data-fraction="25"></div>
+<p>We try to find the vertex which makes the <strong>shorter</strong> path through itself than the direct path between two vertices. E.g. for every vertex <code>k</code> we find the pair of vertices <code>u</code> and <code>v</code> where path <code>u -> v</code> is <strong>longer</strong> than the path <code>u -> k -> v</code>. If we found one - we will update the matrices <code>D</code> and <code>R</code>, correspondingly.</p>
+<p>For vertex <code>k = 0</code> we will check each combination of:</p>
+<p><strong>paths through <code>0</code> starting at <code>0</code>:</strong></p>
+<ul>
+<li><code>0 -> 0</code> vs <code>0 -> 0 -> 0</code></li>
+<li><code>0 -> 1</code> vs <code>0 -> 0 -> 1</code></li>
+<li><code>0 -> 2</code> vs <code>0 -> 0 -> 2</code></li>
+<li><code>0 -> 3</code> vs <code>0 -> 0 -> 3</code></li>
+</ul>
+<p><strong>paths through <code>0</code> starting at <code>1</code>:</strong></p>
+<ul>
+<li><code>1 -> 0</code> vs <code>1 -> 0 -> 0</code></li>
+<li><code>1 -> 1</code> vs <code>1 -> 0 -> 1</code></li>
+<li><code>1 -> 2</code> vs <code>1 -> 0 -> 2</code></li>
+<li><code>1 -> 3</code> vs <code>1 -> 0 -> 3</code></li>
+</ul>
+<p><strong>paths through <code>0</code> starting at <code>2</code>:</strong></p>
+<ul>
+<li><code>2 -> 0</code> vs <code>2 -> 0 -> 0</code></li>
+<li><code>2 -> 1</code> vs <code>2 -> 0 -> 1</code></li>
+<li><code>2 -> 2</code> vs <code>2 -> 0 -> 2</code></li>
+<li><code>2 -> 3</code> vs <code>2 -> 0 -> 3</code></li>
+</ul>
+<p><strong>paths through <code>0</code> starting at <code>3</code>:</strong></p>
+<ul>
+<li><code>3 -> 0</code> vs <code>3 -> 0 -> 0</code></li>
+<li><code>3 -> 1</code> vs <code>3 -> 0 -> 1</code></li>
+<li><code>3 -> 2</code> vs <code>3 -> 0 -> 2</code></li>
+<li><code>3 -> 3</code> vs <code>3 -> 0 -> 3</code></li>
+</ul>
+<p>As you can see, there are lots of invalid paths here - those which either do not exist or do not make sense. Examples are: paths which do not exist <em>(like <code>0 -> 3</code>)</em> and paths to any vertex through source vertex <em>(like <code>0 -> 0 -> 0</code> and <code>0 -> 0 -> (any)</code>)</em>.</p>
+<p>We could easily reduce the amount of the steps performed by the algorithm by throwing few <code>if</code> conditions to check for those cases.</p>
+<p>But let’s first finish animating this step: there are very few valid paths amongst <code>N * N === 16</code> of those we’ve checked. And only one comparison: for path <code>1 -> 2</code> vs <code>1 -> 0 -> 2</code> we compare <code>6</code> <em>(direct)</em> and <code>7 + 1 = 8</code> <em>(<code>1 -> 0</code> and then <code>0 -> 2</code>)</em>.</p>
+<img src="/images/floyd-warshall/floyd-warshall-sample-step-1.webp" loading="lazy" alt="">
+<!--
+digraph G {
+    layout = "circo";
+
+    0->2 [label = "1", color = "blue"];
+    2->3 [label = "5"];
+    3->1 [label = "2"];
+    1->2 [label = "6", color = "green"];
+    1->0 [label = "7", color = "blue"];
+}
+-->
+<p>So there are no changes in our matrices.</p>
+<div class="row space-between">
+    <div class="col">
+        <table>
+            <tbody>
+                <tr>
+                    <td rowspan="2"></td>
+                    <td colspan="5" class="center head">D</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td class="head">1</td>
+                    <td class="head">2</td>
+                    <td class="head">3</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td>0</td>
+                    <td>∞</td>
+                    <td>1</td>
+                    <td>∞</td>
+                </tr>
+                <tr>
+                    <td class="head">1</td>
+                    <td>7</td>
+                    <td>0</td>
+                    <td>6</td>
+                    <td>∞</td>
+                </tr>
+                <tr>
+                    <td class="head">2</td>
+                    <td>∞</td>
+                    <td>∞</td>
+                    <td>0</td>
+                    <td>5</td>
+                </tr>
+                <tr>
+                    <td class="head">3</td>
+                    <td>∞</td>
+                    <td>2</td>
+                    <td>∞</td>
+                    <td>0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col">
+        <table>
+            <tbody>
+                <tr>
+                    <td rowspan="2"></td>
+                    <td colspan="5" class="center head">R</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td class="head">1</td>
+                    <td class="head">2</td>
+                    <td class="head">3</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="head">1</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="head">2</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="head">3</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<h3 id="step-2">Step 2</h3>
+<p>For vertex <code>1</code> we will check each combination of:</p>
+<p><strong>paths through <code>1</code> starting at <code>0</code>:</strong></p>
+<ul>
+<li><code>0 -> 0</code> vs <code>0 -> 1 -> 0</code></li>
+<li><code>0 -> 1</code> vs <code>0 -> 1 -> 1</code></li>
+<li><code>0 -> 2</code> vs <code>0 -> 1 -> 2</code></li>
+<li><code>0 -> 3</code> vs <code>0 -> 1 -> 3</code></li>
+</ul>
+<p><strong>paths through <code>1</code> starting at <code>1</code>:</strong></p>
+<ul>
+<li><code>1 -> 0</code> vs <code>1 -> 1 -> 0</code></li>
+<li><code>1 -> 1</code> vs <code>1 -> 1 -> 1</code></li>
+<li><code>1 -> 2</code> vs <code>1 -> 1 -> 2</code></li>
+<li><code>1 -> 3</code> vs <code>1 -> 1 -> 3</code></li>
+</ul>
+<p><strong>paths through <code>1</code> starting at <code>2</code>:</strong></p>
+<ul>
+<li><code>2 -> 0</code> vs <code>2 -> 1 -> 0</code></li>
+<li><code>2 -> 1</code> vs <code>2 -> 1 -> 1</code></li>
+<li><code>2 -> 2</code> vs <code>2 -> 1 -> 2</code></li>
+<li><code>2 -> 3</code> vs <code>2 -> 1 -> 3</code></li>
+</ul>
+<p><strong>paths through <code>1</code> starting at <code>3</code>:</strong></p>
+<ul>
+<li><code>3 -> 0</code> vs <code>3 -> 1 -> 0</code></li>
+<li><code>3 -> 1</code> vs <code>3 -> 1 -> 1</code></li>
+<li><code>3 -> 2</code> vs <code>3 -> 1 -> 2</code></li>
+<li><code>3 -> 3</code> vs <code>3 -> 1 -> 3</code></li>
+</ul>
+<p>This case is more interesting - there are more things to compare. Let’s see each combination:</p>
+<ol>
+<li><code>3 -> 0</code> does not exist (<code>inf</code>)</li>
+<li><code>3 -> 1</code> has length <code>2</code> and <code>1 -> 0</code> has length <code>7</code>, the indirect path <code>3 -> 1 -> 0</code> has length <code>9</code></li>
+</ol>
+<p>Hence we will update matrices <code>D</code> and <code>R</code> reflecting that.</p>
+<p>For path <code>3 -> 1 -> 2</code>:</p>
+<ol>
+<li>there is no path from <code>3</code> to <code>2</code> directly, so its length is <code>inf</code></li>
+<li><code>3 -> 1</code> has length <code>2</code> and <code>1 -> 2</code> has length <code>6</code>, the total is <code>8</code> which is infinitely better than infinity</li>
+</ol>
+<div class="content-read-marker" data-fraction="50"></div>
+<p>Here are the updated matrices:</p>
+<div class="row space-between">
+    <div class="col">
+        <table>
+            <tbody>
+                <tr>
+                    <td rowspan="2"></td>
+                    <td colspan="5" class="center head">D</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td class="head">1</td>
+                    <td class="head">2</td>
+                    <td class="head">3</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td>0</td>
+                    <td>∞</td>
+                    <td>1</td>
+                    <td>∞</td>
+                </tr>
+                <tr>
+                    <td class="head">1</td>
+                    <td>7</td>
+                    <td>0</td>
+                    <td>6</td>
+                    <td>∞</td>
+                </tr>
+                <tr>
+                    <td class="head">2</td>
+                    <td>∞</td>
+                    <td>∞</td>
+                    <td>0</td>
+                    <td>5</td>
+                </tr>
+                <tr>
+                    <td class="head">3</td>
+                    <td class="change">9</td>
+                    <td>2</td>
+                    <td class="change">8</td>
+                    <td>0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col">
+        <table>
+            <tbody>
+                <tr>
+                    <td rowspan="2"></td>
+                    <td colspan="5" class="center head">R</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td class="head">1</td>
+                    <td class="head">2</td>
+                    <td class="head">3</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="head">1</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="head">2</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="head">3</td>
+                    <td class="change">1</td>
+                    <td>1</td>
+                    <td class="change">1</td>
+                    <td>3</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<h3 id="step-3">Step 3</h3>
+<p>For vertex <code>2</code> we will check each combination of:</p>
+<p><strong>paths through <code>2</code> starting at <code>0</code>:</strong></p>
+<ul>
+<li><code>0 -> 0</code> vs <code>0 -> 2 -> 0</code></li>
+<li><code>0 -> 1</code> vs <code>0 -> 2 -> 1</code></li>
+<li><code>0 -> 2</code> vs <code>0 -> 2 -> 2</code></li>
+<li><code>0 -> 3</code> vs <code>0 -> 2 -> 3</code></li>
+</ul>
+<p><strong>paths through <code>2</code> starting at <code>1</code>:</strong></p>
+<ul>
+<li><code>1 -> 0</code> vs <code>1 -> 2 -> 0</code></li>
+<li><code>1 -> 1</code> vs <code>1 -> 2 -> 1</code></li>
+<li><code>1 -> 2</code> vs <code>1 -> 2 -> 2</code></li>
+<li><code>1 -> 3</code> vs <code>1 -> 2 -> 3</code></li>
+</ul>
+<p><strong>paths through <code>2</code> starting at <code>2</code>:</strong></p>
+<ul>
+<li><code>2 -> 0</code> vs <code>2 -> 2 -> 0</code></li>
+<li><code>2 -> 1</code> vs <code>2 -> 2 -> 1</code></li>
+<li><code>2 -> 2</code> vs <code>2 -> 2 -> 2</code></li>
+<li><code>2 -> 3</code> vs <code>2 -> 2 -> 3</code></li>
+</ul>
+<p><strong>paths through <code>2</code> starting at <code>3</code>:</strong></p>
+<ul>
+<li><code>3 -> 0</code> vs <code>3 -> 2 -> 0</code></li>
+<li><code>3 -> 1</code> vs <code>3 -> 2 -> 1</code></li>
+<li><code>3 -> 2</code> vs <code>3 -> 2 -> 2</code></li>
+<li><code>3 -> 3</code> vs <code>3 -> 2 -> 3</code></li>
+</ul>
+<p>The valid comparisons are:</p>
+<ul>
+<li><code>0 -> 3</code> vs <code>0 -> 2 -> 3</code></li>
+<li><code>1 -> 3</code> vs <code>1 -> 2 -> 3</code></li>
+</ul>
+<p>In first case, we compare infinity (<code>0 -> 3</code>) to <code>1 + 5 == 6</code> (<code>0 -> 2</code> and then <code>2 -> 3</code>).
+In second case we compare infinity again (<code>1 -> 3</code>) to <code>6 + 5 == 11</code> (<code>1 -> 2</code> and then <code>2 -> 3</code>).
+In both cases we select the path through vertex <code>2</code>.</p>
+<div class="row space-between">
+    <div class="col">
+        <table>
+            <tbody>
+                <tr>
+                    <td rowspan="2"></td>
+                    <td colspan="5" class="center head">D</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td class="head">1</td>
+                    <td class="head">2</td>
+                    <td class="head">3</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td>0</td>
+                    <td>∞</td>
+                    <td>1</td>
+                    <td class="change">6</td>
+                </tr>
+                <tr>
+                    <td class="head">1</td>
+                    <td>7</td>
+                    <td>0</td>
+                    <td>6</td>
+                    <td class="change">11</td>
+                </tr>
+                <tr>
+                    <td class="head">2</td>
+                    <td>∞</td>
+                    <td>∞</td>
+                    <td>0</td>
+                    <td>5</td>
+                </tr>
+                <tr>
+                    <td class="head">3</td>
+                    <td>9</td>
+                    <td>2</td>
+                    <td>8</td>
+                    <td>0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col">
+        <table>
+            <tbody>
+                <tr>
+                    <td rowspan="2"></td>
+                    <td colspan="5" class="center head">R</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td class="head">1</td>
+                    <td class="head">2</td>
+                    <td class="head">3</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td class="change">2</td>
+                </tr>
+                <tr>
+                    <td class="head">1</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td class="change">2</td>
+                </tr>
+                <tr>
+                    <td class="head">2</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="head">3</td>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>3</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<h3 id="step-4">Step 4</h3>
+<p>For vertex <code>3</code> we will check each combination of:</p>
+<p><strong>paths through <code>3</code> starting at <code>0</code>:</strong></p>
+<ul>
+<li><code>0 -> 0</code> vs <code>0 -> 3 -> 0</code></li>
+<li><code>0 -> 1</code> vs <code>0 -> 3 -> 1</code></li>
+<li><code>0 -> 2</code> vs <code>0 -> 3 -> 2</code></li>
+<li><code>0 -> 3</code> vs <code>0 -> 3 -> 3</code></li>
+</ul>
+<p><strong>paths through <code>3</code> starting at <code>1</code>:</strong></p>
+<ul>
+<li><code>1 -> 0</code> vs <code>1 -> 3 -> 0</code></li>
+<li><code>1 -> 1</code> vs <code>1 -> 3 -> 1</code></li>
+<li><code>1 -> 2</code> vs <code>1 -> 3 -> 2</code></li>
+<li><code>1 -> 3</code> vs <code>1 -> 3 -> 3</code></li>
+</ul>
+<p><strong>paths through <code>3</code> starting at <code>2</code>:</strong></p>
+<ul>
+<li><code>2 -> 0</code> vs <code>2 -> 3 -> 0</code></li>
+<li><code>2 -> 1</code> vs <code>2 -> 3 -> 1</code></li>
+<li><code>2 -> 2</code> vs <code>2 -> 3 -> 2</code></li>
+<li><code>2 -> 3</code> vs <code>2 -> 3 -> 3</code></li>
+</ul>
+<p><strong>paths through <code>3</code> starting at <code>3</code>:</strong></p>
+<ul>
+<li><code>3 -> 0</code> vs <code>3 -> 3 -> 0</code></li>
+<li><code>3 -> 1</code> vs <code>3 -> 3 -> 1</code></li>
+<li><code>3 -> 2</code> vs <code>3 -> 3 -> 2</code></li>
+<li><code>3 -> 3</code> vs <code>3 -> 3 -> 3</code></li>
+</ul>
+<p>This case is the last one. It is similar to the previous two. But please note that we are using the matrix values from the previous step.</p>
+<div class="content-read-marker" data-fraction="75"></div>
+<p>For path <code>0 -> 1</code>:</p>
+<ol>
+<li>direct path from <code>0</code> to <code>1</code> does not exist, take it as <code>inf</code></li>
+<li>shortest path from <code>0</code> to <code>3</code> <em>(whichever it is)</em> has length <code>6</code>; <code>3 -> 1</code> has length <code>2</code>; the total path has length <code>8</code> which is better than infinity</li>
+</ol>
+<img src="/images/floyd-warshall/floyd-warshall-sample-step-4-1.webp" loading="lazy" alt="">
+<!--
+digraph G {
+    layout = "circo";
+
+    0->2 [label = "1", color = "blue"];
+    2->3 [label = "5", color = "blue"];
+    3->1 [label = "2", color = "blue"];
+    1->2 [label = "6"];
+    1->0 [label = "7"];
+    0->1 [label = "∞", style = "dashed", color = "red"];
+}
+-->
+<p>For path <code>2 -> 0</code>:</p>
+<ol>
+<li>direct path <code>2 -> 0</code> does not exist</li>
+<li>the edge <code>2 -> 3</code> exists and has length <code>5</code>; path from <code>3</code> to <code>0</code> has length <code>9</code>; so the shortest path from <code>2</code> to <code>0</code> through <code>3</code> will have length <code>9 + 5 == 14</code></li>
+</ol>
+<p>For path <code>2 -> 1</code>:</p>
+<ol>
+<li>there is no direct path <code>2 -> 1</code></li>
+<li>the path <code>2 -> 3</code> is <code>5</code> and <code>3 -> 1</code> is <code>2</code>, so <code>2 -> 3 -> 1</code> is <code>7</code></li>
+</ol>
+<p>Both matrices <code>R</code> and <code>D</code> will be updated to reflect that:</p>
+<div class="row space-between">
+    <div class="col">
+        <table>
+            <tbody>
+                <tr>
+                    <td rowspan="2"></td>
+                    <td colspan="5" class="center head">D</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td class="head">1</td>
+                    <td class="head">2</td>
+                    <td class="head">3</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td>0</td>
+                    <td class="change">8</td>
+                    <td>1</td>
+                    <td>6</td>
+                </tr>
+                <tr>
+                    <td class="head">1</td>
+                    <td>7</td>
+                    <td>0</td>
+                    <td>6</td>
+                    <td>11</td>
+                </tr>
+                <tr>
+                    <td class="head">2</td>
+                    <td class="change">14</td>
+                    <td class="change">7</td>
+                    <td>0</td>
+                    <td>5</td>
+                </tr>
+                <tr>
+                    <td class="head">3</td>
+                    <td>9</td>
+                    <td>2</td>
+                    <td>8</td>
+                    <td>0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col">
+        <table>
+            <tbody>
+                <tr>
+                    <td rowspan="2"></td>
+                    <td colspan="5" class="center head">R</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td class="head">1</td>
+                    <td class="head">2</td>
+                    <td class="head">3</td>
+                </tr>
+                <tr>
+                    <td class="head">0</td>
+                    <td>0</td>
+                    <td class="change">2</td>
+                    <td>2</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td class="head">1</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td class="head">2</td>
+                    <td class="change">3</td>
+                    <td class="change">3</td>
+                    <td>2</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td class="head">3</td>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>3</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<p>And then the algorithm is done.</p>
+<h2 id="path-reconstruction">Path reconstruction</h2>
+<p>In order to reconstruct the path from vertex <code>u</code> to vertex <code>v</code>, you need follow the elements of matrix <code>R</code>, effectively going “through” each vertex:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="csharp"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    List</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">Int32</span><span style="color:#24292E;--shiki-dark:#E1E4E8">> </span><span style="color:#6F42C1;--shiki-dark:#B392F0">Path</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> new</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> List</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">Int32</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    while</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (start </span><span style="color:#D73A49;--shiki-dark:#F97583">!=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> end) {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        Path.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">Add</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(start);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        start </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> R[start, end];</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    Path.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">Add</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(end);</span></span>
+<span class="line"></span></code></pre>
+<p>Let’s follow this logic in steps again, “animating” the algorithm. For instance, the longest path in this graph possible, from <code>0</code> to <code>1</code>:</p>
+<ol start="0">
+<li><code>start = 0, end = 1</code></li>
+<li><code>R[0, 1] == 2, start = 2, end = 1</code></li>
+<li><code>R[2, 1] == 3, start = 3, end = 1</code></li>
+<li><code>R[3, 1] == 1, start = 1, end = 1</code></li>
+</ol>
+<p>So the path from <code>0</code> to <code>1</code> is all the values the <code>start</code> variable takes <em>(except last)</em>, namely: <code>0 -> 2 -> 3</code>.</p>
+<h2 id="summary">Summary</h2>
+<p>The whole code could be wrapped in a couple of methods:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="csharp"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">using</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> System</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">using</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> System</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">Collections</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">Generic</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">public</span><span style="color:#D73A49;--shiki-dark:#F97583"> class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> FloydWarshallPathFinder</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    private</span><span style="color:#D73A49;--shiki-dark:#F97583"> int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> N</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    private</span><span style="color:#D73A49;--shiki-dark:#F97583"> int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[,] </span><span style="color:#6F42C1;--shiki-dark:#B392F0">D</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    private</span><span style="color:#D73A49;--shiki-dark:#F97583"> int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[,] </span><span style="color:#6F42C1;--shiki-dark:#B392F0">R</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    public</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> FloydWarshallPathFinder</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> NumberOfVertices</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[,] </span><span style="color:#6F42C1;--shiki-dark:#B392F0">EdgesLengths</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        N </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> NumberOfVertices;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        D </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> EdgesLengths;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        R </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> null</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    public</span><span style="color:#D73A49;--shiki-dark:#F97583"> int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[,] </span><span style="color:#6F42C1;--shiki-dark:#B392F0">FindAllPaths</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        R </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> new</span><span style="color:#D73A49;--shiki-dark:#F97583"> int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[N, N];</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> i</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; i </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> N; i</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> t</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; t </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> N; t</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                R[i, t] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> t;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> k</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; k </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> N; k</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> v</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; v </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> N; v</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">                for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> u</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; u </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> N; u</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">                    if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (D[u, k] </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> D[k, v] </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> D[u, v]) {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                        D[u, v] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> D[u, k] </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> D[k, v];</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                        R[u, v] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> R[u, k];</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> R;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    public</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> List</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">Int32</span><span style="color:#24292E;--shiki-dark:#E1E4E8">> </span><span style="color:#6F42C1;--shiki-dark:#B392F0">FindShortestPath</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> start</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (R </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> null</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            FindAllPaths</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        List</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">Int32</span><span style="color:#24292E;--shiki-dark:#E1E4E8">> </span><span style="color:#6F42C1;--shiki-dark:#B392F0">Path</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> new</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> List</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">Int32</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        while</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (start </span><span style="color:#D73A49;--shiki-dark:#F97583">!=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> end) {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            Path.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">Add</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(start);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            start </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> R[start, end];</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        Path.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">Add</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(end);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Path;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">public</span><span style="color:#D73A49;--shiki-dark:#F97583"> class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> MainClass</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    public</span><span style="color:#D73A49;--shiki-dark:#F97583"> static</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Main</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> N</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[,] </span><span style="color:#6F42C1;--shiki-dark:#B392F0">D</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> new</span><span style="color:#D73A49;--shiki-dark:#F97583"> int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[N, N];</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> i</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; i </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> N; i</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> t</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; t </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> N; t</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">                if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (i </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> t) {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                    D[i, t] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                } </span><span style="color:#D73A49;--shiki-dark:#F97583">else</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                    D[i, t] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 9999</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        D[</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        D[</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 7</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        D[</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 6</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        D[</span><span style="color:#005CC5;--shiki-dark:#79B8FF">2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">3</span><span style="color:#24292E;--shiki-dark:#E1E4E8">] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 5</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        D[</span><span style="color:#005CC5;--shiki-dark:#79B8FF">3</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        FloydWarshallPathFinder</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> pathFinder</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> new</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> FloydWarshallPathFinder</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(N, D);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> start</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> end</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        Console.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">WriteLine</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Path: {0}"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, String.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">Join</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">" -> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, pathFinder.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">FindShortestPath</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(start, end).</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ToArray</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()));</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>You can read ‘bout this algorithm on <a href="http://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm">wikipedia</a> and get some data structures generated automatically <a href="http://quickgraph.codeplex.com/">here</a></p>
+<div class="content-read-marker" data-fraction="100"></div>  </div> </article> </main> <footer data-astro-cid-sz7xmlte>
+&copy; 2024 Your name here. All rights reserved.
+<div class="social-links" data-astro-cid-sz7xmlte> <a href="https://m.webtoo.ls/@astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Mastodon</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/mastodon" data-astro-cid-sz7xmlte><path fill="currentColor" d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://twitter.com/astrodotbuild" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Twitter</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/twitter" data-astro-cid-sz7xmlte><path fill="currentColor" d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://github.com/withastro/astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Go to Astro's GitHub repo</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/github" data-astro-cid-sz7xmlte><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" data-astro-cid-sz7xmlte></path></svg> </a> </div> </footer>  </body></html>

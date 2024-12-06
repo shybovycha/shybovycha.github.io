@@ -1,0 +1,263 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-bvzihdzo> <head><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.0.3"><!-- Font preloads --><link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin><!-- Canonical URL --><link rel="canonical" href="https://shybovycha.github.io/2015/06/22/2015-06-22-about-bower-webcomponents-and-the-all-the-good.html/"><!-- Primary Meta Tags --><title>About Bower, WebComponents and the all the good</title><meta name="title" content="About Bower, WebComponents and the all the good"><meta name="description"><link rel="stylesheet" href="/_astro/index.BvFNhZYw.css">
+<style>footer[data-astro-cid-sz7xmlte]{padding:2em 1em 6em;background:linear-gradient(var(--gray-gradient)) no-repeat;color:rgb(var(--gray));text-align:center}.social-links[data-astro-cid-sz7xmlte]{display:flex;justify-content:center;gap:1em;margin-top:1em}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]{text-decoration:none;color:rgb(var(--gray))}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]:hover{color:rgb(var(--gray-dark))}main[data-astro-cid-bvzihdzo]{width:calc(100% - 2em);max-width:100%;margin:0}.hero-image[data-astro-cid-bvzihdzo]{width:100%}.hero-image[data-astro-cid-bvzihdzo] img[data-astro-cid-bvzihdzo]{display:block;margin:0 auto;border-radius:12px;box-shadow:var(--box-shadow)}.prose[data-astro-cid-bvzihdzo]{width:720px;max-width:calc(100% - 2em);margin:auto;padding:1em;color:rgb(var(--gray-dark))}.title[data-astro-cid-bvzihdzo]{margin-bottom:1em;padding:1em 0;text-align:center;line-height:1}.title[data-astro-cid-bvzihdzo] h1[data-astro-cid-bvzihdzo]{margin:0 0 .5em}.date[data-astro-cid-bvzihdzo]{margin-bottom:.5em;color:rgb(var(--gray))}.last-updated-on[data-astro-cid-bvzihdzo]{font-style:italic}
+[data-astro-image]{width:100%;height:auto;object-fit:var(--fit);object-position:var(--pos);aspect-ratio:var(--w) / var(--h)}[data-astro-image=responsive]{max-width:calc(var(--w) * 1px);max-height:calc(var(--h) * 1px)}[data-astro-image=fixed]{width:calc(var(--w) * 1px);height:calc(var(--h) * 1px)}
+</style></head> <body data-astro-cid-bvzihdzo> <nav class="top"> <div class="links"> <a class="nav-link nav-item" href="/">Home</a> <a class="nav-link nav-item" href="/about.html">About</a> </div> </nav> <main data-astro-cid-bvzihdzo> <article data-astro-cid-bvzihdzo> <div class="hero-image" data-astro-cid-bvzihdzo>  </div> <div class="prose" data-astro-cid-bvzihdzo> <div class="title" data-astro-cid-bvzihdzo> <div class="date" data-astro-cid-bvzihdzo> <time datetime="2015-06-22T12:23:43.000Z"> Jun 22, 2015 </time>  </div> <h1 data-astro-cid-bvzihdzo>About Bower, WebComponents and the all the good</h1> <hr data-astro-cid-bvzihdzo> </div>  <img src="/images/Pg-02-shakespeare-getty.webp" class="img-responsive img-sm img-rounded pull-right">
+<h2 id="bem">BEM</h2>
+<p>These days, many web developers use different methodologies to make their web page source look structured and clean. But all those methodologies only work well until you use third-party libraries or involve a new person in your project.</p>
+<!--more-->
+<p>BEM <em>(Block Element Modifier)</em> is a convention for naming CSS classes in a such way so they do not overlap.
+Doing so you may turn your page into a set of independent blocks, or <em>components</em>. According to BEM,
+you name your CSS classes as follows: <code>BlockName__ElementName__ElementModifier</code>.</p>
+<p><code>BlockName</code> is a name of a <em>component</em>, your element belongs to. This may be a menu, a gallery or a widget,
+for example.</p>
+<p><code>ElementName</code> is a name of element of the block. Good examples of elements are label, title, avatar, menu_item,
+etc.</p>
+<p><code>ElementModifier</code> is a more complex thing. This is a state of element, which defines how element may look
+like in a certain conditions. This may be a checkbox’ <code>checked</code> status, <code>focus</code> property or <code>is_menu_opened</code>
+flag. Modifier may have one of two types:</p>
+<ul>
+<li><code>boolean</code>, where modifier is just a flag, showing if element’s property is active or not</li>
+<li><code>key-value</code>, where modifier points to one of many possible property values</li>
+</ul>
+<p>For example, boolean modifiers are: <code>checked</code>, <code>big</code> (is element big or not), <code>hovered</code>, <code>opened</code>, etc.
+Key-value modifiers may be, for instance, <code>menu_type_bullet</code> or <code>menu_type_numbers</code>, <code>menu_top</code>, <code>menu_left</code>
+or <code>menu_right</code> (representing menu’ position).</p>
+<p>Combining those three you may determine the look of any element and its state:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="css"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">.navigation__menu__position_left</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {...}</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">.navigation__menu__position_right</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { ... }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">.top_menu__avatar__small</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { ... }</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">.top_menu__avatar__medium</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { ... }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">/* more meaningful */</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">.user_widget__avatar__menu_position_top</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { ... }</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">.user_widget__avatar__menu_position_left</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { ... }</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">.user_widget__avatar__menu_position_right</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { ... }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">/* more simple */</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">.button__big</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { ... }</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">.button__red</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { ... }</span></span>
+<span class="line"></span></code></pre>
+<p>The aim of BEM is great - to make the web page use independent blocks with some structured <strong>CSS class names</strong> and have them all described in a nice way in the CSS files. Whilst it may sound like a Holy Grail for the Web, let’s take a look at a real-world example of how BEM is used.</p>
+<p>There are, in fact, two approaches of BEM.</p>
+<p><strong>The old approach</strong></p>
+<p>Below is an example of vanilla BEM:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="css"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">.bwelcome__message.hidden</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    display</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">none</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">.bwelcome__message</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    color</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">yellow</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    border-radius</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">5</span><span style="color:#D73A49;--shiki-dark:#F97583">px</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    text-align</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">center</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">.bwelcome__label</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    font-size</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">12</span><span style="color:#D73A49;--shiki-dark:#F97583">pt</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">.bwelcome__input</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    display</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">block</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    width</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">100</span><span style="color:#D73A49;--shiki-dark:#F97583">%</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>And the HTML:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="html"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">div</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> class</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"bwelcome"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">div</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> class</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"bwelcome__message hiddent"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>Hello, username!&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">div</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">div</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> class</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"bwelcome__label"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>Enter your name:&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">div</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">div</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> class</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"bwelcome__input"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">div</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">div</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"></span></code></pre>
+<p>So, here we can see that any styles should not overlap with the defined ones unless they are written in a BEM-way for the same element. Nice idea,implementation not so nice… All these <code>b#{block}__#{element}</code> classes are way too long, don’t you think? Writing them everywhere - HTML, CSS and JavaScript - is really painful.</p>
+<p><strong>The new approach</strong></p>
+<p>But what about the newer version of BEM? Its authors developed a toolbox with their own framework,
+containing many tools to help you use BEM methodology. It contains two interesting tools - <strong>BEMJSON</strong>
+and <strong>BEMHTML</strong>. Those two allow you to define your views with JavaScript and JSON.</p>
+<p>To use them, just install <code>bem</code> with <code>npm</code>: <code>npm install bem</code>. Then you will be able to create your pages
+with either BEM, BEMTREE, BEMHTML and BEMJSON. This has two advantages to writing pages by your own:</p>
+<ol>
+<li>they come with plugins, so you may have some parts of CSS ready to use out-of-the-box</li>
+<li>it replaces writing all the selectors manually with writing them via commands of the <code>bem</code> utility</li>
+</ol>
+<p>For instance, here’s how your page may look like when being made with BEMHTML:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">     block: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'page'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">     title: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'hello'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">     head: [</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">         { elem: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'css'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, url: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'_hello.css'</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">     ],</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">     scripts: [{ elem: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'js'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, url: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'_hello.js'</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }],</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">     mods: { theme: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'islands'</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> },</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">     content: [</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">         {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">             block: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'hello'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">             content: [</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                 {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                     elem: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'greeting'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                     content: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'Hello, %username%!'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                  }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">             ]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">         }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">     ]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8"> })</span></span>
+<span class="line"></span></code></pre>
+<p>And here’s how it may look like when made with BEMJSON:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">exports</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.deps </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "block"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"page"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "elem"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"css"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "attrs"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: { </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"src"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"_hello.css"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    },</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "block"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"page"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "elem"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"js"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "attrs"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: { </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"src"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"_hello.js"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    },</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "block"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"page"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "elem"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"meta"</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    },</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "block"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"header"</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    },</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "block"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"content"</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    },</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "block"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"footer"</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">];</span></span>
+<span class="line"></span></code></pre>
+<p>Those two may work both together, when you define general page structure with BEMJSON and each block you
+define with BEMHTML, or separatedly, when you define all your page in either BEMJSON or BEMHTML.</p>
+<p>But anyway, in BEMJSON or BEMHTML or whatever, the whole page is described in one JS file, which will then be compiled into an HTML page. Using this approach allows you not only to pack the blocks and elements into one structure, but also to spice it up with some JavaScript, which handles those components.</p>
+<p>Sounds great and may be somewhat helpful for new projects. But I believe there’s a better solution.</p>
+<h2 id="introducing-webcomponents">Introducing WebComponents</h2>
+<p>Although the implementation of BEM is clumsy, the idea is really great! This is just like encapsulation in OOP - one of the mightiest principles in programming. But what better options are there than BEM?</p>
+<p>Recently we have all seen great changes to the Web. We now have ES6, CSS3, HTML5 and all of them give us ultimate power! Support for old browsers is now provided with hacks called <em>polyfills</em>. But why should we stop ourselves using the best of what we have in the name of <a href="http://gs.statcounter.com/#browser_version-ww-monthly-201405-201505">3% of Internet users</a>? Well, if you really do have to continue supporting all of those, you could just stop reading now. Or you could concentrate all your will and try out all these brand-new features in your pet project.</p>
+<p>So, the new approach in web design encapsulation uses WebComponents. This is a technology, which does not
+works everywhere. This is contraversary to a BEM methodology, where you only define a CSS classes, which
+are supported since very early CSS versions.</p>
+<p>So, welcome the WebComponents’ example:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="handlebars"><code><span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">template</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> id</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"welcome-component"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">style</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        .message</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">          background-color</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">#fea</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">          padding</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">10</span><span style="color:#D73A49;--shiki-dark:#F97583">px</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 20</span><span style="color:#D73A49;--shiki-dark:#F97583">px</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">          text-align</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">left</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">          border-radius</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">5</span><span style="color:#D73A49;--shiki-dark:#F97583">px</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">          font-family</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">Arial</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      &#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">style</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">div</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> class=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"message"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>Hello, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">{{</span><span style="color:#E36209;--shiki-dark:#FFAB70">name</span><span style="color:#005CC5;--shiki-dark:#79B8FF">}}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">!&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">div</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    &#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">template</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">div</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> class=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"shadow-host"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">div</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">div</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> class=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"message"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>Non-component message&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">div</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">script</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> type=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"text/javascript"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> host </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> document.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">querySelector</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'.shadow-host'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        template </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> document.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">querySelector</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'#welcome-component'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        shadow </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> host.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">createShadowRoot</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    shadow.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">appendChild</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(template.content);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    &#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">script</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"></span>
+<span class="line"></span></code></pre>
+<p>This code may not look so good, as it might, but it works like a charm!</p>
+<p><a href="http://codepen.io/shybovycha/pen/gpGJOV"></a></p><figure data-orig-width="660" data-orig-height="79" class="tmblr-full"><a href="http://codepen.io/shybovycha/pen/gpGJOV"><img src="/images/tumblr/about-bower-webcomponents-and-all-the-good/tumblr_inline_nqciwfuAqT1qh5oee_500.webp" alt="image" data-orig-width="660" data-orig-height="79"></a></figure><p></p>
+<p>This example is a bit ugly - it has both CSS, HTML and JavaScript mixed in a single file, but we’ll deal with it for a short time. Just think of the power you’ve got! You can define your own… well, it’s certainly kinda components! It is a bit uncomfortable to paste onto a page… and they are hardly ready to be used with something like Angular.</p>
+<p>Well, yeah, this is as ugly as BEM.</p>
+<p>But now you defined a component of your web-page, which you can then reuse with copying just one portion
+of XHTML in place. And placing it inside a totally different web page will not break it down - both
+HTML and CSS are separated and isolated and will not overlap with any other style or martkup. But
+let’s try out our web component!</p>
+<h2 id="bower">Bower</h2>
+<p>Earlier I did not need to use any package managers except <code>gem</code> and <code>apt-get</code>. Yet, I was not so stupid as to install all the javascript libraries my project needs with RubyGems. On my projects I had to download the necessary library versions and store them in the <code>assets/javascripts</code> directory. Forever. Or at the very least an upgrade was needed.</p>
+<p>But then I tried Bower. It was so easy to manage my assets! So I highly recommend this way to you, dear Reader!</p>
+<p>To use Bower from scratch on a brand new project, you need to</p>
+<ol>
+<li>install Bower with <code>npm</code></li>
+<li>ininitialize your project with <code>bower init</code></li>
+<li>define dependencies in the <code>dependencies</code> object in your new <code>bower.json</code> file</li>
+<li>install them with <code>bower install</code></li>
+</ol>
+<p>Then you should end up with all your libraries in the <code>bower_components</code> directory. And that’s it! Every package has its own dir. So you can keep track of all the versions etc.</p>
+<h2 id="polymer">Polymer</h2>
+<p>Let’s start cooking our demo with <a href="https://www.polymer-project.org/">Polymer</a>. First, initialize the Bower project and add this section to your fresh <code>bower.json</code> file:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">"dependencies"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "polymer"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Polymer/polymer#^1.0.0"</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>Then run <code>bower install</code>. This will provide you with all the stuff you need.</p>
+<p>Now we will move our pretty <code>welcome-component</code> to a new place. Create two files:<code>welcome-component.html</code> and <code>index.html</code>. Fill the last one with <a href="http://docs.emmet.io/">Emmet</a>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="pug"><code><span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">html:5</span></span>
+<span class="line"></span></code></pre>
+<p><em>(you need to hit the “Expand” key, formerly Tab, at the end of this single line while editing the<code>index.html</code></em> <em>file in an Emmet-powered editor)</em>. And add just a single line within the HTML’ <code>&#x3C;body></code> tag:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="html"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">welcome-component</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">welcome-component</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"></span></code></pre>
+<p>Now let’s define our new component in <code>welcome-component.html</code>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="handlebars"><code><span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8"> &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">dom-module</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> id</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"welcome-component"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">style</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        .message</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">          background-color</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">#fea</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">          padding</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">10</span><span style="color:#D73A49;--shiki-dark:#F97583">px</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 20</span><span style="color:#D73A49;--shiki-dark:#F97583">px</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">          text-align</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">left</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">          border-radius</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">5</span><span style="color:#D73A49;--shiki-dark:#F97583">px</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">          font-family</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">Arial</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      &#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">style</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">template</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">div</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> class=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"message"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>Hello, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">{{</span><span style="color:#E36209;--shiki-dark:#FFAB70"> name</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> }}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">!&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">div</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      &#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">template</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">script</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">      Polymer</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        is: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"welcome-component"</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      });</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    &#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">script</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  &#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">dom-module</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"></span>
+<span class="line"></span></code></pre>
+<p>Now, add our new component importing to the <code>&#x3C;head></code> tag of the <code>index.html</code> file:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="html"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">link</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> rel</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"import"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> href</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"bower_components/polymer/polymer.html"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> /> </span><span style="color:#6A737D;--shiki-dark:#6A737D">&#x3C;!-- imports Polymer --></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">link</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> rel</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"import"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> href</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"welcome-component.html"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> /> </span><span style="color:#6A737D;--shiki-dark:#6A737D">&#x3C;!-- imports our component --></span></span>
+<span class="line"></span></code></pre>
+<p>To run this quickly, you might want to use <code>http-server</code> from <code>npm</code>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">http-server</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -o</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --cors</span></span>
+<span class="line"></span></code></pre>
+<p>And voila! We’ve just made a nice web component, which could be used really simply. And the code is totally clean!</p>
+<p>If you look at the HTML source, you’d see a beautiful DOM structure: we’ve got our <code>&#x3C;div class="message"></code> within the <code>&#x3C;welcome-component></code> tag. And its style will never affect any other elements, even when you create another <code>&#x3C;div></code> outside the <code>&#x3C;welcome-component></code>. Seriously, you can try it!</p>
+<p>Yeah, I know we’ve used Polymer and that’s cheating. But think of it as of a temporary hack you will remove when your browser starts supporting custom tags.</p>
+<h2 id="custom-attributes-for-custom-tags">Custom attributes for custom tags</h2>
+<p>Now, the last thing I’d like to show is the attributes for our custom components. We’d like to pass some data to our brand new components easily, right? So, let’s define a <code>name</code> attribute, which we’ll show instead of it!</p>
+<p>To do this, we shall use two Polymer features. First of all, let’s define our attribute, adding this section to our <code>Polymer()</code> call:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">Polymer</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    ...</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    properties: {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      name: {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        type: String</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    ...</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">});</span></span>
+<span class="line"></span></code></pre>
+<p>Now that we’ve defined our attribute THAT simply, we should use it somehow. Polymer allows us to define a method, which will be called once the component gets inserted into a webpage:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">Polymer</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    ...</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    ready: </span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">      this</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">querySelector</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'.message'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">).innerHTML </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> `Hello, ${</span><span style="color:#005CC5;--shiki-dark:#79B8FF">this</span><span style="color:#032F62;--shiki-dark:#9ECBFF">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">name</span><span style="color:#032F62;--shiki-dark:#9ECBFF">}!`</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    ...</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">});</span></span>
+<span class="line"></span></code></pre>
+<p>As long as you’re riding <s>IOJS</s> NodeJS 5.0+, you can use the ES6 string interpolation feature, as in the example above =) Here, the <code>this</code> variable is bound to the <code>&#x3C;welcome-component></code> tag. So in order to change the <code>.message</code> tag’s HTML, we need to find it first. For this purpose I’ve used the HTML5 <code>querySelector</code> method.</p>
+<p>Cool enough, right?</p>
+<h2 id="conclusion-goes-here">Conclusion goes here</h2>
+<p>To end-up this short tutorial on WebComponents, I would like to suggest you to read some other tutorials, especially the <a href="http://webcomponents.org/articles">WebComponents website</a>. And never stop trying something new!</p>  </div> </article> </main> <footer data-astro-cid-sz7xmlte>
+&copy; 2024 Your name here. All rights reserved.
+<div class="social-links" data-astro-cid-sz7xmlte> <a href="https://m.webtoo.ls/@astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Mastodon</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/mastodon" data-astro-cid-sz7xmlte><path fill="currentColor" d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://twitter.com/astrodotbuild" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Twitter</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/twitter" data-astro-cid-sz7xmlte><path fill="currentColor" d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://github.com/withastro/astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Go to Astro's GitHub repo</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/github" data-astro-cid-sz7xmlte><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" data-astro-cid-sz7xmlte></path></svg> </a> </div> </footer>  </body></html>

@@ -1,0 +1,66 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import { SITE_TITLE, SITE_DESCRIPTION, EARLIEST_POST_DATE, PAGE_SIZE } from '../consts';
+import { getCollection } from 'astro:content';
+import FormattedDate from '../components/FormattedDate.astro';
+import PostPreview from '../components/PostPreview.astro';
+import type { CollectionEntry } from 'astro:content';
+import IndexFooter from './IndexFooter.astro';
+
+interface Props {
+    page: number;
+}
+
+const { page = 1 } = Astro.props;
+
+const allPosts = (await getCollection('blog')).sort(
+    (a: CollectionEntry<'blog'>, b: CollectionEntry<'blog'>) => (b.data.date || EARLIEST_POST_DATE).valueOf() - (a.data.date || EARLIEST_POST_DATE).valueOf(),
+);
+
+const totalPages = Math.ceil(allPosts.length / PAGE_SIZE);
+
+const posts = allPosts.slice((page - 1) * PAGE_SIZE, (page) * PAGE_SIZE);
+
+const generatePostUrl = (post: CollectionEntry<'blog'>) => {
+    const date = post.data.date || EARLIEST_POST_DATE;
+
+    const year = date.getFullYear();
+    const month = (date.getMonth() <= 9 ? '0' : '') + (date.getMonth() + 1);
+    const day = (date.getDate() <= 9 ? '0' : '') + date.getDate();
+
+    return `/${year}/${month}/${day}/${post.id}.html`;
+};
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+    </head>
+    <body>
+        <Header />
+        <main>
+            <section>
+                {
+                    posts.map((post) => (
+                        <article>
+                            <h1>
+                                <a href={generatePostUrl(post)}>{post.data.title}</a>
+                            </h1>
+
+                            <FormattedDate date={post.data.date || EARLIEST_POST_DATE} />
+
+                            <div class="content">
+                                <PostPreview post={post} />
+                            </div>
+
+                            {post.data.excerpt ? <a role="button" class="btn btn-md btn-primary read-more" href={generatePostUrl(post)}>Read more</a> : null}
+                        </article>
+                    ))
+                }
+            </section>
+        </main>
+        <IndexFooter currentPage={page} totalPages={totalPages} />
+    </body>
+</html>

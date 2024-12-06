@@ -1,0 +1,8 @@
+        <svg width="416" height="359.84">
+            <polygon points="104.0,4.0 304.0,4.0 404.0,178.0 304.0,350.0 104.0,350.0 4.0,178.0" style="fill:#eee;stroke:none;" />
+            <g stroke="#bde" stroke-width="8" fill="none">
+                <path d="M 336.0,61.99999999999999 Q 204.0,178.0 170.0,350.0" stroke="#f65" />
+<path d="M 236.0,4.0 Q 204.0,178.0 72.0,61.99999999999999" stroke="#bde" />
+            </g>
+            <polygon points="104.0,4.0 304.0,4.0 404.0,178.0 304.0,350.0 104.0,350.0 4.0,178.0" style="fill:none;stroke:#000;stroke-width:4" />
+        </svg>

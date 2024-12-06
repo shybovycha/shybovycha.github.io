@@ -1,0 +1,322 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-bvzihdzo> <head><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.0.3"><!-- Font preloads --><link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin><!-- Canonical URL --><link rel="canonical" href="https://shybovycha.github.io/2014/07/28/2014-07-28-php-blog-part-3.html/"><!-- Primary Meta Tags --><title>Чоткій блог. Часть третя</title><meta name="title" content="Чоткій блог. Часть третя"><meta name="description"><link rel="stylesheet" href="/_astro/index.BvFNhZYw.css">
+<style>footer[data-astro-cid-sz7xmlte]{padding:2em 1em 6em;background:linear-gradient(var(--gray-gradient)) no-repeat;color:rgb(var(--gray));text-align:center}.social-links[data-astro-cid-sz7xmlte]{display:flex;justify-content:center;gap:1em;margin-top:1em}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]{text-decoration:none;color:rgb(var(--gray))}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]:hover{color:rgb(var(--gray-dark))}main[data-astro-cid-bvzihdzo]{width:calc(100% - 2em);max-width:100%;margin:0}.hero-image[data-astro-cid-bvzihdzo]{width:100%}.hero-image[data-astro-cid-bvzihdzo] img[data-astro-cid-bvzihdzo]{display:block;margin:0 auto;border-radius:12px;box-shadow:var(--box-shadow)}.prose[data-astro-cid-bvzihdzo]{width:720px;max-width:calc(100% - 2em);margin:auto;padding:1em;color:rgb(var(--gray-dark))}.title[data-astro-cid-bvzihdzo]{margin-bottom:1em;padding:1em 0;text-align:center;line-height:1}.title[data-astro-cid-bvzihdzo] h1[data-astro-cid-bvzihdzo]{margin:0 0 .5em}.date[data-astro-cid-bvzihdzo]{margin-bottom:.5em;color:rgb(var(--gray))}.last-updated-on[data-astro-cid-bvzihdzo]{font-style:italic}
+[data-astro-image]{width:100%;height:auto;object-fit:var(--fit);object-position:var(--pos);aspect-ratio:var(--w) / var(--h)}[data-astro-image=responsive]{max-width:calc(var(--w) * 1px);max-height:calc(var(--h) * 1px)}[data-astro-image=fixed]{width:calc(var(--w) * 1px);height:calc(var(--h) * 1px)}
+</style></head> <body data-astro-cid-bvzihdzo> <nav class="top"> <div class="links"> <a class="nav-link nav-item" href="/">Home</a> <a class="nav-link nav-item" href="/about.html">About</a> </div> </nav> <main data-astro-cid-bvzihdzo> <article data-astro-cid-bvzihdzo> <div class="hero-image" data-astro-cid-bvzihdzo>  </div> <div class="prose" data-astro-cid-bvzihdzo> <div class="title" data-astro-cid-bvzihdzo> <div class="date" data-astro-cid-bvzihdzo> <time datetime="2014-07-28T12:30:00.000Z"> Jul 28, 2014 </time>  </div> <h1 data-astro-cid-bvzihdzo>Чоткій блог. Часть третя</h1> <hr data-astro-cid-bvzihdzo> </div>  <div class="row">
+    <div class="col-md-6 col-xs-12">
+        <div class="card">
+            <div class="card-header">
+                Содєржаніє
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <a href="/tumblr/2014/07/22/php-blog-part-1.html">
+                        Чоткій блог. Часть перша
+                    </a>
+                </li>
+                <li class="list-group-item">
+                    <a href="/tumblr/2014/07/27/php-blog-part-2.html">
+                        Чоткій блог. Часть друга
+                    </a>
+                </li>
+                <li class="list-group-item">
+                    <a href="/tumblr/2014/07/28/php-blog-part-3.html">
+                        Чоткій блог. Часть третя
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-6 col-xs-12 text-xs-center text-md-right"></div>
+</div>
+<h2>Прєдупрєждєніє</h2>
+<p>Будь готов! В цій главі ми полностью переробим блог! Він не буде працювати (як раньше) аж до кінця домашнього заданія; код буде магічним; придеться пару раз удалять <strong>весь</strong> код з деяких файлів! Але в сухом остаткє, потом має стати ну дуже прикольно розробляти його дальше.</p>
+<!--more-->
+<h2>RIP, блог!</h2>
+<p>От коли-небудь ти точно міг замітить, шо на сайтах мало ссилок з адрєсами віда <code>some_file.php?...</code>. А більше ссилок віда <code>/moo/foo</code>. Так от, не зря ми чуть раньше вспоминали про <strong>MVC</strong>. У нас ще осталось цілих дві букви для расшифровки - <strong>Controller</strong> і <strong>View</strong>.</p>
+<p>Раньше у нас один контроллєр отвічав чотко за одну странічку, за один php-файл. І ти помниш, як ми круто зробили з моделями, шоб можна було щитай пустий клас (ну і, канєшна, соотвєтствующу табличку в базє даних) создать - і модель у нас работала. От давай тепер зробим так, шоб і з кантроллєрами у нас було шось похоже - один клас отвічає за кучу разних странічок!</p>
+<p>В всяких там Ruby On Rails, ASP.NET MVC, Django і прочіх модних мейнстрімових фреймворках штука “контроллєр” оброблює багато всяких странічок, об’єдіньонних похожой функциональностью. Каждий публічний метод контроллєра називається <strong>action</strong> і обрабатує виключно одну странічку. Так, напрімєр, якшо у нас є контроллєр “Пости”, він обрабатує всьо шо зв’язано <strong>тільки</strong> з постами:</p>
+<ul><li>редактірованіє</li>
+<li>удалєніє</li>
+<li>созданіє</li>
+<li>просмотр</li>
+<li>просмотр списка всіх постів</li>
+</ul><p>В цій часті ми будем убивать на корню весь наш блог! Чисто раді експерименту!</p>
+<p>По суті, весь наш блог - це одна програма. В народі - <strong>application</strong>. Так давай зробим клас, який буде “запускать” наш сайт! Назвем цей клас <code>Application</code> і положим ми його рядом з <code>index.php</code>. В цьому класі нада зробить якийсь мєтод, який буде задавать настройки нашому сайту (<strong>конкрєтно нашому сайту</strong>) і мєтод, який буде собсно запускать наш сайт з цими настройками.</p>
+<p>Якшо ти вніматєльно ізучав ООП, то поймеш, шо по феншую треба всякі пєрємєнні, які стосуються <strong>конкретно такого-то об’єкта</strong> задавать в конструкторі. А всі мєтоди шо визиватимуться у цього об’єкта будуть іспользовать ці пєрмєнні.</p>
+<p>От так і предлагаю зробить:</p>
+<pre><code>&#x3C;?php
+    class Application {
+        var $database;
+
+        public function __construct() {
+            $this->database = array(
+                'user' => 'root',
+                'password' => 'abc123',
+                'host' => 'localhost',
+                'database' => 'dbank'
+            );
+        }
+
+        public function run() {
+            // шось тут коїться!
+        }
+    }
+</code></pre>
+<p>а в файлі <code>index.php</code> тепер у нас буде тільки от така штука:</p>
+<pre><code>&#x3C;?php
+    require_once('application.php');
+
+    $app = new Application();
+    $app->run();
+</code></pre>
+<p>І якшо ти зараз запустиш свій блог - ти побачиш ровним щотом нічого. Бо в методі <code>run()</code> нічого не виводиться. Давай научимось розбирать адрєс странічки, яку хоче пользоватєль</p>
+<h2>Закопуєм блог</h2>
+<p>Тепер давай розберемся от з чим: у нас пользоватєль не хоче бачити таку бяку в адрєсной строкє браузера, як тіпа <code>moo.php?foo=bar&#x26;baz=dao</code>. Йому удобніше, пріятніше читать шось тіпа <code>/moo/bar?baz=dao</code>. Тіпа вони будуть запоминать або тіпа вони зможуть записать на бумажці десь це. Не важно особо, нашо це пользоватєлю - главне зробить його щасливим.</p>
+<p>Щас ми будем обільно рефлєксірувать. Єсть в PHP така одна чудєсна пєрємєнна, як <code>$_SERVER</code>. Це масів. В ньому лежить багато інтересних всяких настройок, але нам поки треба буде тільки одна - <code>$_SERVER['REQUEST_URI']</code>. Як не странно, воно слабо зв’язано з сервером. Це - адрєс, який ввів пользоватєль, тільки без домєна. Так шо, якшо у нас сайт називається <code><a href="http://google.com/search/">http://google.com/search/</a></code>, а пользоватєль введе в адрєсну строку браузєра <code><a href="http://google.com/search/moo/foo/bar">http://google.com/search/moo/foo/bar</a></code>, то в соотвєтствующому php-файлі, пєрємєнна оця <code>$_SERVER['REQUEST_URI']</code> буде мати значення <code>/moo/foo/bar</code>.</p>
+<p>Але по умолчанію наш сервер перенаправляє пользоватєля на файл <code>index.php</code>, при цьому рісує цей <code>index.php</code> в адрєс странічки. Нада убрать його відти. Для цього ми візьмем настройки сєрвєра <strong>Apache</strong> (якшо у тебе ВНЕЗАПНО другий сервер - будем шось думать - пиши мені в лічку) і трошки їх поміняєм.</p>
+<p>Першим ділом тобі треба включить расширєніє сервера під назвою <code>rewrite</code>. В лінуксах всяких це робиться в два етапа:</p>
+<ol><li>ставиться пакєт <code>apache2-utils</code></li>
+<li>включається це расширєніє командой <code>[sudo] a2enmod rewrite</code></li>
+</ol><p>В віндовзах всяких прийдеться шукать відповідне меню з галочкою біля <code>mod-rewrite</code>.</p>
+<p>Потом тобі треба в корні сайта, рядом з <code>index.php</code> положить файлік <code>.htaccess</code> (начинається ім’я його з крапки!) з таким вмістом:</p>
+<pre><code>RewriteEngine on
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule . index.php [L]
+</code></pre>
+<p>Ця штука заставить всі адрєса, шо пользоватєль вводить для цього сайта перенаправлять в <code>index.php</code>. І у тебе в пєрємєнной <code>$_SERVER['REQUEST_URI']</code> всігда буде адрєс без <code>/index.php</code>.</p>
+<p>Тепер давай розіб’єм все, шо нам буде присилать пользоватєль в строчці адрєса условно на три тіпа - <strong>контроллєр</strong>, <strong>екшн цього контроллєра</strong> і <strong>все остальне</strong> (в народі - <strong>парамєтри</strong>). Розбивать будем просто - по символу <code>/</code>. <strong>Все остальне</strong> - це по суті масив <code>$_GET</code>.</p>
+<p><strong>ЯКШО НЕ СТРЕЛЬНУЛО</strong> то треба в настройках хоста (в лінуксах - <code>/var/www/apache2/sites-available/000-default.conf</code>) дописати</p>
+<pre><code>&#x3C;Directory /var/www/>
+        AllowOverride all
+        Options FollowSymlinks
+        Order allow,deny
+        Allow from all
+&#x3C;/Directory>
+</code></pre>
+<p>Шо по суті для папки <code>/var/www</code> (де лежить сайт і, в часності, <code>index.php</code>) дає можливість через <code>.htaccess</code> мінять настройки сервера.</p>
+<p>Давай тепер в методі <code>Application::run()</code> впишем код шоб воно виводило нам наш адрєс:</p>
+<pre><code>public function run() {
+    echo $_SERVER['REQUEST_URI'];
+}
+</code></pre>
+<p>Тепер розіб’єм цей адрєс на ім’я контроллєра і екшна. Розбиваєм по символу <code>/</code> і тупо берем перші два елємєнта получєного массіва. Якшо не хватає другого елємєнта - по умолчанію поставим <code>index</code>. Якшо не хватає ще й першого - по умолчанію поставим <code>application</code>.</p>
+<pre><code>$pieces = array_filter(explode('/', $_SERVER['REQUEST_URI']));
+$controllerName = isset($pieces[1]) ? $pieces[1] : 'application';
+$actionName = isset($pieces[2]) ? $pieces[2] : 'index';
+</code></pre>
+<p>Така хороша функція <code>array_filter()</code> убирає із массіва пусті елементи. А тройним оператором <code>(condition) ? if_true : if_false</code> ми робим круте присвоєніє нужного значєнія в пєрємєнні. І як не странно, але в цьому випадку ключі у масива - <code>1</code> і <code>2</code>.</p>
+<p>Тепер якшо ти виведеш ці пєрємєнні в методі <code>Application::run()</code> і зайдеш на сайт напрімєр по ссилці http://localhost/moo/foo , то ти побачиш як ця штука працює. Якшо передасиш один параметр через слешку: <code>http://localhost/moo</code> - побачиш шо <code>$controllerName = 'moo'</code> а <code>$actionName = 'index'</code>. Якшо два параметра - <code>http://localhost/moo/foo</code> - побачиш шо буде ще й <code>$actionName = 'foo'</code>. А якшо більше - то ніякої різниці вже не побачиш.</p>
+<p>Цей момент важно запомнить: якшо наш сайт не знатиме якого контроллєра взять - буде намагатись найти контроллєр всього сайта. Якшо він не буде знати який йому екшн визвати - буде пробувать визвати екшн <code>index</code>.</p>
+<h2>Почучуть оживляєм</h2>
+<p>Тепер давай зробим якийсь конкрєтний контроллєр! Положим ми його в папочку <code>controllers</code>. Хай він поки особо нічого крутого не вміє - просто виводить <code>&#x3C;h1>I am alive!&#x3C;/h1></code>. І це у нас буде екшн <code>index</code>:</p>
+<pre><code>&#x3C;?php
+    class PostingsController {
+        public function index() {
+            echo '&#x3C;h1>I am alive!&#x3C;/h1>';
+        }
+    }
+</code></pre>
+<p>Тепер у нас стоїть задача аутоматично найти цей класс і визвати нужний метод у нього, якшо пользоватєль попробує зайти по ссилці <code>http://localhost/postings/</code> або <code>http://localhost/postings/index</code>.</p>
+<p>Ми скористаємось такою шикарною штукою PHP як авто-пошук нужних класів. В народі - <strong>autoloading</strong>. Якшо пишем ми на стареньком PHP 5.0, то у нас ще довго буде возможность пользуватись глобальною магічною функцією <code>__autoload($className)</code>.</p>
+<p>Коли ми описуєм цю функцію, PHP буде іспользувать її шоб найти класс, який ми не опреділили, но питаємось іспользувать. В неї приходить один аргумєнт - ім’я класа, який нам нада найти. І ця функція должна шось хотя б попробувать зробити, шоб описати клас з таким іменем або подключити нужний файл, де цей клас описаний.</p>
+<p>Ну от напрімєр, ми точно знаєм, шо наші кантроллєри лежать в папці <code>controllers</code>. Так давай научим наш <code>Application</code> находить нужний контроллєр і создавать його об’єкт в методі <code>run()</code>!</p>
+<pre><code>&#x3C;?php
+    function __autoload($className) {
+        require("controllers/$className.php");
+    }
+
+    class Application {
+        // ...
+
+        public function run() {
+            $pieces = array_filter(explode('/', $_SERVER['REQUEST_URI']));
+
+            $controllerName = isset($pieces[1]) ? $pieces[1] : 'application';
+            $actionName = isset($pieces[2]) ? $pieces[2] : 'index';
+
+            $controllerName = ucfirst($controllerName) . 'Controller';
+
+            $controller = new $controllerName();
+            $controller->$actionName();
+        }
+    }
+</code></pre>
+<p>Трошки заумний код. Начнем з нового: функція <code>ucfirst($text)</code> бере першу букву з <code>$text</code> і перероблює її у верхній регістр. Тоість, якшо було <code>moo</code> стане <code>Moo</code>, якшо було <code>Moo</code> - нічо не поміняється. Функція <code>__autoload</code> просто бере файл з папки <code>controllers/</code> з імєнєм контроллєра і подключає його.</p>
+<p>Тут важний момет нащот самой функції <code>require()</code>: коли ти її визиваєш вона по суті бере код із того файла і вставляє в місце, де ти визвав цю функцію. Точніше, не сам код файла, а виполняє цей файл і всьо шо вийшло в результаті - вставляє в це місце, де ти визвав <code>require</code>. Якщо там опрєдєлєні пєрємєнні чи класи - вони стають опрєдєлєні там де ти визвав <code>require</code>. Але якшо ти його визвав внутрі <code>__autoload</code> - то ці пєрємєнні чи класи стають доступні в усьому файлі, де сработав <code>__autoload</code>. Бо ще <code>__autoload</code> можна на каждий файл свій написать.</p>
+<h2>Виводим HTML</h2>
+<p>Якшо ти ще помниш, там де ми визиваєм <code>require</code> - виполняється код файла, який ми подключаєм і все що виполнилось вставляється в те місце.</p>
+<p>Давай зробим таку інтересну штуку: зробим файлік який-небудь <code>views/index.html</code> з яким-небудь HTML і в екшні <code>PostingsController::index()</code> просто підключим його:</p>
+<pre><code>&#x3C;?php
+    class PostingsController {
+        public function index() {
+            require('index.html');
+        }
+    }
+</code></pre>
+<p>І якшо зараз зайти на <code>http://localhost/postings</code> - можна буде побачити содєржиме цього файла! І це прекрасно, ящітаю!</p>
+<p>У каждого екшна є свій <strong>view</strong> - оддєльний файлік, який виводить HTML тільки основної частини страніци. Щитай це вміст тега <code>&#x3C;body></code>. А контроллєр збирає виведений цей HTML і виводить в свій оддєльний view, в якому і описане все вокруг тега <code>&#x3C;body></code> - щитай це весь HTML, кромє <code>&#x3C;body></code>. Для контроллєра цей view називається по-особєнному, <strong>layout</strong>. І от цей лейаут, він може бути один на всі-всі контроллєри, а може бути разний для нєкоторих або і вообщє - свій для каждого кантроллєра.</p>
+<p>Так от, давай зробим слєдующім образом: у нас буде папочка <code>views/layouts</code>, де будуть лежать разні шаблончики. І ми зробим один шаблончик, який буде аутоматично подтягуватись для каждого контроллєра і назвем його <code>application.phtml</code>, як контроллєр “по умолчанію”. Замєть, файл має расширєніє <code>.phtml</code>. Це нормально. Це показує шо у нас в файлі є і PHP-код і HTML размєтка. В папочку <code>views/layouts</code> давай положим файлік <code>postings.phtml</code> куди наб’єм допустім такий HTML:</p>
+<pre><code>&#x3C;!DOCTYPE html>
+&#x3C;html lang="en">
+&#x3C;head>
+    &#x3C;meta charset="UTF-8">
+    &#x3C;title>Document&#x3C;/title>
+&#x3C;/head>
+&#x3C;body>
+    &#x3C;?php echo $body ?>
+&#x3C;/body>
+&#x3C;/html>
+</code></pre>
+<p>Тут ми берем якусь пєрємєнну <code>$body</code> і виводим її. Простенький файлік, нічого сложного. Але нам нада звідкись достать цей самий <code>$body</code>. Для цього ми іспользуєм ще одну інтересну плюшку PHP, <strong>output buffer</strong>. Воно позволяє виполнить якийсь код якби в фоні, а все шо цей код вивів - сохранить в пєрємєнну. Виглядить це так:</p>
+<pre><code>&#x3C;?php
+    ob_start();
+
+        echo 'I am alive!';
+
+    ob_end_clean();
+</code></pre>
+<p>Якшо ти запустиш цей код - нічого не виведеться. Но зато оцей тєкст, <code>I am alive!</code> можна достать функцієй <code>ob_get_contents()</code>:</p>
+<pre><code>&#x3C;?php
+    ob_start();
+
+        echo 'I am alive!';
+
+    $content = ob_get_contents();
+
+    ob_end_clean();
+
+    echo "&#x3C;h1>$content&#x3C;/h1>";
+</code></pre>
+<p>А от цей код вже виведе <code>&#x3C;h1>I am alive!&#x3C;/h1></code>. Замєть: <code>ob_end_clean()</code> очищає цей буфєр, куди ложиться вивод всього-всього між <code>ob_start()</code> і <code>ob_end_clean()</code>. І забрати звідки вивод треба до того, як визвать <code>ob_end_clean()</code>.</p>
+<p>А якшо ми тепер поміняємо просте <code>echo</code> між <code>ob_start</code> і <code>ob_end</code> на, скажімо, <code>require()</code>?</p>
+<pre><code>&#x3C;?php
+    ob_start();
+
+    require('views/index.html');
+
+    $content = ob_get_contents();
+
+    ob_end_clean();
+
+    require('views/layouts/postings.phtml');
+</code></pre>
+<p>Виходить, що в <code>$content</code> у нас лежить вміст файла <code>views/index.html</code>, а якшо ми подключаєм лейаут - він виведе HTML з цього лейаута і всередині нього - пєрємєнну <code>$content</code>.</p>
+<p>А тепер, якшо ти оцей код написав внутрі <code>PostingsController::index()</code>, ми його переробим. Шоб не писать в каждом екшні каждого кантроллєра багато всяких <code>ob_start</code>, <code>require</code> і прочіх. Опять вертаємось до класа <code>Application</code>, в якому ми описуєм запуск нашого сайта. В нашому чудєсном методі <code>run()</code> ми вже написали шо робить коли пользоватєль заходить на сайт. Давай тепер трошки перепишем цей код шоб обернуть його вивод в нужний нам HTML:</p>
+<pre><code>&#x3C;?php
+    class Application {
+        // ...
+        public function run() {
+            $pieces = array_filter(explode('/', $_SERVER['REQUEST_URI']));
+
+            $controllerName = isset($pieces[1]) ? $pieces[1] : 'application';
+            $actionName = isset($pieces[2]) ? $pieces[2] : 'index';
+
+            $controllerClass = ucfirst($controllerName) . 'Controller';
+
+            // вичісляєм ім’я view
+            $viewFile = "views/$controllerName/$actionName.phtml";
+
+            // вичісляєм ім’я layout
+            $layoutFile = "views/layouts/$controllerName.phtml";
+
+            $controller = new $controllerClass();
+
+            ob_start();
+
+            // тут внутрі контроллєра задаються якісь пєрємєнні
+            $controller->$actionName();
+
+            // рісуєм відповідний view, в якому виводяться пєрємєнні, задані в екшні
+            require($viewFile);
+
+            // получаєм вивод екшна - наш body
+            $body = ob_get_contents();
+
+            ob_end_clean();
+
+            // виводим лейаут, в якій виводиться body
+            require($layoutFile);
+        }
+    }
+</code></pre>
+<p>При такому розкладі у нас цей мєтод робить сильно забагато всього. А всі пєрємєнні, які ми задаєм внутрі екшна недоступні всередині view - вони задаються внутрі контроллєра, а рісує в’юху у нас - application. Значить, вертаємось до ООП. Будем трошки усложнять зараз роботу шоб потом писать було проще.</p>
+<p>Зробим основний клас для всіх контроллєрів, який буде рісувать свій лейаут і нужні в’юхи. А із application будем визивать якийсь один метод, який просто виведе все шо треба. Цей клас ми, по старой доброй традиції, положим в папку <code>core/</code>:</p>
+<pre><code>&#x3C;?php
+    class BaseController {
+        public function __invoke($controllerName, $actionName) {
+            // вичісляєм ім’я view
+            $viewFile = "views/$controllerName/$actionName.phtml";
+
+            // вичісляєм ім’я layout
+            $layoutFile = "views/layouts/$controllerName.phtml";
+
+            ob_start();
+
+            $this->$actionName();
+
+            // рісуєм відповідний view, в якому виводяться пєрємєнні, задані в екшні
+            require($viewFile);
+
+            $body = ob_get_contents();
+
+            ob_end_clean();
+
+            // виводим лейаут, в якій виводиться body
+            require($layoutFile);
+        }
+    }
+</code></pre>
+<p>Ми просто щитай перенесли код з одного класа в другий. Замєть, ім’я мєтода називається з двох підкреслень. Ми тоже можем создавать <strong>магічні</strong> методи, муа-ха-ха! Тепер трошки переробим наш контроллєр <code>PostingsController</code>:</p>
+<pre><code>&#x3C;?php
+    require_once('core/BaseController.php');
+    require_once('models/Posting.php');
+
+    class PostingsController extends BaseController {
+        function index() {
+            $this->postings = Posting::all();
+        }
+    }
+</code></pre>
+<p>Але тепер дивись: у нас в каждій моделі подключається файл <code>BaseModel.php</code>. Тепер ще нам прийдеться в каждом контроллєрі подключать <code>BaseController.php</code>. Не комільфо. Щас будем рефакторить - всі ці строчки з моделей і з контроллерів можна перенести в <code>Application.php</code> - цей файл у нас по-любому подключається і всігда запускається самий перший.</p>
+<pre><code>&#x3C;?php
+    require_once('core/BaseModel.php');
+    require_once('core/BaseController.php');
+
+    // ...
+
+    class Application {
+        // ...
+    }
+</code></pre>
+<p>Тепер нам треба перемістить <code>views/index.html</code> в <code>views/postings/index.phtml</code> шоб наш <code>Application::run()</code> знайшов його. І з <code>PostingsController::index()</code> убрать весь код - у нас тепер усьо аутоматично!</p>
+<h2>Ітог</h2>
+<p>Шо нам дає така сложна сістєма? По-перше, і це дуже важно, нам тепер не треба в усі файли пихать один і той же HTML. По-друге, у нас сайт може мати кучу совєршенно разних по дизайну і вигляду странічок тепер. І шоб їх помінять чи шоб в них встроїть, допустім, виведення всіх постінгів чи якоїсь формочки, нам треба просто вивести туди в’юху. І перероблювать, в случаї чого, треба дуже і дуже мало кода.</p>
+<p>Наконєц, чисто для наглядності давай зробим простеньке упражнєніє: виведем в екшні <code>PostingsController::index()</code> всі постінги, іспользуя всі ці лейаути-в’юхи і моделі.</p>
+<p>У нас уже є лейаут для контроллєра <code>PostingsController</code>. У нас уже є сам контроллєр. У нас є модель поста. У нас даже є в’юха (і байдуже шо дурна) для цього!</p>
+<p>Значить, пробуєм? В екшні ми задамо перемєнну з усіма постінгами. Кстаті, конструктор контроллєра нам уже не треба - вже не актуально, не мейнстрім. А у в’юхє ми просто виведем всі постінги.</p>
+<pre><code>&#x3C;?php
+    require_once('models/Posting.php');
+
+    class PostingsController {
+        public function index() {
+            $this->postings = Posting::all();
+        }
+    }
+</code></pre>
+<p>І в’юха:</p>
+<pre><code>&#x3C;?php foreach ($this->postings as $posting): ?>
+    &#x3C;h1>&#x3C;?php echo $posting->title ?>&#x3C;/h1>
+
+    &#x3C;div class="description">
+        &#x3C;?php echo $posting->description ?>
+    &#x3C;/div>
+&#x3C;?php endforeach; ?>
+</code></pre>
+<h2>Домашнє заданіє</h2>
+<p>Воно буде велике. <em>Prepare yourself!</em></p>
+<ol><li>Треба прєдусмотрєть ситуацію, коли ми не найшли нужний класс контроллєра (щитай, не найшли файл) - в таком случаї нада показать ошибку <strong>404</strong>.</li>
+<li>Переведи весь блог на контроллєри, в’юхи, лейаути і моделі. Попробуй, чи прощє тепер чи сложніше стало робить це.</li>
+</ol>  </div> </article> </main> <footer data-astro-cid-sz7xmlte>
+&copy; 2024 Your name here. All rights reserved.
+<div class="social-links" data-astro-cid-sz7xmlte> <a href="https://m.webtoo.ls/@astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Mastodon</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/mastodon" data-astro-cid-sz7xmlte><path fill="currentColor" d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://twitter.com/astrodotbuild" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Twitter</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/twitter" data-astro-cid-sz7xmlte><path fill="currentColor" d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://github.com/withastro/astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Go to Astro's GitHub repo</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/github" data-astro-cid-sz7xmlte><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" data-astro-cid-sz7xmlte></path></svg> </a> </div> </footer>  </body></html>

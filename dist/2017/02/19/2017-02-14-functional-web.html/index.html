@@ -1,0 +1,462 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-bvzihdzo> <head><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.0.3"><!-- Font preloads --><link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin><!-- Canonical URL --><link rel="canonical" href="https://shybovycha.github.io/2017/02/19/2017-02-14-functional-web.html/"><!-- Primary Meta Tags --><title>Functional web</title><meta name="title" content="Functional web"><meta name="description"><link rel="stylesheet" href="/_astro/index.BvFNhZYw.css">
+<style>footer[data-astro-cid-sz7xmlte]{padding:2em 1em 6em;background:linear-gradient(var(--gray-gradient)) no-repeat;color:rgb(var(--gray));text-align:center}.social-links[data-astro-cid-sz7xmlte]{display:flex;justify-content:center;gap:1em;margin-top:1em}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]{text-decoration:none;color:rgb(var(--gray))}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]:hover{color:rgb(var(--gray-dark))}main[data-astro-cid-bvzihdzo]{width:calc(100% - 2em);max-width:100%;margin:0}.hero-image[data-astro-cid-bvzihdzo]{width:100%}.hero-image[data-astro-cid-bvzihdzo] img[data-astro-cid-bvzihdzo]{display:block;margin:0 auto;border-radius:12px;box-shadow:var(--box-shadow)}.prose[data-astro-cid-bvzihdzo]{width:720px;max-width:calc(100% - 2em);margin:auto;padding:1em;color:rgb(var(--gray-dark))}.title[data-astro-cid-bvzihdzo]{margin-bottom:1em;padding:1em 0;text-align:center;line-height:1}.title[data-astro-cid-bvzihdzo] h1[data-astro-cid-bvzihdzo]{margin:0 0 .5em}.date[data-astro-cid-bvzihdzo]{margin-bottom:.5em;color:rgb(var(--gray))}.last-updated-on[data-astro-cid-bvzihdzo]{font-style:italic}
+[data-astro-image]{width:100%;height:auto;object-fit:var(--fit);object-position:var(--pos);aspect-ratio:var(--w) / var(--h)}[data-astro-image=responsive]{max-width:calc(var(--w) * 1px);max-height:calc(var(--h) * 1px)}[data-astro-image=fixed]{width:calc(var(--w) * 1px);height:calc(var(--h) * 1px)}
+</style></head> <body data-astro-cid-bvzihdzo> <nav class="top"> <div class="links"> <a class="nav-link nav-item" href="/">Home</a> <a class="nav-link nav-item" href="/about.html">About</a> </div> </nav> <main data-astro-cid-bvzihdzo> <article data-astro-cid-bvzihdzo> <div class="hero-image" data-astro-cid-bvzihdzo>  </div> <div class="prose" data-astro-cid-bvzihdzo> <div class="title" data-astro-cid-bvzihdzo> <div class="date" data-astro-cid-bvzihdzo> <time datetime="2017-02-18T16:44:39.000Z"> Feb 19, 2017 </time>  </div> <h1 data-astro-cid-bvzihdzo>Functional web</h1> <hr data-astro-cid-bvzihdzo> </div>  <img src="/images/functional_web/bicycle.webp" loading="lazy" class="img-responsive img-sm img-rounded pull-right">
+<p>In last couple of years the functional programming paradigm became very popular.
+A huge amount of libraries, tools, tutorials and blog posts appeared.
+Although the paradigm itself is rather old <em>(lambda calculus was developed around 1930 and the Lisp language was introduced in 1950)</em>, its popularity blew up rapidly somewhere in 2014-2016 and that’s what is happening right now.
+Probably one of the most powerful influencers, giving FP <em>(functional programming)</em> that thrust is web development.
+Since Facebook introduced <strong>React</strong>, the community started incorporating many things from FP with React - including <strong>Redux</strong> and <strong>Immutable.js</strong>.
+But there are much more interesting things which were invented on this wave of FP popularity. One of them is <a href="http://elm-lang.org/">Elm</a>.</p>
+<p>This is a story how I <s>implemented</s> invented yet another <s>web framework</s> wheel.</p>
+<!--more-->
+<h2 id="tldr">TL;DR</h2>
+<style>
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .row .col {
+    max-width: 48%;
+    margin: 0 1%;
+  }
+</style>
+<div class="row">
+  <div class="col">
+    <p><a href="https://facebook.github.io/react/" target="_blank">React</a></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>```js</span></span>
+<span class="line"><span>class App extends React.Component {</span></span>
+<span class="line"><span>  constructor(props) {</span></span>
+<span class="line"><span>    super(props);</span></span>
+<span class="line"><span>    this.state = { counter: 0 };</span></span>
+<span class="line"><span>  }</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  increment() {</span></span>
+<span class="line"><span>    this.setState({ counter: this.state.counter + 1 });</span></span>
+<span class="line"><span>  }</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  decrement() {</span></span>
+<span class="line"><span>    this.setState({ counter: this.state.counter - 1 });</span></span>
+<span class="line"><span>  }</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  render() {</span></span>
+<span class="line"><span>    return (</span></span>
+<span class="line"><span>      &#x3C;div></span></span>
+<span class="line"><span>        &#x3C;button onClick={() => this.increment()}>Increment&#x3C;/button></span></span>
+<span class="line"><span>        &#x3C;button onClick={() => this.decrement()}>Decrement&#x3C;/button></span></span>
+<span class="line"><span>        &#x3C;div>Counter: {this.state.counter}&#x3C;/div></span></span>
+<span class="line"><span>      &#x3C;/div></span></span>
+<span class="line"><span>    );</span></span>
+<span class="line"><span>  }</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>ReactDOM.render(&#x3C;App />, document.body);</span></span>
+<span class="line"><span>```</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>&#x3C;p></span></span>
+<span class="line"><span>  &#x3C;a href="http://codepen.io/shybovycha/pen/dNErOY" target="_blank" class="btn btn-md">Run this code&#x3C;/a></span></span>
+<span class="line"><span>&#x3C;/p></span></span>
+<span class="line"><span></span></span></code></pre>
+  </div>
+  <div class="col">
+    <p><a href="https://facebook.github.io/react/" target="_blank">React</a> + <a href="http://redux.js.org/" target="_blank">Redux</a></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>```js</span></span>
+<span class="line"><span>function App(props) {</span></span>
+<span class="line"><span>  var store = props.store;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  return (</span></span>
+<span class="line"><span>    &#x3C;div></span></span>
+<span class="line"><span>      &#x3C;button onClick={() => store.dispatch({ type: 'INCREMENT' })}>Increment&#x3C;/button></span></span>
+<span class="line"><span>      &#x3C;button onClick={() => store.dispatch({ type: 'DECREMENT' })}>Decrement&#x3C;/button></span></span>
+<span class="line"><span>      &#x3C;div>Counter: {store.getState()}&#x3C;/div></span></span>
+<span class="line"><span>    &#x3C;/div></span></span>
+<span class="line"><span>  );</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function update(state = 0, action) {</span></span>
+<span class="line"><span>  switch (action.type) {</span></span>
+<span class="line"><span>  case 'INCREMENT':</span></span>
+<span class="line"><span>    return state + 1</span></span>
+<span class="line"><span>  case 'DECREMENT':</span></span>
+<span class="line"><span>    return state - 1</span></span>
+<span class="line"><span>  default:</span></span>
+<span class="line"><span>    return state</span></span>
+<span class="line"><span>  }</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>var store = Redux.createStore(update);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function render() {</span></span>
+<span class="line"><span>  ReactDOM.render(&#x3C;App store={store} />, document.body);</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>render();</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>store.subscribe(render);</span></span>
+<span class="line"><span>```</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>&#x3C;p></span></span>
+<span class="line"><span>  &#x3C;a href="http://codepen.io/shybovycha/pen/RKmYVy" target="_blank" class="btn btn-md">Code&#x3C;/a></span></span>
+<span class="line"><span>&#x3C;/p></span></span>
+<span class="line"><span></span></span></code></pre>
+  </div>
+  <div class="col">
+    <p><a href="http://elm-lang.org" target="_blank">Elm</a></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>```haskell</span></span>
+<span class="line"><span>import Html exposing (beginnerProgram, div, button, text)</span></span>
+<span class="line"><span>import Html.Events exposing (onClick)</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>initialState = 0</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>view state =</span></span>
+<span class="line"><span>  div []</span></span>
+<span class="line"><span>    [ button [ onClick Increment ] [ text "Increment" ]</span></span>
+<span class="line"><span>    , button [ onClick Decrement ] [ text "Decrement" ]</span></span>
+<span class="line"><span>    , div [] [ text ("Counter:" ++ (toString state)) ]</span></span>
+<span class="line"><span>    ]</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>type Msg = Increment | Decrement</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>update msg state =</span></span>
+<span class="line"><span>  case msg of</span></span>
+<span class="line"><span>    Increment -></span></span>
+<span class="line"><span>      state + 1</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    Decrement -></span></span>
+<span class="line"><span>      state - 1</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>main =</span></span>
+<span class="line"><span>  beginnerProgram { model = initialState, view = view, update = update }</span></span>
+<span class="line"><span>```</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>&#x3C;p></span></span>
+<span class="line"><span>  &#x3C;a href="http://codepen.io/shybovycha/pen/egaLXv" target="_blank" class="btn btn-md">Compiled code&#x3C;/a></span></span>
+<span class="line"><span>&#x3C;/p></span></span>
+<span class="line"><span></span></span></code></pre>
+  </div>
+  <div class="col">
+    <p><a href="http://mithril.js.org" target="_blank">Mithril</a></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>```js</span></span>
+<span class="line"><span>var count$ = 0;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>var App = {</span></span>
+<span class="line"><span>    view: function () {</span></span>
+<span class="line"><span>      return m('main', [</span></span>
+<span class="line"><span>        m('button', { class: 'decrement', onclick: function () { count$--; } }, 'Decrement'),</span></span>
+<span class="line"><span>        m('button', { class: 'increment', onclick: function () { count$++; } }, 'Increment'),</span></span>
+<span class="line"><span>        m('p', {}, 'Counter: ' + count$),</span></span>
+<span class="line"><span>      ]);</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span>};</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>m.mount(document.body, App);</span></span>
+<span class="line"><span>```</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>&#x3C;p></span></span>
+<span class="line"><span>  &#x3C;a href="http://codepen.io/shybovycha/pen/WRBgWv" target="_blank" class="btn btn-small">Code&#x3C;/a></span></span>
+<span class="line"><span>&#x3C;/p></span></span>
+<span class="line"><span></span></span></code></pre>
+  </div>
+  <div class="col">
+    <p><a href="https://cycle.js.org" target="_blank">Cycle</a></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>```js</span></span>
+<span class="line"><span>var xs = xstream.default;</span></span>
+<span class="line"><span>var { div, p, button, makeDOMDriver } = CycleDOM;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function App(sources) {</span></span>
+<span class="line"><span>  var decrement$ = sources.DOM</span></span>
+<span class="line"><span>    .select('.decrement')</span></span>
+<span class="line"><span>    .events('click')</span></span>
+<span class="line"><span>    .mapTo(-1);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  var increment$ = sources.DOM</span></span>
+<span class="line"><span>    .select('.increment')</span></span>
+<span class="line"><span>    .events('click')</span></span>
+<span class="line"><span>    .mapTo(+1);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  var action$ = xs.merge(decrement$, increment$);</span></span>
+<span class="line"><span>  var count$ = action$.fold(function (acc, v) { return acc + v; }, 0);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  var vtree$ = count$.map(function (count) {</span></span>
+<span class="line"><span>    return div([</span></span>
+<span class="line"><span>      button('.decrement', 'Decrement'),</span></span>
+<span class="line"><span>      button('.increment', 'Increment'),</span></span>
+<span class="line"><span>      p('Counter: ' + count)</span></span>
+<span class="line"><span>    ])</span></span>
+<span class="line"><span>  });</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  return { DOM: vtree$ };</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Cycle.run(App, { DOM: makeDOMDriver('body') });</span></span>
+<span class="line"><span>```</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>&#x3C;p></span></span>
+<span class="line"><span>  &#x3C;a href="http://codepen.io/shybovycha/pen/XpOQvx" target="_blank" class="btn btn-small">Code&#x3C;/a></span></span>
+<span class="line"><span>&#x3C;/p></span></span>
+<span class="line"><span></span></span></code></pre>
+  </div>
+  <div class="col">
+    <p><a href="https://github.com/shybovycha/libc.js" target="_blank">libc</a></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>```js</span></span>
+<span class="line"><span>var initialState = 0;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function update(state, message) {</span></span>
+<span class="line"><span>  if (message == 'INCREMENT')</span></span>
+<span class="line"><span>    return state + 1;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  if (message == 'DECREMENT')</span></span>
+<span class="line"><span>    return state - 1;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  return state;</span></span>
+<span class="line"><span>};</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>function view(state, dispatch) {</span></span>
+<span class="line"><span>  return ['div', [</span></span>
+<span class="line"><span>    ['button', { click: () => dispatch('INCREMENT') }, 'Increment'],</span></span>
+<span class="line"><span>    ['button', { click: () => dispatch('DECREMENT') }, 'Decrement'],</span></span>
+<span class="line"><span>    ['div', `Count: ${ state }`]</span></span>
+<span class="line"><span>  ]];</span></span>
+<span class="line"><span>};</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>var app = createApplication(initialState, update, view);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>app.mount(document.body);</span></span>
+<span class="line"><span>```</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>&#x3C;p></span></span>
+<span class="line"><span>  &#x3C;a href="http://codepen.io/shybovycha/pen/dNEgNa" target="_blank" class="btn btn-md">Code&#x3C;/a></span></span>
+<span class="line"><span>&#x3C;/p></span></span>
+<span class="line"><span></span></span></code></pre>
+  </div>
+</div>
+<h2 id="react--redux">React + Redux</h2>
+<p>Let’s start-off by writing a simple “counter” application with the well-known React + Redux bundle.</p>
+<h3 id="react">React</h3>
+<p>The purpose of Facebook’s React is to provide an interface to a virtual DOM, which allows users to track updates to the <em>application views</em> and perform DOM operations to update views <strong>with a minimal operation overhead</strong>. In other words, we do not need to remove all the DOM nodes and create new ones from scratch when we can update a single property in a single DOM node. It might look like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> App</span><span style="color:#D73A49;--shiki-dark:#F97583"> extends</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> React</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">Component</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  constructor</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">props</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    super</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(props);</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    this</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.state </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  increment</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    this</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">setState</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">this</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.state </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  decrement</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    this</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">setState</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">this</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.state </span><span style="color:#D73A49;--shiki-dark:#F97583">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    &#x3C;</span><span style="color:#E36209;--shiki-dark:#FFAB70">div</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      &#x3C;</span><span style="color:#E36209;--shiki-dark:#FFAB70">button</span><span style="color:#E36209;--shiki-dark:#FFAB70"> onClick</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">{increment}</span><span style="color:#D73A49;--shiki-dark:#F97583">></span><span style="color:#24292E;--shiki-dark:#E1E4E8">Increment</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;/</span><span style="color:#24292E;--shiki-dark:#E1E4E8">button</span><span style="color:#D73A49;--shiki-dark:#F97583">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      &#x3C;</span><span style="color:#E36209;--shiki-dark:#FFAB70">button</span><span style="color:#E36209;--shiki-dark:#FFAB70"> onClick</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">{decrement}</span><span style="color:#D73A49;--shiki-dark:#F97583">></span><span style="color:#24292E;--shiki-dark:#E1E4E8">Decrement</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;/</span><span style="color:#24292E;--shiki-dark:#E1E4E8">button</span><span style="color:#D73A49;--shiki-dark:#F97583">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      &#x3C;</span><span style="color:#E36209;--shiki-dark:#FFAB70">div</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span><span style="color:#E36209;--shiki-dark:#FFAB70">Counter</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span><span style="color:#6F42C1;--shiki-dark:#B392F0">this</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#E36209;--shiki-dark:#FFAB70">state</span><span style="color:#24292E;--shiki-dark:#E1E4E8">}&#x3C;/</span><span style="color:#6F42C1;--shiki-dark:#B392F0">div</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    &#x3C;/</span><span style="color:#6F42C1;--shiki-dark:#B392F0">div</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  );</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">ReactDOM.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">render</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(&#x3C;</span><span style="color:#005CC5;--shiki-dark:#79B8FF">App</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> />, document.body);</span></span>
+<span class="line"></span></code></pre>
+<p><a href="http://codepen.io/shybovycha/pen/dNErOY" target="_blank" class="btn btn-md">Run this code</a></p>
+<h3 id="redux">Redux</h3>
+<p>Redux is an ancestor of Facebook’s Flux architecture and library. Flux’ main goal was to standardize the way application stores its state and handles state updates:</p>
+<ul>
+<li>application state is stored in stores</li>
+<li>to update application state, we dispatch messages to corresponding stores</li>
+<li>to reflect application state changes, we subscribe on the store state changes</li>
+</ul>
+<p>Than comes Redux and says <em>“hey! we probably can do that with just a single store!”</em>. And whilst Flux did not forbid state updates to modify the state objects themselves, Redux states clearly: <em>“you may not change state directly - rather you just calculate a new value for it and I take care of everything else”</em>.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> App</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">props</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> store </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> props.store;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">div</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">button</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> onClick</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">{() </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> store.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">dispatch</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({ type: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'INCREMENT'</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> })}>Increment&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">button</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">button</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> onClick</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">{() </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> store.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">dispatch</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({ type: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'DECREMENT'</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> })}>Decrement&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">button</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">div</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>Counter: {store.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">getState</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()}&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">div</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    &#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">div</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  );</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> update</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">state</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">action</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  switch</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (action.type) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  case</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'INCREMENT'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> state </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  case</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'DECREMENT'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> state </span><span style="color:#D73A49;--shiki-dark:#F97583">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  default</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> state</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> store </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Redux.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">createStore</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(update);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> render</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  ReactDOM.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">render</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(&#x3C;</span><span style="color:#005CC5;--shiki-dark:#79B8FF">App</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> store</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">{store} />, document.body);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">render</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">store.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">subscribe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(render);</span></span>
+<span class="line"></span></code></pre>
+<p><a href="http://codepen.io/shybovycha/pen/RKmYVy" target="_blank" class="btn btn-md">Run this code</a></p>
+<h2 id="elm">Elm</h2>
+<p>Elm is ML-like <em>(Haskell-like)</em> language, which compiles to JS, and provides developer with a runtime, allowing one to build web applications in a functional, strongly-typed language. Elm enforces its way of building web applications, where each web app is a combination of three entities:</p>
+<ol>
+<li><strong>model</strong>, which is basically just a structure of application state</li>
+<li><strong>update function</strong>, which takes current state and an event <em>(<strong>action</strong> in terms of Redux; <strong>message</strong> in terms of Elm; an object, representing user action or any other event)</em> and provides the new value for app state <em>(model)</em></li>
+<li><strong>view function</strong>, which converts current app state into a virtual DOM tree</li>
+</ol>
+<img src="/images/functional_web/elm_architecture.webp" alt="Elm workflow">
+<p>Elm runtime handles everything else - passing messages to the <code>update</code> function, comparing the actual DOM tree with the one, provided by a <code>view</code> function and performing all DOM tree manipulations.</p>
+<p>Elm can be compared to <code>React + Redux + ML-language</code> combination.</p>
+<p>Let’s take a look at our sample application, written in Elm:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="haskell"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Html</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> exposing (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">beginnerProgram</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">div</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">button</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">text</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Html.Events</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> exposing (</span><span style="color:#6F42C1;--shiki-dark:#B392F0">onClick</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">initialState </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">view state </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  div </span><span style="color:#005CC5;--shiki-dark:#79B8FF">[]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    [ button [ onClick </span><span style="color:#005CC5;--shiki-dark:#79B8FF">Increment</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] [ text </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Increment"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    , button [ onClick </span><span style="color:#005CC5;--shiki-dark:#79B8FF">Decrement</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] [ text </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Decrement"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    , div </span><span style="color:#005CC5;--shiki-dark:#79B8FF">[]</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [ text (</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Counter:"</span><span style="color:#D73A49;--shiki-dark:#F97583"> ++</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (toString state)) ]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    ]</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">type</span><span style="color:#D73A49;--shiki-dark:#F97583"> Msg</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> Increment</span><span style="color:#D73A49;--shiki-dark:#F97583"> |</span><span style="color:#D73A49;--shiki-dark:#F97583"> Decrement</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">update msg state </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  case</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> msg </span><span style="color:#D73A49;--shiki-dark:#F97583">of</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    Increment</span><span style="color:#D73A49;--shiki-dark:#F97583"> -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      state </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    Decrement</span><span style="color:#D73A49;--shiki-dark:#F97583"> -></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      state </span><span style="color:#D73A49;--shiki-dark:#F97583">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">main </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  beginnerProgram { model </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> initialState, view </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> view, update </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> update }</span></span>
+<span class="line"></span></code></pre>
+<p><a href="http://codepen.io/shybovycha/pen/egaLXv" target="_blank" class="btn btn-md">Run compiled version of this code</a></p>
+<p>In this example, we first define initial application state, which is just integer number of zero.</p>
+<p>Then we describe the view of our application, how the application will display the current state in HTML. This is the battle field of a <code>view</code> function.</p>
+<p>After that we define possible actions <em>(or messages in terms of Elm)</em>. It would be either <code>Increment</code> or <code>Decrement</code> action with no additional parameters.</p>
+<p>Right after that we define how each message will affect application state. Since our application’ state is only an integer number, the <code>update</code> function will return the new state given the current state value and an action.</p>
+<p>Lastly we create our application, providing Elm with all the entities we defined above.</p>
+<p>I found this code to be more clear, than in case with React + Redux, since in case we’d like to write something more complex, we don’t need to use tons of mapping/reducing/selecting functions, split into a huge bunch of files. I’ll cover more complex examples later on.</p>
+<h2 id="mithril">Mithril</h2>
+<p>Mithril is a tiny JS framework, whose main feature is virtual DOM. Just take a look at a sample application:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> count$ </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> App </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    view</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> () {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">      return</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> m</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'main'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        m</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'button'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, { class: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'decrement'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">onclick</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> () { count$</span><span style="color:#D73A49;--shiki-dark:#F97583">--</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; } }, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'Decrement'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        m</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'button'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, { class: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'increment'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">onclick</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> () { count$</span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; } }, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'Increment'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        m</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'p'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, {}, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'Counter: '</span><span style="color:#D73A49;--shiki-dark:#F97583"> +</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> count$),</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      ]);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">};</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">m.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">mount</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(document.body, App);</span></span>
+<span class="line"></span></code></pre>
+<p><a href="http://codepen.io/shybovycha/pen/WRBgWv" target="_blank" class="btn btn-small">Run this code</a></p>
+<p>This is much less code than in case with React + Redux, isn’t it?</p>
+<h2 id="cycle">Cycle</h2>
+<p>Cycle is a reactive framework; kind of React + Rx. This means an application is basically a view function, subscribed to all the events allowed in your application. An example straight from <a href="https://cycle.js.org/">cycle</a> website:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> xs </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> xstream.default;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { div, p, button, makeDOMDriver } </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> CycleDOM;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> App</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">sources</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> decrement$ </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> sources.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">DOM</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">select</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'.decrement'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">events</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'click'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">mapTo</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> increment$ </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> sources.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">DOM</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">select</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'.increment'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">events</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'click'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">mapTo</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> action$ </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> xs.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">merge</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(decrement$, increment$);</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> count$ </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> action$.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">fold</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#E36209;--shiki-dark:#FFAB70">acc</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">v</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) { </span><span style="color:#D73A49;--shiki-dark:#F97583">return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> acc </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> v; }, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> vtree$ </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> count$.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">map</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#E36209;--shiki-dark:#FFAB70">count</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> div</span><span style="color:#24292E;--shiki-dark:#E1E4E8">([</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">      button</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'.decrement'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'Decrement'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">      button</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'.increment'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'Increment'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">      p</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'Counter: '</span><span style="color:#D73A49;--shiki-dark:#F97583"> +</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> count)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    ])</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  });</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { DOM: vtree$ };</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">Cycle.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">run</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(App, { DOM: </span><span style="color:#6F42C1;--shiki-dark:#B392F0">makeDOMDriver</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'body'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) });</span></span>
+<span class="line"></span></code></pre>
+<p><a href="http://codepen.io/shybovycha/pen/XpOQvx" target="_blank" class="btn btn-small">Run this code</a></p>
+<p>Let me explain this source, since this might not be obvious.</p>
+<p>First, Cycle <em>(or, actually, <strong>RxJS</strong>)</em> operates on <strong>event streams</strong>. In this particular application there are two event streams: clicks on the “Increment” button and clicks on the “Decrement” button. So we first make all “click” events on the “Decrement” button (expressed by <code>sources.DOM.select('.decrement').events('click')</code>) to become just <code>-1</code> number (which is made by mapping each event to a value <code>-1</code>, <code>eventStream.map(-1)</code>). Then we do the similar thing to the clicks on the “Increment” button, but transform each event to <code>1</code> (positive) number.</p>
+<p>Now, we merge both streams into a single one (thus both “Increment” and “Decrement” clicks will come from a single event stream, namely <code>action$</code>).</p>
+<p>Then we transform our unified event stream <code>action$</code> into a stream of a single value by adding all the events (values) from <code>action$</code> stream.</p>
+<p>And lastly, we transform our single-value stream <code>count$</code> into a virtual DOM tree and update the real dom, if needed.</p>
+<h3 id="event-streams">Event streams</h3>
+<p>Here’s what should be explained regarding those event streams: a <strong>stream</strong> is a series of some values. That’s it. Nothing more. When a value is added to a stream <em>(an event is fired)</em>, all the transformations are run as they are nothing but observers to the “on value appeared” event. Ans since all those transformations can be chained, we can imagine each transforming function is just a new event listener for that “on value appeared” event. And each transformation will provide us with a new stream, what allows us to add many different listeners to the same stream.</p>
+<p>Here’s a diagram, showing all the transformations:</p>
+<img src="/images/functional_web/CycleJS_example-compressed.webp" alt="Event transformations diagram">
+<p>So once a click event <em>(on one of two buttons, of course)</em> appears, it is transformed to either <code>-1</code> or <code>1</code>, depending on the button which fired that event; then this number is added to the existing <em>(which might appear to be empty)</em> event stream <code>action$</code>; then the sum is calculated over all the numbers in that stream; then the sum is transformed into a virtual DOM tree; and lastly, the virtual DOM tree is returned from a view function and Cycle does its job to update the actual DOM. And since there always will be a different value of sum in our example, the DOM will always be updated.</p>
+<h2 id="libc">libc</h2>
+<p>So far I’ve covered four different implementations of a very simple yet <em>interactive</em> web application. Some of them require a whole bunch of libraries to be injected into a page (in case with React+Redux+whatever, Cycle), some of them introduce a whole new approach to create interactive applications (Cycle, Elm, Mithril). Based on that, I created my own micro library, which inherits most interesting features of frameworks discussed above.</p>
+<p>I called it <a href="https://github.com/shybovycha/libc.js">libc</a>.</p>
+<p>The same “counter” application, written in libc looks like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> initialState </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> update</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">state</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">message</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (message </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'INCREMENT'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> state </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (message </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'DECREMENT'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> state </span><span style="color:#D73A49;--shiki-dark:#F97583">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> state;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">};</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> view</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">state</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">dispatch</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'div'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    [</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'button'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, { </span><span style="color:#6F42C1;--shiki-dark:#B392F0">click</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: () </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#6F42C1;--shiki-dark:#B392F0"> dispatch</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'INCREMENT'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) }, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'Increment'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">],</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    [</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'button'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, { </span><span style="color:#6F42C1;--shiki-dark:#B392F0">click</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: () </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#6F42C1;--shiki-dark:#B392F0"> dispatch</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'DECREMENT'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) }, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'Decrement'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">],</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    [</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'div'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">`Count: ${</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> state</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> }`</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  ]];</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">};</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> app </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> createApplication</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(initialState, update, view);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">app.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">mount</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(document.body);</span></span>
+<span class="line"></span></code></pre>
+<p><a href="http://codepen.io/shybovycha/pen/dNEgNa" target="_blank" class="btn btn-md">Run this code</a></p>
+<p>All the DOM nodes are created using the array returned, which should match pattern <code>[tag, {attributes}, (text | [children]))</code> <em>(just like Mithril uses <code>m()</code> function or Elm uses <code>div</code> and other helper functions)</em>. Originally, <code>libc</code> used <code>c()</code> helper function to do that <em>(similar to Mithril’s <code>m()</code> function)</em>, and that’s why it was called <code>libC</code>.</p>
+<p>The library makes use of a VirtualDOM approach to create a virtual DOM tree and chech which nodes/node properties need changes and reflect only the needed changes in a real DOM tree.</p>
+<p><code>libc</code> uses the <code>message -> update -> view</code> chain, just like Elm does. The inner application state is handled similarly to Redux - application has only one store, which contains application state. And the <code>update()</code> function just calculates the new value for a state, without actually assigning it. Library then checks whether state needs to be updated or not <em>(using <code>Object.deepEqual</code> method, exposed by a library)</em>. If the new state value is different from the existing one - the state is replaced with a new value and the <code>view()</code> function is being called with a new state value. <code>view</code> function returns the new value of a virtual DOM tree. Library then checks whether it needs to update actual DOM tree or not.</p>
+<p>There are however couple highlights regarding <code>libc</code>:</p>
+<ul>
+<li>it can create arbitrary tags <em>(DOM nodes)</em> within the <code>view()</code> function <em>(the first element in each array is tag name, which could be pretty much anything)</em>, so it’s quite easy to use it in couple with other libraries <em>(such as Angular-material, React or Polymer, for instance)</em></li>
+<li>properties, whose value is a function are automatically mapped to event listeners; taking into account that property names could be arbitrary as well, you may add event listeners to your custom events</li>
+<li>again, property names could be arbitrary, so you can use even angular ones if you want: <code>['div', { 'ng-repeat': 'item in items' }, '{{item.name}}']</code></li>
+<li>both <code>properties</code> and <code>children or text</code> arguments are optional; thus you can create empty DOM elements: <code>['hr']</code></li>
+<li>to enable communication with your applications from the outside, application instance, returned by the <code>createApplication()</code> function, has the <code>dispatch(message)</code> method</li>
+</ul>
+<p>In later posts I’ll provide more examples of using <code>libc</code>.</p>  </div> </article> </main> <footer data-astro-cid-sz7xmlte>
+&copy; 2024 Your name here. All rights reserved.
+<div class="social-links" data-astro-cid-sz7xmlte> <a href="https://m.webtoo.ls/@astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Mastodon</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/mastodon" data-astro-cid-sz7xmlte><path fill="currentColor" d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://twitter.com/astrodotbuild" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Twitter</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/twitter" data-astro-cid-sz7xmlte><path fill="currentColor" d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://github.com/withastro/astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Go to Astro's GitHub repo</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/github" data-astro-cid-sz7xmlte><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" data-astro-cid-sz7xmlte></path></svg> </a> </div> </footer>  </body></html>

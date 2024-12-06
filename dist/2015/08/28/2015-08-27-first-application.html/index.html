@@ -1,0 +1,700 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-bvzihdzo> <head><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.0.3"><!-- Font preloads --><link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin><!-- Canonical URL --><link rel="canonical" href="https://shybovycha.github.io/2015/08/28/2015-08-27-first-application.html/"><!-- Primary Meta Tags --><title>Irrlicht Newton GD tutorial: first application</title><meta name="title" content="Irrlicht Newton GD tutorial: first application"><meta name="description"><link rel="stylesheet" href="/_astro/index.BvFNhZYw.css">
+<style>footer[data-astro-cid-sz7xmlte]{padding:2em 1em 6em;background:linear-gradient(var(--gray-gradient)) no-repeat;color:rgb(var(--gray));text-align:center}.social-links[data-astro-cid-sz7xmlte]{display:flex;justify-content:center;gap:1em;margin-top:1em}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]{text-decoration:none;color:rgb(var(--gray))}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]:hover{color:rgb(var(--gray-dark))}main[data-astro-cid-bvzihdzo]{width:calc(100% - 2em);max-width:100%;margin:0}.hero-image[data-astro-cid-bvzihdzo]{width:100%}.hero-image[data-astro-cid-bvzihdzo] img[data-astro-cid-bvzihdzo]{display:block;margin:0 auto;border-radius:12px;box-shadow:var(--box-shadow)}.prose[data-astro-cid-bvzihdzo]{width:720px;max-width:calc(100% - 2em);margin:auto;padding:1em;color:rgb(var(--gray-dark))}.title[data-astro-cid-bvzihdzo]{margin-bottom:1em;padding:1em 0;text-align:center;line-height:1}.title[data-astro-cid-bvzihdzo] h1[data-astro-cid-bvzihdzo]{margin:0 0 .5em}.date[data-astro-cid-bvzihdzo]{margin-bottom:.5em;color:rgb(var(--gray))}.last-updated-on[data-astro-cid-bvzihdzo]{font-style:italic}
+[data-astro-image]{width:100%;height:auto;object-fit:var(--fit);object-position:var(--pos);aspect-ratio:var(--w) / var(--h)}[data-astro-image=responsive]{max-width:calc(var(--w) * 1px);max-height:calc(var(--h) * 1px)}[data-astro-image=fixed]{width:calc(var(--w) * 1px);height:calc(var(--h) * 1px)}
+</style></head> <body data-astro-cid-bvzihdzo> <nav class="top"> <div class="links"> <a class="nav-link nav-item" href="/">Home</a> <a class="nav-link nav-item" href="/about.html">About</a> </div> </nav> <main data-astro-cid-bvzihdzo> <article data-astro-cid-bvzihdzo> <div class="hero-image" data-astro-cid-bvzihdzo>  </div> <div class="prose" data-astro-cid-bvzihdzo> <div class="title" data-astro-cid-bvzihdzo> <div class="date" data-astro-cid-bvzihdzo> <time datetime="2015-08-27T17:05:00.000Z"> Aug 28, 2015 </time>  </div> <h1 data-astro-cid-bvzihdzo>Irrlicht Newton GD tutorial: first application</h1> <hr data-astro-cid-bvzihdzo> </div>  <h2 id="install-irrlicht">Install Irrlicht</h2>
+<p>First of all, you will definetely need the Irrlicht engine, so
+<a href="http://irrlicht.sourceforge.net/downloads/"><strong>go get it</strong></a>.</p>
+<p>Then you will need to compile it. Compilation process depends on the operating system you use,
+but it’s really similar on every one.</p>
+<h3 id="linux">Linux</h3>
+<p>Install these dependencies with your system’ package manager:
+<code>libenet-dev libxxf86vm-dev zlib-dev cmake</code>.</p>
+<p>Unzip Irrlicht, go to the directory you unpacked with the terminal and run the following:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">cd</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> source/Irrlicht</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">make</span></span>
+<span class="line"></span></code></pre>
+<p>Belive it or not, but that’s all!</p>
+<h3 id="windows">Windows</h3>
+<p>Unzip Irrlicht, go to the directory you unpacked and open the VisualStudio project <em>(depending on
+VisualStudio version, you might want to open a bit different file)</em> in <code>source/Irrlicht</code>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Irrlicht10.0.sln</span></span>
+<span class="line"><span>Irrlicht11.0.sln</span></span>
+<span class="line"><span>Irrlicht8.0.sln</span></span>
+<span class="line"><span>Irrlicht9.0.sln</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Build it with VisualStudio - and you are done!</p>
+<h3 id="macos-x">MacOS X</h3>
+<p>The steps are a bit complicated. And they require you to install <strong>XCode</strong> and
+<strong>Command-Line Tools</strong> - those could be found either in  AppStore or on the Apple
+website.</p>
+<ul>
+<li>
+<p>First of all, you need to install a bunch of dependencies <em>(I use <code>brew</code> for this purpose)</em>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">brew</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> tinyxml</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> enet</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> lua</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> cmake</span></span>
+<span class="line"></span></code></pre>
+</li>
+<li>
+<p>Get a list of all compilers available for your OSX version:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">xcodebuild</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -showBuildSettings</span><span style="color:#D73A49;--shiki-dark:#F97583"> |</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> grep</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> DEFAULT_COMPILER</span></span>
+<span class="line"></span></code></pre>
+<p>I got something like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> xcodebuild</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -showBuildSettings</span><span style="color:#D73A49;--shiki-dark:#F97583"> |</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> grep</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> DEFAULT_COMPILER</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  DEFAULT_COMPILER</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> com.apple.compilers.llvm.clang.1_0</span></span>
+<span class="line"></span></code></pre>
+</li>
+<li>
+<p>Now the build process:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">cd</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> source/Irrlicht/MacOSX</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">xcodebuild</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -project</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> MacOSX.xcodeproj</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> GCC_VERSION=com.apple.compilers.llvm.clang.1_0</span></span>
+<span class="line"></span></code></pre>
+</li>
+<li>
+<p>And the final step - copy the library to the <code>lib/MacOSX</code> directory:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">cp</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> build/Release/libIrrlicht.a</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ../../../lib/MacOSX</span></span>
+<span class="line"></span></code></pre>
+</li>
+</ul>
+<p>Phew! That’s a damn bunch of commands, don’t you think?</p>
+<!--more-->
+<h3 id="common">Common</h3>
+<p>By performing those steps, described above, you will end up with the compiled Irrlicht library file
+within the <code>lib/</code> directory, depending on your platform:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Linux/libIrrlicht.a</span></span>
+<span class="line"><span>MacOSX/libIrrlicht.a</span></span>
+<span class="line"><span>Win32-visualstudio/Irrlicht.lib</span></span>
+<span class="line"><span>Win64-visualStudio/Irrlicht.lib</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Now, create a blank project in your favorite IDE and proceed…</p>
+<h2 id="application-itself">Application itself</h2>
+<p>Our first application will show you Irrlicht basic features we will use later. They are:</p>
+<ul>
+<li><strong>mesh handling</strong> - loading, rendering, animating, etc.</li>
+<li><strong>user input handling</strong> - reacting to keyboard and mouse events</li>
+<li><strong>user interface (UI)</strong> - displaying some information within the application window</li>
+</ul>
+<p>The good start for that is standard example from Irrlicht pack, the <strong>04 - Movement</strong> one.
+Let’s take a look over its code:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cpp"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">/** Example 004 Movement</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">This Tutorial shows how to move and animate SceneNodes. The</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">basic concept of SceneNodeAnimators is shown as well as manual</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">movement of nodes using the keyboard.  We'll demonstrate framerate</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">independent movement, which means moving by an amount dependent</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">on the duration of the last run of the Irrlicht loop.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">Example 19.MouseAndJoystick shows how to handle those kinds of input.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">As always, I include the header files, use the irr namespace,</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">and tell the linker to link with the .lib file.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">*/</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#ifdef</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> _MSC_VER</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">// We'll also define this to stop MSVC complaining about sprintf().</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#define</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> _CRT_SECURE_NO_WARNINGS</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#pragma</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> comment</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">lib</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Irrlicht.lib"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#endif</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#include</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &#x3C;irrlicht.h></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">using</span><span style="color:#D73A49;--shiki-dark:#F97583"> namespace</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> irr</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">/*</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">To receive events like mouse and keyboard input, or GUI events like "the OK</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">button has been clicked", we need an object which is derived from the</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">irr::IEventReceiver object. There is only one method to override:</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">irr::IEventReceiver::OnEvent(). This method will be called by the engine once</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">when an event happens. What we really want to know is whether a key is being</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">held down, and so we will remember the current state of each key.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">*/</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> MyEventReceiver</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> : </span><span style="color:#D73A49;--shiki-dark:#F97583">public</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> IEventReceiver</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">public:</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    // This is the one method that we have to implement</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> bool</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> OnEvent</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> SEvent</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;</span><span style="color:#E36209;--shiki-dark:#FFAB70"> event</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        // Remember whether each key is down or up</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (event.EventType </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> irr</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::EET_KEY_INPUT_EVENT)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            KeyIsDown[event.KeyInput.Key] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> event.KeyInput.PressedDown;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        return</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> false</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    // This is used to check whether a key is being held down</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> bool</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> IsKeyDown</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">EKEY_CODE</span><span style="color:#E36209;--shiki-dark:#FFAB70"> keyCode</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">const</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> KeyIsDown[keyCode];</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    MyEventReceiver</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (u32 i</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; i</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">KEY_KEY_CODES_COUNT; </span><span style="color:#D73A49;--shiki-dark:#F97583">++</span><span style="color:#24292E;--shiki-dark:#E1E4E8">i)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            KeyIsDown[i] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> false</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">private:</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    // We use this array to store the current state of each key</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    bool</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> KeyIsDown[KEY_KEY_CODES_COUNT];</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">};</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">/*</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">The event receiver for keeping the pressed keys is ready, the actual responses</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">will be made inside the render loop, right before drawing the scene. So lets</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">just create an irr::IrrlichtDevice and the scene node we want to move. We also</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">create some other additional scene nodes, to show that there are also some</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">different possibilities to move and animate scene nodes.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">*/</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> main</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    // create device</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    MyEventReceiver receiver;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    IrrlichtDevice</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> device </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> createDevice</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">video</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::EDT_OPENGL,</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            core</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">dimension2d</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">u32</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">640</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">480</span><span style="color:#24292E;--shiki-dark:#E1E4E8">), </span><span style="color:#005CC5;--shiki-dark:#79B8FF">16</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">false</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">false</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">false</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">receiver);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (device </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        return</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span><span style="color:#6A737D;--shiki-dark:#6A737D"> // could not create selected driver.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    video</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::IVideoDriver</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> driver </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> device-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getVideoDriver</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    scene</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::ISceneManager</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> smgr </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> device-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getSceneManager</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    /*</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    Create the node which will be moved with the WSAD keys. We create a</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    sphere node, which is a built-in geometry primitive. We place the node</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    at (0,0,30) and assign a texture to it to let it look a little bit more</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    interesting. Because we have no dynamic lights in this scene we disable</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    lighting for each model (otherwise the models would be black).</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    */</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    scene</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::ISceneNode </span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> node </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> smgr-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">addSphereSceneNode</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (node)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        node-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">setPosition</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">core</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">vector3df</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#005CC5;--shiki-dark:#79B8FF">30</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        node-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">setMaterialTexture</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, driver-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTexture</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"../../media/wall.webp"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        node-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">setMaterialFlag</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">video</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::EMF_LIGHTING, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">false</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    /*</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    Now we create another node, movable using a scene node animator. Scene</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    node animators modify scene nodes and can be attached to any scene node</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    like mesh scene nodes, billboards, lights and even camera scene nodes.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    Scene node animators are not only able to modify the position of a</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    scene node, they can also animate the textures of an object for</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    example. We create a cube scene node and attach a 'fly circle' scene</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    node animator to it, letting this node fly around our sphere scene node.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    */</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    scene</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::ISceneNode</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> smgr-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">addCubeSceneNode</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (n)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        n-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">setMaterialTexture</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, driver-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTexture</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"../../media/t351sml.webp"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        n-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">setMaterialFlag</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">video</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::EMF_LIGHTING, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">false</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        scene</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::ISceneNodeAnimator</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> anim </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            smgr-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">createFlyCircleAnimator</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">core</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">vector3df</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#005CC5;--shiki-dark:#79B8FF">30</span><span style="color:#24292E;--shiki-dark:#E1E4E8">), </span><span style="color:#005CC5;--shiki-dark:#79B8FF">20.0</span><span style="color:#D73A49;--shiki-dark:#F97583">f</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (anim)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            n-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">addAnimator</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(anim);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            anim-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">drop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    /*</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    The last scene node we add to show possibilities of scene node animators is</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    a b3d model, which uses a 'fly straight' animator to run between to points.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    */</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    scene</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::IAnimatedMeshSceneNode</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> anms </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        smgr-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">addAnimatedMeshSceneNode</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(smgr-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getMesh</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"../../media/ninja.b3d"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (anms)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        scene</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::ISceneNodeAnimator</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> anim </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            smgr-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">createFlyStraightAnimator</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">core</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">vector3df</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">100</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#005CC5;--shiki-dark:#79B8FF">60</span><span style="color:#24292E;--shiki-dark:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            core</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">vector3df</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">100</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#005CC5;--shiki-dark:#79B8FF">60</span><span style="color:#24292E;--shiki-dark:#E1E4E8">), </span><span style="color:#005CC5;--shiki-dark:#79B8FF">3500</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (anim)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            anms-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">addAnimator</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(anim);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            anim-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">drop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        /*</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        To make the model look right we disable lighting, set the</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        frames between which the animation should loop, rotate the</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        model around 180 degrees, and adjust the animation speed and</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        the texture. To set the right animation (frames and speed), we</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        would also be able to just call</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        "anms->setMD2Animation(scene::EMAT_RUN)" for the 'run'</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        animation instead of "setFrameLoop" and "setAnimationSpeed",</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        but this only works with MD2 animations, and so you know how to</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        start other animations. But a good advice is to not use</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        hardcoded frame-numbers...</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        */</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        anms-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">setMaterialFlag</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">video</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::EMF_LIGHTING, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">false</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        anms-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">setFrameLoop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">13</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        anms-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">setAnimationSpeed</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">15</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">//      anms->setMD2Animation(scene::EMAT_RUN);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        anms-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">setScale</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">core</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">vector3df</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">2.</span><span style="color:#D73A49;--shiki-dark:#F97583">f</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#005CC5;--shiki-dark:#79B8FF">2.</span><span style="color:#D73A49;--shiki-dark:#F97583">f</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#005CC5;--shiki-dark:#79B8FF">2.</span><span style="color:#D73A49;--shiki-dark:#F97583">f</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        anms-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">setRotation</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">core</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">vector3df</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#D73A49;--shiki-dark:#F97583">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">90</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">//      anms->setMaterialTexture(0, driver->getTexture("../../media/sydney.webp"));</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    /*</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    To be able to look at and move around in this scene, we create a first</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    person shooter style camera and make the mouse cursor invisible.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    */</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    smgr-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">addCameraSceneNodeFPS</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    device-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getCursorControl</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">setVisible</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">false</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    /*</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    Add a colorful irrlicht logo</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    */</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    device-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getGUIEnvironment</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">addImage</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        driver-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTexture</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"../../media/irrlichtlogoalpha2.tga"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        core</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">position2d</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">s32</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">10</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#005CC5;--shiki-dark:#79B8FF">20</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    gui</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::IGUIStaticText</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> diagnostics </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> device-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getGUIEnvironment</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">addStaticText</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        L""</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">core</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">rect</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">s32</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">10</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">10</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">400</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">20</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    diagnostics-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">setOverrideColor</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">video</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">SColor</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">255</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">255</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">255</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    /*</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    We have done everything, so lets draw it. We also write the current</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    frames per second and the name of the driver to the caption of the</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    window.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    */</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    int</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> lastFPS </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> -</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    // In order to do framerate independent movement, we have to know</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    // how long it was since the last frame</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    u32 then </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> device-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTimer</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTime</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    // This is the movemen speed in units per second.</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    const</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> f32 MOVEMENT_SPEED </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 5.</span><span style="color:#D73A49;--shiki-dark:#F97583">f</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    while</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(device-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">run</span><span style="color:#24292E;--shiki-dark:#E1E4E8">())</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        // Work out a frame delta time.</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        const</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> u32 now </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> device-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTimer</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTime</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        const</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> f32 frameDeltaTime </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (f32)(now </span><span style="color:#D73A49;--shiki-dark:#F97583">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> then) </span><span style="color:#D73A49;--shiki-dark:#F97583">/</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1000.</span><span style="color:#D73A49;--shiki-dark:#F97583">f</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span><span style="color:#6A737D;--shiki-dark:#6A737D"> // Time in seconds</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        then </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> now;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        /* Check if keys W, S, A or D are being held down, and move the</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        sphere node around respectively. */</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        core</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::vector3df nodePosition </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> node-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getPosition</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        if</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(receiver.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">IsKeyDown</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">irr</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::KEY_KEY_W))</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            nodePosition.Y </span><span style="color:#D73A49;--shiki-dark:#F97583">+=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> MOVEMENT_SPEED </span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> frameDeltaTime;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        else</span><span style="color:#D73A49;--shiki-dark:#F97583"> if</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(receiver.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">IsKeyDown</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">irr</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::KEY_KEY_S))</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            nodePosition.Y </span><span style="color:#D73A49;--shiki-dark:#F97583">-=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> MOVEMENT_SPEED </span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> frameDeltaTime;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        if</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(receiver.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">IsKeyDown</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">irr</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::KEY_KEY_A))</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            nodePosition.X </span><span style="color:#D73A49;--shiki-dark:#F97583">-=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> MOVEMENT_SPEED </span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> frameDeltaTime;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        else</span><span style="color:#D73A49;--shiki-dark:#F97583"> if</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(receiver.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">IsKeyDown</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">irr</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::KEY_KEY_D))</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            nodePosition.X </span><span style="color:#D73A49;--shiki-dark:#F97583">+=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> MOVEMENT_SPEED </span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> frameDeltaTime;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        node-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">setPosition</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(nodePosition);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        driver-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">beginScene</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">video</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">SColor</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">255</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#005CC5;--shiki-dark:#79B8FF">113</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#005CC5;--shiki-dark:#79B8FF">113</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#005CC5;--shiki-dark:#79B8FF">133</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        smgr-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">drawAll</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span><span style="color:#6A737D;--shiki-dark:#6A737D"> // draw the 3d scene</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        device-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getGUIEnvironment</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">drawAll</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span><span style="color:#6A737D;--shiki-dark:#6A737D"> // draw the gui environment (the logo)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        driver-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">endScene</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        int</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> fps </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> driver-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getFPS</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (lastFPS </span><span style="color:#D73A49;--shiki-dark:#F97583">!=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> fps)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            core</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::stringw </span><span style="color:#6F42C1;--shiki-dark:#B392F0">tmp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">L"Movement Example - Irrlicht Engine ["</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            tmp </span><span style="color:#D73A49;--shiki-dark:#F97583">+=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> driver-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getName</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            tmp </span><span style="color:#D73A49;--shiki-dark:#F97583">+=</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> L"] fps: "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            tmp </span><span style="color:#D73A49;--shiki-dark:#F97583">+=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> fps;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            device-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">setWindowCaption</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(tmp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">c_str</span><span style="color:#24292E;--shiki-dark:#E1E4E8">());</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            lastFPS </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> fps;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    /*</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    In the end, delete the Irrlicht device.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    */</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    device-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">drop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">/*</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">That's it. Compile and play around with the program.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">**/</span></span>
+<span class="line"></span></code></pre>
+<h2 id="building-the-project">Building the project</h2>
+<p>Paste the code from above to your blank project in your IDE, in the <code>source/main.cpp</code> file.
+This may differ, but is not critical. Now, add the <code>CMakeLists.txt</code> file to your project
+and fill it with these commands:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cmake"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">cmake_minimum_required</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">VERSION</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 3.1)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">project</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(irrlicht_newton_game1)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">CMAKE_CXX_FLAGS</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "${CMAKE_CXX_FLAGS} -std=c++11"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">find_package</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(X11)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">find_package</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(OpenGL)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">find_package</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(ZLIB)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">NOT</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> IRRLICHT_LIBRARY_PATH)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    find_library</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(IRRLICHT_LIBRARY_PATH</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            NAMES</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Irrlicht</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            PATHS</span><span style="color:#D73A49;--shiki-dark:#F97583"> ${IRRLICHT_PATH}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/lib/</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            PATH_SUFFIXES Linux MacOSX </span><span style="color:#005CC5;--shiki-dark:#79B8FF">Win32</span><span style="color:#24292E;--shiki-dark:#E1E4E8">-gcc </span><span style="color:#005CC5;--shiki-dark:#79B8FF">Win32</span><span style="color:#24292E;--shiki-dark:#E1E4E8">-visualstudio Win64-visualstudio)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    message</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(STATUS </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Found Irrlicht: ${IRRLICHT_LIBRARY_PATH}"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">endif</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">include_directories</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">${IRRLICHT_PATH}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/include)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(SOURCE_FILES source/main.cpp)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(EXECUTABLE_NAME irrlicht_newton_game1)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">add_executable</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">${EXECUTABLE_NAME}</span><span style="color:#D73A49;--shiki-dark:#F97583"> ${SOURCE_FILES}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">target_link_libraries</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">${EXECUTABLE_NAME}</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${IRRLICHT_LIBRARY_PATH}</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${X11_LIBRARIES}</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${OPENGL_LIBRARIES}</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${ZLIB_LIBRARIES}</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${X11_Xxf86vm_LIB}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span></code></pre>
+<p><strong>Note:</strong> for those of you, guys, running MacOS X I prepared a bit more complicated
+<code>CMakeLists.txt</code> file - just to make our application run everywhere:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cmake"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">cmake_minimum_required</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">VERSION</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 3.1)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">project</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(irrlicht_newton_game1)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">CMAKE_CXX_FLAGS</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "${CMAKE_CXX_FLAGS} -std=c++11"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">option</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"NEWTON_DEMOS_SANDBOX"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "Build demos sandbox"</span><span style="color:#D73A49;--shiki-dark:#F97583"> OFF</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(LUACPPINTERFACE_PATH source/luacppinterface-master)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(CPPFORMAT_PATH source/cppformat-master)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NEWTONGD_PATH source/newton-dynamics-master)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NEWTONGD_INCLUDE_DIRS</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${NEWTONGD_PATH}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/packages/dCustomJoints</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${NEWTONGD_PATH}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/packages/dContainers</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${NEWTONGD_PATH}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/packages/dMath)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NEWTON_LIBRARIES Newton dMath)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">add_subdirectory</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">${LUACPPINTERFACE_PATH}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">add_subdirectory</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">${CPPFORMAT_PATH}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">add_subdirectory</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">${NEWTONGD_PATH}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">find_package</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(X11)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">find_package</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(OpenGL)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">find_package</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(ZLIB)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">find_package</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Lua)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">NOT</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> IRRLICHT_LIBRARY_PATH)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#005CC5;--shiki-dark:#79B8FF">UNIX</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(IRRLICHT_PATH_SUFFIX Linux)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    endif</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#005CC5;--shiki-dark:#79B8FF">APPLE</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(IRRLICHT_PATH_SUFFIX MacOSX)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    endif</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#005CC5;--shiki-dark:#79B8FF">WIN32</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#005CC5;--shiki-dark:#79B8FF">MSVC</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(IRRLICHT_PATH_SUFFIX </span><span style="color:#005CC5;--shiki-dark:#79B8FF">Win32</span><span style="color:#24292E;--shiki-dark:#E1E4E8">-visualstudio Win64-visualstudio)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        endif</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (MINGW)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(IRRLICHT_PATH_SUFFIX </span><span style="color:#005CC5;--shiki-dark:#79B8FF">Win32</span><span style="color:#24292E;--shiki-dark:#E1E4E8">-gcc)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        endif</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    endif</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    find_library</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(IRRLICHT_LIBRARY_PATH</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            NAMES</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Irrlicht</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            PATHS</span><span style="color:#D73A49;--shiki-dark:#F97583"> ${IRRLICHT_PATH}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/lib/</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            PATH_SUFFIXES </span><span style="color:#D73A49;--shiki-dark:#F97583">${IRRLICHT_PATH_SUFFIX}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    message</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(STATUS </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Found Irrlicht: ${IRRLICHT_LIBRARY_PATH}"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">endif</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(LIBRARIES luacppinterface</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        cppformat</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${NEWTON_LIBRARIES}</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${IRRLICHT_LIBRARY_PATH}</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${X11_LIBRARIES}</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${OPENGL_LIBRARIES}</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${ZLIB_LIBRARIES}</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${LUA_LIBRARIES}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">NOT</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> APPLE</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(LIBRARIES </span><span style="color:#D73A49;--shiki-dark:#F97583">${LIBRARIES}</span><span style="color:#D73A49;--shiki-dark:#F97583"> ${X11_Xxf86vm_LIB}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">endif</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">include_directories</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">${IRRLICHT_PATH}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/include</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${LUA_INCLUDE_DIR}</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${LUACPPINTERFACE_PATH}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/include</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${CPPFORMAT_PATH}</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${NEWTONGD_INCLUDE_DIRS}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(SOURCE_FILES source/main.cpp)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(EXECUTABLE_NAME irrlicht_newton_game1)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">add_executable</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">${EXECUTABLE_NAME}</span><span style="color:#D73A49;--shiki-dark:#F97583"> ${SOURCE_FILES}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#005CC5;--shiki-dark:#79B8FF">APPLE</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">CMAKE_CXX_FLAGS</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "${CMAKE_CXX_FLAGS} -framework Foundation -framework OpenGL -framework Cocoa -framework Carbon -framework AppKit -framework IOKit"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">endif</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">target_link_libraries</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">${EXECUTABLE_NAME}</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${LIBRARIES}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span></code></pre>
+<h2 id="cmake-file">CMake file</h2>
+<p>But what happens in all that code? First two lines of our <code>CMakeLists.txt</code> file define the project:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cmake"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">cmake_minimum_required</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">VERSION</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 3.1)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">project</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(irrlicht_newton_game1)</span></span>
+<span class="line"></span></code></pre>
+<p>Then we modify the variable <code>CMAKE_CXX_FLAGS</code>, which will be used to set compiler flags.
+This is how we add items to lists or modify string variables with CMake: we set it the new
+value, consisting of the old one and the new elements / parts:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cmake"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">CMAKE_CXX_FLAGS</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "${CMAKE_CXX_FLAGS} -std=c++11"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span></code></pre>
+<p>Then we tell CMake not to build <em>Newton demo sandbox</em> subproject and set a few path variables -
+we will use them to point compiler to the header and library files of our third-party libraries
+(like Newton itself, Irrlicht and others).</p>
+<p><strong>Remember:</strong> these are only plain variables, they have no effect on compiler themselves.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cmake"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(LUACPPINTERFACE_PATH source/luacppinterface-master)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(CPPFORMAT_PATH source/cppformat-master)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NEWTONGD_PATH source/newton-dynamics-master)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NEWTONGD_INCLUDE_DIRS</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${NEWTONGD_PATH}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/packages/dCustomJoints</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${NEWTONGD_PATH}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/packages/dContainers</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${NEWTONGD_PATH}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/packages/dMath)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(NEWTON_LIBRARIES Newton dMath)</span></span>
+<span class="line"></span></code></pre>
+<p>Next, we point CMake to our sub-projects, which are by the fact our third-party libraries:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cmake"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">add_subdirectory</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">${LUACPPINTERFACE_PATH}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">add_subdirectory</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">${CPPFORMAT_PATH}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">add_subdirectory</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">${NEWTONGD_PATH}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span></code></pre>
+<p>These tell CMake to build sub-projects before building our application. Because our sub-projects
+are nothing but libraries, we can then look for the built libraries, required by our project
+in the sub-projects’ output directories like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cmake"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">find_package</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Lua)</span></span>
+<span class="line"></span></code></pre>
+<p>Same way we look for system libraries:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cmake"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">find_package</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(X11)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">find_package</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(OpenGL)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">find_package</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(ZLIB)</span></span>
+<span class="line"></span></code></pre>
+<p>These commands set compile-ready variables like <code>X11_LIBRARIES</code>.</p>
+<p>Some sub-projects may set CMake variables too, providing us with paths to include files or
+library files. If Irrlicht did not do this, we try to find its paths with CMake:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cmake"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">NOT</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> IRRLICHT_LIBRARY_PATH)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#005CC5;--shiki-dark:#79B8FF">UNIX</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(IRRLICHT_PATH_SUFFIX Linux)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    endif</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#005CC5;--shiki-dark:#79B8FF">APPLE</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(IRRLICHT_PATH_SUFFIX MacOSX)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    endif</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#005CC5;--shiki-dark:#79B8FF">WIN32</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#005CC5;--shiki-dark:#79B8FF">MSVC</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(IRRLICHT_PATH_SUFFIX </span><span style="color:#005CC5;--shiki-dark:#79B8FF">Win32</span><span style="color:#24292E;--shiki-dark:#E1E4E8">-visualstudio Win64-visualstudio)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        endif</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (MINGW)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(IRRLICHT_PATH_SUFFIX </span><span style="color:#005CC5;--shiki-dark:#79B8FF">Win32</span><span style="color:#24292E;--shiki-dark:#E1E4E8">-gcc)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        endif</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    endif</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    find_library</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(IRRLICHT_LIBRARY_PATH</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            NAMES</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Irrlicht</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            PATHS</span><span style="color:#D73A49;--shiki-dark:#F97583"> ${IRRLICHT_PATH}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/lib/</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            PATH_SUFFIXES </span><span style="color:#D73A49;--shiki-dark:#F97583">${IRRLICHT_PATH_SUFFIX}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    message</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(STATUS </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Found Irrlicht: ${IRRLICHT_LIBRARY_PATH}"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">endif</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"></span></code></pre>
+<p>Note the environment variables CMake provides us with: <code>UNIX</code>, <code>APPLE</code>, <code>WIN32</code>, <code>MSVC</code>
+and many others. They describe which operating system CMake was ran under and which
+compiler it was told to use.</p>
+<p>And the most important part of our <code>CMakeLists.txt</code> file:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cmake"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">include_directories</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">${IRRLICHT_PATH}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/include</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${LUA_INCLUDE_DIR}</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${LUACPPINTERFACE_PATH}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/include</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${CPPFORMAT_PATH}</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${NEWTONGD_INCLUDE_DIRS}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(SOURCE_FILES source/main.cpp)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(EXECUTABLE_NAME irrlicht_newton_game1)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">add_executable</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">${EXECUTABLE_NAME}</span><span style="color:#D73A49;--shiki-dark:#F97583"> ${SOURCE_FILES}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span></code></pre>
+<p>This actually runs the <strong>compiler</strong> with the include directories, source files and
+output file specified.</p>
+<p>After that, we may run <strong>linker</strong> to link the intermediate object files, provided by
+compiler, and end up with the application executable:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cmake"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">target_link_libraries</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">${EXECUTABLE_NAME}</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ${LIBRARIES}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span></code></pre>
+<p>For OSX users there is a small hack, needed to build the application:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cmake"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#005CC5;--shiki-dark:#79B8FF">APPLE</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">CMAKE_CXX_FLAGS</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "${CMAKE_CXX_FLAGS} -framework Foundation -framework OpenGL -framework Cocoa -framework Carbon -framework AppKit -framework IOKit"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">endif</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"></span></code></pre>
+<p><strong>Note the order the commands are specified in:</strong> having include path variables definitions
+placed before sub-projects commands may be no harmful, but more <em>“effective”</em> commands,
+like compiling sub-projects (<code>add_subdirectory</code>) depend on other CMake commands, so
+be sure to keep the order sane and clean.</p>
+<h2 id="running-the-build">Running the build</h2>
+<p>Now that you are ready, run the following commands from your project directory
+<strong>(you will need <code>cmake</code> to be installed in your system)</strong>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">mkdir</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> build</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">cd</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> build</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">cmake</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -DIRRLICHT_PATH=path_to_directory_where_you_unpacked_irrlicht</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ..</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">make</span></span>
+<span class="line"></span></code></pre>
+<p><strong>Warning:</strong> do not forget to replace <code>path_to_directory_where_you_unpacked_irrlicht</code> with
+the actual path to the directory, where your Irrlicht files lay!</p>
+<p>This will build our first Irrlicht application. Not obvious how handy it is right now,
+but you will see the power of CMake in our later sessions.</p>
+<p>Before you run the application, copy the whole <code>media</code> directory from the Irrlicht
+dir to the parent dir of your project. You should end up with directory structure like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>.</span></span>
+<span class="line"><span>└── irrlicht_newton_tutorials</span></span>
+<span class="line"><span>    ├── irrlicht_newton_game1</span></span>
+<span class="line"><span>    │   ├── build</span></span>
+<span class="line"><span>    │   ├── CMakeLists.txt</span></span>
+<span class="line"><span>    │   └── source</span></span>
+<span class="line"><span>    │       └── main.cpp</span></span>
+<span class="line"><span>    └── media</span></span>
+<span class="line"><span></span></span></code></pre>
+<p><strong>Note:</strong> If you now just run the <code>irrlicht_newton_game1</code> binary on OSX, you will see
+your application does not react to keyboard events. This is tricky, but you need
+to pack your application as OSX application. This is easy, though: just create
+a directory tree <code>mkdir -p irrlicht_newton_game1.app/Contents/MacOS/</code> and move
+your binary file there:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>├── irrlicht_newton_game1.app</span></span>
+<span class="line"><span>│   └── Contents</span></span>
+<span class="line"><span>│       └── MacOS</span></span>
+<span class="line"><span>│           └── irrlicht_newton_game1</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Open <strong>Finder</strong> and run the application from there. On other operating systems run
+the executable file in your <code>build</code> directory.</p>
+<p>Buuuuut, since we have CMake, we may simplify this task because this is a part of
+application build process. So we need to create a usual binary file, when we are
+running Linux or Windows or create a directory structure with binary on its deepest
+level, when running OSX. CMake allows to do it in a really easy way:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cmake"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#005CC5;--shiki-dark:#79B8FF">APPLE</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    add_executable</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">${EXECUTABLE_NAME}</span><span style="color:#E36209;--shiki-dark:#FFAB70"> MACOSX_BUNDLE</span><span style="color:#D73A49;--shiki-dark:#F97583"> ${SOURCE_FILES}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">else</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    add_executable</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">${EXECUTABLE_NAME}</span><span style="color:#D73A49;--shiki-dark:#F97583"> ${SOURCE_FILES}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">endif</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"></span></code></pre>
+<p>You should see something like this:</p>
+<img src="/images/04_movement_untouched.webp" loading="lazy">
+<p>To end the process you may consider switching to a terminal and running</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pkill</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> irrlicht_newton_game1</span></span>
+<span class="line"></span></code></pre>
+<h2 id="understanding-the-code">Understanding the code</h2>
+<p>Here are few simple things we could extract from application’ code and understand right from scratch:</p>
+<ul>
+<li>
+<p>Each 3D model is a <em>scene node</em></p>
+</li>
+<li>
+<p>Primitive scene nodes (such as <em>cube</em> or <em>sphere</em>) could be easily created with built-in functions:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cpp"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">scene</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::ISceneNode</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> node </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> smgr-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">addSphereSceneNode</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">scene</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::ISceneNode</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> node </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> smgr-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">addCubeSceneNode</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span></code></pre>
+</li>
+<li>
+<p>Animated 3D models (such as <em>character models</em>) could be loaded from file:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cpp"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">scene</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::IAnimatedMeshSceneNode</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> node </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> smgr-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">addAnimatedMeshSceneNode</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(smgr-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getMesh</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"../../media/ninja.b3d"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"></span></code></pre>
+<p><strong>Hint:</strong> if mesh is animated, animation could be started with:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cpp"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  node-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">setFrameLoop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">13</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  node-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">setAnimationSpeed</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">15</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span></code></pre>
+<p><strong>Hint:</strong> animation could be stopped with setting its speed to zero:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cpp"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">node-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">setAnimationSpeed</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span></code></pre>
+</li>
+<li>
+<p>Node could be described not only by its vertices and indices <em>(forming a set of triangles which are drawn
+in 3D forming a model, called <strong>mesh</strong>)</em> but by its <strong>position</strong>, <strong>rotation</strong> and <strong>scale</strong></p>
+<p>Those could be set with:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cpp"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">node-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">setPosition</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">core</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">vector3df</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(x, y, z));</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">node-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">setRotation</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">core</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">vector3df</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(x_angle, y_angle, z_angle));</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">node-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">setScale</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">core</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">vector3df</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(width_factor, height_factor, depth_factor));</span></span>
+<span class="line"></span></code></pre>
+<p><strong>Hint:</strong> rotation is a set of angles relatively to the corresponding axes, the node will be rotated
+around. E. g., <code>vector3df(45, 90, 0)</code> sets the rotation by <code>45 deg</code> around <code>X axis</code>, <code>90 deg</code> around <code>Y axis</code>
+and no rotation aroung <code>Z axis</code>. All those axes are relative to the node itself.</p>
+<img src="/images/irrlicht-newton-tutorials/euler_angles.webp" loading="lazy">
+</li>
+<li>
+<p>Graphics User Interface’ <em>(GUI)</em> widgets for information output are labels; they are created with
+<strong>GUI Manager</strong>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cpp"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">gui</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::IGUIStaticText</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> label </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> device-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getGUIEnvironment</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">addStaticText</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">L""</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">core</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">rect</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">s32</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">10</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">10</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">400</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">20</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"></span></code></pre>
+<p><strong>Hint:</strong> its text could be set with:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cpp"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">label-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">setText</span><span style="color:#24292E;--shiki-dark:#E1E4E8">((</span><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#D73A49;--shiki-dark:#F97583"> wchar_t*</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"some text"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span></code></pre>
+</li>
+<li>
+<p>User input is handled by an external <code>IEventReceiver</code> class object.</p>
+<p>Its method,</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cpp"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> bool</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> OnEvent</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> SEvent</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;</span><span style="color:#E36209;--shiki-dark:#FFAB70"> event</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span></code></pre>
+<p>defines the logic of handling events like <em>mouse events</em>, <em>keyboard events</em>, <em>joystick events</em>,
+<em>GUI events</em>, etc.</p>
+<p>The type of event is passed with the <code>event.EventType</code> field. The corresponding field is filled
+with the event parameters.</p>
+<p>For example:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cpp"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (event.type </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> EET_MOUSE_INPUT_EVENT) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (event.MouseInput.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">isLeftPressed</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()) {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        printf</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">%d</span><span style="color:#032F62;--shiki-dark:#9ECBFF">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> is cursor position</span><span style="color:#005CC5;--shiki-dark:#79B8FF">\n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, event.MouseInput.X, event.mouseInput.Y);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p><strong>Hint:</strong> <code>EventReceiver</code> object has nothing in common with our main game loop. So we should create
+some interface, some architecture trick to link those two. Because they are strongly related!</p>
+</li>
+<li>
+<p>Main game loop should contain <strong>rendering call</strong>, <strong>GUI rendering call</strong> and other game logic processing
+calls.</p>
+<p>The simplest main loop could look like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cpp"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">while</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (device-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">run</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()) {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    driver-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">beginScene</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">video</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">SColor</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">255</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">113</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">113</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">133</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    smgr-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">drawAll</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span><span style="color:#6A737D;--shiki-dark:#6A737D"> // draw the 3d scene</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    device-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getGUIEnvironment</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">drawAll</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span><span style="color:#6A737D;--shiki-dark:#6A737D"> // draw the gui</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    driver-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">endScene</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+</li>
+<li>
+<p>There is no simple <em>(or at least, built-in)</em> way to get the delta time between two rendered frames.
+<strong>This is an important variable!</strong> We’ll need that later, when we inject physics engine. And Newton GD
+is not the only engine requiring this variable!</p>
+<p>But that could be easily done with this workaround:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cpp"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">// before main loop</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">u32 then </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> device-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTimer</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTime</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">// ...</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">// within the main game loop</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> u32 now </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> device-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTimer</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">getTime</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> f32 frameDeltaTime </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (f32)(now </span><span style="color:#D73A49;--shiki-dark:#F97583">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> then) </span><span style="color:#D73A49;--shiki-dark:#F97583">/</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1000.</span><span style="color:#D73A49;--shiki-dark:#F97583">f</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span><span style="color:#6A737D;--shiki-dark:#6A737D"> // delta time in seconds</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">then </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> now;</span></span>
+<span class="line"></span></code></pre>
+</li>
+</ul>
+<p>That was some short introduction to the Irrlicht engine. And that’s basically everything we will use
+for the next few sections.</p>
+<p><a href="/irrlicht-newton-tutorials/2015/08/28/first-script.html" class="btn btn-success">Next chapter</a></p>  </div> </article> </main> <footer data-astro-cid-sz7xmlte>
+&copy; 2024 Your name here. All rights reserved.
+<div class="social-links" data-astro-cid-sz7xmlte> <a href="https://m.webtoo.ls/@astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Mastodon</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/mastodon" data-astro-cid-sz7xmlte><path fill="currentColor" d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://twitter.com/astrodotbuild" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Twitter</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/twitter" data-astro-cid-sz7xmlte><path fill="currentColor" d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://github.com/withastro/astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Go to Astro's GitHub repo</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/github" data-astro-cid-sz7xmlte><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" data-astro-cid-sz7xmlte></path></svg> </a> </div> </footer>  </body></html>

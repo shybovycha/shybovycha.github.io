@@ -1,0 +1,472 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-bvzihdzo> <head><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.0.3"><!-- Font preloads --><link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin><!-- Canonical URL --><link rel="canonical" href="https://shybovycha.github.io/2022/11/07/2022-11-07-configscript-parser.html/"><!-- Primary Meta Tags --><title>ConfigScript</title><meta name="title" content="ConfigScript"><meta name="description"><link rel="stylesheet" href="/_astro/index.BvFNhZYw.css">
+<style>footer[data-astro-cid-sz7xmlte]{padding:2em 1em 6em;background:linear-gradient(var(--gray-gradient)) no-repeat;color:rgb(var(--gray));text-align:center}.social-links[data-astro-cid-sz7xmlte]{display:flex;justify-content:center;gap:1em;margin-top:1em}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]{text-decoration:none;color:rgb(var(--gray))}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]:hover{color:rgb(var(--gray-dark))}main[data-astro-cid-bvzihdzo]{width:calc(100% - 2em);max-width:100%;margin:0}.hero-image[data-astro-cid-bvzihdzo]{width:100%}.hero-image[data-astro-cid-bvzihdzo] img[data-astro-cid-bvzihdzo]{display:block;margin:0 auto;border-radius:12px;box-shadow:var(--box-shadow)}.prose[data-astro-cid-bvzihdzo]{width:720px;max-width:calc(100% - 2em);margin:auto;padding:1em;color:rgb(var(--gray-dark))}.title[data-astro-cid-bvzihdzo]{margin-bottom:1em;padding:1em 0;text-align:center;line-height:1}.title[data-astro-cid-bvzihdzo] h1[data-astro-cid-bvzihdzo]{margin:0 0 .5em}.date[data-astro-cid-bvzihdzo]{margin-bottom:.5em;color:rgb(var(--gray))}.last-updated-on[data-astro-cid-bvzihdzo]{font-style:italic}
+[data-astro-image]{width:100%;height:auto;object-fit:var(--fit);object-position:var(--pos);aspect-ratio:var(--w) / var(--h)}[data-astro-image=responsive]{max-width:calc(var(--w) * 1px);max-height:calc(var(--h) * 1px)}[data-astro-image=fixed]{width:calc(var(--w) * 1px);height:calc(var(--h) * 1px)}
+</style></head> <body data-astro-cid-bvzihdzo> <nav class="top"> <div class="links"> <a class="nav-link nav-item" href="/">Home</a> <a class="nav-link nav-item" href="/about.html">About</a> </div> </nav> <main data-astro-cid-bvzihdzo> <article data-astro-cid-bvzihdzo> <div class="hero-image" data-astro-cid-bvzihdzo>  </div> <div class="prose" data-astro-cid-bvzihdzo> <div class="title" data-astro-cid-bvzihdzo> <div class="date" data-astro-cid-bvzihdzo> <time datetime="2022-11-06T14:00:00.000Z"> Nov 7, 2022 </time>  </div> <h1 data-astro-cid-bvzihdzo>ConfigScript</h1> <hr data-astro-cid-bvzihdzo> </div>  <p>Once upon a time I thought OGRE was overly too complicated - all those unnecessary script files, custom formats, a ton of setup hassle.
+That was until I tried figuring out an entire modern 3D rendering stack from scratch.
+That’s when I realized configuring a rendering process (rendering pipeline) can be tricky.
+And that’s when I realized configuring application with config files can be helpful.
+OGRE suddenly became very appealing to me and I really began to appreciate all the work the devs have put into it.</p>
+<p>One good aspect of OGRE was the “unnecessary” script and configuration files. But the syntax of those files looked much cleaner
+than that of JSON:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>// This is a comment</span></span>
+<span class="line"><span>object_keyword Example/ObjectName</span></span>
+<span class="line"><span>{</span></span>
+<span class="line"><span>    attribute_name "some value"</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    object_keyword2 "Nested Object"</span></span>
+<span class="line"><span>    {</span></span>
+<span class="line"><span>        other_attribute 1 2 3</span></span>
+<span class="line"><span>        // and so on..</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>I thought if I could harvest anything from OGRE into my OpenGL application, that would be the configuration based on this format (rather than Lua or whatever scripts).</p>
+<p>Hence I crafted this simple grammar in ANTLR4 to parse these files:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>grammar ConfigScript;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>config : (object | comment)* EOF ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>object</span></span>
+<span class="line"><span>    : Identifier '{' property* '}'</span></span>
+<span class="line"><span>    | Identifier STRING '{' (property)* '}'</span></span>
+<span class="line"><span>    ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>property : Identifier propertyValue ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>propertyValue</span></span>
+<span class="line"><span>    : vector</span></span>
+<span class="line"><span>    | INT</span></span>
+<span class="line"><span>    | FLOAT</span></span>
+<span class="line"><span>    | BOOL</span></span>
+<span class="line"><span>    | STRING</span></span>
+<span class="line"><span>    | objectValue</span></span>
+<span class="line"><span>    ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>objectValue</span></span>
+<span class="line"><span>    : '{' property* '}'</span></span>
+<span class="line"><span>    | STRING '{' (property)* '}'</span></span>
+<span class="line"><span>    ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>vector</span></span>
+<span class="line"><span>    : INT+</span></span>
+<span class="line"><span>    | FLOAT+</span></span>
+<span class="line"><span>    ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>comment : LINE_COMMENT | BLOCK_COMMENT ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>STRING : DOUBLE_QUOTED_STRING | SINGLE_QUOTED_STRING ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>BOOL : 'true' | 'false' ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>DOUBLE_QUOTED_STRING : '"' DoubleQuoteStringChar* '"' ;</span></span>
+<span class="line"><span>SINGLE_QUOTED_STRING : '\'' SingleQuoteStringChar* '\'' ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Identifier : ALPHA (ALPHA | NUM)* ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>fragment SingleQuoteStringChar : ~['\r\n] ;</span></span>
+<span class="line"><span>    // : ~['\\\r\n]</span></span>
+<span class="line"><span>    // | SimpleEscapeSequence ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>fragment DoubleQuoteStringChar : ~["\r\n] ;</span></span>
+<span class="line"><span>    // : ~["\\\r\n]</span></span>
+<span class="line"><span>    // | SimpleEscapeSequence ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>// fragment SimpleEscapeSequence : '\\' ['"?abfnrtv\\] ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>INT : '0'</span></span>
+<span class="line"><span>    | '-'? [1-9] [0-9]*</span></span>
+<span class="line"><span>    ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>FLOAT : ('+' | '-')? NUM+ '.' NUM+ ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>WHITESPACE : [ \r\n\t]+ -> skip ;</span></span>
+<span class="line"><span>ALPHA : [a-zA-Z_] ;</span></span>
+<span class="line"><span>NUM : [0-9] ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>LINE_COMMENT : '//' ~[\r\n]* -> skip ;</span></span>
+<span class="line"><span>BLOCK_COMMENT : '/*' .*? '*/' -> skip ;</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>The only difference is that the object name can only be a quoted string:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>// This is a comment</span></span>
+<span class="line"><span>object_keyword "Example/ObjectName" // &#x3C;--- this can not be just Example/ObjectName</span></span>
+<span class="line"><span>{</span></span>
+<span class="line"><span>    attribute_name "some value"</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    object_keyword2 "Nested Object"</span></span>
+<span class="line"><span>    {</span></span>
+<span class="line"><span>        other_attribute 1 2 3</span></span>
+<span class="line"><span>        // and so on..</span></span>
+<span class="line"><span>        /* block comment */</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>The only thing left with this parser thing is to compile it and use in a project.</p>
+<!--more-->
+<div class="content-read-marker" data-fraction="25"></div>
+<h2 id="antlr-version-incompatibility">ANTLR version incompatibility</h2>
+<p>It’s bragging time! For C++ users, life was never easy. Yet, some good samaritan created the CMake thing.
+It is ugly as heck, it is barebones and it does not really simplify the life by a whole lot, yet it allows devs to somehow manage build process a bit better than Makefiles.
+But it is one more tool to learn, keep up-to-date and hate. Then, Microsoft came up with a package manager for C++, vcpkg.
+And they decided to integrate it with CMake, which became quite popular back then. One more tool to learn, keep up-to-date and hate.
+But not as much as CMake - this one actually helps quite a bit. Like when you have to add a library or two to your project, it becomes much easier than using barebones CMake.
+And that’s where we come to a point of keeping the thing up-to-date. The vcpkg repository is technically community-driven.
+Meaning people from all around the world are responsible for keeping repository in good shape, but only Microsort-approved (employed?) people can approve merges to the repo.
+And often this only happens when somebody has to use the port (dependency from vcpkg repo) and sees an issue and has enough time and passion to go and fix it up.</p>
+<p>That’s a long brag, but the thing is: if you go to ANTLR4 website and just download the JAR and use it to generate the parser &#x26; lexer sources for your C++ project, you won’t get it to work with
+the runtime from vcpkg (unless somebody stands up and updates the port). The thing is: vcpkg port provides runtime for ANTLR4 <code>4.10.1</code>, while the generator on ANTLR4 website has version <code>4.11.1</code>.
+This is an issue, since between these two versions, there were breaking changes in the ANTLR4 runtime source, so the code generated by the newer version can not be used with the newer version of runtime.
+Simply because classes were moved around or even created, like <code>::antlr4::internal::OnceFlag</code>, which never existed in <code>4.10.1</code> but was added in <code>4.11.1</code> together with an entire header file and namespace.</p>
+<p>Luckily, some good guy by a gesture of sheer good will created a <a href="https://github.com/microsoft/vcpkg/pull/27720">PR to fix the issue</a>
+(by updating the version of ANTLR in vcpkg repository), which should be merged in by the time this blog will be published.</p>
+<p>You have to match the ANTLR4 source generator version with the version of the runtime provided by the vcpkg port.</p>
+<h2 id="actual-implementation">Actual implementation</h2>
+<p>That thing aside, there are few tricks when using the port in the code.</p>
+<p>For the vcpkg port, the <code>vcpkg.json</code> file should contain the <code>antlr4</code> dependency:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="json"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  "$schema"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  "name"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"antlr-configscript-cpp"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  "version-string"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"0.1.0"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  "dependencies"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: [</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">      "antlr4"</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  ]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>The <code>CMakeFile.txt</code> however should look for <code>antlr4-runtime</code> package, link the <code>antlr4_shared</code> or <code>antlr4_static</code> library and explicitly add the include directories from the internal variable, <code>${ANTLR4_INCLUDE_DIR}</code>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cmake"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">cmake_minimum_required</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">VERSION</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 3.20 FATAL_ERROR)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">project</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(antlr_configscript_cpp </span><span style="color:#6F42C1;--shiki-dark:#B392F0">VERSION</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 0.1.0 LANGUAGES CXX)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">add_executable</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(antlr_configscript_cpp</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "main.cpp"</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "gen_parser/ConfigScriptLexer.cpp"</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "gen_parser/ConfigScriptLexer.h"</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "gen_parser/ConfigScriptParser.cpp"</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "gen_parser/ConfigScriptParser.h"</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "gen_parser/ConfigScriptBaseListener.cpp"</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "gen_parser/ConfigScriptBaseListener.h"</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set_property</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">TARGET</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> antlr_configscript_cpp PROPERTY CXX_STANDARD 20)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">// linking ANTLR4</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">find_package</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(antlr4-runtime CONFIG REQUIRED)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">target_link_libraries</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(antlr_configscript_cpp </span><span style="color:#6F42C1;--shiki-dark:#B392F0">PRIVATE</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> antlr4_shared)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">target_include_directories</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(antlr_configscript_cpp </span><span style="color:#6F42C1;--shiki-dark:#B392F0">PRIVATE</span><span style="color:#D73A49;--shiki-dark:#F97583"> ${ANTLR4_INCLUDE_DIR}</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span></code></pre>
+<p>With those issues sorted out, the code to parse the source for the grammar is relatively straightforward:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cpp"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#include</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &#x3C;iostream></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#include</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &#x3C;antlr4-runtime.h></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#include</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "gen_parser/ConfigScriptLexer.h"</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#include</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "gen_parser/ConfigScriptParser.h"</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#include</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "gen_parser/ConfigScriptBaseListener.h"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#pragma</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> execution_character_set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"utf-8"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> main</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    const</span><span style="color:#D73A49;--shiki-dark:#F97583"> auto</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> configSource </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> R"(</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">// This is a comment</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">object_keyword "Example/ObjectName" // &#x3C;--- this can not be just Example/ObjectName</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">{</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    attribute_name "some value"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    object_keyword2 "Nested Object"</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        other_attribute 1 2 3</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        // and so on..</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        /* block comment */</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    }</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">}</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">)"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    antlr4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::ANTLRInputStream </span><span style="color:#6F42C1;--shiki-dark:#B392F0">input</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(configSource);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    ConfigScriptLexer </span><span style="color:#6F42C1;--shiki-dark:#B392F0">lexer</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">input);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    antlr4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::CommonTokenStream </span><span style="color:#6F42C1;--shiki-dark:#B392F0">tokens</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">lexer);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    ConfigScriptParser </span><span style="color:#6F42C1;--shiki-dark:#B392F0">parser</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">tokens);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    antlr4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">tree</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::ParseTree</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> tree </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> parser.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">config</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    auto</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> s </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> tree-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">toStringTree</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">parser);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "Parse Tree: "</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> s </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::endl;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>This program would yield an abstract syntax tree looking like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>(config (object object_keyword "Example/ObjectName" { (property attribute_name (propertyValue "some value")) (property object_keyword2 (propertyValue (objectValue "Nested Object" { (property other_attribute (propertyValue (vector 1 2 3))) }))) }) &#x3C;EOF>)</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Now, what do we do with it? Well, first we need to implement our own version of <code>ConfigScriptBaseListener</code>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cpp"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> MyConfigListener</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> : </span><span style="color:#D73A49;--shiki-dark:#F97583">public</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> ConfigScriptBaseListener</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">public:</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> enterConfig</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ConfigScriptParser</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ConfigContext</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> ctx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">override</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> exitConfig</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ConfigScriptParser</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ConfigContext</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> ctx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">override</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> enterObject</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ConfigScriptParser</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ObjectContext</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> ctx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">override</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> exitObject</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ConfigScriptParser</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ObjectContext</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> ctx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">override</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> enterProperty</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ConfigScriptParser</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">PropertyContext</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> ctx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">override</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> exitProperty</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ConfigScriptParser</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">PropertyContext</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> ctx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">override</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> enterPropertyValue</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ConfigScriptParser</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">PropertyValueContext</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> ctx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">override</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> exitPropertyValue</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ConfigScriptParser</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">PropertyValueContext</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> ctx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">override</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> enterObjectValue</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ConfigScriptParser</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ObjectValueContext</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> ctx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">override</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> exitObjectValue</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ConfigScriptParser</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ObjectValueContext</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> ctx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">override</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> enterVector</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ConfigScriptParser</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">VectorContext</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> ctx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">override</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> exitVector</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ConfigScriptParser</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">VectorContext</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> ctx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">override</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> enterComment</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ConfigScriptParser</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">CommentContext</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> ctx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">override</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> exitComment</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ConfigScriptParser</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">CommentContext</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> ctx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">override</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> enterEveryRule</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">antlr4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ParserRuleContext</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> ctx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">override</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> exitEveryRule</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">antlr4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ParserRuleContext</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> ctx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">override</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> visitTerminal</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">antlr4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">tree</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">TerminalNode</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> node</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">override</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> visitErrorNode</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">antlr4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">tree</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ErrorNode</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> node</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">override</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">};</span></span>
+<span class="line"></span></code></pre>
+<div class="content-read-marker" data-fraction="50"></div>
+<p>Then we need to pass an instance of this new class to the <code>TreeWalker</code> so that we can process the tree node-by-node:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cpp"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">auto</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> listener </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">make_unique</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">MyConfigListener</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">auto</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> walker </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">make_unique</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">antlr4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">tree</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ParseTreeWalker</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">walker-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">walk</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(listener.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(), tree);</span></span>
+<span class="line"></span></code></pre>
+<p>But for that to properly work, we’d need to handle every context separately - meaning whenever we enter a nested tree node (like <code>IntVector</code>),
+we would want to have the pointer to a this temporary vector to be able to add elements to. And when we exit this node, we would need a pointer
+to whatever the parent of that vector was, to be able to add this vector to that parent.</p>
+<p>This might get out of hand quite quickly.</p>
+<p>Alternatively, and arguably more convenient way to handle this is using attributes and actions in the grammar itself:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>grammar ConfigScript;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>@header {</span></span>
+<span class="line"><span>    #include &#x3C;variant></span></span>
+<span class="line"><span>    #include &#x3C;any></span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>config : objects=object* EOF ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>object</span></span>
+<span class="line"><span>    returns [</span></span>
+<span class="line"><span>        std::string name</span></span>
+<span class="line"><span>    ]</span></span>
+<span class="line"><span>    : Identifier objectValue { $name = $Identifier->getText(); }</span></span>
+<span class="line"><span>    ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>property</span></span>
+<span class="line"><span>    returns [</span></span>
+<span class="line"><span>        std::string name,</span></span>
+<span class="line"><span>        std::any value</span></span>
+<span class="line"><span>    ]</span></span>
+<span class="line"><span>    : Identifier propertyValue { $name = $Identifier->getText(); antlrcpp::downCast&#x3C;ObjectValueContext*>(_localctx->parent)->propertyMap[$name] = $value; }</span></span>
+<span class="line"><span>    ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>propertyValue</span></span>
+<span class="line"><span>    : intVector { antlrcpp::downCast&#x3C;PropertyContext*>(_localctx->parent)->value = $intVector.elements; }</span></span>
+<span class="line"><span>    | floatVector { antlrcpp::downCast&#x3C;PropertyContext*>(_localctx->parent)->value = $floatVector.elements; }</span></span>
+<span class="line"><span>    | INT { antlrcpp::downCast&#x3C;PropertyContext*>(_localctx->parent)->value = std::stoi($INT.text); }</span></span>
+<span class="line"><span>    | FLOAT { antlrcpp::downCast&#x3C;PropertyContext*>(_localctx->parent)->value = std::stof($FLOAT.text); }</span></span>
+<span class="line"><span>    | BOOL { antlrcpp::downCast&#x3C;PropertyContext*>(_localctx->parent)->value = static_cast&#x3C;bool>($BOOL.text == "true"); }</span></span>
+<span class="line"><span>    | STRING { antlrcpp::downCast&#x3C;PropertyContext*>(_localctx->parent)->value = $STRING.text; }</span></span>
+<span class="line"><span>    | objectValue { antlrcpp::downCast&#x3C;PropertyContext*>(_localctx->parent)->value = $objectValue.propertyMap; }</span></span>
+<span class="line"><span>    ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>objectValue</span></span>
+<span class="line"><span>    returns [</span></span>
+<span class="line"><span>        std::string classifier,</span></span>
+<span class="line"><span>        std::map&#x3C;std::string, std::any> propertyMap</span></span>
+<span class="line"><span>    ]</span></span>
+<span class="line"><span>    : '{' property* '}'</span></span>
+<span class="line"><span>    | STRING '{' (property)* '}' { $classifier = $STRING.text; }</span></span>
+<span class="line"><span>    ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>intVector</span></span>
+<span class="line"><span>    returns [ std::vector&#x3C;int> elements ]</span></span>
+<span class="line"><span>    : INT+ { auto v = $ctx->INT(); std::for_each(v.begin(), v.end(), [&#x26;](auto* node) { _localctx->elements.push_back(std::stoi(node->getText())); }); }</span></span>
+<span class="line"><span>    ;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>floatVector</span></span>
+<span class="line"><span>    returns [ std::vector&#x3C;float> elements ]</span></span>
+<span class="line"><span>    : FLOAT+ { auto v = $ctx->FLOAT(); std::for_each(v.begin(), v.end(), [&#x26;](auto* node) { _localctx->elements.push_back(std::stof(node->getText())); }); }</span></span>
+<span class="line"><span>    ;</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>This way we couple the parser with the specific language (C++ in this case), but this allows us to write bare minimum code afterwards:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cpp"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">auto</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> objects </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> antlrcpp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">downCast</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ConfigScriptParser</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ConfigContext</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>(tree)-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">object</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span></code></pre>
+<p>However, there quite a few tricks involved.</p>
+<p>First of all, the huge benefit is that this way we are free to specify code to be run on entering each rule and we have an access to all of the rule context:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>propertyValue</span></span>
+<span class="line"><span>    : intVector { antlrcpp::downCast&#x3C;PropertyContext*>(_localctx->parent)->value = $intVector.elements; }</span></span>
+<span class="line"><span>    | floatVector { antlrcpp::downCast&#x3C;PropertyContext*>(_localctx->parent)->value = $floatVector.elements; }</span></span>
+<span class="line"><span>    | INT { antlrcpp::downCast&#x3C;PropertyContext*>(_localctx->parent)->value = std::stoi($INT.text); }</span></span>
+<span class="line"><span>    | FLOAT { antlrcpp::downCast&#x3C;PropertyContext*>(_localctx->parent)->value = std::stof($FLOAT.text); }</span></span>
+<span class="line"><span>    | BOOL { antlrcpp::downCast&#x3C;PropertyContext*>(_localctx->parent)->value = static_cast&#x3C;bool>($BOOL.text == "true"); }</span></span>
+<span class="line"><span>    | STRING { antlrcpp::downCast&#x3C;PropertyContext*>(_localctx->parent)->value = $STRING.text; }</span></span>
+<span class="line"><span>    | objectValue { antlrcpp::downCast&#x3C;PropertyContext*>(_localctx->parent)->value = $objectValue.propertyMap; }</span></span>
+<span class="line"><span>    ;</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>See how the nested rules are referenced by their names (<code>intVector</code> is accessed with <code>$intVector</code>, <code>INT</code> is accessed with <code>$INT</code>, rule text is accessed via <code>$RULE.text</code>).
+There is also the current rule’ context available through <code>_localctx</code>.</p>
+<p>All of this logic is injected into the code generated by ANTLR, so you can access it as-is and see what is available and what not.</p>
+<p>But the issue is: whatever the code is that you write in the rules, it won’t be compiled when generating the parser code - it would be
+inserted into the generated code as-is. You will have to make sure it compiles as a separate step.</p>
+<p>Some of the rules allow you to define what other data will can be accessed (like the integer value of an <code>INT</code> rule or elements of the <code>intVector</code> rule):</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>intVector</span></span>
+<span class="line"><span>    returns [ std::vector&#x3C;int> elements ]</span></span>
+<span class="line"><span>    : INT+ { auto v = $ctx->INT(); std::for_each(v.begin(), v.end(), [&#x26;](auto* node) { _localctx->elements.push_back(std::stoi(node->getText())); }); }</span></span>
+<span class="line"><span>    ;</span></span>
+<span class="line"><span></span></span></code></pre>
+<div class="content-read-marker" data-fraction="75"></div>
+<p>This also acts as the initialization of the additional context fields.</p>
+<p>Second, all of these <code>antlrcpp::downCast&#x3C;Context*>(_localctx->parent)</code> are required to access the parent context (so no <code>$parent</code> or something).</p>
+<p>Accessing attribute: <code>$vector.value</code> even though it is not valid C++ code, since <code>$vector</code> will be resolved to a context pointer (<code>VectorContext*</code>),
+hence we have to use all those <code>antlrcpp::downCast</code>.</p>
+<p>Accessing repeated rules as a vector: <code>$INT.begin()</code> and <code>$INT.end()</code> would resolve in something else (see the above, accessing attribute).
+Hence a trick is to access it via context: <code>$ctx->INT().begin()</code>.</p>
+<p>Accessing parent attribute:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>propertyValue</span></span>
+<span class="line"><span>    : vector { $property::value.emplace($vector.elements); }</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>The <code>$property::value</code> won’t work and will throw <code>missing code generation template NonLocalAttrRefHeader</code>.
+I am unsure how to fix this correctly (this should be valid, according to documentation), so I hacked my way through:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>propertyValue</span></span>
+<span class="line"><span>    : vector { antlrcpp::downCast&#x3C;PropertyContext*>(_localctx->parent)->value = $vector.elements; }</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>And a simple program that prints out the parsed config:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cpp"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#include</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &#x3C;iostream></span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#include</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &#x3C;map></span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#include</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &#x3C;variant></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#include</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &#x3C;antlr4-runtime.h></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#include</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "gen_parser/ConfigScriptLexer.h"</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#include</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "gen_parser/ConfigScriptParser.h"</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#include</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "gen_parser/ConfigScriptBaseListener.h"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#pragma</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> execution_character_set</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"utf-8"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> printAny</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">any</span><span style="color:#E36209;--shiki-dark:#FFAB70"> value</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (value.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#D73A49;--shiki-dark:#F97583"> typeid</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::string))</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "(str){ "</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">any_cast</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">string</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>(value) </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> " };"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    else</span><span style="color:#D73A49;--shiki-dark:#F97583"> if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (value.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#D73A49;--shiki-dark:#F97583"> typeid</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">))</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "(int){ "</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">any_cast</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>(value) </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> " };"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    else</span><span style="color:#D73A49;--shiki-dark:#F97583"> if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (value.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#D73A49;--shiki-dark:#F97583"> typeid</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">float</span><span style="color:#24292E;--shiki-dark:#E1E4E8">))</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "(float){ "</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">any_cast</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#D73A49;--shiki-dark:#F97583">float</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>(value) </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> " };"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    else</span><span style="color:#D73A49;--shiki-dark:#F97583"> if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (value.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#D73A49;--shiki-dark:#F97583"> typeid</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::vector</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;int></span><span style="color:#24292E;--shiki-dark:#E1E4E8">))</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        auto</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> vec </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">any_cast</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">vector</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>>(value);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "(int[]){ "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">auto</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> val : vec)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> val </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ", "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> " };"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    else</span><span style="color:#D73A49;--shiki-dark:#F97583"> if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (value.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#D73A49;--shiki-dark:#F97583"> typeid</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::vector</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;float></span><span style="color:#24292E;--shiki-dark:#E1E4E8">))</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        auto</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> vec </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">any_cast</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">vector</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#D73A49;--shiki-dark:#F97583">float</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>>(value);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "(float[]){ "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">auto</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> val : vec)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> val </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ", "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> " };"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    else</span><span style="color:#D73A49;--shiki-dark:#F97583"> if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (value.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() </span><span style="color:#D73A49;--shiki-dark:#F97583">==</span><span style="color:#D73A49;--shiki-dark:#F97583"> typeid</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::map</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::string, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::any</span><span style="color:#D73A49;--shiki-dark:#F97583">></span><span style="color:#24292E;--shiki-dark:#E1E4E8">))</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        auto</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> vec </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">any_cast</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">map</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">string</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">any</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>>(value);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "(obj){ "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">auto&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> val : vec)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> val.first </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> " = "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            printAny</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(val.second);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> " };"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> main</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    const</span><span style="color:#D73A49;--shiki-dark:#F97583"> auto</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> configSource </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> R"(</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">// This is a comment</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">object_keyword "Example/ObjectName" // &#x3C;--- this can not be just Example/ObjectName</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">{</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    attribute_name "some value"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    object_keyword2 "Nested Object"</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        other_attribute 1 2 3</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        // and so on..</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        /* block comment */</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    }</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">}</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">)"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    antlr4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::ANTLRInputStream </span><span style="color:#6F42C1;--shiki-dark:#B392F0">input</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(configSource);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    ConfigScriptLexer </span><span style="color:#6F42C1;--shiki-dark:#B392F0">lexer</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">input);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    antlr4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::CommonTokenStream </span><span style="color:#6F42C1;--shiki-dark:#B392F0">tokens</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">lexer);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    ConfigScriptParser </span><span style="color:#6F42C1;--shiki-dark:#B392F0">parser</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">tokens);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    antlr4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">tree</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::ParseTree</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> tree </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> parser.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">config</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    auto</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> s </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> tree-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">toStringTree</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">parser);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "Parse Tree: "</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> s </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::endl;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    auto</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> objects </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> antlrcpp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">downCast</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ConfigScriptParser</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ConfigContext</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>(tree)-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">object</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "Objects found: "</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> objects.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">size</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::endl;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">auto</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> o : objects)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "["</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> o->name </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "] { "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        auto</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> objectValue </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> o-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">objectValue</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        auto</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> propertyMap </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> objectValue->propertyMap;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">auto&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> p : propertyMap)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> p.first </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> " = "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            printAny</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(p.second);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::endl;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> " } "</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::endl;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>Hope this gives you a brief introduction into ANTLR4 and some of the tips on implementing your own parsers.</p>
+<div class="content-read-marker" data-fraction="100"></div>  </div> </article> </main> <footer data-astro-cid-sz7xmlte>
+&copy; 2024 Your name here. All rights reserved.
+<div class="social-links" data-astro-cid-sz7xmlte> <a href="https://m.webtoo.ls/@astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Mastodon</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/mastodon" data-astro-cid-sz7xmlte><path fill="currentColor" d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://twitter.com/astrodotbuild" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Twitter</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/twitter" data-astro-cid-sz7xmlte><path fill="currentColor" d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://github.com/withastro/astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Go to Astro's GitHub repo</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/github" data-astro-cid-sz7xmlte><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" data-astro-cid-sz7xmlte></path></svg> </a> </div> </footer>  </body></html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-bvzihdzo> <head><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.0.3"><!-- Font preloads --><link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin><!-- Canonical URL --><link rel="canonical" href="https://shybovycha.github.io/2014/12/18/2014-12-18-setting-up-rails-webserver.html/"><!-- Primary Meta Tags --><title>Setting up Rails webserver</title><meta name="title" content="Setting up Rails webserver"><meta name="description"><link rel="stylesheet" href="/_astro/index.BvFNhZYw.css">
+<style>footer[data-astro-cid-sz7xmlte]{padding:2em 1em 6em;background:linear-gradient(var(--gray-gradient)) no-repeat;color:rgb(var(--gray));text-align:center}.social-links[data-astro-cid-sz7xmlte]{display:flex;justify-content:center;gap:1em;margin-top:1em}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]{text-decoration:none;color:rgb(var(--gray))}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]:hover{color:rgb(var(--gray-dark))}main[data-astro-cid-bvzihdzo]{width:calc(100% - 2em);max-width:100%;margin:0}.hero-image[data-astro-cid-bvzihdzo]{width:100%}.hero-image[data-astro-cid-bvzihdzo] img[data-astro-cid-bvzihdzo]{display:block;margin:0 auto;border-radius:12px;box-shadow:var(--box-shadow)}.prose[data-astro-cid-bvzihdzo]{width:720px;max-width:calc(100% - 2em);margin:auto;padding:1em;color:rgb(var(--gray-dark))}.title[data-astro-cid-bvzihdzo]{margin-bottom:1em;padding:1em 0;text-align:center;line-height:1}.title[data-astro-cid-bvzihdzo] h1[data-astro-cid-bvzihdzo]{margin:0 0 .5em}.date[data-astro-cid-bvzihdzo]{margin-bottom:.5em;color:rgb(var(--gray))}.last-updated-on[data-astro-cid-bvzihdzo]{font-style:italic}
+[data-astro-image]{width:100%;height:auto;object-fit:var(--fit);object-position:var(--pos);aspect-ratio:var(--w) / var(--h)}[data-astro-image=responsive]{max-width:calc(var(--w) * 1px);max-height:calc(var(--h) * 1px)}[data-astro-image=fixed]{width:calc(var(--w) * 1px);height:calc(var(--h) * 1px)}
+</style></head> <body data-astro-cid-bvzihdzo> <nav class="top"> <div class="links"> <a class="nav-link nav-item" href="/">Home</a> <a class="nav-link nav-item" href="/about.html">About</a> </div> </nav> <main data-astro-cid-bvzihdzo> <article data-astro-cid-bvzihdzo> <div class="hero-image" data-astro-cid-bvzihdzo>  </div> <div class="prose" data-astro-cid-bvzihdzo> <div class="title" data-astro-cid-bvzihdzo> <div class="date" data-astro-cid-bvzihdzo> <time datetime="2014-12-18T09:55:00.000Z"> Dec 18, 2014 </time>  </div> <h1 data-astro-cid-bvzihdzo>Setting up Rails webserver</h1> <hr data-astro-cid-bvzihdzo> </div>  <h2 id="foreword">Foreword</h2>
+<p>This tutorial I wrote when was quitting my previous job, almost one year ago. But it’s still handy!</p>
+<h3 id="abstract-rails-application-setup">Abstract Rails application setup</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> git</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> clone</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> .../project_name.git</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> cd</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> project_name</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [sudo] bundle install</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> cat</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> config/database.yml</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#6A737D;--shiki-dark:#6A737D"> # create database and/or change config/database.yml settings</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> rake</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> db:migrate</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> RAILS_ENV=production</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> rake</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> db:seed</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> RAILS_ENV=production</span><span style="color:#6A737D;--shiki-dark:#6A737D"> # don't worry if one fails</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#6A737D;--shiki-dark:#6A737D"> # start the server of your choice</span></span>
+<span class="line"></span></code></pre>
+<h3 id="puma-webserver">Puma webserver</h3>
+<h4 id="application-wide-settings">Application-wide settings</h4>
+<p>First you need to set up <strong>Puma</strong> for your specific project. For this purpose, add this
+line to the <code>Gemfile</code>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ruby"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">gem </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'puma'</span></span>
+<span class="line"></span></code></pre>
+<p>Then, run <code>[sudo] bundle install</code>.</p>
+<p>When you are done, you should be able to create a Puma config file at <code>$PROJECT_DIR/config/puma.rb</code>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ruby"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">def</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> home_dir</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    '/home/user/$PROJECT_DIR/'</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">end</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">def</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> path</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(p)</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    File</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.join(home_dir, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">p</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">end</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">directory home_dir</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">environment </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'development'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">daemonize</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">pidfile path(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'tmp/pids/puma.pid'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">state_path path(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'tmp/pids/puma.state'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">stdout_redirect path(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'log/puma.log'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">), path(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'log/error.puma.log'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">), </span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">threads </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">bind </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'tcp://0.0.0.0:5100'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">activate_control_app</span></span>
+<span class="line"></span></code></pre>
+<p>More details here: <a href="https://github.com/puma/puma/blob/master/examples/config.rb"></a><a href="https://github.com/puma/puma/blob/master/examples/config.rb">https://github.com/puma/puma/blob/master/examples/config.rb</a></p>
+<p>Now, add project root path to the <code>/etc/puma.conf</code> file, e. g.:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>/home/user/project_name</span></span>
+<span class="line"><span></span></span></code></pre>
+<h4 id="start-puma-at-boot">Start Puma at boot</h4>
+<p>There is a specific utility, called <strong>Jungle</strong>. It manages your applications’ instances at startup.</p>
+<h5 id="ububtu-based-systems">Ububtu-based systems</h5>
+<p>First of all, create <code>/etc/init/puma.conf</code> file and fill it with this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># /etc/init/puma.conf - Puma config</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># This example config should work with Ubuntu 12.04+.  It</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># allows you to manage multiple Puma instances with</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Upstart, Ubuntu's native service management tool.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># See workers.conf for how to manage all Puma instances at once.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Save this config as /etc/init/puma.conf then manage puma with:</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#   sudo start puma app=PATH_TO_APP</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#   sudo stop puma app=PATH_TO_APP</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#   sudo status puma app=PATH_TO_APP</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># or use the service command:</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#   sudo service puma {start,stop,restart,status}</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">description</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "Puma Background Worker"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># no "start on", we don't want to automatically start</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">stop</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> on</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (stopping </span><span style="color:#032F62;--shiki-dark:#9ECBFF">puma-manager</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> or</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> runlevel</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [06])</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># change apps to match your deployment user if you want to use this as a less privileged user (recommended!)</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">setuid</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> apps</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">setgid</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> apps</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">respawn</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">respawn</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> limit</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 3</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 30</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">instance</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ${app}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">script</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># this script runs in /bin/sh by default</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># respawn as bash so we can source in rbenv/rvm</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># quoted heredoc to tell /bin/sh not to interpret</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># variables</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">exec</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /bin/bash</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> &#x26;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">lt</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;&#x26;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">lt</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">'EOT'</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  # set HOME to the setuid user's home, there doesn't seem to be a better, portable way</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  export</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> HOME</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"$(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">eval</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> echo ~$(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">id</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -un</span><span style="color:#032F62;--shiki-dark:#9ECBFF">))"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  cd</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $app</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [ </span><span style="color:#D73A49;--shiki-dark:#F97583">-d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$HOME</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/.rbenv/bin"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]; </span><span style="color:#D73A49;--shiki-dark:#F97583">then</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    export</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> PATH</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$HOME</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/.rbenv/bin:</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$PATH</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  elif</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [ </span><span style="color:#D73A49;--shiki-dark:#F97583">-f</span><span style="color:#24292E;--shiki-dark:#E1E4E8">  /etc/profile.d/rvm.sh ]; </span><span style="color:#D73A49;--shiki-dark:#F97583">then</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    source</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /etc/profile.d/rvm.sh</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  elif</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [ </span><span style="color:#D73A49;--shiki-dark:#F97583">-f</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> /usr/local/rvm/scripts/rvm ]; </span><span style="color:#D73A49;--shiki-dark:#F97583">then</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    source</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /etc/profile.d/rvm.sh</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  elif</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [ </span><span style="color:#D73A49;--shiki-dark:#F97583">-f</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$HOME</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/.rvm/scripts/rvm"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]; </span><span style="color:#D73A49;--shiki-dark:#F97583">then</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    source</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$HOME</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/.rvm/scripts/rvm"</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  elif</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [ </span><span style="color:#D73A49;--shiki-dark:#F97583">-f</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> /usr/local/share/chruby/chruby.sh ]; </span><span style="color:#D73A49;--shiki-dark:#F97583">then</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    source</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /usr/local/share/chruby/chruby.sh</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [ </span><span style="color:#D73A49;--shiki-dark:#F97583">-f</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> /usr/local/share/chruby/auto.sh ]; </span><span style="color:#D73A49;--shiki-dark:#F97583">then</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">      source</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /usr/local/share/chruby/auto.sh</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fi</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    # if you aren't using auto, set your version here</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    # chruby 2.0.0</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  fi</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  logger</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -t</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> puma</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "Starting server: </span><span style="color:#24292E;--shiki-dark:#E1E4E8">$app</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  exec</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bundle</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> exec</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> puma</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -C</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> config/puma.rb</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">EOT</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">end</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> script</span></span>
+<span class="line"></span></code></pre>
+<p>Now, create <code>/etc/init/puma-manager.conf</code> and fill it with this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># /etc/init/puma-manager.conf - manage a set of Pumas</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># This example config should work with Ubuntu 12.04+.  It</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># allows you to manage multiple Puma instances with</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Upstart, Ubuntu's native service management tool.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># See puma.conf for how to manage a single Puma instance.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Use "stop puma-manager" to stop all Puma instances.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Use "start puma-manager" to start all instances.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Use "restart puma-manager" to restart all instances.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Crazy, right?</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">description</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "Manages the set of puma processes"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># This starts upon bootup and stops on shutdown</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">start</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> on</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> runlevel</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [2345]</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">stop</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> on</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> runlevel</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [06]</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Set this to the number of Puma processes you want</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># to run on this machine</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">env</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> PUMA_CONF="/etc/puma.conf"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pre-start</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> script</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> i </span><span style="color:#D73A49;--shiki-dark:#F97583">in</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> `</span><span style="color:#6F42C1;--shiki-dark:#B392F0">cat</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $PUMA_CONF</span><span style="color:#032F62;--shiki-dark:#9ECBFF">`</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; </span><span style="color:#D73A49;--shiki-dark:#F97583">do</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    app</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">`</span><span style="color:#005CC5;--shiki-dark:#79B8FF">echo</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $i</span><span style="color:#D73A49;--shiki-dark:#F97583"> |</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> cut</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> , </span><span style="color:#005CC5;--shiki-dark:#79B8FF">-f</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1</span><span style="color:#032F62;--shiki-dark:#9ECBFF">`</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    logger</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -t</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "puma-manager"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "Starting </span><span style="color:#24292E;--shiki-dark:#E1E4E8">$app</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    start</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> puma</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> app=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$app</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  done</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">end</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> script</span></span>
+<span class="line"></span></code></pre>
+<p>And create a blank <code>/etc/puma.conf</code> file. This will be filled for each application separately.</p>
+<p><strong>Caveat:</strong></p>
+<p>You need to customise <code>/etc/init/puma.conf</code> to:</p>
+<ul>
+<li>Set the right user your app should be running on unless you want root to execute it!
+<ul>
+<li>Look for <code>setuid apps</code> and <code>setgid apps</code>, uncomment those lines and replace <code>apps</code> to whatever your deployment user is.</li>
+<li>Replace <code>apps</code> on the paths (or set the right paths to your user’s home) everywhere else.</li>
+</ul>
+</li>
+<li>Uncomment the source lines for <code>rbenv</code> or <code>rvm</code> support unless you use a system wide installation of Ruby.</li>
+</ul>
+<p>Now, start Jungle like this: <code>sudo start puma-manager</code>.
+And all your applications should be available when you reboot the machine.</p>
+<p>More details at <a href="https://github.com/puma/puma/tree/master/tools/jungle/"></a><a href="https://github.com/puma/puma/tree/master/tools/jungle/">https://github.com/puma/puma/tree/master/tools/jungle/</a></p>
+<h5 id="debian-based-systems">Debian-based systems</h5>
+<p><strong>PENDING</strong></p>
+<h3 id="starting-up-and-shutting-down">Starting up and shutting down</h3>
+<p>To start up the application is easy enough. Just navigate yourself to project directory and run the following: <code>puma -C config/puma.rb</code>.</p>
+<p>If you want to shut down one, run this command in the project directory: <code>[sudo] pumactl -S tmp/pids/puma.state halt</code>.</p>  </div> </article> </main> <footer data-astro-cid-sz7xmlte>
+&copy; 2024 Your name here. All rights reserved.
+<div class="social-links" data-astro-cid-sz7xmlte> <a href="https://m.webtoo.ls/@astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Mastodon</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/mastodon" data-astro-cid-sz7xmlte><path fill="currentColor" d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://twitter.com/astrodotbuild" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Twitter</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/twitter" data-astro-cid-sz7xmlte><path fill="currentColor" d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://github.com/withastro/astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Go to Astro's GitHub repo</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/github" data-astro-cid-sz7xmlte><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" data-astro-cid-sz7xmlte></path></svg> </a> </div> </footer>  </body></html>

@@ -1,0 +1,1291 @@
+<!DOCTYPE html><html lang="en"> <head><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.0.3"><!-- Font preloads --><link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin><!-- Canonical URL --><link rel="canonical" href="https://shybovycha.github.io/page10.html/"><!-- Primary Meta Tags --><title>moofoo blog</title><meta name="title" content="moofoo blog"><meta name="description" content="Welcome to my website!"><link rel="stylesheet" href="/_astro/index.BvFNhZYw.css">
+<style>[data-astro-image]{width:100%;height:auto;object-fit:var(--fit);object-position:var(--pos);aspect-ratio:var(--w) / var(--h)}[data-astro-image=responsive]{max-width:calc(var(--w) * 1px);max-height:calc(var(--h) * 1px)}[data-astro-image=fixed]{width:calc(var(--w) * 1px);height:calc(var(--h) * 1px)}
+</style></head> <body> <nav class="top"> <div class="links"> <a class="nav-link nav-item" href="/">Home</a> <a class="nav-link nav-item" href="/about.html">About</a> </div> </nav> <main> <section> <article> <h1> <a href="/2015/02/04/2015-02-03-abstract-classes-vs-interfaces.html">Abstract classes vs interfaces</a> </h1> <time datetime="2015-02-03T19:31:41.000Z"> Feb 4, 2015 </time> <div class="content"> <p>Lately I was a few times asked a question <em>"what do we need abstract classes for?"</em></p>
+<p>And today I've got one more question, which inspired me to write this.</p>
+<!--more-->
+<p>Let us have a task to write an application, which will perform some simple arithmetic operations on numbers, represented in a different numeric systems.</p>
+<p>For example, our program should be able to <strong>add</strong> numbers in <strong>roman</strong>, <strong>arabic</strong> and <strong>hexadecimal</strong> systems. But later we should be able to add more operations, like <strong>division</strong>, <strong>multiplication</strong> and <strong>subtraction</strong>.</p>
+<p>This is where an <strong>abstract class</strong> comes to help us!</p>
+<p>Rather than write an <strong>interface</strong> <code>Number</code>, which will define the addition operator and then implementing it for each class like <code>RomanNumber</code> and <code>HexadecimalNumber</code> we will better use an <strong>abstract class</strong>, which will be able to add decimal numbers and will declare abstract method to convert number itself to decimal system.</p>
+<p>Take a look:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">public</span><span style="color:#D73A49;--shiki-dark:#F97583"> interface</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> INumber</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    public</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> INumber </span><span style="color:#6F42C1;--shiki-dark:#B392F0">add</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(INumber </span><span style="color:#E36209;--shiki-dark:#FFAB70">other</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">public</span><span style="color:#D73A49;--shiki-dark:#F97583"> class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> RomanNumber</span><span style="color:#D73A49;--shiki-dark:#F97583"> implements</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> INumber</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    public</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> RomanNumber </span><span style="color:#6F42C1;--shiki-dark:#B392F0">add</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(INumber </span><span style="color:#E36209;--shiki-dark:#FFAB70">other</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        // when `other` is not a RomanNumber</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        // convert other to RomanNumber</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        // add `other` to `this`</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">public</span><span style="color:#D73A49;--shiki-dark:#F97583"> class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> HexadecimalNumber</span><span style="color:#D73A49;--shiki-dark:#F97583"> implements</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> INumber</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    public</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> HexadecimalNumber </span><span style="color:#6F42C1;--shiki-dark:#B392F0">add</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(INumber </span><span style="color:#E36209;--shiki-dark:#FFAB70">other</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        // convert other to HexadecimalNumber and add...</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>…and compare it to this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">public</span><span style="color:#D73A49;--shiki-dark:#F97583"> abstract</span><span style="color:#D73A49;--shiki-dark:#F97583"> class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Number</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    public</span><span style="color:#D73A49;--shiki-dark:#F97583"> abstract</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Integer </span><span style="color:#6F42C1;--shiki-dark:#B392F0">toDecimal</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    public</span><span style="color:#D73A49;--shiki-dark:#F97583"> abstract</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Number </span><span style="color:#6F42C1;--shiki-dark:#B392F0">fromDecimal</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">Integer</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    public</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Number </span><span style="color:#6F42C1;--shiki-dark:#B392F0">add</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Number </span><span style="color:#E36209;--shiki-dark:#FFAB70">other</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        returh </span><span style="color:#6F42C1;--shiki-dark:#B392F0">fromDecimal</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">this</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">toDecimal</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> other.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">toDecimal</span><span style="color:#24292E;--shiki-dark:#E1E4E8">());</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">public</span><span style="color:#D73A49;--shiki-dark:#F97583"> class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> RomanNumber</span><span style="color:#D73A49;--shiki-dark:#F97583"> extends</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Number</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    public</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Integer </span><span style="color:#6F42C1;--shiki-dark:#B392F0">toDecimal</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        // convert `this` to Integer</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    public</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> RomanNumber </span><span style="color:#6F42C1;--shiki-dark:#B392F0">fromDecimal</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Integer </span><span style="color:#E36209;--shiki-dark:#FFAB70">n</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        // convert `n` to RomanNumber</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">public</span><span style="color:#D73A49;--shiki-dark:#F97583"> class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> HexadecimalNumber</span><span style="color:#D73A49;--shiki-dark:#F97583"> extends</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Number</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    public</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Integer </span><span style="color:#6F42C1;--shiki-dark:#B392F0">toDecimal</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        // convert `this` to Integer</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    public</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> HexadecimalNumber </span><span style="color:#6F42C1;--shiki-dark:#B392F0">fromDecimal</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(Integer </span><span style="color:#E36209;--shiki-dark:#FFAB70">n</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        // convert `n` to HexadecimalNumber</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>This is how we can create an abstraction: we can add or perform any other arithmetic operations regardless on which numeric system we use!</p>
+<p>Wneh we declare an
+    <strong>interface</strong>, we can’t tell how to create an object, implementing that interface. E. g., we can not define
+    even a default constructor.</p>
+<p>Thus, when we need to have at least one constructor of a defined signature, we must use
+    <strong>abstract classes</strong>.</p>
+<p>Check it out:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="java"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">Vector2d implements IVector { </span><span style="color:#6A737D;--shiki-dark:#6A737D">// THIS IS NOT A CONSTRUCTOR! @Override public void Vector() { } } ```</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">p</span><span style="color:#D73A49;--shiki-dark:#F97583">></span><span style="color:#24292E;--shiki-dark:#E1E4E8">and compare it to </span><span style="color:#005CC5;--shiki-dark:#79B8FF">this</span><span style="color:#D73A49;--shiki-dark:#F97583">:&#x3C;/</span><span style="color:#24292E;--shiki-dark:#E1E4E8">p</span><span style="color:#D73A49;--shiki-dark:#F97583">></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">```java </span><span style="color:#D73A49;--shiki-dark:#F97583">public</span><span style="color:#D73A49;--shiki-dark:#F97583"> abstract</span><span style="color:#D73A49;--shiki-dark:#F97583"> class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> BaseVector</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#D73A49;--shiki-dark:#F97583">public</span><span style="color:#D73A49;--shiki-dark:#F97583"> abstract</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> BaseVector</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() { } } </span><span style="color:#D73A49;--shiki-dark:#F97583">public</span><span style="color:#D73A49;--shiki-dark:#F97583"> class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Vector2d</span><span style="color:#D73A49;--shiki-dark:#F97583"> extends</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">BaseVector</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#D73A49;--shiki-dark:#F97583">public</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Vector2d</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() { </span><span style="color:#6A737D;--shiki-dark:#6A737D">// now it DOES HAVE a default constructor super(); } } ```</span></span>
+<span class="line"></span></code></pre> </div>  </article><article> <h1> <a href="/2015/01/29/2015-01-28-erlang-practice.html">Erlang practice</a> </h1> <time datetime="2015-01-28T14:29:00.000Z"> Jan 29, 2015 </time> <div class="content"> <h2 id="foreword">Foreword</h2>
+<p>First time I faced functional programming, I was impressed. Just a bit. That was back in 2012. The second time, I was studying real functional programming at the university. Today was the final test.</p>
+<p>We were taught many interesting things about functional programming and lot of things about Haskell. But there were only two lectures and two practices on Erlang. And nothing was told about its distributed programming abilities.</p>
+<p>I was a bit disappointed by this fact. So, I turned on my girlfriend’s laptop, installed Erlang and created this short intro to distributed programming in Erlang.</p>
+<!--more-->
+<h2 id="requirements">Requirements</h2>
+<p>This short intro does not include Erlang tutorial and requires you to have at least two machines - either Virtual or hardware, if you wish. Even that does not really matter!</p>
+<h2 id="how-to-get-out-of-a-train">How to get out of a train?</h2>
+<img src="/tumblr_files/tumblr_inline_niw5irzdiz1qh5oee.jpg" loading="lazy" alt="Gordon Freeman trying to get out of a train">
+<p>The first thing I gonna tell you, is really handy tip.</p>
+<p><strong>There are three ways to exit Erlang’ shell:</strong></p>
+<ul>
+<li><strong>“classic”:</strong> hit <kbd>Ctrl + C</kbd>, then press <kbd>a</kbd> <em>(Abort)</em> and <kbd>Return</kbd></li>
+<li><strong>“UNIX-way”:</strong> two times hit <kbd>Ctrl + C</kbd></li>
+<li><strong>“Erlang-way”:</strong> simply type <code>q().</code> and hit <kbd>Return</kbd></li>
+</ul>
+<p>You’ll be happy to know ‘bout last two - they are just easier!</p>
+<h2 id="rocknroll">Rock’n’Roll!</h2>
+<p>So, let’s just dive into distributed programming! First thing you’ll gonna need - is to know your machines’ IP addresses. Then you’ll gonna need to point each of them to the other one - just set each other’s hostname in the <code>/etc/hosts</code> file _(for Windows it’s <code>C:\Windows\system32\drivers\etc\hosts</code>)_s.</p>
+<p>I have had two laptops I named <code>moonode</code> <em>(my laptop)</em> and <code>foo</code> <em>(my girlfriend’s laptop)</em>. So, on my Ubuntu, I added this line to <code>/etc/hosts</code>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>192.168.2.33    foonode</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>And in <code>C:\Windows\system32\drivers\etc\hosts</code> on my girlfriend’s laptop I added this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>192.168.2.237   moonode</span></span>
+<span class="line"><span></span></span></code></pre>
+<img src="/tumblr_files/tumblr_inline_niw5kauPUD1qh5oee.png" loading="lazy" alt="hosts in Windows">
+<p><strong>Note:</strong> I was sitting at home, so laptops were connected just to my home WiFi router. And that’s great news for enyone, who wants to try that at home!</p>
+<p>Each Erlang instance was run with the corresponding shortname of machine: <code>erl -sname moo@moonode</code> and <code>erl -sname foo@foonode</code>.</p>
+<p>Both machines should have the same cookie to communicate. That’s basic Erlang security, for your great good. Cookie is just a upper-cased word, stored in a <code>.erlang.cookie</code> file. For Windows, that file is in the <code>C:\Windows\</code> or <code>C:\Users\username\</code> directory. In Linux that’s in <code>/home/username/</code> directory.</p>
+<h2 id="wrapping-up">Wrapping-up</h2>
+<p>So, short summary on what you should have to run distributely in Erlang:</p>
+<ul>
+<li>hostname(-s) of other node(-s) in your <code>hosts</code> file</li>
+<li>same cookie for all your nodes in <code>.erlang.cookie</code> file</li>
+<li>running instances with corresponding shortnames and hosts</li>
+</ul>
+<h2 id="running-stuff">Running stuff</h2>
+<p>To show some code, I wrote this short module:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="erlang"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#D73A49;--shiki-dark:#F97583">module</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">test</span><span style="color:#24292E;--shiki-dark:#E1E4E8">).</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#24292E;--shiki-dark:#E1E4E8">([ </span><span style="color:#6F42C1;--shiki-dark:#B392F0">start</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]).</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">start</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() </span><span style="color:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    receive</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">msg</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, M } -></span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            io</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">format</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">">> </span><span style="color:#005CC5;--shiki-dark:#79B8FF">~s~n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [ M ]),</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            start</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">        finish</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> -></span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            io</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0">format</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"&#x3C; finish received ></span><span style="color:#005CC5;--shiki-dark:#79B8FF">~n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">            ok</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line"></span></code></pre>
+<p>Now, let’s start that!</p>
+<p>First, I registered that process with some name on the <code>foo</code> node:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="erlang"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">c</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">test1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">).</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">register</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">foo_pid</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">spawn</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">test1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">start</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [])).</span></span>
+<span class="line"></span></code></pre>
+<p>And then, the only thing I needed to do - is just send messages from node <code>moo</code>!</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="erlang"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">foo_pid</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">foo@foonode</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> } </span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">msg</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Obey!"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }.</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">flush</span><span style="color:#24292E;--shiki-dark:#E1E4E8">().</span></span>
+<span class="line"></span></code></pre>
+<img src="/tumblr_files/tumblr_inline_niw5l8tH3Y1qh5oee.webp" loading="lazy" alt="moonode">
+<img src="/tumblr_files/tumblr_inline_niw5lnNbgc1qh5oee.webp" loading="lazy" alt="foonode">
+<p>Much cooler than writing ping-pong programs, huh? =)</p> </div>  </article><article> <h1> <a href="/2015/01/28/2015-01-27-robo-created-in-a-cinema-4d-two-and-half-years.html">Robo created in a Cinema4d</a> </h1> <time datetime="2015-01-27T16:09:42.000Z"> Jan 28, 2015 </time> <div class="content"> <p>This is a 3D model of a robot (called him Robo) which I made in Cinema4D some two and a half years ago.</p>
+<img src="/tumblr_files/tumblr_niufk6p7gs1qio88bo1_1280.jpg" alt="Robot model"> </div>  </article><article> <h1> <a href="/2015/01/12/2015-01-11-connecting-lenovo-p780-to-adb-on-ubuntu.html">Connecting Lenovo P780 to ADB on Ubuntu</a> </h1> <time datetime="2015-01-11T16:38:00.000Z"> Jan 12, 2015 </time> <div class="content"> <p>Ohhh… Today I’ve faced one great trouble: recently I reinstalled my Ubuntu, so I lost all my configurations. And when I tried to connect my <em>Lenovo P780</em> to debug my Android application, I saw horrible error:</p>
+<pre><code>$ adb devices
+* daemon not running. starting it now on port 5037 *
+* daemon started successfully *
+List of devices attached
+????????????    no permissions
+</code></pre>
+<p>Hey! Where did my smartphone gone?!</p>
+<p>Fooling around in the internet, I found two simple steps to fix this:</p>
+<ol><li><p>find the <em>VendorID</em> and <em>ProductID</em> for your device running <code>lsusb</code> two times <em>(just find the difference line)</em>:
+a. when your device is disconnected
+b. when your device is connected</p>
+<p>This will give you two outputs:</p>
+<pre><code>$ # disconnected device
+
+$ lsusb
+Bus 002 Device 002: ID 8087:0024 Intel Corp. Integrated Rate Matching Hub
+Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 004: ID 064e:d213 Suyin Corp.
+Bus 001 Device 002: ID 8087:0024 Intel Corp. Integrated Rate Matching Hub
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 004 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+
+$ # connected device (via USB)
+
+$ lsusb
+Bus 002 Device 002: ID 8087:0024 Intel Corp. Integrated Rate Matching Hub
+Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 004: ID 064e:d213 Suyin Corp.
+Bus 001 Device 002: ID 8087:0024 Intel Corp. Integrated Rate Matching Hub
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 004 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 003 Device 006: ID 0bb4:0c03 HTC (High Tech Computer Corp.)
+Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+</code></pre>
+<p>Note the row, which is present in the second output block and is absent in the first one:</p>
+<pre><code>Bus 003 Device 006: ID 0bb4:0c03 HTC (High Tech Computer Corp.)
+</code></pre>
+<p>For some reason, my phone is recognized as a HTC, but that does not bother me so much.
+We will need only two parts of that row:</p>
+<pre><code>0bb4:0c03
+</code></pre>
+<p>The <code>0bb4</code> is a <strong>VendorID</strong> and the <code>0c03</code> is the <strong>ProductID</strong> for my phone.</p></li>
+<li><p>Add the phone attributes to the system. Sudo-edit the file <code>/lib/udev/rules.d/69-libmtp.rules</code> and point it to your device. Add a line like this (without any newlines):</p>
+<pre><code>ATTR{idVendor}=="0bb4", ATTR{idProduct}=="0c03", SYMLINK+="libmtp-%k", MODE="0666", GROUP="audio", ENV{ID_MTP_DEVICE}="1", ENV{ID_MEDIA_PLAYER}="1"
+</code></pre>
+<p>That should enable your system to see the device later.</p></li>
+<li><p>Enable write permissions for your device. Sudo-edit the file <code>/etc/udev/rules.d/51-android.rules</code> <em>(you may need to create it)</em> and add one line there:</p>
+<pre><code>SUBSYSTEM=="usb", ATTRS{idVendor}=="0bb4", ATTRS{idProduct} =="0c03", MODE="0666", GROUP="plugdev"
+</code></pre></li>
+<li><p>To check if your phone is recognized by <code>adb</code>, restart ABD server and check its device list:</p>
+<pre><code>$ adb kill-server
+$ adb devices
+* daemon not running. starting it now on port 5037 *
+* daemon started successfully *
+List of devices attached
+0123456789ABCDEF    device
+</code></pre></li>
+</ol> </div>  </article><article> <h1> <a href="/2015/01/12/2015-01-11-deploying-rails-project-to-heroku.html">Deploying Rails project to Heroku</a> </h1> <time datetime="2015-01-11T14:45:52.000Z"> Jan 12, 2015 </time> <div class="content"> <p>First of all, set up the <strong>Heroku Toolbelt</strong>. It is required for all the communications with the server.</p>
+<p>The first step of communication with the Heroku servers is logging in. Just run <code>heroku login</code> and provide your credentials when asked.</p>
+<p>Then, you need to create your application or go to the folder where it is located and tune it a bit. Tuning is divided into the following steps:</p>
+<ul><li>tuning the <code>Gemfile</code> to include the required gems</li>
+<li>fixing the <code>database.yml</code> configurations</li>
+<li>setting the server to handle static assets correctly</li>
+</ul><p>But let’s create out application on the Heroku servers first: <code>heroku create [app_name]</code>. If application name is not provided directly - it will be generated automatically.</p>
+<p>Now, our application needs two gems to be included for the <code>production</code> gems’ group:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ruby"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">group </span><span style="color:#005CC5;--shiki-dark:#79B8FF">:production</span><span style="color:#D73A49;--shiki-dark:#F97583"> do</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    gem </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'pg'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    gem </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'rails_12factor'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    gem </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'puma'</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">end</span></span>
+<span class="line"></span></code></pre>
+<p>The third gem is used as a webserver instead of WebRick, which is default <em>(puma is much, much faster!)</em>. The second one is required by Heroku. And the first one is used for PostgreSQL connectivity. If you do not wish to use database - skip it and a few next paragraphs.</p>
+<p>Then, let’s add the database support for our application. It’s done simply, running</p>
+<pre><code>heroku addons:add heroku-postgresql:hobby-dev
+</code></pre>
+<p><strong>Note:</strong> Heroku does not support <code>sqlite</code> since some times. This means you are forced to use either PostgreSQL or no database at all <em>(yes, it’s possible! Yet, it works for simple or static web applications only…)</em>. You may want to change this if you would pay for your account. But this tutorial covers only free side of the Heroku deployment.</p>
+<p>Now, there are two ways to set database connection options in Rails:</p>
+<ol><li>set them directly at <code>config/database.yml</code> file</li>
+<li>set the environment variable <code>DATABASE_URL</code></li>
+</ol><p>We will cover both cases. For the first one, you will need this section within your <code>database.yml</code> file:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="yaml"><code><span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">production</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">    adapter</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">postgresql</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">    encoding</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">unicode</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">    pool</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">5</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">    url</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">URL_GOES_HERE</span></span>
+<span class="line"></span></code></pre>
+<p>I will show how to get the <code>&#x3C;URL_GOES_HERE></code> value in a second. Just keep in mind to replace it with the correct value.</p>
+<p>The second option, the environment variable, is set via the Heroku Toolbelt <em>(did I tell you, it is used for almost every deploy operation you will perform?)</em>.</p>
+<p>First you take the database URL from Heroku server:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">heroku</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> config</span><span style="color:#D73A49;--shiki-dark:#F97583"> |</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> grep</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> HEROKU_POSTGRESQL</span></span>
+<span class="line"></span></code></pre>
+<p>Then, you copy the value you got <em>(it starts with <code>postgres://</code>)</em> and run the following:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">heroku</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> config:set</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> DATABASE_URL=URL_GOES_HERE</span></span>
+<span class="line"></span></code></pre>
+<p>Now let’s set our application to serve static assets. It is handy, because it is the easiest way to send images, stylesheets and javascripts to clients. Go to the <code>config/environments/production.rb</code> and change both <code>config.serve_static_assets</code> and <code>config.assets.compile</code> to <code>true</code>.</p>
+<p><strong>But beware:</strong> if your <code>app/assets</code> files directory contains files of other extensions than Rails’ <strong>Sprockets</strong> understands - Rails (and Heroku, particularly) will try to precompile them. And that may cause many troubles. You are recommended either to “teach” Sprockets to skip or precompile those files, <strong>or</strong> you should exclude them from project before deploying to Heroku.</p>
+<p>And the last two steps separate us from our goal: first, you should push your project to Heroku’ Git repository, it created for you with the application <em>(You do not use Git yet?! How dare you?!..)</em>.</p>
+<p>Now, if you use database, run migrations with <code>heroku run rake db:migrate</code>.</p>
+<p>And, finally, see your application running in the browser: <code>heroku open</code>.</p>
+<p><strong>Note:</strong> if you are using some assets from the outer web (GoogleFonts, for example) and are seeing your website through the <code>https</code> protocol, you should replace all those assets’ URL protocols with <code>https</code> too.</p> </div>  </article><article> <h1> <a href="/2015/01/10/2015-01-09-microsoft-error-messages-cipher.html">Microsoft&#39; error messages cipher</a> </h1> <time datetime="2015-01-09T20:43:12.000Z"> Jan 10, 2015 </time> <div class="content"> <p>I have a T-SQL trigger creation script, which runs OK:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sql"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">CREATE</span><span style="color:#D73A49;--shiki-dark:#F97583"> TRIGGER</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> data_modified</span><span style="color:#D73A49;--shiki-dark:#F97583"> ON</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Northwind</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">dbo</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.Customers </span><span style="color:#D73A49;--shiki-dark:#F97583">FOR</span><span style="color:#D73A49;--shiki-dark:#F97583"> INSERT</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">UPDATE</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">DELETE</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">AS</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">declare</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @rows </span><span style="color:#D73A49;--shiki-dark:#F97583">as</span><span style="color:#D73A49;--shiki-dark:#F97583"> int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @rows </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @@ROWCOUNT;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">IF</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @rows </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">BEGIN</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    print</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'no rows were affected'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">end</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">if</span><span style="color:#D73A49;--shiki-dark:#F97583"> exists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">select</span><span style="color:#D73A49;--shiki-dark:#F97583"> *</span><span style="color:#D73A49;--shiki-dark:#F97583"> from</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> inserted)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">begin</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    if</span><span style="color:#D73A49;--shiki-dark:#F97583"> exists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">select</span><span style="color:#D73A49;--shiki-dark:#F97583"> *</span><span style="color:#D73A49;--shiki-dark:#F97583"> from</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> deleted)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    begin</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        print</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'updated '</span><span style="color:#D73A49;--shiki-dark:#F97583"> +</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @rows </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ' rows'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    else</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    begin</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        print</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'inserted '</span><span style="color:#D73A49;--shiki-dark:#F97583"> +</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @rows </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ' rows'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">end</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">else</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">begin</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    print</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'deleted '</span><span style="color:#D73A49;--shiki-dark:#F97583"> +</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @rows </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ' rows'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">end</span></span>
+<span class="line"></span></code></pre>
+<p>Yet, when I run some <code>INSERT</code> query, I got an error saying:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Msg 245, Level 16, State 1, Procedure data_modified, Line 21</span></span>
+<span class="line"><span>Conversion failed when converting the varchar value 'inserted ' to data type int.</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Mysterious, isn’t it? Let’s dig in, shall we?</p>
+<!--more-->
+<p>Let’s look onto the source of that trigger, at line 18:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sql"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">USE</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [Northwind]</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">GO</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">/****** Object:  Trigger [dbo].[data_modified]    Script Date: 09.01.2015 18:18:14 ******/</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">SET</span><span style="color:#D73A49;--shiki-dark:#F97583"> ANSI_NULLS</span><span style="color:#D73A49;--shiki-dark:#F97583"> ON</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">GO</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">SET</span><span style="color:#D73A49;--shiki-dark:#F97583"> QUOTED_IDENTIFIER</span><span style="color:#D73A49;--shiki-dark:#F97583"> ON</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">GO</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    ALTER</span><span style="color:#D73A49;--shiki-dark:#F97583"> TRIGGER</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [dbo].[data_modified] </span><span style="color:#D73A49;--shiki-dark:#F97583">ON</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [Northwind].[dbo].[Customers] </span><span style="color:#D73A49;--shiki-dark:#F97583">FOR</span><span style="color:#D73A49;--shiki-dark:#F97583"> INSERT</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">UPDATE</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">DELETE</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    AS</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    declare</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @rows </span><span style="color:#D73A49;--shiki-dark:#F97583">as</span><span style="color:#D73A49;--shiki-dark:#F97583"> int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    set</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @rows </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @@ROWCOUNT;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    IF</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @rows </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    BEGIN</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        print</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'no rows were affected'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        return</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    if</span><span style="color:#D73A49;--shiki-dark:#F97583"> exists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">select</span><span style="color:#D73A49;--shiki-dark:#F97583"> *</span><span style="color:#D73A49;--shiki-dark:#F97583"> from</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> inserted)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    begin</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        if</span><span style="color:#D73A49;--shiki-dark:#F97583"> exists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">select</span><span style="color:#D73A49;--shiki-dark:#F97583"> *</span><span style="color:#D73A49;--shiki-dark:#F97583"> from</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> deleted)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        begin</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            print</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'updated '</span><span style="color:#D73A49;--shiki-dark:#F97583"> +</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @rows </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ' rows'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        end</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        else</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        begin</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            print</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'inserted '</span><span style="color:#D73A49;--shiki-dark:#F97583"> +</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @rows </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ' rows'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        end</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    else</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    begin</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        print</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'deleted '</span><span style="color:#D73A49;--shiki-dark:#F97583"> +</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @rows </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ' rows'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span></span>
+<span class="line"></span></code></pre>
+<p>Here’s the error:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sql"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">if</span><span style="color:#D73A49;--shiki-dark:#F97583"> exists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">select</span><span style="color:#D73A49;--shiki-dark:#F97583"> *</span><span style="color:#D73A49;--shiki-dark:#F97583"> from</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> inserted)</span></span>
+<span class="line"></span></code></pre>
+<p>But wait, that can’t be true!</p>
+<p>The problem is a bit deeper, with the <code>@rows</code> variable:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sql"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">print</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'updated '</span><span style="color:#D73A49;--shiki-dark:#F97583"> +</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @rows </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ' rows'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span></code></pre>
+<p>while being declared as:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sql"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">declare</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @rows </span><span style="color:#D73A49;--shiki-dark:#F97583">as</span><span style="color:#D73A49;--shiki-dark:#F97583"> int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span></code></pre>
+<p>It can not be printed right away, so it needs to be cast:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sql"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">CREATE</span><span style="color:#D73A49;--shiki-dark:#F97583"> TRIGGER</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> data_modified</span><span style="color:#D73A49;--shiki-dark:#F97583"> ON</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Northwind</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">dbo</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.Customers </span><span style="color:#D73A49;--shiki-dark:#F97583">FOR</span><span style="color:#D73A49;--shiki-dark:#F97583"> INSERT</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">UPDATE</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">DELETE</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">AS</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">declare</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @rows </span><span style="color:#D73A49;--shiki-dark:#F97583">as</span><span style="color:#D73A49;--shiki-dark:#F97583"> int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">declare</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @rows_s </span><span style="color:#D73A49;--shiki-dark:#F97583">as</span><span style="color:#D73A49;--shiki-dark:#F97583"> varchar</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">10</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @rows </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @@ROWCOUNT;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">set</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @rows_s </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> cast</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(@rows </span><span style="color:#D73A49;--shiki-dark:#F97583">as</span><span style="color:#D73A49;--shiki-dark:#F97583"> varchar</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">IF</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @rows </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">BEGIN</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    print</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'no rows were affected'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">end</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">if</span><span style="color:#D73A49;--shiki-dark:#F97583"> exists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">select</span><span style="color:#D73A49;--shiki-dark:#F97583"> *</span><span style="color:#D73A49;--shiki-dark:#F97583"> from</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> inserted)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">begin</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    if</span><span style="color:#D73A49;--shiki-dark:#F97583"> exists</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">select</span><span style="color:#D73A49;--shiki-dark:#F97583"> *</span><span style="color:#D73A49;--shiki-dark:#F97583"> from</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> deleted)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    begin</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        print</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'updated '</span><span style="color:#D73A49;--shiki-dark:#F97583"> +</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @rows_s </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ' rows'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    else</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    begin</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        print</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'inserted '</span><span style="color:#D73A49;--shiki-dark:#F97583"> +</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @rows_s </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ' rows'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">end</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">else</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">begin</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    print</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'deleted '</span><span style="color:#D73A49;--shiki-dark:#F97583"> +</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> @rows_s </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ' rows'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">end</span></span>
+<span class="line"></span></code></pre>
+<p>Try to guess where’s your mistake, using that error message! 😉</p> </div>  </article><article> <h1> <a href="/2014/12/18/2014-12-18-setting-up-rails-webserver.html">Setting up Rails webserver</a> </h1> <time datetime="2014-12-18T09:55:00.000Z"> Dec 18, 2014 </time> <div class="content"> <h2 id="foreword">Foreword</h2>
+<p>This tutorial I wrote when was quitting my previous job, almost one year ago. But it’s still handy!</p>
+<h3 id="abstract-rails-application-setup">Abstract Rails application setup</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> git</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> clone</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> .../project_name.git</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> cd</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> project_name</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [sudo] bundle install</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> cat</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> config/database.yml</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#6A737D;--shiki-dark:#6A737D"> # create database and/or change config/database.yml settings</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> rake</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> db:migrate</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> RAILS_ENV=production</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> rake</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> db:seed</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> RAILS_ENV=production</span><span style="color:#6A737D;--shiki-dark:#6A737D"> # don't worry if one fails</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#6A737D;--shiki-dark:#6A737D"> # start the server of your choice</span></span>
+<span class="line"></span></code></pre>
+<h3 id="puma-webserver">Puma webserver</h3>
+<h4 id="application-wide-settings">Application-wide settings</h4>
+<p>First you need to set up <strong>Puma</strong> for your specific project. For this purpose, add this
+line to the <code>Gemfile</code>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ruby"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">gem </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'puma'</span></span>
+<span class="line"></span></code></pre>
+<p>Then, run <code>[sudo] bundle install</code>.</p>
+<p>When you are done, you should be able to create a Puma config file at <code>$PROJECT_DIR/config/puma.rb</code>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ruby"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">def</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> home_dir</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    '/home/user/$PROJECT_DIR/'</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">end</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">def</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> path</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(p)</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    File</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.join(home_dir, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">p</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">end</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">directory home_dir</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">environment </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'development'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">daemonize</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">pidfile path(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'tmp/pids/puma.pid'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">state_path path(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'tmp/pids/puma.state'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">stdout_redirect path(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'log/puma.log'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">), path(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'log/error.puma.log'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">), </span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">threads </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">bind </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'tcp://0.0.0.0:5100'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">activate_control_app</span></span>
+<span class="line"></span></code></pre>
+<p>More details here: <a href="https://github.com/puma/puma/blob/master/examples/config.rb"></a><a href="https://github.com/puma/puma/blob/master/examples/config.rb">https://github.com/puma/puma/blob/master/examples/config.rb</a></p>
+<p>Now, add project root path to the <code>/etc/puma.conf</code> file, e. g.:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>/home/user/project_name</span></span>
+<span class="line"><span></span></span></code></pre>
+<h4 id="start-puma-at-boot">Start Puma at boot</h4>
+<p>There is a specific utility, called <strong>Jungle</strong>. It manages your applications’ instances at startup.</p>
+<h5 id="ububtu-based-systems">Ububtu-based systems</h5>
+<p>First of all, create <code>/etc/init/puma.conf</code> file and fill it with this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># /etc/init/puma.conf - Puma config</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># This example config should work with Ubuntu 12.04+.  It</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># allows you to manage multiple Puma instances with</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Upstart, Ubuntu's native service management tool.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># See workers.conf for how to manage all Puma instances at once.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Save this config as /etc/init/puma.conf then manage puma with:</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#   sudo start puma app=PATH_TO_APP</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#   sudo stop puma app=PATH_TO_APP</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#   sudo status puma app=PATH_TO_APP</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># or use the service command:</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#   sudo service puma {start,stop,restart,status}</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">description</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "Puma Background Worker"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># no "start on", we don't want to automatically start</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">stop</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> on</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (stopping </span><span style="color:#032F62;--shiki-dark:#9ECBFF">puma-manager</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> or</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> runlevel</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [06])</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># change apps to match your deployment user if you want to use this as a less privileged user (recommended!)</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">setuid</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> apps</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">setgid</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> apps</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">respawn</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">respawn</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> limit</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 3</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 30</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">instance</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ${app}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">script</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># this script runs in /bin/sh by default</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># respawn as bash so we can source in rbenv/rvm</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># quoted heredoc to tell /bin/sh not to interpret</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># variables</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">exec</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /bin/bash</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> &#x26;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">lt</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;&#x26;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">lt</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">'EOT'</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  # set HOME to the setuid user's home, there doesn't seem to be a better, portable way</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  export</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> HOME</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"$(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">eval</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> echo ~$(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">id</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -un</span><span style="color:#032F62;--shiki-dark:#9ECBFF">))"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  cd</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $app</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [ </span><span style="color:#D73A49;--shiki-dark:#F97583">-d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$HOME</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/.rbenv/bin"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]; </span><span style="color:#D73A49;--shiki-dark:#F97583">then</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    export</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> PATH</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$HOME</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/.rbenv/bin:</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$PATH</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  elif</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [ </span><span style="color:#D73A49;--shiki-dark:#F97583">-f</span><span style="color:#24292E;--shiki-dark:#E1E4E8">  /etc/profile.d/rvm.sh ]; </span><span style="color:#D73A49;--shiki-dark:#F97583">then</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    source</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /etc/profile.d/rvm.sh</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  elif</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [ </span><span style="color:#D73A49;--shiki-dark:#F97583">-f</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> /usr/local/rvm/scripts/rvm ]; </span><span style="color:#D73A49;--shiki-dark:#F97583">then</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    source</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /etc/profile.d/rvm.sh</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  elif</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [ </span><span style="color:#D73A49;--shiki-dark:#F97583">-f</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$HOME</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/.rvm/scripts/rvm"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]; </span><span style="color:#D73A49;--shiki-dark:#F97583">then</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    source</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$HOME</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/.rvm/scripts/rvm"</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  elif</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [ </span><span style="color:#D73A49;--shiki-dark:#F97583">-f</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> /usr/local/share/chruby/chruby.sh ]; </span><span style="color:#D73A49;--shiki-dark:#F97583">then</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    source</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /usr/local/share/chruby/chruby.sh</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [ </span><span style="color:#D73A49;--shiki-dark:#F97583">-f</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> /usr/local/share/chruby/auto.sh ]; </span><span style="color:#D73A49;--shiki-dark:#F97583">then</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">      source</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /usr/local/share/chruby/auto.sh</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fi</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    # if you aren't using auto, set your version here</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    # chruby 2.0.0</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  fi</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  logger</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -t</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> puma</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "Starting server: </span><span style="color:#24292E;--shiki-dark:#E1E4E8">$app</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  exec</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bundle</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> exec</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> puma</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -C</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> config/puma.rb</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">EOT</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">end</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> script</span></span>
+<span class="line"></span></code></pre>
+<p>Now, create <code>/etc/init/puma-manager.conf</code> and fill it with this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># /etc/init/puma-manager.conf - manage a set of Pumas</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># This example config should work with Ubuntu 12.04+.  It</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># allows you to manage multiple Puma instances with</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Upstart, Ubuntu's native service management tool.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># See puma.conf for how to manage a single Puma instance.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Use "stop puma-manager" to stop all Puma instances.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Use "start puma-manager" to start all instances.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Use "restart puma-manager" to restart all instances.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Crazy, right?</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">description</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "Manages the set of puma processes"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># This starts upon bootup and stops on shutdown</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">start</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> on</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> runlevel</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [2345]</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">stop</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> on</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> runlevel</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [06]</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Set this to the number of Puma processes you want</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># to run on this machine</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">env</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> PUMA_CONF="/etc/puma.conf"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pre-start</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> script</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> i </span><span style="color:#D73A49;--shiki-dark:#F97583">in</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> `</span><span style="color:#6F42C1;--shiki-dark:#B392F0">cat</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $PUMA_CONF</span><span style="color:#032F62;--shiki-dark:#9ECBFF">`</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; </span><span style="color:#D73A49;--shiki-dark:#F97583">do</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    app</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">`</span><span style="color:#005CC5;--shiki-dark:#79B8FF">echo</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $i</span><span style="color:#D73A49;--shiki-dark:#F97583"> |</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> cut</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> , </span><span style="color:#005CC5;--shiki-dark:#79B8FF">-f</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1</span><span style="color:#032F62;--shiki-dark:#9ECBFF">`</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    logger</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -t</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "puma-manager"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "Starting </span><span style="color:#24292E;--shiki-dark:#E1E4E8">$app</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    start</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> puma</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> app=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$app</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  done</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">end</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> script</span></span>
+<span class="line"></span></code></pre>
+<p>And create a blank <code>/etc/puma.conf</code> file. This will be filled for each application separately.</p>
+<p><strong>Caveat:</strong></p>
+<p>You need to customise <code>/etc/init/puma.conf</code> to:</p>
+<ul>
+<li>Set the right user your app should be running on unless you want root to execute it!
+<ul>
+<li>Look for <code>setuid apps</code> and <code>setgid apps</code>, uncomment those lines and replace <code>apps</code> to whatever your deployment user is.</li>
+<li>Replace <code>apps</code> on the paths (or set the right paths to your user’s home) everywhere else.</li>
+</ul>
+</li>
+<li>Uncomment the source lines for <code>rbenv</code> or <code>rvm</code> support unless you use a system wide installation of Ruby.</li>
+</ul>
+<p>Now, start Jungle like this: <code>sudo start puma-manager</code>.
+And all your applications should be available when you reboot the machine.</p>
+<p>More details at <a href="https://github.com/puma/puma/tree/master/tools/jungle/"></a><a href="https://github.com/puma/puma/tree/master/tools/jungle/">https://github.com/puma/puma/tree/master/tools/jungle/</a></p>
+<h5 id="debian-based-systems">Debian-based systems</h5>
+<p><strong>PENDING</strong></p>
+<h3 id="starting-up-and-shutting-down">Starting up and shutting down</h3>
+<p>To start up the application is easy enough. Just navigate yourself to project directory and run the following: <code>puma -C config/puma.rb</code>.</p>
+<p>If you want to shut down one, run this command in the project directory: <code>[sudo] pumactl -S tmp/pids/puma.state halt</code>.</p> </div>  </article><article> <h1> <a href="/2014/11/15/2014-11-15-speeding-up-with-ruby-native-extensions.html">Speeding up with Ruby native extensions</a> </h1> <time datetime="2014-11-14T23:21:00.000Z"> Nov 15, 2014 </time> <div class="content"> <img alt="" src="/images/tumblr/speeding-up-with-ruby-native-extensions/tumblr_inline_pk2rhkfkxb1qh5oee_500.webp">
+<h2 id="foreword">Foreword</h2>
+<p>At my job, our current project has many bottle-necks, where Ruby really sucks on its performance. We were thinking on how to optimize them, and finally come to usage of Ruby Native API.</p>
+<p>Our project uses Redis and MySQL hardly, so much of statistic data is stored in Redis. For speeding up. But one fine day made us use a <strong>reduce</strong> on a set of statistic data from Redis. And that’s where we got stuck on Ruby’ performance. Our server timed out in a minute of waiting for that reduce to complete.</p>
+<!--more-->
+<p>The trouble was in a loop like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ruby"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">json_data </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> JSON</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.pase(json_file)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">keys </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $redis.keys </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"*:hash_pattern:date:*"</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">count, total_count </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">keys.each </span><span style="color:#D73A49;--shiki-dark:#F97583">do</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> |hash_key|</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    elements </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $redis.hgetall hash_key</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    elements.each </span><span style="color:#D73A49;--shiki-dark:#F97583">do</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> |key, value|</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        i_value </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> value.to_i</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        count </span><span style="color:#D73A49;--shiki-dark:#F97583">+=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> i_value </span><span style="color:#D73A49;--shiki-dark:#F97583">if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> key </span><span style="color:#D73A49;--shiki-dark:#F97583">=~</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /</span><span style="color:#032F62;--shiki-dark:#DBEDFF">some:regex</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/</span><span style="color:#D73A49;--shiki-dark:#F97583"> and</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> json_data.has_key? key</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        total_count </span><span style="color:#D73A49;--shiki-dark:#F97583">+=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> i_value</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    end</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">end</span></span>
+<span class="line"></span></code></pre>
+<p>My first attempt was implemented on a D language. But when I tried to use the compiled code library with Ruby, I failed. That’s why I thought <em>I feel more comfortable with C/C++ than with D</em>. And wrote the same code on C/C++. I took three third-party libraries:</p>
+<ul>
+<li><code>RE2</code> for regular expressions</li>
+<li><code>hiredis</code> for Redis operations</li>
+<li><code>rapidjson</code> for JSON parsing</li>
+</ul>
+<p>But when I compiled and ran what I’ve done, I could not believe my eyes - the process worked for <strong>59 seconds</strong>!
+That was more than <strong>ten times</strong> slower than Ruby version!</p>
+<p>So, I started optimizing for speed.</p>
+<img alt="" src="/images/tumblr/speeding-up-with-ruby-native-extensions/tumblr_inline_pk2rhkUOes1qh5oee_500.webp">
+<!--more-->
+<p>First of all, I dropped regular expressions as they were simply replaced by substring check and substring extraction (as the first part of a string in a regular expression had a fixed length). That did the trick, lowering the execution time to <strong>25 seconds</strong>. Yet, it was too much.</p>
+<p>The last step I took, I removed hiredis and replaced it with a set of five custom functions, performing only those operations, which we needed via sockets. First, that failed with a really, REALLY long segfault. Yet, when I replaced the host string from <em>“localhost”</em> to <em>“127.0.0.1”</em>, my tiny extension arose and did its job in <strong>4.8 seconds</strong>.</p>
+<p>That was great! Yet, it is not the best time I can get, let’s take a look on what was done and in which manner.</p>
+<h2 id="creating-native-extensions-for-ruby">Creating native extensions for Ruby</h2>
+<p>Creating a native extension will need you to have compiled <strong>shared object</strong> file. Shared object is a library for POSIX OSes.
+There are two kinds of library formats for Linux and others:</p>
+<ul>
+<li><strong>shared libraries</strong> (<code>*.so</code> files) - could be placed anywhere and used in a runtime by a few applications</li>
+<li><strong>static libraries</strong> (<code>*.a</code> files) - are bundled to a compile target (library, executable…) and are used in that environment</li>
+</ul>
+<p>For that purpose you’d better use <strong>C/C++ Ruby API</strong>.
+Yes, you <em>could</em> use other-language-compiled shared libraries, but through an interface called <strong>FFI</strong>,
+which I did not manage to work for me. Thus, this article covers only the C/C++ way.</p>
+<p>To make your extension available in Ruby, you will need to define some of these:</p>
+<ul>
+<li>method for existing classes and modules</li>
+<li>new class or module</li>
+</ul>
+<p>All of them are not hard to implement. We will make our own module and define its method.</p>
+<p>First, create a directory names as your extension will be named. Let’s say, <code>my_ext</code>. Create two files there - <code>my_ext.cpp</code> and <code>extconf.rb</code>.
+First file will define an extension shared library, whilst the second one will create <code>Makefile</code> for us.</p>
+<p>Our extension will have a very simple source file with just one non-standard include and two functions defined:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#include</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "ruby.h"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#include</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &#x3C;string.h></span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#include</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &#x3C;stdlib.h></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">VALUE </span><span style="color:#6F42C1;--shiki-dark:#B392F0">moo_method</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(VALUE </span><span style="color:#E36209;--shiki-dark:#FFAB70">_name</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, VALUE </span><span style="color:#E36209;--shiki-dark:#FFAB70">_age</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, VALUE </span><span style="color:#E36209;--shiki-dark:#FFAB70">_self</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    char*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> name </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> StringValueCStr</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(_name);</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    unsigned</span><span style="color:#D73A49;--shiki-dark:#F97583"> int</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> age </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> num2uint</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(_age);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    char*</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> result </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">char*</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#6F42C1;--shiki-dark:#B392F0">malloc</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">255</span><span style="color:#D73A49;--shiki-dark:#F97583"> *</span><span style="color:#D73A49;--shiki-dark:#F97583"> sizeof</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">char</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    sprintf</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(result, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Hello, my name is </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%s</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> and I am </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> years old!</span><span style="color:#005CC5;--shiki-dark:#79B8FF">\n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, name, age);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> rb_str_new2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(result);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">extern</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "C"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Init_my_ext</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  VALUE MyModule </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> rb_define_module</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"MyModule"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  rb_define_module_function</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(MyModule, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"moo"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">reinterpret_cast</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(moo), </span><span style="color:#005CC5;--shiki-dark:#79B8FF">2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>Now let’s look at this source. There is only one exported function, <code>Init_my_ext</code>. That’s correct, because all our extension needs to do is to define something. And that is done in that method. The function <code>Init_my_ext</code> should have such name format: <code>Init_$extension_name$</code>. That’s how Ruby finds out what to call first.</p>
+<p>Now, there are many of those <code>VALUE</code> type instances. That is internal type of Ruby Native API. That is the variant type, holding Ruby’ value. And whilst Ruby is not strongly typed language, that type could contain anything - from <code>nil</code> to <code>string</code> and even <code>object</code>. There are a few really useful functions defined in <code>ruby.h</code> to help you checking variables for types and converting them to C++ types.</p>
+<p>Then we define a module named <code>MyModule</code> and stored its reference in the <code>MyModule</code> variable. Then we can do what we want with that module - define classes, variables and methods. Let’s see how we defined a method. Function <code>rb_define_module_function</code> contains four arguments:</p>
+<ul>
+<li><strong>reference to a module</strong></li>
+<li><strong>method name</strong></li>
+<li><strong>pointer to a C function, representing method internals</strong> - note the <code>reinterpret_cast</code></li>
+<li><strong>argument count</strong> - when this number is less than zero, than method will receive three arguments - <code>int argc</code>, <code>VALUE* argv</code> and <code>VALUE self</code>, representing variable amount of arguments; if this number is greater than zero - it defines the amount of required method arguments</li>
+</ul>
+<p>Now, lets create a <code>extconf.rb</code> file, which will create <code>Makefile</code> for final library compilation:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ruby"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">require</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'mkmf'</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">extension_name </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'my_ext'</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">def</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> get_dir</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(name)</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    File</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.expand_path(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">File</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.join(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">File</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.dirname(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">__FILE__</span><span style="color:#24292E;--shiki-dark:#E1E4E8">), name))</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">end</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">LIBDIR</span><span style="color:#D73A49;--shiki-dark:#F97583">     =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> RbConfig</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#005CC5;--shiki-dark:#79B8FF">CONFIG</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'libdir'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">INCLUDEDIR</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> RbConfig</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#005CC5;--shiki-dark:#79B8FF">CONFIG</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'includedir'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">HEADER_DIRS</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">INCLUDEDIR</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># setup constant that is equal to that of the file path that holds that static libraries that will need to be compiled against</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">LIB_DIRS</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">LIBDIR</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">libs </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> []</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># The destination</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">dir_config(extension_name, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">HEADER_DIRS</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">LIB_DIRS</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">libs.each </span><span style="color:#D73A49;--shiki-dark:#F97583">do</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> |lib|</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    $LOCAL_LIBS </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#032F62;--shiki-dark:#9ECBFF">#{lib}</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">end</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Additional compiler / linker flags</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># $CFLAGS &#x3C;&#x3C; " -fPIC "</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># $LDFLAGS &#x3C;&#x3C; " -lpthread "</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Do the work</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">create_makefile(extension_name)</span></span>
+<span class="line"></span></code></pre>
+<p>That’s it, it defines parameters for our future <code>Makefile</code>. Note the <code>get_dir(name)</code> method - I’ve defined it for you to simplify adding library sub-directories to the <code>LIBDIR</code> and <code>INCLUDEDIR</code> arrays, just like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ruby"><code><span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">LIB_DIRS</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">LIBDIR</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, get_dir(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'hiredis'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) ]</span></span>
+<span class="line"></span></code></pre>
+<p>Also, note the <code>-fPIC</code> option - it is needed for most libraries to compile under different architectures. So, you may need to add them to your third-party libraries’ Makefiles to resolve corresponding compiler errors when building the extension.</p>
+<p>When you are done, let’s generate Makefile:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ruby"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">ruby extconf.rb</span></span>
+<span class="line"></span></code></pre>
+<p>Then, you should be able to build your shared object with</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> make</span></span>
+<span class="line"></span></code></pre>
+<p>Using our extension is simple when playing around locally - you just add it to your <code>irb</code> or <code>ruby</code> command-line arguments like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> irb</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -r</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ./my_ext.so</span></span>
+<span class="line"></span></code></pre>
+<p>And then just using the modules you’ve defined. But in most situations, that is impossible, as, for example, you are running a Rails application on a production server. So, you will probably want a RubyGem for that purpose.</p>
+<h2 id="wrapping-extension-in-a-gem">Wrapping extension in a Gem</h2>
+<p>Building a Ruby Gem containing native extension is a little different than building usual gems. You here have two options:</p>
+<ul>
+<li>bundle a pre-built library with a gem</li>
+<li>provide a sources to perform build on a target machine</li>
+</ul>
+<p>First way is for dummies. That’s it, you will probably want your code ran on different platforms than your own machine. So, you will not want your gem to fail with a segfault like <em>this architecture differs from what the library was built on</em>. Thus, we will concentrate on a second way.</p>
+<img alt="" src="/images/tumblr/speeding-up-with-ruby-native-extensions/tumblr_inline_pk2rhlqx0j1qh5oee_500.webp">
+<p>First, we will need a correct directory structure:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>.</span></span>
+<span class="line"><span>├── ext</span></span>
+<span class="line"><span>│   └── my_gemname</span></span>
+<span class="line"><span>│       ├── extconf.rb</span></span>
+<span class="line"><span>│       └── my_ext.cpp</span></span>
+<span class="line"><span>├── lib</span></span>
+<span class="line"><span>│   └── my_gemname.rb</span></span>
+<span class="line"><span>└── my_gemname.gemspec</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>File <code>lib/my_gemname.rb</code> will contain only the extension initialization call:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ruby"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">require</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'my_gemname/my_ext'</span></span>
+<span class="line"></span></code></pre>
+<p>Whilst the main difference hides in gemspec file:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ruby"><code><span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">Gem</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#005CC5;--shiki-dark:#79B8FF">Specification</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#D73A49;--shiki-dark:#F97583">new</span><span style="color:#D73A49;--shiki-dark:#F97583"> do</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> |spec|</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  spec.name </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'my_gemname'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  spec.version </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> '0.1'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  spec.description </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'Some cool description here'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  spec.summary </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'Short description'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  spec.email </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'author@email.com'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  spec.homepage </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ''</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  spec.author </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'Author Name'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  spec.files </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Dir</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'lib/**/*.rb'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">] </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Dir</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'ext/**/*'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  spec.platform </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Gem</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#005CC5;--shiki-dark:#79B8FF">Platform</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#005CC5;--shiki-dark:#79B8FF">RUBY</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  spec.require_paths </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [ </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'lib'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'ext'</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  spec.extensions </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Dir</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'ext/my_gemname/extconf.rb'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">end</span></span>
+<span class="line"></span></code></pre>
+<p>Here four lines make the magick:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ruby"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  spec.files </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Dir</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'lib/**/*.rb'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">] </span><span style="color:#D73A49;--shiki-dark:#F97583">+</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Dir</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'ext/**/*'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  spec.platform </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Gem</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#005CC5;--shiki-dark:#79B8FF">Platform</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#005CC5;--shiki-dark:#79B8FF">RUBY</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  spec.require_paths </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [ </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'lib'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'ext'</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  spec.extensions </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> Dir</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'ext/my_gemname/extconf.rb'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"></span></code></pre>
+<p>They set, respectively:</p>
+<ul>
+<li>directories of the extension with all the files and sub-directories, needed to compile it</li>
+<li>universal target platform</li>
+<li>extension required path</li>
+<li>path to the extension’ extconf file</li>
+</ul>
+<p>Now you can build your gem with</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> gem</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> build</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> my_gemname.gemspec</span></span>
+<span class="line"></span></code></pre>
+<p>Using the gemfile may require you never to push it to RubyGems repository. For example, when your gem is a very specific for the project you are working on, or it may conflict with your job contract. But you can’t simply specify the <code>path</code> attribute for your gem in the <code>Gemfile</code> - it just does not work!</p>
+<p>Way to solve this lays beyound using custom repository. My solution was to create a directory under <code>lib/</code> sub-directory of our project:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>repository</span></span>
+<span class="line"><span>└── gems</span></span>
+<span class="line"><span>    └── my_gemname-0.1.gem</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Then, go to the <code>repository</code> directory (that’s important NOT to go to the <code>gems</code> subdir) and run this magic command:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> gem</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> generate_index</span></span>
+<span class="line"></span></code></pre>
+<p>This will make your repository directory look like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>repository</span></span>
+<span class="line"><span>├── gems</span></span>
+<span class="line"><span>│   └── my_gemname-0.1.gem</span></span>
+<span class="line"><span>├── latest_specs.4.8</span></span>
+<span class="line"><span>├── latest_specs.4.8.gz</span></span>
+<span class="line"><span>├── prerelease_specs.4.8</span></span>
+<span class="line"><span>├── prerelease_specs.4.8.gz</span></span>
+<span class="line"><span>├── quick</span></span>
+<span class="line"><span>│   └── Marshal.4.8</span></span>
+<span class="line"><span>│       └── my_gemname-0.1.gemspec.rz</span></span>
+<span class="line"><span>├── specs.4.8</span></span>
+<span class="line"><span>└── specs.4.8.gz</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>This directory now could be used as a RubyGems repository. Just like the <strong>rubygems.org</strong>! Just point your <strong>Gemfile</strong> to this directory:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ruby"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">source </span><span style="color:#005CC5;--shiki-dark:#79B8FF">File</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.join(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'file://'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">File</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.dirname(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">__FILE__</span><span style="color:#24292E;--shiki-dark:#E1E4E8">), </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'lib'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'repository'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span></code></pre>
+<p>And an <strong>important note</strong>: keep your <code>Gemfile</code> and <code>Gemfile.lock</code> up-to date - use only <code>= latest.version</code> in the <code>Gemfile</code> when running with your native extension gem!</p> </div>  </article><article> <h1> <a href="/2014/07/28/2014-07-28-php-blog-part-3.html">Чоткій блог. Часть третя</a> </h1> <time datetime="2014-07-28T12:30:00.000Z"> Jul 28, 2014 </time> <div class="content"> <div class="row">
+    <div class="col-md-6 col-xs-12">
+        <div class="card">
+            <div class="card-header">
+                Содєржаніє
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <a href="/tumblr/2014/07/22/php-blog-part-1.html">
+                        Чоткій блог. Часть перша
+                    </a>
+                </li>
+                <li class="list-group-item">
+                    <a href="/tumblr/2014/07/27/php-blog-part-2.html">
+                        Чоткій блог. Часть друга
+                    </a>
+                </li>
+                <li class="list-group-item">
+                    <a href="/tumblr/2014/07/28/php-blog-part-3.html">
+                        Чоткій блог. Часть третя
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-6 col-xs-12 text-xs-center text-md-right"></div>
+</div>
+<h2>Прєдупрєждєніє</h2>
+<p>Будь готов! В цій главі ми полностью переробим блог! Він не буде працювати (як раньше) аж до кінця домашнього заданія; код буде магічним; придеться пару раз удалять <strong>весь</strong> код з деяких файлів! Але в сухом остаткє, потом має стати ну дуже прикольно розробляти його дальше.</p>
+<!--more-->
+<h2>RIP, блог!</h2>
+<p>От коли-небудь ти точно міг замітить, шо на сайтах мало ссилок з адрєсами віда <code>some_file.php?...</code>. А більше ссилок віда <code>/moo/foo</code>. Так от, не зря ми чуть раньше вспоминали про <strong>MVC</strong>. У нас ще осталось цілих дві букви для расшифровки - <strong>Controller</strong> і <strong>View</strong>.</p>
+<p>Раньше у нас один контроллєр отвічав чотко за одну странічку, за один php-файл. І ти помниш, як ми круто зробили з моделями, шоб можна було щитай пустий клас (ну і, канєшна, соотвєтствующу табличку в базє даних) создать - і модель у нас работала. От давай тепер зробим так, шоб і з кантроллєрами у нас було шось похоже - один клас отвічає за кучу разних странічок!</p>
+<p>В всяких там Ruby On Rails, ASP.NET MVC, Django і прочіх модних мейнстрімових фреймворках штука “контроллєр” оброблює багато всяких странічок, об’єдіньонних похожой функциональностью. Каждий публічний метод контроллєра називається <strong>action</strong> і обрабатує виключно одну странічку. Так, напрімєр, якшо у нас є контроллєр “Пости”, він обрабатує всьо шо зв’язано <strong>тільки</strong> з постами:</p>
+<ul><li>редактірованіє</li>
+<li>удалєніє</li>
+<li>созданіє</li>
+<li>просмотр</li>
+<li>просмотр списка всіх постів</li>
+</ul><p>В цій часті ми будем убивать на корню весь наш блог! Чисто раді експерименту!</p>
+<p>По суті, весь наш блог - це одна програма. В народі - <strong>application</strong>. Так давай зробим клас, який буде “запускать” наш сайт! Назвем цей клас <code>Application</code> і положим ми його рядом з <code>index.php</code>. В цьому класі нада зробить якийсь мєтод, який буде задавать настройки нашому сайту (<strong>конкрєтно нашому сайту</strong>) і мєтод, який буде собсно запускать наш сайт з цими настройками.</p>
+<p>Якшо ти вніматєльно ізучав ООП, то поймеш, шо по феншую треба всякі пєрємєнні, які стосуються <strong>конкретно такого-то об’єкта</strong> задавать в конструкторі. А всі мєтоди шо визиватимуться у цього об’єкта будуть іспользовать ці пєрмєнні.</p>
+<p>От так і предлагаю зробить:</p>
+<pre><code>&#x3C;?php
+    class Application {
+        var $database;
+
+        public function __construct() {
+            $this->database = array(
+                'user' => 'root',
+                'password' => 'abc123',
+                'host' => 'localhost',
+                'database' => 'dbank'
+            );
+        }
+
+        public function run() {
+            // шось тут коїться!
+        }
+    }
+</code></pre>
+<p>а в файлі <code>index.php</code> тепер у нас буде тільки от така штука:</p>
+<pre><code>&#x3C;?php
+    require_once('application.php');
+
+    $app = new Application();
+    $app->run();
+</code></pre>
+<p>І якшо ти зараз запустиш свій блог - ти побачиш ровним щотом нічого. Бо в методі <code>run()</code> нічого не виводиться. Давай научимось розбирать адрєс странічки, яку хоче пользоватєль</p>
+<h2>Закопуєм блог</h2>
+<p>Тепер давай розберемся от з чим: у нас пользоватєль не хоче бачити таку бяку в адрєсной строкє браузера, як тіпа <code>moo.php?foo=bar&#x26;baz=dao</code>. Йому удобніше, пріятніше читать шось тіпа <code>/moo/bar?baz=dao</code>. Тіпа вони будуть запоминать або тіпа вони зможуть записать на бумажці десь це. Не важно особо, нашо це пользоватєлю - главне зробить його щасливим.</p>
+<p>Щас ми будем обільно рефлєксірувать. Єсть в PHP така одна чудєсна пєрємєнна, як <code>$_SERVER</code>. Це масів. В ньому лежить багато інтересних всяких настройок, але нам поки треба буде тільки одна - <code>$_SERVER['REQUEST_URI']</code>. Як не странно, воно слабо зв’язано з сервером. Це - адрєс, який ввів пользоватєль, тільки без домєна. Так шо, якшо у нас сайт називається <code><a href="http://google.com/search/">http://google.com/search/</a></code>, а пользоватєль введе в адрєсну строку браузєра <code><a href="http://google.com/search/moo/foo/bar">http://google.com/search/moo/foo/bar</a></code>, то в соотвєтствующому php-файлі, пєрємєнна оця <code>$_SERVER['REQUEST_URI']</code> буде мати значення <code>/moo/foo/bar</code>.</p>
+<p>Але по умолчанію наш сервер перенаправляє пользоватєля на файл <code>index.php</code>, при цьому рісує цей <code>index.php</code> в адрєс странічки. Нада убрать його відти. Для цього ми візьмем настройки сєрвєра <strong>Apache</strong> (якшо у тебе ВНЕЗАПНО другий сервер - будем шось думать - пиши мені в лічку) і трошки їх поміняєм.</p>
+<p>Першим ділом тобі треба включить расширєніє сервера під назвою <code>rewrite</code>. В лінуксах всяких це робиться в два етапа:</p>
+<ol><li>ставиться пакєт <code>apache2-utils</code></li>
+<li>включається це расширєніє командой <code>[sudo] a2enmod rewrite</code></li>
+</ol><p>В віндовзах всяких прийдеться шукать відповідне меню з галочкою біля <code>mod-rewrite</code>.</p>
+<p>Потом тобі треба в корні сайта, рядом з <code>index.php</code> положить файлік <code>.htaccess</code> (начинається ім’я його з крапки!) з таким вмістом:</p>
+<pre><code>RewriteEngine on
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule . index.php [L]
+</code></pre>
+<p>Ця штука заставить всі адрєса, шо пользоватєль вводить для цього сайта перенаправлять в <code>index.php</code>. І у тебе в пєрємєнной <code>$_SERVER['REQUEST_URI']</code> всігда буде адрєс без <code>/index.php</code>.</p>
+<p>Тепер давай розіб’єм все, шо нам буде присилать пользоватєль в строчці адрєса условно на три тіпа - <strong>контроллєр</strong>, <strong>екшн цього контроллєра</strong> і <strong>все остальне</strong> (в народі - <strong>парамєтри</strong>). Розбивать будем просто - по символу <code>/</code>. <strong>Все остальне</strong> - це по суті масив <code>$_GET</code>.</p>
+<p><strong>ЯКШО НЕ СТРЕЛЬНУЛО</strong> то треба в настройках хоста (в лінуксах - <code>/var/www/apache2/sites-available/000-default.conf</code>) дописати</p>
+<pre><code>&#x3C;Directory /var/www/>
+        AllowOverride all
+        Options FollowSymlinks
+        Order allow,deny
+        Allow from all
+&#x3C;/Directory>
+</code></pre>
+<p>Шо по суті для папки <code>/var/www</code> (де лежить сайт і, в часності, <code>index.php</code>) дає можливість через <code>.htaccess</code> мінять настройки сервера.</p>
+<p>Давай тепер в методі <code>Application::run()</code> впишем код шоб воно виводило нам наш адрєс:</p>
+<pre><code>public function run() {
+    echo $_SERVER['REQUEST_URI'];
+}
+</code></pre>
+<p>Тепер розіб’єм цей адрєс на ім’я контроллєра і екшна. Розбиваєм по символу <code>/</code> і тупо берем перші два елємєнта получєного массіва. Якшо не хватає другого елємєнта - по умолчанію поставим <code>index</code>. Якшо не хватає ще й першого - по умолчанію поставим <code>application</code>.</p>
+<pre><code>$pieces = array_filter(explode('/', $_SERVER['REQUEST_URI']));
+$controllerName = isset($pieces[1]) ? $pieces[1] : 'application';
+$actionName = isset($pieces[2]) ? $pieces[2] : 'index';
+</code></pre>
+<p>Така хороша функція <code>array_filter()</code> убирає із массіва пусті елементи. А тройним оператором <code>(condition) ? if_true : if_false</code> ми робим круте присвоєніє нужного значєнія в пєрємєнні. І як не странно, але в цьому випадку ключі у масива - <code>1</code> і <code>2</code>.</p>
+<p>Тепер якшо ти виведеш ці пєрємєнні в методі <code>Application::run()</code> і зайдеш на сайт напрімєр по ссилці http://localhost/moo/foo , то ти побачиш як ця штука працює. Якшо передасиш один параметр через слешку: <code>http://localhost/moo</code> - побачиш шо <code>$controllerName = 'moo'</code> а <code>$actionName = 'index'</code>. Якшо два параметра - <code>http://localhost/moo/foo</code> - побачиш шо буде ще й <code>$actionName = 'foo'</code>. А якшо більше - то ніякої різниці вже не побачиш.</p>
+<p>Цей момент важно запомнить: якшо наш сайт не знатиме якого контроллєра взять - буде намагатись найти контроллєр всього сайта. Якшо він не буде знати який йому екшн визвати - буде пробувать визвати екшн <code>index</code>.</p>
+<h2>Почучуть оживляєм</h2>
+<p>Тепер давай зробим якийсь конкрєтний контроллєр! Положим ми його в папочку <code>controllers</code>. Хай він поки особо нічого крутого не вміє - просто виводить <code>&#x3C;h1>I am alive!&#x3C;/h1></code>. І це у нас буде екшн <code>index</code>:</p>
+<pre><code>&#x3C;?php
+    class PostingsController {
+        public function index() {
+            echo '&#x3C;h1>I am alive!&#x3C;/h1>';
+        }
+    }
+</code></pre>
+<p>Тепер у нас стоїть задача аутоматично найти цей класс і визвати нужний метод у нього, якшо пользоватєль попробує зайти по ссилці <code>http://localhost/postings/</code> або <code>http://localhost/postings/index</code>.</p>
+<p>Ми скористаємось такою шикарною штукою PHP як авто-пошук нужних класів. В народі - <strong>autoloading</strong>. Якшо пишем ми на стареньком PHP 5.0, то у нас ще довго буде возможность пользуватись глобальною магічною функцією <code>__autoload($className)</code>.</p>
+<p>Коли ми описуєм цю функцію, PHP буде іспользувать її шоб найти класс, який ми не опреділили, но питаємось іспользувать. В неї приходить один аргумєнт - ім’я класа, який нам нада найти. І ця функція должна шось хотя б попробувать зробити, шоб описати клас з таким іменем або подключити нужний файл, де цей клас описаний.</p>
+<p>Ну от напрімєр, ми точно знаєм, шо наші кантроллєри лежать в папці <code>controllers</code>. Так давай научим наш <code>Application</code> находить нужний контроллєр і создавать його об’єкт в методі <code>run()</code>!</p>
+<pre><code>&#x3C;?php
+    function __autoload($className) {
+        require("controllers/$className.php");
+    }
+
+    class Application {
+        // ...
+
+        public function run() {
+            $pieces = array_filter(explode('/', $_SERVER['REQUEST_URI']));
+
+            $controllerName = isset($pieces[1]) ? $pieces[1] : 'application';
+            $actionName = isset($pieces[2]) ? $pieces[2] : 'index';
+
+            $controllerName = ucfirst($controllerName) . 'Controller';
+
+            $controller = new $controllerName();
+            $controller->$actionName();
+        }
+    }
+</code></pre>
+<p>Трошки заумний код. Начнем з нового: функція <code>ucfirst($text)</code> бере першу букву з <code>$text</code> і перероблює її у верхній регістр. Тоість, якшо було <code>moo</code> стане <code>Moo</code>, якшо було <code>Moo</code> - нічо не поміняється. Функція <code>__autoload</code> просто бере файл з папки <code>controllers/</code> з імєнєм контроллєра і подключає його.</p>
+<p>Тут важний момет нащот самой функції <code>require()</code>: коли ти її визиваєш вона по суті бере код із того файла і вставляє в місце, де ти визвав цю функцію. Точніше, не сам код файла, а виполняє цей файл і всьо шо вийшло в результаті - вставляє в це місце, де ти визвав <code>require</code>. Якщо там опрєдєлєні пєрємєнні чи класи - вони стають опрєдєлєні там де ти визвав <code>require</code>. Але якшо ти його визвав внутрі <code>__autoload</code> - то ці пєрємєнні чи класи стають доступні в усьому файлі, де сработав <code>__autoload</code>. Бо ще <code>__autoload</code> можна на каждий файл свій написать.</p>
+<h2>Виводим HTML</h2>
+<p>Якшо ти ще помниш, там де ми визиваєм <code>require</code> - виполняється код файла, який ми подключаєм і все що виполнилось вставляється в те місце.</p>
+<p>Давай зробим таку інтересну штуку: зробим файлік який-небудь <code>views/index.html</code> з яким-небудь HTML і в екшні <code>PostingsController::index()</code> просто підключим його:</p>
+<pre><code>&#x3C;?php
+    class PostingsController {
+        public function index() {
+            require('index.html');
+        }
+    }
+</code></pre>
+<p>І якшо зараз зайти на <code>http://localhost/postings</code> - можна буде побачити содєржиме цього файла! І це прекрасно, ящітаю!</p>
+<p>У каждого екшна є свій <strong>view</strong> - оддєльний файлік, який виводить HTML тільки основної частини страніци. Щитай це вміст тега <code>&#x3C;body></code>. А контроллєр збирає виведений цей HTML і виводить в свій оддєльний view, в якому і описане все вокруг тега <code>&#x3C;body></code> - щитай це весь HTML, кромє <code>&#x3C;body></code>. Для контроллєра цей view називається по-особєнному, <strong>layout</strong>. І от цей лейаут, він може бути один на всі-всі контроллєри, а може бути разний для нєкоторих або і вообщє - свій для каждого кантроллєра.</p>
+<p>Так от, давай зробим слєдующім образом: у нас буде папочка <code>views/layouts</code>, де будуть лежать разні шаблончики. І ми зробим один шаблончик, який буде аутоматично подтягуватись для каждого контроллєра і назвем його <code>application.phtml</code>, як контроллєр “по умолчанію”. Замєть, файл має расширєніє <code>.phtml</code>. Це нормально. Це показує шо у нас в файлі є і PHP-код і HTML размєтка. В папочку <code>views/layouts</code> давай положим файлік <code>postings.phtml</code> куди наб’єм допустім такий HTML:</p>
+<pre><code>&#x3C;!DOCTYPE html>
+&#x3C;html lang="en">
+&#x3C;head>
+    &#x3C;meta charset="UTF-8">
+    &#x3C;title>Document&#x3C;/title>
+&#x3C;/head>
+&#x3C;body>
+    &#x3C;?php echo $body ?>
+&#x3C;/body>
+&#x3C;/html>
+</code></pre>
+<p>Тут ми берем якусь пєрємєнну <code>$body</code> і виводим її. Простенький файлік, нічого сложного. Але нам нада звідкись достать цей самий <code>$body</code>. Для цього ми іспользуєм ще одну інтересну плюшку PHP, <strong>output buffer</strong>. Воно позволяє виполнить якийсь код якби в фоні, а все шо цей код вивів - сохранить в пєрємєнну. Виглядить це так:</p>
+<pre><code>&#x3C;?php
+    ob_start();
+
+        echo 'I am alive!';
+
+    ob_end_clean();
+</code></pre>
+<p>Якшо ти запустиш цей код - нічого не виведеться. Но зато оцей тєкст, <code>I am alive!</code> можна достать функцієй <code>ob_get_contents()</code>:</p>
+<pre><code>&#x3C;?php
+    ob_start();
+
+        echo 'I am alive!';
+
+    $content = ob_get_contents();
+
+    ob_end_clean();
+
+    echo "&#x3C;h1>$content&#x3C;/h1>";
+</code></pre>
+<p>А от цей код вже виведе <code>&#x3C;h1>I am alive!&#x3C;/h1></code>. Замєть: <code>ob_end_clean()</code> очищає цей буфєр, куди ложиться вивод всього-всього між <code>ob_start()</code> і <code>ob_end_clean()</code>. І забрати звідки вивод треба до того, як визвать <code>ob_end_clean()</code>.</p>
+<p>А якшо ми тепер поміняємо просте <code>echo</code> між <code>ob_start</code> і <code>ob_end</code> на, скажімо, <code>require()</code>?</p>
+<pre><code>&#x3C;?php
+    ob_start();
+
+    require('views/index.html');
+
+    $content = ob_get_contents();
+
+    ob_end_clean();
+
+    require('views/layouts/postings.phtml');
+</code></pre>
+<p>Виходить, що в <code>$content</code> у нас лежить вміст файла <code>views/index.html</code>, а якшо ми подключаєм лейаут - він виведе HTML з цього лейаута і всередині нього - пєрємєнну <code>$content</code>.</p>
+<p>А тепер, якшо ти оцей код написав внутрі <code>PostingsController::index()</code>, ми його переробим. Шоб не писать в каждом екшні каждого кантроллєра багато всяких <code>ob_start</code>, <code>require</code> і прочіх. Опять вертаємось до класа <code>Application</code>, в якому ми описуєм запуск нашого сайта. В нашому чудєсном методі <code>run()</code> ми вже написали шо робить коли пользоватєль заходить на сайт. Давай тепер трошки перепишем цей код шоб обернуть його вивод в нужний нам HTML:</p>
+<pre><code>&#x3C;?php
+    class Application {
+        // ...
+        public function run() {
+            $pieces = array_filter(explode('/', $_SERVER['REQUEST_URI']));
+
+            $controllerName = isset($pieces[1]) ? $pieces[1] : 'application';
+            $actionName = isset($pieces[2]) ? $pieces[2] : 'index';
+
+            $controllerClass = ucfirst($controllerName) . 'Controller';
+
+            // вичісляєм ім’я view
+            $viewFile = "views/$controllerName/$actionName.phtml";
+
+            // вичісляєм ім’я layout
+            $layoutFile = "views/layouts/$controllerName.phtml";
+
+            $controller = new $controllerClass();
+
+            ob_start();
+
+            // тут внутрі контроллєра задаються якісь пєрємєнні
+            $controller->$actionName();
+
+            // рісуєм відповідний view, в якому виводяться пєрємєнні, задані в екшні
+            require($viewFile);
+
+            // получаєм вивод екшна - наш body
+            $body = ob_get_contents();
+
+            ob_end_clean();
+
+            // виводим лейаут, в якій виводиться body
+            require($layoutFile);
+        }
+    }
+</code></pre>
+<p>При такому розкладі у нас цей мєтод робить сильно забагато всього. А всі пєрємєнні, які ми задаєм внутрі екшна недоступні всередині view - вони задаються внутрі контроллєра, а рісує в’юху у нас - application. Значить, вертаємось до ООП. Будем трошки усложнять зараз роботу шоб потом писать було проще.</p>
+<p>Зробим основний клас для всіх контроллєрів, який буде рісувать свій лейаут і нужні в’юхи. А із application будем визивать якийсь один метод, який просто виведе все шо треба. Цей клас ми, по старой доброй традиції, положим в папку <code>core/</code>:</p>
+<pre><code>&#x3C;?php
+    class BaseController {
+        public function __invoke($controllerName, $actionName) {
+            // вичісляєм ім’я view
+            $viewFile = "views/$controllerName/$actionName.phtml";
+
+            // вичісляєм ім’я layout
+            $layoutFile = "views/layouts/$controllerName.phtml";
+
+            ob_start();
+
+            $this->$actionName();
+
+            // рісуєм відповідний view, в якому виводяться пєрємєнні, задані в екшні
+            require($viewFile);
+
+            $body = ob_get_contents();
+
+            ob_end_clean();
+
+            // виводим лейаут, в якій виводиться body
+            require($layoutFile);
+        }
+    }
+</code></pre>
+<p>Ми просто щитай перенесли код з одного класа в другий. Замєть, ім’я мєтода називається з двох підкреслень. Ми тоже можем создавать <strong>магічні</strong> методи, муа-ха-ха! Тепер трошки переробим наш контроллєр <code>PostingsController</code>:</p>
+<pre><code>&#x3C;?php
+    require_once('core/BaseController.php');
+    require_once('models/Posting.php');
+
+    class PostingsController extends BaseController {
+        function index() {
+            $this->postings = Posting::all();
+        }
+    }
+</code></pre>
+<p>Але тепер дивись: у нас в каждій моделі подключається файл <code>BaseModel.php</code>. Тепер ще нам прийдеться в каждом контроллєрі подключать <code>BaseController.php</code>. Не комільфо. Щас будем рефакторить - всі ці строчки з моделей і з контроллерів можна перенести в <code>Application.php</code> - цей файл у нас по-любому подключається і всігда запускається самий перший.</p>
+<pre><code>&#x3C;?php
+    require_once('core/BaseModel.php');
+    require_once('core/BaseController.php');
+
+    // ...
+
+    class Application {
+        // ...
+    }
+</code></pre>
+<p>Тепер нам треба перемістить <code>views/index.html</code> в <code>views/postings/index.phtml</code> шоб наш <code>Application::run()</code> знайшов його. І з <code>PostingsController::index()</code> убрать весь код - у нас тепер усьо аутоматично!</p>
+<h2>Ітог</h2>
+<p>Шо нам дає така сложна сістєма? По-перше, і це дуже важно, нам тепер не треба в усі файли пихать один і той же HTML. По-друге, у нас сайт може мати кучу совєршенно разних по дизайну і вигляду странічок тепер. І шоб їх помінять чи шоб в них встроїть, допустім, виведення всіх постінгів чи якоїсь формочки, нам треба просто вивести туди в’юху. І перероблювать, в случаї чого, треба дуже і дуже мало кода.</p>
+<p>Наконєц, чисто для наглядності давай зробим простеньке упражнєніє: виведем в екшні <code>PostingsController::index()</code> всі постінги, іспользуя всі ці лейаути-в’юхи і моделі.</p>
+<p>У нас уже є лейаут для контроллєра <code>PostingsController</code>. У нас уже є сам контроллєр. У нас є модель поста. У нас даже є в’юха (і байдуже шо дурна) для цього!</p>
+<p>Значить, пробуєм? В екшні ми задамо перемєнну з усіма постінгами. Кстаті, конструктор контроллєра нам уже не треба - вже не актуально, не мейнстрім. А у в’юхє ми просто виведем всі постінги.</p>
+<pre><code>&#x3C;?php
+    require_once('models/Posting.php');
+
+    class PostingsController {
+        public function index() {
+            $this->postings = Posting::all();
+        }
+    }
+</code></pre>
+<p>І в’юха:</p>
+<pre><code>&#x3C;?php foreach ($this->postings as $posting): ?>
+    &#x3C;h1>&#x3C;?php echo $posting->title ?>&#x3C;/h1>
+
+    &#x3C;div class="description">
+        &#x3C;?php echo $posting->description ?>
+    &#x3C;/div>
+&#x3C;?php endforeach; ?>
+</code></pre>
+<h2>Домашнє заданіє</h2>
+<p>Воно буде велике. <em>Prepare yourself!</em></p>
+<ol><li>Треба прєдусмотрєть ситуацію, коли ми не найшли нужний класс контроллєра (щитай, не найшли файл) - в таком случаї нада показать ошибку <strong>404</strong>.</li>
+<li>Переведи весь блог на контроллєри, в’юхи, лейаути і моделі. Попробуй, чи прощє тепер чи сложніше стало робить це.</li>
+</ol> </div>  </article><article> <h1> <a href="/2014/07/28/2014-07-27-php-blog-part-2.html">Чоткій блог. Часть друга</a> </h1> <time datetime="2014-07-27T21:20:00.000Z"> Jul 28, 2014 </time> <div class="content"> <div class="row">
+    <div class="col-md-6 col-xs-12">
+        <div class="card">
+            <div class="card-header">
+                Содєржаніє
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <a href="/tumblr/2014/07/22/php-blog-part-1.html">
+                        Чоткій блог. Часть перша
+                    </a>
+                </li>
+                <li class="list-group-item">
+                    <a href="/tumblr/2014/07/27/php-blog-part-2.html">
+                        Чоткій блог. Часть друга
+                    </a>
+                </li>
+                <li class="list-group-item">
+                    <a href="/tumblr/2014/07/28/php-blog-part-3.html">
+                        Чоткій блог. Часть третя
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-6 col-xs-12 text-xs-center text-md-right"></div>
+</div>
+<h2>Моделі</h2>
+<p>Єсть така штука як <strong>MVC, Model-View-Controller</strong>. Це такий прінцип, по якому програма розділяється на три тіпа дєталєй:</p>
+<ol><li><em>Model</em> - отвічає за роботу чісто з базой даних</li>
+<li><em>View</em> - отвічає чісто за отображеніє даних перед пользоватєльом (формочка, HTML, і так далєє)</li>
+<li><em>Controller</em> - отвічає за обработку дєйствій пользоватєля, іспользує моделі і передає їх в’юхам</li>
+</ol><p>Так от, модель - це такій клас, який работає з рядочками одної таблички і другими табличками, шо прив’язані до нашої. Але тільки якшо та таблічка, з якою работає модель - главна в цій связі. Тоість, якшо у нас є модель <strong>Пост</strong> і модель <strong>Камєнтік</strong>, то модель <strong>Пост</strong> може вліять на <strong>Камєнтікі</strong>, а от модель <strong>Камєнтік</strong> вже нічо не може зробити з <strong>Постом</strong>. Тут таблічка <strong>Пост</strong> - главна, а таблічка <strong>Камєнтік</strong> - просто прив’язана до неї.</p>
+<p>В общєм, модель - це такий удобний клас, в якому заникані всі запроси до бази даних. Ти визиваєш метод моделі, а получаєш - масив (або не масив, а тільки один його елємєнт) з запісями з бази даних. Або визиваєш другий мєтод і удаляєш/обновляєш/создаєш рядочки в базі.</p>
+<!--more-->
+<p>Шоб зробити цей клас унівєрсальним до невозможності, представим, шо <strong>класс</strong> отвічає за роботу з всьою табличкою (вибор рядочків з таблички), а <strong>об’єкт цього класа</strong> отвічає за роботу з конкретним рядочком з цеї таблички. Робота з цим класом буде виглядіть якось так:</p>
+<pre><code>// всі пости
+$postings = Posting::all();
+
+// один конкретний пост
+$posting = Posting::find($id);
+
+// не до кінця обновлений пост (в базі ще не сохраньон)
+$posting->title = "moo";
+
+// сохранить пост в базі
+$posting->save();
+
+// удалить пост
+$posting->destroy();
+</code></pre>
+<p>Сама проста реалізація моделі буде схожа на оце:</p>
+<pre><code>class Posting {
+    var $id, $title, $description;
+
+    function __construct($title, $description) {
+        $this->title = $title;
+        $this->description = $description;
+    }
+
+    function __construct($id, $title, $description) {
+        $this->id = $id;
+        $this->title = $title;
+        $this->description = $description;
+    }
+
+    public static function all() {
+        $results = array();
+        $rows = mysql_query("SELECT id, title, description FROM postings;");
+
+        while ($posting = mysql_fetch_assoc($rows)) {
+            $results[] = new Posting($posting['id'], $posting['title'], $posting['description']);
+        }
+
+        return $results;
+    }
+
+    public static function find($id) {
+        $row = mysql_fetch_assoc(mysql_query("SELECT id, title, description FROM postings WHERE id = $id"));
+
+        if (isset($row['id'])) {
+          return new Posting($row['id'], $row['title'], $row['description']);
+        } else {
+            return null;
+        }
+    }
+
+    public function save() {
+        if (isset($this->id)) {
+            mysql_query("UPDATE postings SET title = '$this->title', description = '$this->description' WHERE id = '$this->id'");
+        } else {
+            mysql_query("INSERT INTO postings (id, title, description) VALUES ('$this->id', '$this->title', '$this->description')");
+        }
+    }
+
+    public function delete() {
+        if (isset($this->id)) {
+            mysql_query("DELETE FROM postings WHERE id = '$this->id'");
+        }
+    }
+};
+</code></pre>
+<p>Але з таким ращотом, у нас для кожної таблички буде оддєльний клас і оддєльний набор запросов. І вспоминаєм, шо ми рішили не дублірувать код. Будем іспользувать мощ магічних методів PHP!</p>
+<p>Нехай ми не знаєм, які поля єсть в табличці. Но всі запроси ці, <code>SELECT/DELETE</code> - вони в основном одінакові і відрізняються тільки для <code>INSERT/UPDATE</code>. Того нам нада так переписать ці <code>INSERT/UPDATE</code> і цей клас, шоб вони работали з любими табличками.</p>
+<p>Воспользуємся масивами PHP і магічними методами <code>__set/__get</code>. Ці методи дають можливість описать свою логіку коли програміст записує чи читає неізвєсне поле класа. Напрімєр, якшо у нашого класа <code>Post</code> нема поля <code>moo</code>, то при попитці зробить <code>echo $posting->moo</code> буде визиватись мєтод <code>__get('moo')</code>, а при попитці записать шось туди <code>$posting->moo = 'MOO!'</code> буде визваний <code>__set('moo', 'MOO!')</code>. Приступаєм:</p>
+<pre><code>class BaseModel {
+    private $__data, $__tableName;
+
+    private static function getTableName() {
+        $class_name = get_called_class();
+        return strtolower($class_name) . 's';
+    }
+
+    function __construct($data) {
+        foreach ($data as $key => $value) {
+            $this->__data[$key] = $value;
+        }
+
+        $__tableName = $this->getTableName();
+    }
+
+    function __get($field) {
+        if (isset($this->__data[$field])) {
+            return $this->__data[$field];
+        } else {
+            return null;
+        }
+    }
+
+    function __set($field, $value) {
+        $this->__data[$field] = $value;
+    }
+
+    public static function all() {
+        $tableName = self::getTableName();
+        $class = get_called_class();
+
+        $results = array();
+
+        $rows = mysql_query("SELECT * FROM $tableName;");
+
+        while ($row = mysql_fetch_assoc($rows)) {
+            $results[] = new $class($row);
+        }
+
+        return $results;
+    }
+
+    public static function find($id) {
+        $row = mysql_fetch_assoc(mysql_query("SELECT * FROM $tableName WHERE id = $id"));
+
+        if (isset($row['id'])) {
+          return new BaseModel($row);
+        } else {
+            return null;
+        }
+    }
+
+    public function save() {
+        $query = "";
+
+        if (isset($this->id)) {
+            $fields = array();
+
+            foreach ($this->__data as $field => $value) {
+                if ($field == 'id') {
+                    continue;
+                }
+
+                $fields[] = "`$field` = '$value'";
+            }
+
+            $query = "UPDATE $this->__tableName SET " . implode(', ', $fields) . " WHERE id = '$this->id'";
+        } else {
+            $values = array();
+
+            foreach ($this->__data as $field => $value) {
+                $values[$field] = "'$value'";
+            }
+
+            $query = "INSERT INTO $this->__tableName (" . implode(', ', array_keys($values)) . ") VALUES (" . implode(', ', array_values($values)) . ")";
+        }
+
+        mysql_query($query);
+    }
+
+    public function delete() {
+        if (isset($this->id)) {
+            mysql_query("DELETE FROM $this->__tableName WHERE id = '$this->id'");
+        }
+    }
+};
+</code></pre>
+<p>Так шо ж за ад тут коїться?</p>
+<p>По-перше, цей клас - базовий. Всі слєдующі модельки ми будем наслєдувать від нього. Тоість, весь цей ад у нас коїться тільки один раз - дальше всі моделі виглядять приблизно так:</p>
+<pre><code>class Posting extends BaseModel {
+    public function getViewUrl() {
+        return "view.php?$this->id";
+    }
+};
+</code></pre>
+<p>А іспользовать такі моделі тепер - сплошне удовольствіє!</p>
+<pre><code>&#x3C;?php $postings = Posting::all(); ?>
+
+...
+
+&#x3C;?php foreach ($postings as $posting) ?>
+    &#x3C;h2>&#x3C;?php echo $posting->title ?>&#x3C;/h2>
+
+    &#x3C;div class="description">
+        &#x3C;?php echo $posting->description ?>
+    &#x3C;/div>
+
+    &#x3C;div class="read-more">
+        &#x3C;?php echo $posting->getViewUrl() ?>
+    &#x3C;/div>
+&#x3C;?php endforeach; ?>
+</code></pre>
+<p>По-друге, в конструктор ми передаєм (всігда) поля з таблички, а конструктор - записує їх в масив <code>__data</code>. Ну і в конструкторі ж ми дуже хітро достаєм імя таблички з імєні класа: якшо у нас, напрімєр, клас моделі <code>Posting</code>, то ім’я таблички буде <code>postings</code>.</p>
+<p>Ще один ньюанс з приводу імені таблички і того шо ми вертаєм в мєтоді <code>all()</code>: тут іспользується така хітра функція <code>get_called_class()</code>, яка вертає ім’я класа, який визвав поточний мєтод. Воно працює і з наслєдованієм в ООП, тоість якшо запустити отакє:</p>
+<pre><code>class Moo {
+    function whoami() {
+        echo get_called_class();
+    }
+}
+
+class Foo extends Moo {
+}
+
+$a = new Moo();
+$a->whoami();
+
+$b = new Foo();
+$b->whoami();
+</code></pre>
+<p>то воно виведе:</p>
+<pre><code>Moo
+Foo
+</code></pre>
+<p>І якшо ми захочем зробить об’єкт дочєрнього класа внутрі батьківського, то ми можем спокойно визвать</p>
+<pre><code>$class = get_called_class();
+new $class(...);
+</code></pre>
+<p>Ну і всі запроси до бази даних строяться вже іспользуя поля <code>$__data</code> і <code>$__tableName</code>.</p>
+<p>А тепер трошки поправим файлову структуру: у нас тепер є кілька файлів, які не відносяться конкретно до цього блога, а, так сказать, єсть каркасом, на якому можна наліпити ше шось. Це <code>BaseModel.php</code> і <code>connect.php</code>. Точніше, <code>connect.php</code> - в ньому задаються параметри подключєнія до бази даних конкретно цього блога. Шо я предлагаю - зробити три папки:</p>
+<ul><li><code>core</code>, в якому буде <code>BaseModel.php</code></li>
+<li><code>models</code>, куди положити <code>Posting.php</code> і всі прочі моделі, які наслєдують <code>BaseModel</code></li>
+<li><code>config</code>, куди положить <code>connect.php</code></li>
+</ul><p>Не забудь поправити всі путі у <code>require()</code>!</p>
+<p>Замєть, тепер файл <code>connect.php</code> нам треба тільки в одному місці - в <code>BaseModel.php</code>. Шо тоже кагбе упрощає код.</p>
+<p>Тоість, тепер у нас має бути якась така файлова структура:</p>
+<p><img alt="чотка файлова структура" src="/images/tumblr/php-blog-part2/tumblr_inline_pl2njcFk4W1qh5oee_400.webp"></p>
+<h2>Домашнє завдання</h2>
+<p>Зроби моделі поста і камєнтіка і застав їх работать внутрі <code>index.php</code> і <code>view.php</code>. Замєть, шо в бєзопасності <code>BaseModel</code> єсть дірка. А ще - і це <strong>дуже</strong> важно - подивись шо таке <strong>PDO</strong> і зроби замість всіх <code>mysql_query</code> і прочіх роботу з <strong>PDO</strong>.</p> </div>  </article> </section> </main> <footer> <nav> <div class="prev"> <a href="/page9.html" class="next">&larr; Previous page</a> </div> <div class="current">Page #10 of 11</div> <div class="next"> <a href="/page11.html" class="next">Next page &rarr;</a> </div> </nav> </footer> </body></html>

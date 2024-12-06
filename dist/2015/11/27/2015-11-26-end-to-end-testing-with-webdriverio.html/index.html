@@ -1,0 +1,291 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-bvzihdzo> <head><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.0.3"><!-- Font preloads --><link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin><!-- Canonical URL --><link rel="canonical" href="https://shybovycha.github.io/2015/11/27/2015-11-26-end-to-end-testing-with-webdriverio.html/"><!-- Primary Meta Tags --><title>End-to-end testing with WebdriverIO</title><meta name="title" content="End-to-end testing with WebdriverIO"><meta name="description"><link rel="stylesheet" href="/_astro/index.BvFNhZYw.css">
+<style>footer[data-astro-cid-sz7xmlte]{padding:2em 1em 6em;background:linear-gradient(var(--gray-gradient)) no-repeat;color:rgb(var(--gray));text-align:center}.social-links[data-astro-cid-sz7xmlte]{display:flex;justify-content:center;gap:1em;margin-top:1em}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]{text-decoration:none;color:rgb(var(--gray))}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]:hover{color:rgb(var(--gray-dark))}main[data-astro-cid-bvzihdzo]{width:calc(100% - 2em);max-width:100%;margin:0}.hero-image[data-astro-cid-bvzihdzo]{width:100%}.hero-image[data-astro-cid-bvzihdzo] img[data-astro-cid-bvzihdzo]{display:block;margin:0 auto;border-radius:12px;box-shadow:var(--box-shadow)}.prose[data-astro-cid-bvzihdzo]{width:720px;max-width:calc(100% - 2em);margin:auto;padding:1em;color:rgb(var(--gray-dark))}.title[data-astro-cid-bvzihdzo]{margin-bottom:1em;padding:1em 0;text-align:center;line-height:1}.title[data-astro-cid-bvzihdzo] h1[data-astro-cid-bvzihdzo]{margin:0 0 .5em}.date[data-astro-cid-bvzihdzo]{margin-bottom:.5em;color:rgb(var(--gray))}.last-updated-on[data-astro-cid-bvzihdzo]{font-style:italic}
+[data-astro-image]{width:100%;height:auto;object-fit:var(--fit);object-position:var(--pos);aspect-ratio:var(--w) / var(--h)}[data-astro-image=responsive]{max-width:calc(var(--w) * 1px);max-height:calc(var(--h) * 1px)}[data-astro-image=fixed]{width:calc(var(--w) * 1px);height:calc(var(--h) * 1px)}
+</style></head> <body data-astro-cid-bvzihdzo> <nav class="top"> <div class="links"> <a class="nav-link nav-item" href="/">Home</a> <a class="nav-link nav-item" href="/about.html">About</a> </div> </nav> <main data-astro-cid-bvzihdzo> <article data-astro-cid-bvzihdzo> <div class="hero-image" data-astro-cid-bvzihdzo>  </div> <div class="prose" data-astro-cid-bvzihdzo> <div class="title" data-astro-cid-bvzihdzo> <div class="date" data-astro-cid-bvzihdzo> <time datetime="2015-11-26T16:03:39.000Z"> Nov 27, 2015 </time>  </div> <h1 data-astro-cid-bvzihdzo>End-to-end testing with WebdriverIO</h1> <hr data-astro-cid-bvzihdzo> </div>  <h2 id="small-intro">Small intro</h2>
+<p>Have you ever heard about end-to-end testing? Or maybe about testing automation?
+Those of you who had, may now be imaging Selenium. That’s right, in most of cases
+you will need to run <em>Selenium Server</em> and use <em>Selenium Webdriver</em> in your
+tests. Those come handy to run a standalone browser window, with no caches,
+filled-in fields or cookies and perform some operations in it.</p>
+<p>In this article I will tell you my story of writing E2E tests for Angular webapp.</p>
+<h2 id="a-brief-of-history">A brief of history</h2>
+<p>In my case, we first tried to use <em>Protractor</em> with <em>Chai.js</em>. That time we ended
+up with almost unsupportable bunch of code, succeeding in 100% of runs.</p>
+<p>Next time we eliminated <em>Chai</em> and reworked all our tests to use <em>Protractor</em> only.
+So the code became more clear <em>(I did not like the syntax, but it worked…)</em>,
+but after upgrading libraries <em>(including Protractor)</em>, the ratio of successfull
+test runs decreased to just 40%.</p>
+<p>We worked for two days, trying to fix those tests. And that’s how <em>webdriverio</em>
+came to our project.</p>
+<p>And here’s a short tutorial on how to implement E2E tests with <em>webdriverio</em> in
+a sample project.</p>
+<!--more-->
+<h2 id="the-requirements">The requirements</h2>
+<p>Before we start, we need to initialize an NPM project:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">npm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> init</span></span>
+<span class="line"></span></code></pre>
+<p>We barely want to manage Selenium versions by ourselves. When it comes to
+continuous integration, that is not an option. So we’d better find a way of
+downloading the needed Selenium version automatically. And writing a short
+script is somehow a bad idea - there is an NPM module for that task already:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">npm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --save</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> selenium-standalone</span></span>
+<span class="line"></span></code></pre>
+<p>After installing that module, you may manage and run your Selenium with</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">./node_modules/selenium-standalone/bin/selenium-standalone</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">./node_modules/selenium-standalone/bin/selenium-standalone</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> start</span></span>
+<span class="line"></span></code></pre>
+<p>Now, in all our tests we will be using using <em>Jasmine</em>, since it allows to
+create a beautiful code, which is easy to support (if you need the maximum
+help from your customer - consider using <em>Cucumber</em> and BDD approach - I will
+cover this topic in one of my future posts). So we need to add Jasmine
+dependency to our project:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">npm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --save</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> jasmine</span></span>
+<span class="line"></span></code></pre>
+<p>To initialize bare Jasmine-ready project you may use Jasmine itself:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">./node_modules/jasmine/bin/jasmine.js</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> init</span></span>
+<span class="line"></span></code></pre>
+<p>This will create this directory structure for you:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>.</span></span>
+<span class="line"><span>├── package.json</span></span>
+<span class="line"><span>└── spec</span></span>
+<span class="line"><span>    ├── helpers</span></span>
+<span class="line"><span>    └── support</span></span>
+<span class="line"><span>        ├── config.json</span></span>
+<span class="line"><span>        └── jasmine.json</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>So now you may place your tests in the <code>spec</code> directory, on any level. Just
+remember to name your test files with the <code>spec</code> postfix
+(for ex. <code>spec/feature1_spec.js</code> or <code>tests/spec/Feature1spec.js</code>).
+To change that lowercase <code>spec</code> postfix, specify which files Jasmine should
+look for in the <code>spec/support/jasmine.json</code> file, using the option <code>spec_files</code>.
+For example, you can make it look for both <code>*_spec</code> and <code>*Spec</code> (underscore and
+camel case file naming) postfixes:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="json"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    "spec_dir"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"spec"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    "spec_files"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: [</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "features/**/*[sS]pec.js"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "**/*_spec.js"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "**/*_Spec.js"</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    ]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>The <code>spec_dir</code> option specifies the directory, where the test files are located.
+And the <code>spec_files</code> option is what we are mostly interested in: it tells Jasmine
+the pattern, it should use to check if a file (inside the <code>#{spec_dir}</code> directory)
+is a test file or not. For example, the first value, <code>"features/**/*[sS]pec.js"</code>,
+tells that any file, whose path is <code>spec/features/{any directory nesting depth}/*Spec.js</code>
+as well as any file with a path <code>spec/features/{any directory nesting depth}/*spec.js</code> is a
+file, containing a test definition.</p>
+<p>The last, but not least, we need the <em>webdriverio</em> itself:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">npm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --save</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> webdriverio</span></span>
+<span class="line"></span></code></pre>
+<p>And now we are ready to make some code!</p>
+<h2 id="preparation">Preparation</h2>
+<p>First of all, we need to initialize the Selenium client.
+Generally speaking, it’s a special browser instance, which will be used for
+our tests only and when all the tests are done - it will be closed automatically.
+This browser (or a client) provides a programmable interface, e.g. executes commands
+we ask it to execute. The commands allow, for example, to manipulate the currently opened document
+(just like you used to do with javascript in the developer tools in your browser) -
+find an element, click it, retrieve its computed styles, etc. It also allows to manipulate
+the browser window itself - open a new tab, get and set its properties like width, height, position
+and many others.</p>
+<p>So we really need that client for our tests - that’s the core! And we need that to run all our
+tests (we don’t want to run a new browser instance for each separate test case, right?). So we
+can put all the code, initializing Selenium client in a helper script and make Jasmine run it
+before all (again, <strong>not each, but all</strong> - I’ll explain why this is essential in a moment) tests.
+Let’s define this in the <code>spec/helpers/settings.js</code> file:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> webdriverio </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> require</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'webdriverio'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> timeout </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 10</span><span style="color:#D73A49;--shiki-dark:#F97583"> *</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1000</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> config </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  "desiredCapabilities"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "browserName"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"chrome"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "host"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"localhost"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "port"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">9876</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  },</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  "baseUrl"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"http://localhost"</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">};</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">jasmine.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">DEFAULT_TIMEOUT_INTERVAL</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 2</span><span style="color:#D73A49;--shiki-dark:#F97583"> *</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> timeout;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">beforeAll</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#E36209;--shiki-dark:#FFAB70">done</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    this</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.client </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> webdriverio</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">remote</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(config)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">init</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">url</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'/'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">call</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(done);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">});</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">afterAll</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#E36209;--shiki-dark:#FFAB70">done</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    this</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.client.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">end</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(done);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">});</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">exports</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.webdriverio </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> webdriverio;</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">exports</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.config </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> config;</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">exports</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.timeout </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> timeout;</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">exports</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.baseUrl </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> config.baseUrl;</span></span>
+<span class="line"></span></code></pre>
+<p>This code does three simple, but really important things:</p>
+<ol>
+<li>it sets up the <em>webdriverio</em> (which is an enhanced wrapper for Selenium client)
+<strong>for all the tests</strong>, opens browser <em>(configured by the <code>browserName</code> option)</em> window
+and navigates to the page, defined in the <code>baseUrl</code> option</li>
+<li>makes Jasmine wait a bit longer for each assertion in the tests, before marking it as
+<strong>failed on timeout</strong> <em>(when Jasmine has timed out, waiting for an assertion)</em></li>
+<li>makes <em>webdriverio</em> client instance available in any test through the <code>this.client</code> member
+(where <code>this</code> means the test instance)</li>
+</ol>
+<p>See, this code is run once, previous to <strong>all</strong> the tests, found by Jasmine. This is defined
+by the <code>beforeAll()</code> call. We could use the <code>beforeEach()</code> function instead, but since opening
+a new browser (Selenium client) instance is a time-consuming task, it’s better to do it once
+and then just operate on an existing instance, opening new tabs when necessary. Thus is why
+we are using <code>beforeAll()</code> for all the tests <em>in the scope</em>.</p>
+<p>Here I’ve mentioned another essential thing, <em>the test scope</em>. Test scope is the current set of tests.
+It could be defined by the <code>describe("description", function () { /* test code */ })</code> function call.
+But since we have no <code>describe()</code> calls before the <code>beforeAll</code> and <code>afterAll</code> calls, Jasmine
+assumes we want to use those functions for all the known tests. But if you use the <code>beforeAll</code> inside
+the <code>describe()</code> block, then this function (<code>beforeAll()</code>) will be run before all the tests,
+<em>defined inside that <code>describe()</code> block</em>.</p>
+<h2 id="first-scenario">First scenario</h2>
+<p>Assume our application is a simple webshop - it has three pages: <code>/#/products</code>, <code>/#/billing-details</code>
+and <code>/#/order-summary</code>. Rather simple webshop:</p>
+<img src="/images/e2e-testing-with-webdriverio/webshop1.webp" loading="lazy" alt="">
+<img src="/images/e2e-testing-with-webdriverio/webshop2.webp" loading="lazy" alt="">
+<img src="/images/e2e-testing-with-webdriverio/webshop3.webp" loading="lazy" alt="">
+<p>And here is our first scenario: user selects the iPhone, clicks <em>“Buy”</em>, fills in
+his billing details and waits for his brand-new iPhone to come.</p>
+<p>In terms of BDD it could be described in a scenario like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="gherkin"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">Feature</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> Placing an order</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    Scenario</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> Ordering a single product</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        Given </span><span style="color:#24292E;--shiki-dark:#E1E4E8">a webshop page</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            And </span><span style="color:#24292E;--shiki-dark:#E1E4E8">a guest user</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        When </span><span style="color:#24292E;--shiki-dark:#E1E4E8">the user selects the </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"iPhone"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> product</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            And </span><span style="color:#24292E;--shiki-dark:#E1E4E8">clicks the </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Buy"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> button</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            And </span><span style="color:#24292E;--shiki-dark:#E1E4E8">fills out the billing details correctly</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">            And </span><span style="color:#24292E;--shiki-dark:#E1E4E8">clicks the </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Submit"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> button</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        Then </span><span style="color:#24292E;--shiki-dark:#E1E4E8">the </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Billing successfull"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> page is shown</span></span>
+<span class="line"></span></code></pre>
+<p>This scenario is great for the customer. And it’s awesome if the customer
+is able to provide developer(-s) with a number of such scenarios.
+But our test will be more kind of “developer-friendly”.</p>
+<p>Let’s create a <code>specs/ordering_a_single_product_spec.js</code> file:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> settings </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> require</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'../helpers/settings.js'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">describe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'buying iPhone'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> () {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    describe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'when user selects iPhone'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> () {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        it</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'he gets redirected to the billing-details page'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#E36209;--shiki-dark:#FFAB70">done</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">            this</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.client</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">waitForExist</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'.title*=iPhone 6 White'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, settings.timeout)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">element</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'.title*=iPhone 6 White'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">element</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'..'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">click</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'button*=Buy'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">waitForExist</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'button*=Check out'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, settings.timeout)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">url</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#E36209;--shiki-dark:#FFAB70">err</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">res</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">                    expect</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(res.value).</span><span style="color:#6F42C1;--shiki-dark:#B392F0">toMatch</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/</span><span style="color:#22863A;font-weight:bold;--shiki-dark:#85E89D;--shiki-dark-font-weight:bold">\/</span><span style="color:#032F62;--shiki-dark:#DBEDFF">#</span><span style="color:#22863A;font-weight:bold;--shiki-dark:#85E89D;--shiki-dark-font-weight:bold">\/</span><span style="color:#032F62;--shiki-dark:#DBEDFF">billing-details</span><span style="color:#D73A49;--shiki-dark:#F97583">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                })</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">call</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(done);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        });</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    });</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">});</span></span>
+<span class="line"></span></code></pre>
+<p>Let’s run our test: first, start your webserver to handle the webshop; then run a
+Selenium instance and at last, start <code>./node_modules/jasmine/bin/jasmine.js</code>.</p>
+<p>In this test case we do the following things:</p>
+<ol>
+<li>wait untill all the products are loaded (<code>waitForExist('.title*=iPhone 6 White', settings.timeout)</code>)</li>
+<li>select parent element for <em>iPhone 6 White</em> product (<code>element('.title*=iPhone 6 White').element('..')</code>)</li>
+<li>click on the <em>Buy</em> button within that product’ container (<code>click('button*=Buy')</code>)</li>
+<li>wait until the <em>Create account</em> button is shown, signalizing we have been redirected to the next page</li>
+<li>get page’ URL and make an assertion to check if we have been redirected to the correct page</li>
+</ol>
+<p>When we have done everything we need in our test case, we call the <code>done</code> callback to notify Jasmine
+we have finished our test. This is how asynchronous tests are made in Jasmine - you define the test
+with <code>it(...)</code>, providing it with a callback. And when you finish all the asynchronous things in your
+test, you just call that callback so Jasmine could switch to the next test.</p>
+<p>What’s interesting, Jasmine runs test in the order they are defined. So you may assume that everything
+you did in previous test cases defines your current state. For example, after our test case, namely
+<em>‘when user selects iPhone he gets redirected to the billing-details page’</em>, we stay on the page
+we finished shortly.</p>
+<p>Given that, we will not add additional checks or <code>waitForExist()</code>s to get to the next steps.</p>
+<h2 id="dealing-with-forms">Dealing with forms</h2>
+<p>The next step is filling out billing details:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">describe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'when user provides his billing details'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> () {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    it</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'he gets redirected to the order-summary page'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#E36209;--shiki-dark:#FFAB70">done</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> billing </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            firstName: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'Test'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            lastName: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'User'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            country: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'United Kingdom'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            city: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'London'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            address: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'221B, Baker Street'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            zipCode: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'12345'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            phone: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'9998882245'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        };</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">        this</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.client</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">setValue</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'[name="firstName"]'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, billing.firstName)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">setValue</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'[name="lastName"]'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, billing.lastName)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">setValue</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'[name="address"]'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, billing.address)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">setValue</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'[name="country"]'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, billing.country)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">setValue</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'[name="city"]'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, billing.city)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">setValue</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'[name="zipCode"]'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, billing.zipCode)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">setValue</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'[name="phone"]'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, billing.phone)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">click</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'button*=Check out'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">waitForExist</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'h2*=Order summary'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, settings.timeout)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">url</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#E36209;--shiki-dark:#FFAB70">err</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">url</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">                expect</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(url.value).</span><span style="color:#6F42C1;--shiki-dark:#B392F0">toMatch</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/</span><span style="color:#22863A;font-weight:bold;--shiki-dark:#85E89D;--shiki-dark-font-weight:bold">\/</span><span style="color:#032F62;--shiki-dark:#DBEDFF">#</span><span style="color:#22863A;font-weight:bold;--shiki-dark:#85E89D;--shiki-dark-font-weight:bold">\/</span><span style="color:#032F62;--shiki-dark:#DBEDFF">order-summary</span><span style="color:#D73A49;--shiki-dark:#F97583">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            })</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">call</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(done);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    });</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">});</span></span>
+<span class="line"></span></code></pre>
+<p>The new thing here is how we fill out input fields with <em>webdriverio</em> - using the <code>setValue()</code> method.</p>
+<h2 id="advanced-element-lookup">Advanced element lookup</h2>
+<p>The last page we need to check is <code>order-summary</code>. Here we want to check if the order total
+is exactly the same, as our iPhone’ price. But this is where things got tricky: we have two
+different rows with the same value. How do we check if we are looking at the correct one?</p>
+<p>We will use <em>XPath</em> to get to the correct element:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">describe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'order summary page'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> () {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    it</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'contains correct order total'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#E36209;--shiki-dark:#FFAB70">done</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">        this</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.client</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">isVisible</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'//div[contains(@class, "row") and contains(., "iPhone 6 White") and contains(., "$450.00") and ancestor-or-self::div[@ng-repeat]]'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">then</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#E36209;--shiki-dark:#FFAB70">visibility</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">                expect</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(visibility).</span><span style="color:#6F42C1;--shiki-dark:#B392F0">toBe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            })</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">isVisible</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'//div[contains(@class, "row") and descendant::div[contains(., "Total:")] and contains(., "$300.00") and not(contains(@class, "ng-scope"))]'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">then</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#E36209;--shiki-dark:#FFAB70">visibility</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">                expect</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(visibility).</span><span style="color:#6F42C1;--shiki-dark:#B392F0">toBe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            })</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">call</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(done);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    });</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">});</span></span>
+<span class="line"></span></code></pre>
+<p>Seems complicated, doesn’t it?.. But it’s not that hard. We used XPath instead of usual selectors
+to find the element needed. And here’s how one could read it:</p>
+<p>say, we have this XPath: <code>//div[contains(@class, "row") and contains(., "iPhone 6 White") and contains(., "$450.00") and ancestor-or-self::div[@ng-repeat]]</code>.</p>
+<p>This could be split into three parts:</p>
+<ol>
+<li>path to the element, <code>//</code> - it tells browser’s engine to look for this element everywhere,
+independently on its parent</li>
+<li>element tag, <code>div</code>; it could be <em>“any”</em> selector, <code>*</code>, but we precised our search</li>
+<li>element attributes’ matchers, or everything in square brackets</li>
+</ol>
+<p>Let’s take a closer look on those - they are really interesting ones:</p>
+<ol>
+<li>first we have <code>contains(@class, "row")</code>; it tells engine to look for an element, whose <code>class</code>
+attribute contains <em>(or “partially matches” if you wish)</em> <code>row</code> string</li>
+<li>now we have <code>contains(., "iPhone 6 White")</code>; it looks for text content inside tag; including its
+children</li>
+<li>speaking of children, we’ve also got a parent matcher, <code>ancestor-or-self::div[@ng-repeat]</code>, which
+looks for <code>&#x3C;div></code> element with <code>ng-repeat</code> attribute in the current element or any of its parents</li>
+<li>you may noticed a concatenation of all those matchers with <code>and</code> keyword</li>
+</ol>
+<h2 id="wrapping-up">Wrapping up</h2>
+<p>So that was a really short example on how to use Jasmine, webdriverio and how to create end-to-end tests.
+As promised, I will cover the BDD testing and Cucumber in some of my future posts.</p>
+<h2 id="references">References</h2>
+<p>Try reading more on XPath on <a href="http://www.w3schools.com/xsl/xpath_intro.asp">w3schools</a>.</p>
+<p>Webdriverio API you may find <a href="http://webdriver.io/api.html">on its docs page</a>.</p>
+<p>Webshop application, used in this article is <a href="https://github.com/shybovycha/e2e-webshop">available on GitHub</a>.</p>  </div> </article> </main> <footer data-astro-cid-sz7xmlte>
+&copy; 2024 Your name here. All rights reserved.
+<div class="social-links" data-astro-cid-sz7xmlte> <a href="https://m.webtoo.ls/@astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Mastodon</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/mastodon" data-astro-cid-sz7xmlte><path fill="currentColor" d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://twitter.com/astrodotbuild" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Twitter</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/twitter" data-astro-cid-sz7xmlte><path fill="currentColor" d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://github.com/withastro/astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Go to Astro's GitHub repo</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/github" data-astro-cid-sz7xmlte><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" data-astro-cid-sz7xmlte></path></svg> </a> </div> </footer>  </body></html>

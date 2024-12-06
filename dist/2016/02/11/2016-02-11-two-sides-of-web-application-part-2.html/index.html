@@ -1,0 +1,638 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-bvzihdzo> <head><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.0.3"><!-- Font preloads --><link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin><!-- Canonical URL --><link rel="canonical" href="https://shybovycha.github.io/2016/02/11/2016-02-11-two-sides-of-web-application-part-2.html/"><!-- Primary Meta Tags --><title>Two sides of web application. Part 2: sketching</title><meta name="title" content="Two sides of web application. Part 2: sketching"><meta name="description"><link rel="stylesheet" href="/_astro/index.BvFNhZYw.css">
+<style>footer[data-astro-cid-sz7xmlte]{padding:2em 1em 6em;background:linear-gradient(var(--gray-gradient)) no-repeat;color:rgb(var(--gray));text-align:center}.social-links[data-astro-cid-sz7xmlte]{display:flex;justify-content:center;gap:1em;margin-top:1em}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]{text-decoration:none;color:rgb(var(--gray))}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]:hover{color:rgb(var(--gray-dark))}main[data-astro-cid-bvzihdzo]{width:calc(100% - 2em);max-width:100%;margin:0}.hero-image[data-astro-cid-bvzihdzo]{width:100%}.hero-image[data-astro-cid-bvzihdzo] img[data-astro-cid-bvzihdzo]{display:block;margin:0 auto;border-radius:12px;box-shadow:var(--box-shadow)}.prose[data-astro-cid-bvzihdzo]{width:720px;max-width:calc(100% - 2em);margin:auto;padding:1em;color:rgb(var(--gray-dark))}.title[data-astro-cid-bvzihdzo]{margin-bottom:1em;padding:1em 0;text-align:center;line-height:1}.title[data-astro-cid-bvzihdzo] h1[data-astro-cid-bvzihdzo]{margin:0 0 .5em}.date[data-astro-cid-bvzihdzo]{margin-bottom:.5em;color:rgb(var(--gray))}.last-updated-on[data-astro-cid-bvzihdzo]{font-style:italic}
+[data-astro-image]{width:100%;height:auto;object-fit:var(--fit);object-position:var(--pos);aspect-ratio:var(--w) / var(--h)}[data-astro-image=responsive]{max-width:calc(var(--w) * 1px);max-height:calc(var(--h) * 1px)}[data-astro-image=fixed]{width:calc(var(--w) * 1px);height:calc(var(--h) * 1px)}
+</style></head> <body data-astro-cid-bvzihdzo> <nav class="top"> <div class="links"> <a class="nav-link nav-item" href="/">Home</a> <a class="nav-link nav-item" href="/about.html">About</a> </div> </nav> <main data-astro-cid-bvzihdzo> <article data-astro-cid-bvzihdzo> <div class="hero-image" data-astro-cid-bvzihdzo>  </div> <div class="prose" data-astro-cid-bvzihdzo> <div class="title" data-astro-cid-bvzihdzo> <div class="date" data-astro-cid-bvzihdzo> <time datetime="2016-02-11T12:47:39.000Z"> Feb 11, 2016 </time>  </div> <h1 data-astro-cid-bvzihdzo>Two sides of web application. Part 2: sketching</h1> <hr data-astro-cid-bvzihdzo> </div>  <div class="row" style="justify-content: space-between">
+    <div class="col-md-6 col-xs-12">
+        <div class="card">
+            <div class="card-header">
+                Article series
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <a href="/2015/09/20/two-sides-of-web-application-part-1.html">
+                        Part 1: The Tools
+                    </a>
+                </li>
+                <li class="list-group-item">
+                    <a href="/2016/02/11/two-sides-of-web-application-part-2.html">
+                        Part 2: Sketching
+                    </a>
+                </li>
+                <li class="list-group-item">
+                    <a href="/2016/02/11/two-sides-of-web-application-part-3.html">
+                        Part 3: Communication Layer
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-6 col-xs-12 text-xs-center text-md-right">
+        <img src="/images/two-sides-of-web-application/Gyroscopic-Navigational-Footwear-compressed.webp" class="img-responsive" style="max-height: 150px" alt="Funny image">
+    </div>
+</div>
+<h2 id="general-architecture">General architecture</h2>
+<p>The first thing we need to think of is how we’ll be gathering the information about users.
+It’s quite easy - we just need to get a request from a visitor. Of any kind -
+it may be a request to get an image, a file, a stylesheet or a script.</p>
+<p>Then we’ll just parse headers from that request and save the extracted data in the
+database. The only problem here is: <em>how to get unique key from each request?</em>. We may use
+visitor’s IP address. It’s the easiest way.</p>
+<!--more-->
+<p>Now, let’s decide what pages will our application have and what will they look like:</p>
+<div class="row">
+    <div class="col-xs-12 col-md-3">
+        <a href="/images/two-sides-of-web-application/part1/screen1.webp">
+            <img src="/images/two-sides-of-web-application/part1/screen1.webp" loading="lazy" alt="page 1" class="image-responsive">
+        </a>
+    </div>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>&#x3C;div class="col-xs-12 col-md-3"></span></span>
+<span class="line"><span>    &#x3C;a href="/images/two-sides-of-web-application/part1/screen2.webp"></span></span>
+<span class="line"><span>        &#x3C;img src="/images/two-sides-of-web-application/part1/screen2.webp" loading="lazy" alt="page 2" class="image-responsive"></span></span>
+<span class="line"><span>    &#x3C;/a></span></span>
+<span class="line"><span>&#x3C;/div></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>&#x3C;div class="col-xs-12 col-md-3"></span></span>
+<span class="line"><span>    &#x3C;a href="/images/two-sides-of-web-application/part1/screen3.webp"></span></span>
+<span class="line"><span>        &#x3C;img src="/images/two-sides-of-web-application/part1/screen3.webp" loading="lazy" alt="page 3" class="image-responsive"></span></span>
+<span class="line"><span>    &#x3C;/a></span></span>
+<span class="line"><span>&#x3C;/div></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>&#x3C;div class="col-xs-12 col-md-3"></span></span>
+<span class="line"><span>    &#x3C;a href="/images/two-sides-of-web-application/part1/screen4.webp"></span></span>
+<span class="line"><span>        &#x3C;img src="/images/two-sides-of-web-application/part1/screen4.webp" loading="lazy" alt="page 4" class="image-responsive"></span></span>
+<span class="line"><span>    &#x3C;/a></span></span>
+<span class="line"><span>&#x3C;/div></span></span>
+<span class="line"><span></span></span></code></pre>
+</div>
+<h2 id="templates">Templates</h2>
+<p>Let’s create a set of pages, we described above. They will be used later to display real data, but for now
+we’ll stub the real data with constants.</p>
+<p>To make our prototyping smooth and fast, we’ll use <em>Twitter Bootstrap</em>. We’ve installed it already with
+<em>Bower</em>, so we’ll be just using it. We need to implement these pages only:</p>
+<ul>
+<li>landing page</li>
+<li>sign up / sign in page</li>
+<li>account settings page</li>
+<li>apps list page</li>
+<li>application page</li>
+<li>application create / edit page</li>
+</ul>
+<p>Six pages, huh? Let’s do it quick:</p>
+<p><em><code>src/views/layouts/default.jade</code>:</em></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="pug"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">doctype html</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">html</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">lang</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"en"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">    head</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        block</span><span style="color:#E36209;--shiki-dark:#FFAB70"> head</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            title</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ourStats</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            link</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">rel</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"stylesheet"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> href</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"bootstrap/dist/css/bootstrap.css"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            link</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">rel</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"stylesheet"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> href</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"bootstrap/dist/css/bootstrap-theme.css"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            script</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">src</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"bootstrap/dist/js/bootstrap.js"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">    body</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        block</span><span style="color:#E36209;--shiki-dark:#FFAB70"> body</span></span>
+<span class="line"></span></code></pre>
+<p><em><code>src/views/index.jade</code>:</em></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="pug"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">extends</span><span style="color:#E36209;--shiki-dark:#FFAB70"> layouts/default.jade</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">block</span><span style="color:#E36209;--shiki-dark:#FFAB70"> content</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    .jumbotron</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">        h1</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.display-3</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Welcome to ourStats!</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">        p</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.lead</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> This is a simple stats application</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">        hr</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.m-y-md</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">        p</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.lead</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            .row</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">                .col-xs-12.text-center</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    a</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.btn.btn-primary.btn-lg</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">href</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"#"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> role</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"button"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Sign in</span></span>
+<span class="line"></span></code></pre>
+<p><em><code>src/views/new-session.jade</code>:</em></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="pug"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">extends</span><span style="color:#E36209;--shiki-dark:#FFAB70"> layouts/default.jade</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">block</span><span style="color:#E36209;--shiki-dark:#FFAB70"> content</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    .row</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        .col-xs-12.col-md-4.col-md-offset-1.well</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            h3</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Sign up</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            form</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                fieldset</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-group</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    input</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-control</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"text"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> placeholder</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Your name"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                fieldset</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-group</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    input</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-control</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"email"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> placeholder</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Email"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                fieldset</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-group</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    input</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-control</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"password"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> placeholder</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Password"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                fieldset</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-group</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    input</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-control</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"password"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> placeholder</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Password confirmation"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                fieldset</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-group.text-center</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    button</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.btn.btn-primary</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"submit"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Sign up</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        .col-md-2</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        .col-xs-12.col-md-4.well</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            h3</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Sign in</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            form</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                fieldset</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-group</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    input</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-control</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"email"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> placeholder</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Email"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                fieldset</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-group</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    input</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-control</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"password"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> placeholder</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Password"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                fieldset</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-group.text-center</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    button</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.btn.btn-success</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"submit"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Sign in</span></span>
+<span class="line"></span></code></pre>
+<p><em><code>src/views/edit_account.jade</code>:</em></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="pug"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">extends</span><span style="color:#E36209;--shiki-dark:#FFAB70"> layouts/default.jade</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">block</span><span style="color:#E36209;--shiki-dark:#FFAB70"> content</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    .row.m-t-md</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        .col-xs-12.col-md-4</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            h3</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Account settings</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            form</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                fieldset</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-group</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    input</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-control</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"text"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> placeholder</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Your name"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                fieldset</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-group</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    input</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-control</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"password"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> placeholder</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Password"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                fieldset</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-group</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    input</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-control</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"password"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> placeholder</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Password confirmation"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                fieldset</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-group.text-center</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    button</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.btn.btn-success</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"submit"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Save</span></span>
+<span class="line"></span></code></pre>
+<p><em><code>src/views/application_list.jade</code>:</em></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="pug"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">extends</span><span style="color:#E36209;--shiki-dark:#FFAB70"> layouts/default.jade</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">block</span><span style="color:#E36209;--shiki-dark:#FFAB70"> content</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    .row.m-t-md</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        .col-xs-12.col-md-4</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            h3</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Your applications</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            ul</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                li</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    a</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">href</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"/application_details.html"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Test application #1</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                li</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    a</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">href</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"/application_details.html"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Test application #2</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                li</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    a</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">href</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"/application_details.html"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Test application #3</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                li</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    a</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">href</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"/application_details.html"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Test application #4</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                li</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    a</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">href</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"/application_details.html"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Test application #5</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        .col-md-offset-2</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        .col-xs-12.col-md-6</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            h3</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Application stats</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            h4</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> New users:</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            .progress</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                progress</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.progress-bar.progress-bar-success</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">role</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"progress"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> style</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"width:30%"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"></span></code></pre>
+<p><em><code>src/views/application_details.jade</code>:</em></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="pug"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">extends</span><span style="color:#E36209;--shiki-dark:#FFAB70"> layouts/default.jade</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">block</span><span style="color:#E36209;--shiki-dark:#FFAB70"> content</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    .row</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        .col-xs-12.col-md-6.col-md-offset-6</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            form</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-inline</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">                .form-group</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    input</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-control</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"text"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> placeholder</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"From date"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">                .form-group</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    input</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-control</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"text"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> placeholder</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"To date"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">                .form-group</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">                    .btn.btn-primary</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Update</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    .row</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        .col-xs-12</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            .well</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                | You can track your application visitors with this URL:</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                br</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                | http://localhost:3000/track/APP1TOKN</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    .row.m-t-md</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        .col-xs-12</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            h3</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Visitors</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            .well</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                | Chart goes here</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        .col-xs-12.col-md-6</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            h3</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Visitors by country</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            table</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.table.table-bordered</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                thead</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    tr</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                        th</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Country</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                        th</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Visitors</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                tbody</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    tr</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                        td</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> USA</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                        td</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 100</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    tr</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                        td</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Germany</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                        td</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 50</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    tr</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                        td</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> North Korea</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                        td</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 42</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    tr</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                        td</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Greenland</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                        td</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 39</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    tr</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                        td</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Spain</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                        td</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 2</span></span>
+<span class="line"></span></code></pre>
+<p><em><code>src/views/edit_application.jade</code>:</em></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="pug"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">extends</span><span style="color:#E36209;--shiki-dark:#FFAB70"> layouts/default.jade</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">block</span><span style="color:#E36209;--shiki-dark:#FFAB70"> content</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    .row.m-t-md</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        .col-xs-12.col-md-6</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            h3</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Application settings</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            form</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                fieldset</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-group</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    input</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-control</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"text"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> placeholder</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Name"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                fieldset</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-group.text-center</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">                    .btn.btn-danger</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Reset stats</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                fieldset</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-group.text-center</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    button</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.btn.btn-success</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"submit"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Save</span></span>
+<span class="line"></span></code></pre>
+<p><em><code>src/views/new_application.jade</code>:</em></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="pug"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">extends</span><span style="color:#E36209;--shiki-dark:#FFAB70"> layouts/default.jade</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">block</span><span style="color:#E36209;--shiki-dark:#FFAB70"> content</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    .row.m-t-md</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        .col-xs-12.col-md-6</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            h3</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> New application</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">            form</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                fieldset</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-group</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    input</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-control</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"text"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> placeholder</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Name"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                fieldset</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.form-group.text-center</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">                    button</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.btn.btn-success</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">type</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"submit"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Create</span></span>
+<span class="line"></span></code></pre>
+<p>And to make Bower-managed libraries available in our views, we need to add one more path to
+the server configuration:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">gulp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">src</span><span style="color:#24292E;--shiki-dark:#E1E4E8">([</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'public/'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'bower_components/'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">])</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pipe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">server</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        port: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">3000</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        livereload: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        directoryListing: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">false</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        open: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }));</span></span>
+<span class="line"></span></code></pre>
+<p>As you can see, we used Jade’s block extending and split our templates into one layout and many partials, so
+our file tree is clean and changing any of the pages will not be a hard task.</p>
+<p><a href="https://github.com/shybovycha/two-sides-of-web-application/tree/628f216b8e7d904e040035b31c3d0c546d8f1e5e" class="btn btn-info">Full code of these steps</a></p>
+<h2 id="architecture-details">Architecture details</h2>
+<p>In our frontend application we’ll use something called <em>MVVM</em>. That is a design pattern, kindly provided
+by Angular. So our <em>views</em> will be displaying data and transferring it to controllers <em>(or ViewModels)</em>, and
+all the logic, handling that data will be defined in <em>controllers</em> and <em>services</em>, representing <em>Models</em>.
+Actually, our models will be handled on a server-side, and services will only provide an interface to them.
+But that is totally another story and will be described later.</p>
+<p>For now let’s integrate Angular in our application. And we’ll start, deciding how we’ll split our
+application on the Angular layer. Pages we described above are used for these actions:</p>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Action</th>
+            <th>Resource <em>(model)</em></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>sign in</td>
+            <td rowspan="2">Session</td>
+        </tr>
+        <tr>
+            <td>sign out</td>
+        </tr>
+        <tr>
+            <td>sign up</td>
+            <td rowspan="3">User</td>
+        </tr>
+        <tr>
+            <td>edit profile</td>
+        </tr>
+        <tr>
+            <td>update profile</td>
+        </tr>
+        <tr>
+            <td>add application</td>
+            <td rowspan="5">Application</td>
+        </tr>
+        <tr>
+            <td>edit application</td>
+        </tr>
+        <tr>
+            <td>update application</td>
+        </tr>
+        <tr>
+            <td>remove application</td>
+        </tr>
+        <tr>
+            <td>show application</td>
+        </tr>
+        <tr>
+            <td>track visitor</td>
+            <td>Visitor</td>
+        </tr>
+    </tbody>
+</table>
+<p>And so we can define corresponding Angular controllers:</p>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Url</th>
+            <th>Controller</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>/</td>
+            <td>LandingPage</td>
+        </tr>
+        <tr>
+            <td>/new-session</td>
+            <td>Session</td>
+        </tr>
+        <tr>
+            <td>/applications</td>
+            <td>ListApplications</td>
+        </tr>
+        <tr>
+            <td>/applications/new</td>
+            <td>NewApplication</td>
+        </tr>
+        <tr>
+            <td>/applications/:id</td>
+            <td>ShowApplication</td>
+        </tr>
+        <tr>
+            <td>/applications/:id/edit</td>
+            <td>EditApplication</td>
+        </tr>
+        <tr>
+            <td>/edit-account</td>
+            <td>EditAccount</td>
+        </tr>
+    </tbody>
+</table>
+<h2 id="angular">Angular</h2>
+<p><em>Angular.js</em> is a framework by Google for making <strong>SPA</strong>s (<em>Single-Page Application</em>).
+SPA is a great architecture, where you have a thin backend server, providing an API
+to your slim frontend application. And the most interesting part here, is that you have
+all your application’ pages in a one place, loaded once. And they are switched by a router
+in a user’s web-browser. So all the communication with server is stripped to data
+manipulation requests (<em>creation, updating and reading data from server</em>) and first-time
+request, sending the HTML, CSS and JavaScripts to user’s browser. And then, all the
+interactions are performed in a browser. At maximum, frontend application can request
+a partial or some assets (<em>like images</em>) from a web-server.</p>
+<p>Basically, here’s how SPA works:</p>
+<ol>
+<li>user enters a website</li>
+<li>server sends application’ code (implemented in JavaScript) and HTML to user</li>
+<li>user, say, clicks on a link to change the page</li>
+<li>if application needs partial, it requests server for a HTML partial</li>
+<li>application renders a retrieved (or cached) partial in a browser</li>
+</ol>
+<p>Let’s start and you will see how easy it is!</p>
+<h2 id="kickstarting">Kickstarting</h2>
+<p>We’ll start, adding Angular to our <code>bower.json</code> dependencies:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">bower</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --save</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> angular</span></span>
+<span class="line"></span></code></pre>
+<p>Now when we have Angular inside the <code>bower_components</code> directory, let’s add its references to
+our layout:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="pug"><code><span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">head</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">    script</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">src</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"angular/angular.js"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"></span></code></pre>
+<p>Now, the only two things we need to start using Angular right away are:</p>
+<ol>
+<li>Angular application, defined in the JavaScript and referenced in the <code>&#x3C;html></code>
+tag with <code>ng-app</code> <strong>directive</strong></li>
+<li>Angular controller, which will contain <strong>scope</strong> with variables and functions for
+the page’ portion</li>
+</ol>
+<p>Yeah, we definitely need some clarifications about those two new words.</p>
+<h2 id="theory-bits">Theory bits</h2>
+<p>Angular defines a few kind of bricks, you may use to build an entire application:</p>
+<ol>
+<li><strong>templates</strong> - dynamically changed HTML files</li>
+<li><strong>two-way data binding</strong>, used mostly within <strong>interpolations</strong> - a mechanism
+for sharing dynamically changed <em>(by either user of javascript)</em> data between
+views and code</li>
+<li><strong>controllers</strong>, holding <strong>scope</strong> - are JavaScript objects, containing variables and
+functions to be used in templates <em>(functions and variables are put inside a scope, which
+is an argument to corresponding controller; I’ll describe it later)</em></li>
+<li><strong>factories</strong> (or <strong>services</strong>) - helper objects, containing logic which is not
+<em>directly</em> related to views <em>(displaying and retrieving data)</em></li>
+<li><strong>directive</strong> - is a place, where HTML-related code is placed</li>
+</ol>
+<p>On the other hand, in MVVM architecture we have three layers:</p>
+<ol>
+<li><strong>Model</strong> - layer, performing manipulations on data; kind of <em>database layer</em></li>
+<li><strong>View</strong> - user interface layer</li>
+<li><strong>ViewModel</strong> - stores data to be shown on UI or which was retrieved from UI</li>
+</ol>
+<p>Accordingly to this scheme, in Angular we have the next logic structure:</p>
+<ol>
+<li><strong>Model</strong> - <strong>Services</strong></li>
+<li><strong>Views</strong> - <strong>Templates</strong>, <strong>Directives</strong></li>
+<li><strong>ViewModel</strong> - <strong>Controllers</strong></li>
+</ol>
+<p>Here I did not mention <em>two-way data binding</em> and <em>scopes</em>, because first one is a part of <em>templates</em> and the second one is a part of <em>controllers</em>. And they may not be separated one from another.</p>
+<h2 id="kickstarting-for-real">Kickstarting. For real</h2>
+<p>Let’s add some Angular logic into our project. We’ll split our app into all those
+controllers and services very soon. But first, we need our application in Angular to be
+registered. Create a file <code>config.js</code> inside the <code>src/javascripts/</code> directory
+with the following content:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ourStatsApp </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> angular.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">module</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'ourStatsApp'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [  ]);</span></span>
+<span class="line"></span></code></pre>
+<p>And point the whole layout to use that application with the <code>ng-app</code> directive on <code>&#x3C;html></code> tag:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">doctype html</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">html</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(lang</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"en"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ng</span><span style="color:#D73A49;--shiki-dark:#F97583">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8">app</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"ourStatsApp"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    head</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        block head</span></span>
+<span class="line"></span></code></pre>
+<p>Now when we have our app accessible by all our pages, let’s create our first controller,
+which will handle exactly one page, the landing page. To expose our controllers,
+we need to make a module, consisting of controllers and add it as a dependency
+to our application. If you take a look at the application definition, it is also
+a module. The first parameter to <code>angular.module()</code> function is a module name,
+the second one is a list of dependencies.</p>
+<p>Controllers are defined in a same way, but the dependency list for them contains
+module definition as the last element as well. Let’s define a <code>LandingPageCtrl</code> controller
+in a <code>src/javascripts/controllers.js</code> file:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ourStatsControllers </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> angular.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">module</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'ourStatsControllers'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, []);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">ourStatsControllers.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">controller</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'LandingPageCtrl'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [ </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'$scope'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#E36209;--shiki-dark:#FFAB70">$scope</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        $scope.apps </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 142</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">]);</span></span>
+<span class="line"></span></code></pre>
+<p>Here we defined a module <code>ourStatsControllers</code>, which will contain all the controllers
+and a <code>LandingPageCtrl</code> controller, which is a module of the same name, with a single
+dependency - <code>$scope</code> and its implementation. As you can see, the <code>$scope</code> appears
+here twice - first time as a dependency name and second time as an argument
+to controller’ definition function. That’s exactly how <strong>dependency injection</strong> is made
+with Angular. Here we defined a scope variable for our controller too, called <code>apps</code>.
+We’ll use it in just a moment.</p>
+<p>Note the second argument: it’s not required to be a list with dependencies’ names first and
+controller implementation function, taking all those dependencies as arguments last. This
+is done only for the sake of minification. That’s it, if you decide to minify your javascript
+files, you’ll get a lot of errors if you will not specify dependencies’ names as first list
+items, because most of javascript minifiers shorten your variables’ names to just a few
+symbols, while keeping strings all the same. So if you are not minifying your javascript files,
+this code will work perfectly:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">ourStatsControllers.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">controller</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'LandingPageCtrl'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#E36209;--shiki-dark:#FFAB70">$scope</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) { </span><span style="color:#D73A49;--shiki-dark:#F97583">...</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> })</span></span>
+<span class="line"></span></code></pre>
+<p>Instead, when minified, this controller will be transformed into something like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">a.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">controller</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'LandingPageCtrl'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">b</span><span style="color:#24292E;--shiki-dark:#E1E4E8">){</span><span style="color:#D73A49;--shiki-dark:#F97583">...</span><span style="color:#24292E;--shiki-dark:#E1E4E8">})</span></span>
+<span class="line"></span></code></pre>
+<p>And Angular will try to find a controller, factory or a service, named <code>b</code>. And will probably fail.
+But if you use <em>“explicit”</em> dependency injection, like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">ourStatsControllers.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">controller</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'LandingPageCtrl'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [ </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'$scope'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#E36209;--shiki-dark:#FFAB70">$scope</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) { </span><span style="color:#D73A49;--shiki-dark:#F97583">...</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> } ])</span></span>
+<span class="line"></span></code></pre>
+<p>then this code will be minified to something like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">a.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">controller</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'LandingPageCtrl'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,[</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'$scope'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#D73A49;--shiki-dark:#F97583">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">b</span><span style="color:#24292E;--shiki-dark:#E1E4E8">){</span><span style="color:#D73A49;--shiki-dark:#F97583">...</span><span style="color:#24292E;--shiki-dark:#E1E4E8">}])</span></span>
+<span class="line"></span></code></pre>
+<p>And then Angular will try to inject the <code>$scope</code> service and will succeed.
+Just keep this small trick in mind, when developing a real-world Angular applications.</p>
+<p>Now we need to inject our controllers module into our application. So we just add a
+dependency entry inside our application declaration:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ourStatsApp </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> angular.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">module</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'ourStatsApp'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [ </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'ourStatsControllers'</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]);</span></span>
+<span class="line"></span></code></pre>
+<p>As we already defined the <code>ourStatsControllers</code> module, we don’t need to provide
+an implementation for it.</p>
+<p>But to make our controller work properly, we need either to declare it on frontend,
+making it handle static piece of a page, or make our application use different
+controller and view, depending on a route in a browser’s address line.</p>
+<p>The first approach is good when you use Angular for complex widgets on a page. But
+we need something more from our application, so we’ll set up router. It’ll
+parse URL from browser and run the corresponding controller.</p>
+<p>Router we’ll be using is <code>ngRoute</code>. This is a third-party plugin for Angular.
+And in order to use it, we need to add a Bower dependency to our project:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">bower</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --save-dev</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> angular-route</span></span>
+<span class="line"></span></code></pre>
+<p>Now we only need to reference it in our app definition:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ourStatsApp </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> angular.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">module</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'ourStatsApp'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [ </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'ngRoute'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'ourStatsControllers'</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]);</span></span>
+<span class="line"></span></code></pre>
+<p>The next step is configuring our application routes, making application to
+“understand”, which controller and which template it should run. This may
+be done in the same file, as the application definition:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">ourStatsApp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">config</span><span style="color:#24292E;--shiki-dark:#E1E4E8">([ </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'$routeProvider'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    function</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#E36209;--shiki-dark:#FFAB70">$routeProvider</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        $routeProvider.</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            when</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'/home'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                templateUrl: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'partials/landing-page.html'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                controller: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'LandingPageCtrl'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            }).</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            otherwise</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">                redirectTo: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'/home'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            });</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">]);</span></span>
+<span class="line"></span></code></pre>
+<p>This configuration makes our application run <code>LandingPageCtrl</code> when the <code>/home</code> page is
+entered. And if the URL entered is not known, application will redirect user to the
+<code>/home</code> page. All Angular routes are passed as an anchor, so saying <em>the <code>/home</code> page</em>
+we actually mean <code>http://your.host/#/home</code>. This makes browser not send requests
+to the server, requesting non-existent pages.</p>
+<p>Also, note we point our application to use the <code>partials/home.html</code> template.
+But we did not tell the Angular where to render it. To fix that, we’ll
+add a <code>ng-view</code> directive to the <code>.container-fluid</code> element of our <code>&#x3C;body></code> tag,
+right in our layout:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="pug"><code><span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">body</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    block</span><span style="color:#E36209;--shiki-dark:#FFAB70"> body</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        .container-fluid</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">ng-view</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"></span></code></pre>
+<p>Currently, when the project is built with the Gulp’ <code>build</code> task,
+we have a <code>public/home.html</code> page, but it is not a partial - it is a standalone
+page, extending the layout. But what we need is to compile all our Jade templates
+into a <code>public/partials</code> directory, making them available through the
+<code>/partials/partial_name.html</code> URL. And they should not extend the layout, because
+then we’ll end up with an incorrect HTML code.</p>
+<p>To make the magic happen, we only need to change our <code>build</code> task for Gulp
+to build views directly to the <code>public</code> directory. So the <code>src/views/index.jade</code>
+file will be the main HTML page of our application, available through
+<code>/index.html</code> URL. And all the partials would be our Angular controllers’ templates,
+available through <code>/partials/template_name.html</code> URLs.</p>
+<p>Now the views part of Gulp <code>build</code> task should look like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">gulp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">src</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'src/views/**/*.jade'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pipe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">jade</span><span style="color:#24292E;--shiki-dark:#E1E4E8">())</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pipe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(gulp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">dest</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'public/'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"></span></code></pre>
+<p>And let’s just extract the content of <code>index.jade</code> partial as it is now, all the
+content into a separate Angular partial, <code>src/views/partials/home.jade</code>.</p>
+<p>And let’s add only one small change - add only one line there:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="html"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">h1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>Currently running {{ apps }} apps&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">h1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"></span></code></pre>
+<p>Remember, we have the <code>$scope</code> parameter for our <code>LandingPageCtrl</code> controller?
+And that there we set the <code>apps</code> variable? That is it, displaying on our home page.
+All the other parameters, added to the <code>$scope</code> are available on the corresponding
+template, by default. You may display them with some formatting, looping through the list
+with <code>ng-repeat</code> and using them as conditionals with <code>ng-if</code> or <code>ng-show</code>.
+But let’s go step-by-step.</p>
+<p><a class="btn btn-primary btn-lg" href="https://github.com/shybovycha/two-sides-of-web-application/commit/b443618ca13179cc33b7ff2e08d0d6209b323113">Code goes here</a></p>
+<h2 id="populating-our-app-with-stuff">Populating our app with stuff</h2>
+<p>For now, let’s add all the other controllers to our app. Just create empty
+controllers according to the table from <strong>part one</strong>, using the same approach as
+described right above.</p>
+<p>We’ll define each controller in its own file, but all of them will be concatenated
+into one big application javacript file. We’ll use Gulp for this purpose with
+its <code>gulp-concat</code> plugin.</p>
+<p>Let’s install it:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">npm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --save</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> gulp-concat</span></span>
+<span class="line"></span></code></pre>
+<p>Its usage is super-easy: you just redirect the output of our CSS and JS files compiler
+to the <code>concat(filename)</code> function, providing it with a resulting filename. Like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">var</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> concat </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> require</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'gulp-concat'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">gulp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">src</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'src/javascripts/**/*.js'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pipe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">babel</span><span style="color:#24292E;--shiki-dark:#E1E4E8">())</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pipe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">concat</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'all.js'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">))</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pipe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(gulp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">dest</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'public/javascripts'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">gulp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">src</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'src/stylesheets/**/*.scss'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pipe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">sass</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({ style: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'expanded'</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }))</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pipe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">concat</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'all.css'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">))</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pipe</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(gulp.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">dest</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'public/stylesheets'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"></span></code></pre>
+<p>Now, the controllers. First we need to set the routes.
+The router configuration for our application will look just like this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">$routeProvider</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">when</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'/'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        templateUrl: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'landing-page.html'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        controller: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'LandingPageCtrl'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    })</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">when</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'/new-session'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        templateUrl: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'new-session.html'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        controller: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'NewSessionCtrl'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    })</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">when</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'/edit-account'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        templateUrl: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'edit-account.html'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        controller: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'EditAccountCtrl'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    })</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">when</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'/applications/:id'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        templateUrl: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'show-application.html'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        controller: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'ShowApplicationCtrl'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    })</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">when</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'/applications'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        templateUrl: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'list-applications.html'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        controller: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'ListApplicationsCtrl'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    })</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">when</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'/applications/:id/edit'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        templateUrl: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'edit-application.html'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        controller: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'EditApplicationCtrl'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    })</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">when</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'/applications/new'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, {</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        templateUrl: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'new-application.html'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        controller: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'NewApplicationCtrl'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    })</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .</span><span style="color:#6F42C1;--shiki-dark:#B392F0">otherwise</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        redirectTo: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'/'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    });</span></span>
+<span class="line"></span></code></pre>
+<p>And we currently have a lot of pages with broken links. We should fix that,
+providing URLs to our <em>(empty for now)</em> controllers. Like this one:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="pug"><code><span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">a</span><span style="color:#6F42C1;--shiki-dark:#B392F0">.btn.btn-primary.btn-lg</span><span style="color:#005CC5;--shiki-dark:#79B8FF">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">href</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"#/sign-in"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> role</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"button"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Sign in</span></span>
+<span class="line"></span></code></pre>
+<p>Fix those links for all the views by yourself - that is not a complex task.
+All the routes are described both in the app configuration and in a table
+above.</p>
+<h2 id="demo">Demo</h2>
+<p data-height="268" data-theme-id="0" data-slug-hash="obQbvX" data-default-tab="result" data-user="shybovycha" class="codepen">See the Pen <a href="http://codepen.io/shybovycha/pen/obQbvX/">Simple web analytics. Angular injection. v1</a> by Artem Shoobovych (<a href="http://codepen.io/shybovycha">@shybovycha</a>) on <a href="http://codepen.io">CodePen</a>.</p>
+<script async src="/assets.codepen.io/assets/embed/ei.js"></script>  </div> </article> </main> <footer data-astro-cid-sz7xmlte>
+&copy; 2024 Your name here. All rights reserved.
+<div class="social-links" data-astro-cid-sz7xmlte> <a href="https://m.webtoo.ls/@astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Mastodon</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/mastodon" data-astro-cid-sz7xmlte><path fill="currentColor" d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://twitter.com/astrodotbuild" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Twitter</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/twitter" data-astro-cid-sz7xmlte><path fill="currentColor" d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://github.com/withastro/astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Go to Astro's GitHub repo</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/github" data-astro-cid-sz7xmlte><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" data-astro-cid-sz7xmlte></path></svg> </a> </div> </footer>  </body></html>

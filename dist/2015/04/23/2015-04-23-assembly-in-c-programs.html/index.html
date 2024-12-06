@@ -1,0 +1,645 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-bvzihdzo> <head><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.0.3"><!-- Font preloads --><link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin><!-- Canonical URL --><link rel="canonical" href="https://shybovycha.github.io/2015/04/23/2015-04-23-assembly-in-c-programs.html/"><!-- Primary Meta Tags --><title>Assembly in C++ programs</title><meta name="title" content="Assembly in C++ programs"><meta name="description"><link rel="stylesheet" href="/_astro/index.BvFNhZYw.css">
+<style>footer[data-astro-cid-sz7xmlte]{padding:2em 1em 6em;background:linear-gradient(var(--gray-gradient)) no-repeat;color:rgb(var(--gray));text-align:center}.social-links[data-astro-cid-sz7xmlte]{display:flex;justify-content:center;gap:1em;margin-top:1em}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]{text-decoration:none;color:rgb(var(--gray))}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]:hover{color:rgb(var(--gray-dark))}main[data-astro-cid-bvzihdzo]{width:calc(100% - 2em);max-width:100%;margin:0}.hero-image[data-astro-cid-bvzihdzo]{width:100%}.hero-image[data-astro-cid-bvzihdzo] img[data-astro-cid-bvzihdzo]{display:block;margin:0 auto;border-radius:12px;box-shadow:var(--box-shadow)}.prose[data-astro-cid-bvzihdzo]{width:720px;max-width:calc(100% - 2em);margin:auto;padding:1em;color:rgb(var(--gray-dark))}.title[data-astro-cid-bvzihdzo]{margin-bottom:1em;padding:1em 0;text-align:center;line-height:1}.title[data-astro-cid-bvzihdzo] h1[data-astro-cid-bvzihdzo]{margin:0 0 .5em}.date[data-astro-cid-bvzihdzo]{margin-bottom:.5em;color:rgb(var(--gray))}.last-updated-on[data-astro-cid-bvzihdzo]{font-style:italic}
+[data-astro-image]{width:100%;height:auto;object-fit:var(--fit);object-position:var(--pos);aspect-ratio:var(--w) / var(--h)}[data-astro-image=responsive]{max-width:calc(var(--w) * 1px);max-height:calc(var(--h) * 1px)}[data-astro-image=fixed]{width:calc(var(--w) * 1px);height:calc(var(--h) * 1px)}
+</style></head> <body data-astro-cid-bvzihdzo> <nav class="top"> <div class="links"> <a class="nav-link nav-item" href="/">Home</a> <a class="nav-link nav-item" href="/about.html">About</a> </div> </nav> <main data-astro-cid-bvzihdzo> <article data-astro-cid-bvzihdzo> <div class="hero-image" data-astro-cid-bvzihdzo>  </div> <div class="prose" data-astro-cid-bvzihdzo> <div class="title" data-astro-cid-bvzihdzo> <div class="date" data-astro-cid-bvzihdzo> <time datetime="2015-04-23T11:18:11.000Z"> Apr 23, 2015 </time>  </div> <h1 data-astro-cid-bvzihdzo>Assembly in C++ programs</h1> <hr data-astro-cid-bvzihdzo> </div>  <h2 id="foreword">Foreword</h2>
+<p>Writing code in assembly language in 2015 seems stupid and meaningless. Yet, it has a few huge benefits:</p>
+<ol>
+<li>understanding how computers / compilers / programs work</li>
+<li>hardcore optimizations for performance-critical applications</li>
+<li>just for fun!</li>
+</ol>
+<p>Well, in real life, I’ve never met conditions of such performance requirements when I should be writing some parts of application in ASM. Except, maybe, a handful of ACM ICPC problems.</p>
+<p>Those are two merely big benefits to write in assembly. Thus, if you are not getting fun out of coding, you may not be interested in this blog.</p>
+<p>This blog is mostly for academical purposes. People who study something like <em>low-level programming</em> at the university may be interested.</p>
+<!--more-->
+<h2 id="simplest-function-in-nasm">Simplest function in NASM</h2>
+<p>And to start off, we will write a very simple program in assembly language. I shall be covering NASM language and compiler under Linux. MASM for Windows is much like that, but you should find your own way of compiling, linking and debugging all this code.</p>
+<p>Our first program will do nothing. It will just contain globally available function, named <code>myfunc</code>.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    BITS </span><span style="color:#005CC5;--shiki-dark:#79B8FF">32</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    section .text</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        global myfunc</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    myfunc:</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        enter</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        leave</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        ret</span></span>
+<span class="line"></span></code></pre>
+<p>This is barely a something useful, but that’s how it looks like. A simple function, which does nothing, has no arguments and returns nothing.</p>
+<p>Note these instructions: <code>enter 0, 0</code> and <code>leave</code>. These are dedicated to create a <strong>stack frame</strong>. Stack frame is a part of stack, where we can store variables. This part of stack is isolated, so we barely may hurt system when using stack operations (<code>push</code> and <code>pop</code>).</p>
+<p>Actually, you may create the stack frame yourself, pushing <code>ESP</code> and <code>EBP</code> to a stack manually, then shifting <code>ESP</code> and rolling all this back at function’s end. But these instructions are simpler.</p>
+<p><strong>NOTE:</strong> never forget the <code>leave</code> operation when using <code>enter</code> one! This may cause a <code>SEGFAULT</code> exceptions and you may spend hours searching for an error <em>(just as I did this night…)</em>.</p>
+<p>To use our function in a C++ program, we need to perform three steps:</p>
+<ol>
+<li>add en external declaration for our function in C++</li>
+<li>compile our C++ and NASM programs to object files <em>(</em>.o or <em>.obj)</em></li>
+<li>link our object files into a single binary one</li>
+</ol>
+<p>So, we need to interference with assembly from within our C++ code. And declare an external function. Here’s how our dummy program may look like:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#include</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &#x3C;stdio.h></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">extern</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "C"</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> myfunc</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> main</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    myfunc</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>Compiling this contains three steps, as I mentioned above:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> g++</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -c</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -m32</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -g</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test.cpp</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -o</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test_c.o</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nasm</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -felf32</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -g</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test.asm</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -o</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test_asm.o</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> g++</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -m32</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -g</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test_c.o</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test_asm.o</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -o</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test</span></span>
+<span class="line"></span></code></pre>
+<p>Let’s take a look over each of these closely.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> g++</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -c</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -m32</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -g</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test.cpp</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -o</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test_c.o</span></span>
+<span class="line"></span></code></pre>
+<p>This tells compiler a few things:</p>
+<ol>
+<li><code>-c</code>: only compile the code, do not link it (do not search for referenced functions)</li>
+<li><code>-m32</code>: compile code in a 32-bit mode</li>
+<li><code>-g</code>: add a debugger information</li>
+<li><code>-o test_c.o</code>: write output to a <code>test_c.o</code> file</li>
+</ol>
+<p><em>Why 32-bit mode? Why not 64-bit?</em> - you may ask. Because some conventions of 64-bit mode are harder to understand and should be compared to 32-bit ones.</p>
+<p>Now, compiling assembly code command:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nasm</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -felf32</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -g</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test.asm</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -o</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test_asm.o</span></span>
+<span class="line"></span></code></pre>
+<p>This provides compiler with these options:</p>
+<ol>
+<li><code>-felf32</code>: compile in a 32-bit mode</li>
+<li><code>-g</code>: add a debugginng info</li>
+<li><code>-o test_asm.o</code>: write output to an object file <code>test_asm.o</code></li>
+</ol>
+<p>Note the difference between <code>-m32</code> and <code>-felf32</code>. They mean the same, but are spelled differently.</p>
+<h2 id="passing-arguments-and-returning-values">Passing arguments and returning values</h2>
+<p>Now let’s make our function do something for a great good. For example, sum-up two numbers. We will end-up with this function declaration:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">extern</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "C"</span><span style="color:#D73A49;--shiki-dark:#F97583"> int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> sum_two_numbers</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#E36209;--shiki-dark:#FFAB70"> a</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#E36209;--shiki-dark:#FFAB70"> b</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span></code></pre>
+<p>The values <code>a</code> and <code>b</code> are integer. This means, each of them is <strong>4-byte wide</strong>. You can find sizes of different C types writing a very simple program:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#include</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &#x3C;stdio.h></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> main</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    printf</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"size(char) = </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bytes</span><span style="color:#005CC5;--shiki-dark:#79B8FF">\n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">sizeof</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">char</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    printf</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"size(short) = </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bytes</span><span style="color:#005CC5;--shiki-dark:#79B8FF">\n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">sizeof</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">short</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    printf</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"size(int) = </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bytes</span><span style="color:#005CC5;--shiki-dark:#79B8FF">\n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">sizeof</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    printf</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"size(long) = </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bytes</span><span style="color:#005CC5;--shiki-dark:#79B8FF">\n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">sizeof</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">long</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    printf</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"size(long long) = </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bytes</span><span style="color:#005CC5;--shiki-dark:#79B8FF">\n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">sizeof</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">long</span><span style="color:#D73A49;--shiki-dark:#F97583"> long</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    printf</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"size(float) = </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bytes</span><span style="color:#005CC5;--shiki-dark:#79B8FF">\n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">sizeof</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">float</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    printf</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"size(double) = </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bytes</span><span style="color:#005CC5;--shiki-dark:#79B8FF">\n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">sizeof</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">double</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    printf</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"size(long double) = </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bytes</span><span style="color:#005CC5;--shiki-dark:#79B8FF">\n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">sizeof</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">long</span><span style="color:#D73A49;--shiki-dark:#F97583"> double</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    printf</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"size(char*) = </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bytes</span><span style="color:#005CC5;--shiki-dark:#79B8FF">\n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">sizeof</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">char*</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    printf</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"size(short*) = </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bytes</span><span style="color:#005CC5;--shiki-dark:#79B8FF">\n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">sizeof</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">short*</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    printf</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"size(int*) = </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bytes</span><span style="color:#005CC5;--shiki-dark:#79B8FF">\n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">sizeof</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">int*</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    printf</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"size(long*) = </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bytes</span><span style="color:#005CC5;--shiki-dark:#79B8FF">\n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">sizeof</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">long*</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    printf</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"size(long long*) = </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bytes</span><span style="color:#005CC5;--shiki-dark:#79B8FF">\n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">sizeof</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">long</span><span style="color:#D73A49;--shiki-dark:#F97583"> long*</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    printf</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"size(float*) = </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bytes</span><span style="color:#005CC5;--shiki-dark:#79B8FF">\n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">sizeof</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">float*</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    printf</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"size(double*) = </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bytes</span><span style="color:#005CC5;--shiki-dark:#79B8FF">\n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">sizeof</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">double*</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    printf</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"size(long double*) = </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bytes</span><span style="color:#005CC5;--shiki-dark:#79B8FF">\n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">sizeof</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">long</span><span style="color:#D73A49;--shiki-dark:#F97583"> double*</span><span style="color:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>On my laptop this code printed this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>size(char) = 1 bytes</span></span>
+<span class="line"><span>size(short) = 2 bytes</span></span>
+<span class="line"><span>size(int) = 4 bytes</span></span>
+<span class="line"><span>size(long) = 8 bytes</span></span>
+<span class="line"><span>size(long long) = 8 bytes</span></span>
+<span class="line"><span>size(float) = 4 bytes</span></span>
+<span class="line"><span>size(double) = 8 bytes</span></span>
+<span class="line"><span>size(long double) = 16 bytes</span></span>
+<span class="line"><span>size(char*) = 8 bytes</span></span>
+<span class="line"><span>size(short*) = 8 bytes</span></span>
+<span class="line"><span>size(int*) = 8 bytes</span></span>
+<span class="line"><span>size(long*) = 8 bytes</span></span>
+<span class="line"><span>size(long long*) = 8 bytes</span></span>
+<span class="line"><span>size(float*) = 8 bytes</span></span>
+<span class="line"><span>size(double*) = 8 bytes</span></span>
+<span class="line"><span>size(long double*) = 8 bytes</span></span>
+<span class="line"><span></span></span></code></pre>
+<div class="content-read-marker" data-fraction="25"></div>
+<p>But when run in <strong>32-bit</strong> mode, these numbers are different:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>size(char) = 1 bytes</span></span>
+<span class="line"><span>size(short) = 2 bytes</span></span>
+<span class="line"><span>size(int) = 4 bytes</span></span>
+<span class="line"><span>size(long) = 4 bytes</span></span>
+<span class="line"><span>size(long long) = 8 bytes</span></span>
+<span class="line"><span>size(float) = 4 bytes</span></span>
+<span class="line"><span>size(double) = 8 bytes</span></span>
+<span class="line"><span>size(long double) = 12 bytes</span></span>
+<span class="line"><span>size(char*) = 4 bytes</span></span>
+<span class="line"><span>size(short*) = 4 bytes</span></span>
+<span class="line"><span>size(int*) = 4 bytes</span></span>
+<span class="line"><span>size(long*) = 4 bytes</span></span>
+<span class="line"><span>size(long long*) = 4 bytes</span></span>
+<span class="line"><span>size(float*) = 4 bytes</span></span>
+<span class="line"><span>size(double*) = 4 bytes</span></span>
+<span class="line"><span>size(long double*) = 4 bytes</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>The difference in atomic types seems really negligible, namely <code>long</code> and <code>long double</code> are <strong>4-byte longer</strong> in 64-bit mode. But when it comes to pointer types, we have twice longer variables.</p>
+<p>That is the first, may be not so notable, but really important difference between <em>32-bit</em> and <em>64-bit</em> modes. This will be handy when it comes to <strong>arrays</strong>. But that will be covered later.</p>
+<p>Now, the more notable difference hides in how arguments are passed to a function and how the function returns its result.</p>
+<p>To show this difference, we will write a few short functions and look at their assembly code. Here they are:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">char</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> func1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'x'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">char</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> func2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">char</span><span style="color:#E36209;--shiki-dark:#FFAB70"> x</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> x;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">short</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> func3</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">short</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> func4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">short</span><span style="color:#E36209;--shiki-dark:#FFAB70"> x</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> x;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> func5</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> func6</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#E36209;--shiki-dark:#FFAB70"> x</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> x;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">long</span><span style="color:#D73A49;--shiki-dark:#F97583"> long</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> func7</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 2147483647</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">long</span><span style="color:#D73A49;--shiki-dark:#F97583"> long</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> func8</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">long</span><span style="color:#D73A49;--shiki-dark:#F97583"> long</span><span style="color:#E36209;--shiki-dark:#FFAB70"> x</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> x;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">float</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> func9</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 3.14</span><span style="color:#D73A49;--shiki-dark:#F97583">f</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">float</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> func10</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">float</span><span style="color:#E36209;--shiki-dark:#FFAB70"> x</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> x;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">double</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> func11</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 3.15</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">double</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> func12</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">double</span><span style="color:#E36209;--shiki-dark:#FFAB70"> x</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> x;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">long</span><span style="color:#D73A49;--shiki-dark:#F97583"> double</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> func13</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 3.16</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">long</span><span style="color:#D73A49;--shiki-dark:#F97583"> double</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> func14</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">long</span><span style="color:#D73A49;--shiki-dark:#F97583"> double</span><span style="color:#E36209;--shiki-dark:#FFAB70"> x</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> x;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> main</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    func1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    func2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'x'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    func3</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    func4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    func5</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    func6</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    func7</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    func8</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">3</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    func9</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    func10</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">3.14</span><span style="color:#D73A49;--shiki-dark:#F97583">f</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    func11</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    func12</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">3.14</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    func13</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    func14</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">3.14</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>Compile it with <code>g++</code> using this command:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> g++</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -S</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -m32</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -c</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -masm=intel</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test1.cpp</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -o</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test1.asm</span></span>
+<span class="line"></span></code></pre>
+<p>I’ll explain this line’s options:</p>
+<ol>
+<li><code>-S</code>: generate assembly output</li>
+<li><code>-m32</code>: generate 32-bit code</li>
+<li><code>-c</code>: stop after compiling</li>
+<li><code>-masm=intel</code>: use Intel’ assembly syntax; it is NASM’ syntax and thus more readable then GASM’ one</li>
+<li><code>-o test1.asm</code>: write output to a <code>test1.asm</code> file</li>
+</ol>
+<p>I shall not show the full output of this program, because it’s huge. It takes almost 400 lines of assembly code (370, actually)! Yet, in 64-bit mode it is just a bit more than 300 lines of code (precisely, 318). 60 LOC difference, but still…</p>
+<p>These 60 lines of code is caused by a C type sizes. See, in 32-bit mode we have registers of a size <code>32 / 8 = 4</code> bytes. This is enough to store <code>int</code> or <code>float</code> value. Byt when it comes to <code>long double</code> or even just <code>double</code>, we have 4 bytes more. In 64-bit mode we have 8-byte wide registers. So, even a <code>long double</code> variable may be stored in a single register.</p>
+<p>But let’s go back and take a look at, let’s say, <code>func1</code> function assembly:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">_Z5func1v:</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">LFB0:</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .cfi_startproc</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    push</span><span style="color:#005CC5;--shiki-dark:#79B8FF">    ebp</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .cfi_def_cfa_offset </span><span style="color:#005CC5;--shiki-dark:#79B8FF">8</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .cfi_offset </span><span style="color:#005CC5;--shiki-dark:#79B8FF">5</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, -</span><span style="color:#005CC5;--shiki-dark:#79B8FF">8</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> ebp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">esp</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .cfi_def_cfa_register </span><span style="color:#005CC5;--shiki-dark:#79B8FF">5</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> eax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">120</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    pop</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> ebp</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .cfi_restore </span><span style="color:#005CC5;--shiki-dark:#79B8FF">5</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .cfi_def_cfa </span><span style="color:#005CC5;--shiki-dark:#79B8FF">4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">4</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    ret</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .cfi_endproc</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">LFE0:</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .size   _Z5func1v, .-_Z5func1v</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .globl  _Z5func2c</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    .type   _Z5func2c, @function</span></span>
+<span class="line"></span></code></pre>
+<p>Yeah, monstrous… Cleaning it up and using <code>enter</code> and <code>leave</code>, we have only this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">_Z5func1v:</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    enter</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> eax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">120</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    leave</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    ret</span></span>
+<span class="line"></span></code></pre>
+<p>See, the return value is stored in a <code>EAX</code> register. That’s how we should return values from our functions. When it comes to a larger data types, we may return values via <code>EDX:EAX</code> registers’ pair. Yeah, strange, but that is a <strong>convention</strong>.</p>
+<p>Let’s take a look at the assembly code for a <code>func7</code> function and compare its variations for 32-bit mode vs 64-bit mode:</p>
+<p><strong>32-bit func7:</strong></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">_Z5func7v:</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    enter</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> eax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">2147483647</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> edx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    leave</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    ret</span></span>
+<span class="line"></span></code></pre>
+<p><strong>64-bit func7:</strong></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">_Z5func8l:</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    enter</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#D73A49;--shiki-dark:#F97583"> QWORD</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> PTR [</span><span style="color:#005CC5;--shiki-dark:#79B8FF">rbp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">8</span><span style="color:#24292E;--shiki-dark:#E1E4E8">], </span><span style="color:#005CC5;--shiki-dark:#79B8FF">rdi</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> rax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">QWORD</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> PTR [</span><span style="color:#005CC5;--shiki-dark:#79B8FF">rbp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">8</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    leave</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    ret</span></span>
+<span class="line"></span></code></pre>
+<p>See, there are two registers used in a 32-bit mode, <code>EAX = 2147483647</code> and <code>EDX = 0</code>. The second register is used for a sign value. If we’d change the return value for our C++ function to return a negative value:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">long</span><span style="color:#D73A49;--shiki-dark:#F97583"> long</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> func7</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#D73A49;--shiki-dark:#F97583"> -</span><span style="color:#005CC5;--shiki-dark:#79B8FF">2147483647</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>We will end-up with this code in a 32-bit mode:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> eax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, -</span><span style="color:#005CC5;--shiki-dark:#79B8FF">2147483647</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> edx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, -</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span></span>
+<span class="line"></span></code></pre>
+<p>And in 64-bit mode it will have only one operation:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> rax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, -</span><span style="color:#005CC5;--shiki-dark:#79B8FF">2147483647</span></span>
+<span class="line"></span></code></pre>
+<p>Now let’s take a look over the <code>func8</code> function:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">_Z5func8x:</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    enter</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    sub</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> esp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">8</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> eax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">DWORD</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> PTR [</span><span style="color:#005CC5;--shiki-dark:#79B8FF">ebp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">+</span><span style="color:#005CC5;--shiki-dark:#79B8FF">8</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#D73A49;--shiki-dark:#F97583"> DWORD</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> PTR [</span><span style="color:#005CC5;--shiki-dark:#79B8FF">ebp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">8</span><span style="color:#24292E;--shiki-dark:#E1E4E8">], </span><span style="color:#005CC5;--shiki-dark:#79B8FF">eax</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> eax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">DWORD</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> PTR [</span><span style="color:#005CC5;--shiki-dark:#79B8FF">ebp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">+</span><span style="color:#005CC5;--shiki-dark:#79B8FF">12</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#D73A49;--shiki-dark:#F97583"> DWORD</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> PTR [</span><span style="color:#005CC5;--shiki-dark:#79B8FF">ebp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">], </span><span style="color:#005CC5;--shiki-dark:#79B8FF">eax</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> eax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">DWORD</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> PTR [</span><span style="color:#005CC5;--shiki-dark:#79B8FF">ebp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">8</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> edx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">DWORD</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> PTR [</span><span style="color:#005CC5;--shiki-dark:#79B8FF">ebp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    leave</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    ret</span></span>
+<span class="line"></span></code></pre>
+<div class="content-read-marker" data-fraction="50"></div>
+<p>We may clean it up removing all those <code>DWORD PTR</code> type hints:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">_Z5func8x:</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    enter</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    sub</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> esp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">8</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> eax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [</span><span style="color:#005CC5;--shiki-dark:#79B8FF">ebp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">+</span><span style="color:#005CC5;--shiki-dark:#79B8FF">8</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span><span style="color:#005CC5;--shiki-dark:#79B8FF">ebp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">8</span><span style="color:#24292E;--shiki-dark:#E1E4E8">], </span><span style="color:#005CC5;--shiki-dark:#79B8FF">eax</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> eax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [</span><span style="color:#005CC5;--shiki-dark:#79B8FF">ebp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">+</span><span style="color:#005CC5;--shiki-dark:#79B8FF">12</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span><span style="color:#005CC5;--shiki-dark:#79B8FF">ebp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">], </span><span style="color:#005CC5;--shiki-dark:#79B8FF">eax</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> eax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [</span><span style="color:#005CC5;--shiki-dark:#79B8FF">ebp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">8</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> edx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [</span><span style="color:#005CC5;--shiki-dark:#79B8FF">ebp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    leave</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    ret</span></span>
+<span class="line"></span></code></pre>
+<p>All the memory “by the negative side” of <code>EBP</code> is dedicated to local variables. All the memory “by the positive side” of <code>EBP</code> is the one with arguments, passed to our function.</p>
+<p>Taking that into account, we may rewrite our assembly function as this:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">_Z5func8x:</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    enter</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    %</span><span style="color:#D73A49;--shiki-dark:#F97583">define</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> x1 dword[ebp+8]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    %</span><span style="color:#D73A49;--shiki-dark:#F97583">define</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> x2 dword[ebp+12]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    %</span><span style="color:#D73A49;--shiki-dark:#F97583">define</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> tmp1 dword[ebp-8]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    %</span><span style="color:#D73A49;--shiki-dark:#F97583">define</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> tmp2 dword[ebp-4]</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    sub</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> esp</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">8</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> eax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, x1</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> tmp1, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">eax</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> eax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, x2</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> tmp2, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">eax</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> eax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, tmp1</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> edx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, tmp2</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    leave</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    ret</span></span>
+<span class="line"></span></code></pre>
+<p>Now it became more readable.</p>
+<p>Here we have a few really important things:</p>
+<ol>
+<li><code>sub esp, 8</code> - this allocates 8 bytes of stack memory for our local variables</li>
+<li><code>[ebp+8]</code> and <code>[ebp+12]</code> are two parts, each 4-byte long, of our argument of type <code>long long</code></li>
+<li><code>[ebp-8]</code> and <code>[ebp-4]</code> are two parts of our return value; each 4-byte long; of type <code>long long</code></li>
+<li>return value is split into two registers, namely, <code>EAX</code> (high-order bytes) and <code>EDX</code> (low-order bytes)</li>
+</ol>
+<p>That is how C passes arguments to a function in 32-bit mode. Arguments here are passed via stack. In 64-bit mode it’s a bit complicated: arguments are passed via registers and if they are not enough - through the stack. Registers are the following (ordered): <code>RDI</code>, RSI<code>, RDX</code>, RCX<code>, R8</code>, <code>R9</code>.</p>
+<p>And the return values are stored in registers. Always. In both 32-bit and 64-bit modes.</p>
+<h2 id="working-wit-arrays">Working wit arrays</h2>
+<p>I shall not cover working with arrays in NASM itself, but rather working with already allocated memory in C.</p>
+<p>Arrays are transfered to a function as pointers in C and C++. Under the hood, pointer is just an address to a memory block. To its beginning, actually. Knowing the <strong>size of each array element</strong> and <strong>elements count</strong>, we may perform any kind of operations simply iterating through a set of memory addresses.</p>
+<p>Let’s for example calculate a sum of an array elements:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#include</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &#x3C;stdio.h></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">extern</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "C"</span><span style="color:#D73A49;--shiki-dark:#F97583"> int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> sum</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#E36209;--shiki-dark:#FFAB70"> n</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#D73A49;--shiki-dark:#F97583"> *</span><span style="color:#E36209;--shiki-dark:#FFAB70">a</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> main</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    int</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 5</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, a</span><span style="color:#D73A49;--shiki-dark:#F97583">[]</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">7</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">9</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF">4</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> };</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    // 1 + 2 + 7 + 9 - 4 = 15</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    printf</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"sum(a) = </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%d\n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">sum</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(n, a));</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>And let’s create the function <code>sum</code> in NASM. To start off, we’ll use a function, receiving two arguments, <code>int</code> and <code>int*</code> and returning a zero.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">BITS </span><span style="color:#005CC5;--shiki-dark:#79B8FF">32</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">section .text</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">global</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> sum</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">sum:</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    enter</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    %</span><span style="color:#D73A49;--shiki-dark:#F97583">define</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n dword [ebp + 8]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    %</span><span style="color:#D73A49;--shiki-dark:#F97583">define</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> a dword [ebp + 12]</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> eax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    leave</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    ret</span></span>
+<span class="line"></span></code></pre>
+<p>Now what we would like to do is to add each element of array to our <code>result</code> variable <em>(oh, we do not have one yet!)</em>. To do this, we will use two registers: <code>ECX</code> to count how many elements we have added and <code>EAX</code> to store the sum. Each element’s address is <code>*a + 4 * i</code> or address of <code>a[0]</code> plus <code>4 bytes</code> times <code>i</code>, our element number.</p>
+<p>The loop we would use is a reverse one: first we assign <code>ECX = n</code> and then decrement our <code>ECX</code> by one each loop iteration. We are decrementing <code>ECX</code> by one because it contains a number of elements at the beginning of our function. We may use even reverse approach (or a straight one in the meanings of C, when we count from the first element to the last): first, we assign <code>ECX = 0</code> and before going to the end of a loop we will compare <code>ECX</code> to <code>n</code> instead of zero.</p>
+<p>In NASM we may calculate the address of each array element in the operand itself: <code>[ebx + 4 * ecx]</code>.</p>
+<p>Now everything what we need is to add all those hints into a single program:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">BITS </span><span style="color:#005CC5;--shiki-dark:#79B8FF">32</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">section .text</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">global</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> sum</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">sum:</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    enter</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    %</span><span style="color:#D73A49;--shiki-dark:#F97583">define</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n dword [ebp + 8]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    %</span><span style="color:#D73A49;--shiki-dark:#F97583">define</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> a dword [ebp + 12]</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> eax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; EAX = sum = 0</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> ebx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, a </span><span style="color:#6A737D;--shiki-dark:#6A737D">; EBX = *a</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> ecx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, n </span><span style="color:#6A737D;--shiki-dark:#6A737D">; ECX = i = n</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">add_loop:</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    add</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> eax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, [</span><span style="color:#005CC5;--shiki-dark:#79B8FF">ebx</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> + </span><span style="color:#005CC5;--shiki-dark:#79B8FF">4</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> * </span><span style="color:#005CC5;--shiki-dark:#79B8FF">ecx</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> - </span><span style="color:#005CC5;--shiki-dark:#79B8FF">4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">] </span><span style="color:#6A737D;--shiki-dark:#6A737D">; EAX += a[i]</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    dec</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> ecx</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; ECX --</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    cmp</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> ecx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    jg</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> add_loop </span><span style="color:#6A737D;--shiki-dark:#6A737D">; if ECX &#x26;gt; 0 then goto add_loop</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    ; EAX contains the sum here</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    leave</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    ret</span></span>
+<span class="line"></span></code></pre>
+<p>Note that I subtract four bytes in an element address: <code>[ebx + 4 * ecx - 4]</code>. That’s because our i’th element starts at <code>*a + (i * 4)</code> byte, but we have <code>i = n</code> on the beginning. Thus, first iteration will try to add element, starting at <code>*a + (n * 4)</code> byte, which does not exist in our array <em>(the 5th element)</em>. So, we need to subtract one element’ size from our <code>[ebx + 4 * ecx]</code> address.</p>
+<p>Now, if we would like to shorten our source a bit, we may use the <code>loop</code> operation. What it does, is compares <code>ECX</code> with zero and if it is greater than zero - it jumps to a label specified.</p>
+<p>These two codes are completely identical for processor:</p>
+<p><strong>manual loop</strong>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> ecx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, n</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">add_loop:</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    ; do something</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    dec</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> ecx</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    cmp</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> ecx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    jg</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> add_loop</span></span>
+<span class="line"></span></code></pre>
+<p><strong>with <code>loop</code> instruction</strong>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> ecx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, n</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">add_loop:</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    ; do something</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> add_loop</span></span>
+<span class="line"></span></code></pre>
+<p>We’ve just saved two lines of code!</p>
+<div class="content-read-marker" data-fraction="75"></div>
+<h2 id="floating-point-operations">Floating-point operations</h2>
+<p>When working with floating-point data, we have <strong>seven</strong> registers, which could be used to perform operations on a floating-point arguments. We may <strong>store</strong> float data in a <strong>memory</strong> <em>(but never in registers!)</em>, but we may not perform operations on a float data contained in a memory. Just as we may not operate on a usual data, stored in a memory - we need to store it in registers first. Same thing here - store data on a <strong>floating-point stack</strong> and perform operations there. Then move results to the memory.</p>
+<p>When writing a C++ functions working with floats, arguments are stored on a float stack and results are stored on a top of that stack. Yet, the other six cells of a float stack <strong>should</strong> be cleared when returning a value. Otherwise it may cause hard-to-find errors.</p>
+<p>So, the basic operations we may run on a floats are:</p>
+<ol>
+<li>pushing to stack (<code>FLD</code>, <code>FLDZ</code>, <code>FLD1</code>, etc.)</li>
+<li>floating-point arithmetics (<code>FADD</code>, <code>FMUL</code>, <code>FDIV</code>, <code>FSUB</code>, etc.)</li>
+<li>arithmetics with popping from a stack into the top stack cell (<code>ST0</code>)</li>
+<li>popping from a stack to a memory (<code>FST</code> operations)</li>
+</ol>
+<p>Yeah, these are a hell-yeah mix of both arithmetic operations and stack operations!</p>
+<p>Let’s write a very short example, showing how to work with floats. Let it be a two-vector dot product function.</p>
+<p>We shall write a function of this declaration:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#include</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &#x3C;stdio.h></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">extern</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "C"</span><span style="color:#D73A49;--shiki-dark:#F97583"> long</span><span style="color:#D73A49;--shiki-dark:#F97583"> double</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> dot_product</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#E36209;--shiki-dark:#FFAB70"> n</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">long</span><span style="color:#D73A49;--shiki-dark:#F97583"> double</span><span style="color:#D73A49;--shiki-dark:#F97583"> *</span><span style="color:#E36209;--shiki-dark:#FFAB70">v1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">long</span><span style="color:#D73A49;--shiki-dark:#F97583"> double</span><span style="color:#D73A49;--shiki-dark:#F97583"> *</span><span style="color:#E36209;--shiki-dark:#FFAB70">v2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> main</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    long</span><span style="color:#D73A49;--shiki-dark:#F97583"> double</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> v1</span><span style="color:#D73A49;--shiki-dark:#F97583">[]</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">3</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">5</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> };</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    long</span><span style="color:#D73A49;--shiki-dark:#F97583"> double</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> v2</span><span style="color:#D73A49;--shiki-dark:#F97583">[]</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">2</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> };</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    int</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 2</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    // 3*4 + 5*2 = 12 + 10 = 22</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    printf</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"dot_product(v1, v2) = </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%0.4f\n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#6F42C1;--shiki-dark:#B392F0">dot_product</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(n, v1, v2));</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>This one will calculate a dot product of two <em>n-element</em> vectors.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">BITS </span><span style="color:#005CC5;--shiki-dark:#79B8FF">32</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">section .text</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    global dot_product</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">dot_product:</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    enter</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    %</span><span style="color:#D73A49;--shiki-dark:#F97583">define</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> n dword[ebp + 8]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    %</span><span style="color:#D73A49;--shiki-dark:#F97583">define</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> v1 dword[ebp + 12]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    %</span><span style="color:#D73A49;--shiki-dark:#F97583">define</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> v2 dword[ebp + 16]</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> ecx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, n</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> edx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, v1</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> ebx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, v2</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fldz</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; stack: 0 ( = tail)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">add_loop:</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fld</span><span style="color:#D73A49;--shiki-dark:#F97583"> tword</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span><span style="color:#005CC5;--shiki-dark:#79B8FF">edx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">] </span><span style="color:#6A737D;--shiki-dark:#6A737D">; stack: v1, tail</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fld</span><span style="color:#D73A49;--shiki-dark:#F97583"> tword</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span><span style="color:#005CC5;--shiki-dark:#79B8FF">ebx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">] </span><span style="color:#6A737D;--shiki-dark:#6A737D">; stack: v2, v1, tail</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fmulp</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">st0</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; stack: v2 * v1, tail</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    faddp</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">st0</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; stack: v2 * v1 + tail</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    add</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> edx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">12</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    add</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> ebx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">12</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    loop</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> add_loop</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">just_exit:</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    leave</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    ret</span></span>
+<span class="line"></span></code></pre>
+<p>The algorithm of a code above may be written as follows:</p>
+<ol>
+<li>load zero to a floating stack <em>(ST: <code>[0 nan nan nan nan nan nan]</code>)</em></li>
+<li><em>in a loop</em> load _i_th element of <code>v1</code> to a floating stack <em>(ST: <code>[3 0 nan nan nan nan nan]</code>)</em></li>
+<li><em>in a loop</em> load _i_th element of <code>v2</code> to a floating stack <em>(ST: <code>[4 3 0 nan nan nan nan]</code>)</em></li>
+<li><em>in a loop</em> multiply first two elements of a floating stack, write the result to <code>ST1</code> and pop stack head <em>(ST: <code>[12 0 nan nan nan nan nan]</code>)</em></li>
+<li><em>in a loop</em> add first two elements of a stack, write the result to <code>ST1</code> and pop stack head <em>(ST: <code>[12 nan nan nan nan nan nan]</code>)</em></li>
+<li><em>in a loop</em> add 12 bytes to our <code>i</code></li>
+<li><em>in a loop</em> add 12 bytes to our <code>t</code></li>
+</ol>
+<p>At the end of our loop, precisely, at our <code>just_exit</code> label, we will have floating stack with the only element on its top, the dot product of our vectors <code>v1</code> and <code>v2</code>. This value will be returned to our C++ program.</p>
+<h2 id="a-few-words-on-debugging">A few words on debugging</h2>
+<p>As you remember <em>(if not - just look above)</em> we added a <em>debugger info</em> option when compiling our programs. Now let’s use it.</p>
+<p>Let’s have some buggy program. For example, the one which calculates a rectangular parallelepiped’s surface area and volume:</p>
+<p><strong>C program</strong>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">#include</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &#x3C;stdio.h></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">extern</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> surface_and_volume</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">float</span><span style="color:#E36209;--shiki-dark:#FFAB70"> a</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">float</span><span style="color:#E36209;--shiki-dark:#FFAB70"> b</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">float</span><span style="color:#E36209;--shiki-dark:#FFAB70"> c</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">float</span><span style="color:#D73A49;--shiki-dark:#F97583"> *</span><span style="color:#E36209;--shiki-dark:#FFAB70">v</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">float</span><span style="color:#D73A49;--shiki-dark:#F97583"> *</span><span style="color:#E36209;--shiki-dark:#FFAB70">s</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">int</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> main</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  float</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> surface </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, volume </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  surface_and_volume</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">5</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">6</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">volume, </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x26;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">surface);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  printf</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"volume: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%0.3f</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> surface: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">%0.3f\n</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, volume, surface);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  return</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p><strong>NASM program</strong>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="asm"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">BITS </span><span style="color:#005CC5;--shiki-dark:#79B8FF">32</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">section .text</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    global surface_and_volume</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">surface_and_volume:</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    enter</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    %</span><span style="color:#D73A49;--shiki-dark:#F97583">define</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> a dword[ebp+8]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    %</span><span style="color:#D73A49;--shiki-dark:#F97583">define</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> b dword[ebp+12]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    %</span><span style="color:#D73A49;--shiki-dark:#F97583">define</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> c dword[ebp+16]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    %</span><span style="color:#D73A49;--shiki-dark:#F97583">define</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> vol_ptr dword [ebp+20] ; a*b*c</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    %</span><span style="color:#D73A49;--shiki-dark:#F97583">define</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> surf_ptr dword [ebp+24] ; a*a*2 + b*b*2 + c*c*2</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> eax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, vol_ptr</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    mov</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> ebx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, surf_ptr</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fldz</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; st6</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fldz</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; st5</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fldz</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; st4</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fld</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> c </span><span style="color:#6A737D;--shiki-dark:#6A737D">; st3</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fld</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> b </span><span style="color:#6A737D;--shiki-dark:#6A737D">; st2</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fld</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> a </span><span style="color:#6A737D;--shiki-dark:#6A737D">; st1</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fldz</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; st0</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    ; calculate volume</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fsub</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">st0</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; st0 = 0</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fadd</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st1</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; st0 = a</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fmul</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st2</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; st0 *= b</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fmul</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st3</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; st0 *= c</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fst</span><span style="color:#D73A49;--shiki-dark:#F97583"> dword</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span><span style="color:#005CC5;--shiki-dark:#79B8FF">eax</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    ; calculate surface</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fsub</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">st0</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; st0 = 0</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fadd</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st1</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; st0 = a</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fmul</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st2</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; st0 *= b</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fadd</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">st0</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; st4 = a*b</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fsub</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">st0</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; st0 = 0</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fadd</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st1</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; st0 = a</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fmul</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st3</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; st0 *= c</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fadd</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st5</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">st0</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; st5 = a*c</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fsub</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">st0</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; st0 = 0</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fadd</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st2</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; st0 = b</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fmul</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st3</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fadd</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st6</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">st0</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; st6 = b*c</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fsub</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#005CC5;--shiki-dark:#79B8FF">st0</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; st0 = 0</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fadd</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st4</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fadd</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st5</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fadd</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st6</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; st0 = a*b + a*c + b*c</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fadd</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> st0</span><span style="color:#6A737D;--shiki-dark:#6A737D"> ; st0 = 2*(a*b + a*c + b*c)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">just_exit:</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fst</span><span style="color:#D73A49;--shiki-dark:#F97583"> dword</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span><span style="color:#005CC5;--shiki-dark:#79B8FF">ebx</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    ; free float stack</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fstp</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> a</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fstp</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> a</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fstp</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> a</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fstp</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> a</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fstp</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> a</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    fstp</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> a</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    ret</span></span>
+<span class="line"></span></code></pre>
+<p>Compile it as usual and run with GDB:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> g++</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -c</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -m32</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -g</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test3.c</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -o</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test3_c.o</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nasm</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -felf32</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -g</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test3.asm</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -o</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test3_asm.o</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> g++</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -m32</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -g</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test3_asm.o</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test3_c.o</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -o</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test3</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> gdb</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test3</span></span>
+<span class="line"></span></code></pre>
+<p>Now, when you’re in a debugger’ console, you may run debugging commands. Here are a few of them:</p>
+<ul>
+<li><code>r</code> or <code>run</code> will run your program, stopping at first breakpoint</li>
+<li><code>b func_name</code> or <code>break func_name</code> will set a breakpoint at the first line of <code>func_name</code></li>
+<li><code>p var</code> or <code>print var</code> will show the <code>var</code> variable contents in decimal format. For registers its <code>$eax</code> and so on</li>
+<li><code>p /x var</code> or <code>print /x var</code> will show the <code>var</code> variable contents in hexadecimal format</li>
+<li><code>x mem_addr</code> will show the contents of memory at <code>mem_addr</code></li>
+<li><code>x/4 mem_addr</code> will show <strong>four</strong> 4-byte pieces of memory at <code>mem_addr</code></li>
+<li><code>disassemble</code> will print out the assembly code for current function</li>
+<li><em>(from breakpoint)</em> <code>c</code> or <code>continue</code> will run program until it hits end or breakpoint</li>
+<li><em>(from breakpoint)</em> <code>ni</code> will step one instruction</li>
+<li><em>(from breakpoint)</em> <code>n</code> or <code>next</code> will step over the next function <em>(in C)</em>; for ASM it’s same as <code>ni</code></li>
+<li><em>(from breakpoint)</em> <code>s</code> or <code>step</code> will step in the next function <em>(in C)</em>; for ASM it’s same as <code>ni</code></li>
+<li><code>info r</code> shows current registers’ state</li>
+<li><code>info float</code> shows current co-processor state</li>
+<li><kbd>Ctrl+D</kbd> stands for <code>quit</code></li>
+</ul>
+<p>Now, using GDB, try to find out what’s wrong with the program I’ve suggested!</p>
+<h2 id="afterword">Afterword</h2>
+<p>This is currently most of important things I’ve learnt at the university. This is pretty much for a beginner. And this information is really for those who have fun writing code or those who are made to write some excercises at university.</p>
+<p>As for me, now ASM does not look so scary now =) But I like writing more high-level code <em>(in C at least!)</em> because it takes less time to do more.</p>
+<div class="content-read-marker" data-fraction="100"></div>  </div> </article> </main> <footer data-astro-cid-sz7xmlte>
+&copy; 2024 Your name here. All rights reserved.
+<div class="social-links" data-astro-cid-sz7xmlte> <a href="https://m.webtoo.ls/@astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Mastodon</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/mastodon" data-astro-cid-sz7xmlte><path fill="currentColor" d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://twitter.com/astrodotbuild" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Twitter</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/twitter" data-astro-cid-sz7xmlte><path fill="currentColor" d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://github.com/withastro/astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Go to Astro's GitHub repo</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/github" data-astro-cid-sz7xmlte><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" data-astro-cid-sz7xmlte></path></svg> </a> </div> </footer>  </body></html>

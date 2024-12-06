@@ -1,0 +1,259 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-bvzihdzo> <head><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.0.3"><!-- Font preloads --><link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin><!-- Canonical URL --><link rel="canonical" href="https://shybovycha.github.io/2014/07/28/2014-07-27-php-blog-part-2.html/"><!-- Primary Meta Tags --><title>Чоткій блог. Часть друга</title><meta name="title" content="Чоткій блог. Часть друга"><meta name="description"><link rel="stylesheet" href="/_astro/index.BvFNhZYw.css">
+<style>footer[data-astro-cid-sz7xmlte]{padding:2em 1em 6em;background:linear-gradient(var(--gray-gradient)) no-repeat;color:rgb(var(--gray));text-align:center}.social-links[data-astro-cid-sz7xmlte]{display:flex;justify-content:center;gap:1em;margin-top:1em}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]{text-decoration:none;color:rgb(var(--gray))}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]:hover{color:rgb(var(--gray-dark))}main[data-astro-cid-bvzihdzo]{width:calc(100% - 2em);max-width:100%;margin:0}.hero-image[data-astro-cid-bvzihdzo]{width:100%}.hero-image[data-astro-cid-bvzihdzo] img[data-astro-cid-bvzihdzo]{display:block;margin:0 auto;border-radius:12px;box-shadow:var(--box-shadow)}.prose[data-astro-cid-bvzihdzo]{width:720px;max-width:calc(100% - 2em);margin:auto;padding:1em;color:rgb(var(--gray-dark))}.title[data-astro-cid-bvzihdzo]{margin-bottom:1em;padding:1em 0;text-align:center;line-height:1}.title[data-astro-cid-bvzihdzo] h1[data-astro-cid-bvzihdzo]{margin:0 0 .5em}.date[data-astro-cid-bvzihdzo]{margin-bottom:.5em;color:rgb(var(--gray))}.last-updated-on[data-astro-cid-bvzihdzo]{font-style:italic}
+[data-astro-image]{width:100%;height:auto;object-fit:var(--fit);object-position:var(--pos);aspect-ratio:var(--w) / var(--h)}[data-astro-image=responsive]{max-width:calc(var(--w) * 1px);max-height:calc(var(--h) * 1px)}[data-astro-image=fixed]{width:calc(var(--w) * 1px);height:calc(var(--h) * 1px)}
+</style></head> <body data-astro-cid-bvzihdzo> <nav class="top"> <div class="links"> <a class="nav-link nav-item" href="/">Home</a> <a class="nav-link nav-item" href="/about.html">About</a> </div> </nav> <main data-astro-cid-bvzihdzo> <article data-astro-cid-bvzihdzo> <div class="hero-image" data-astro-cid-bvzihdzo>  </div> <div class="prose" data-astro-cid-bvzihdzo> <div class="title" data-astro-cid-bvzihdzo> <div class="date" data-astro-cid-bvzihdzo> <time datetime="2014-07-27T21:20:00.000Z"> Jul 28, 2014 </time>  </div> <h1 data-astro-cid-bvzihdzo>Чоткій блог. Часть друга</h1> <hr data-astro-cid-bvzihdzo> </div>  <div class="row">
+    <div class="col-md-6 col-xs-12">
+        <div class="card">
+            <div class="card-header">
+                Содєржаніє
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <a href="/tumblr/2014/07/22/php-blog-part-1.html">
+                        Чоткій блог. Часть перша
+                    </a>
+                </li>
+                <li class="list-group-item">
+                    <a href="/tumblr/2014/07/27/php-blog-part-2.html">
+                        Чоткій блог. Часть друга
+                    </a>
+                </li>
+                <li class="list-group-item">
+                    <a href="/tumblr/2014/07/28/php-blog-part-3.html">
+                        Чоткій блог. Часть третя
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-6 col-xs-12 text-xs-center text-md-right"></div>
+</div>
+<h2>Моделі</h2>
+<p>Єсть така штука як <strong>MVC, Model-View-Controller</strong>. Це такий прінцип, по якому програма розділяється на три тіпа дєталєй:</p>
+<ol><li><em>Model</em> - отвічає за роботу чісто з базой даних</li>
+<li><em>View</em> - отвічає чісто за отображеніє даних перед пользоватєльом (формочка, HTML, і так далєє)</li>
+<li><em>Controller</em> - отвічає за обработку дєйствій пользоватєля, іспользує моделі і передає їх в’юхам</li>
+</ol><p>Так от, модель - це такій клас, який работає з рядочками одної таблички і другими табличками, шо прив’язані до нашої. Але тільки якшо та таблічка, з якою работає модель - главна в цій связі. Тоість, якшо у нас є модель <strong>Пост</strong> і модель <strong>Камєнтік</strong>, то модель <strong>Пост</strong> може вліять на <strong>Камєнтікі</strong>, а от модель <strong>Камєнтік</strong> вже нічо не може зробити з <strong>Постом</strong>. Тут таблічка <strong>Пост</strong> - главна, а таблічка <strong>Камєнтік</strong> - просто прив’язана до неї.</p>
+<p>В общєм, модель - це такий удобний клас, в якому заникані всі запроси до бази даних. Ти визиваєш метод моделі, а получаєш - масив (або не масив, а тільки один його елємєнт) з запісями з бази даних. Або визиваєш другий мєтод і удаляєш/обновляєш/создаєш рядочки в базі.</p>
+<!--more-->
+<p>Шоб зробити цей клас унівєрсальним до невозможності, представим, шо <strong>класс</strong> отвічає за роботу з всьою табличкою (вибор рядочків з таблички), а <strong>об’єкт цього класа</strong> отвічає за роботу з конкретним рядочком з цеї таблички. Робота з цим класом буде виглядіть якось так:</p>
+<pre><code>// всі пости
+$postings = Posting::all();
+
+// один конкретний пост
+$posting = Posting::find($id);
+
+// не до кінця обновлений пост (в базі ще не сохраньон)
+$posting->title = "moo";
+
+// сохранить пост в базі
+$posting->save();
+
+// удалить пост
+$posting->destroy();
+</code></pre>
+<p>Сама проста реалізація моделі буде схожа на оце:</p>
+<pre><code>class Posting {
+    var $id, $title, $description;
+
+    function __construct($title, $description) {
+        $this->title = $title;
+        $this->description = $description;
+    }
+
+    function __construct($id, $title, $description) {
+        $this->id = $id;
+        $this->title = $title;
+        $this->description = $description;
+    }
+
+    public static function all() {
+        $results = array();
+        $rows = mysql_query("SELECT id, title, description FROM postings;");
+
+        while ($posting = mysql_fetch_assoc($rows)) {
+            $results[] = new Posting($posting['id'], $posting['title'], $posting['description']);
+        }
+
+        return $results;
+    }
+
+    public static function find($id) {
+        $row = mysql_fetch_assoc(mysql_query("SELECT id, title, description FROM postings WHERE id = $id"));
+
+        if (isset($row['id'])) {
+          return new Posting($row['id'], $row['title'], $row['description']);
+        } else {
+            return null;
+        }
+    }
+
+    public function save() {
+        if (isset($this->id)) {
+            mysql_query("UPDATE postings SET title = '$this->title', description = '$this->description' WHERE id = '$this->id'");
+        } else {
+            mysql_query("INSERT INTO postings (id, title, description) VALUES ('$this->id', '$this->title', '$this->description')");
+        }
+    }
+
+    public function delete() {
+        if (isset($this->id)) {
+            mysql_query("DELETE FROM postings WHERE id = '$this->id'");
+        }
+    }
+};
+</code></pre>
+<p>Але з таким ращотом, у нас для кожної таблички буде оддєльний клас і оддєльний набор запросов. І вспоминаєм, шо ми рішили не дублірувать код. Будем іспользувать мощ магічних методів PHP!</p>
+<p>Нехай ми не знаєм, які поля єсть в табличці. Но всі запроси ці, <code>SELECT/DELETE</code> - вони в основном одінакові і відрізняються тільки для <code>INSERT/UPDATE</code>. Того нам нада так переписать ці <code>INSERT/UPDATE</code> і цей клас, шоб вони работали з любими табличками.</p>
+<p>Воспользуємся масивами PHP і магічними методами <code>__set/__get</code>. Ці методи дають можливість описать свою логіку коли програміст записує чи читає неізвєсне поле класа. Напрімєр, якшо у нашого класа <code>Post</code> нема поля <code>moo</code>, то при попитці зробить <code>echo $posting->moo</code> буде визиватись мєтод <code>__get('moo')</code>, а при попитці записать шось туди <code>$posting->moo = 'MOO!'</code> буде визваний <code>__set('moo', 'MOO!')</code>. Приступаєм:</p>
+<pre><code>class BaseModel {
+    private $__data, $__tableName;
+
+    private static function getTableName() {
+        $class_name = get_called_class();
+        return strtolower($class_name) . 's';
+    }
+
+    function __construct($data) {
+        foreach ($data as $key => $value) {
+            $this->__data[$key] = $value;
+        }
+
+        $__tableName = $this->getTableName();
+    }
+
+    function __get($field) {
+        if (isset($this->__data[$field])) {
+            return $this->__data[$field];
+        } else {
+            return null;
+        }
+    }
+
+    function __set($field, $value) {
+        $this->__data[$field] = $value;
+    }
+
+    public static function all() {
+        $tableName = self::getTableName();
+        $class = get_called_class();
+
+        $results = array();
+
+        $rows = mysql_query("SELECT * FROM $tableName;");
+
+        while ($row = mysql_fetch_assoc($rows)) {
+            $results[] = new $class($row);
+        }
+
+        return $results;
+    }
+
+    public static function find($id) {
+        $row = mysql_fetch_assoc(mysql_query("SELECT * FROM $tableName WHERE id = $id"));
+
+        if (isset($row['id'])) {
+          return new BaseModel($row);
+        } else {
+            return null;
+        }
+    }
+
+    public function save() {
+        $query = "";
+
+        if (isset($this->id)) {
+            $fields = array();
+
+            foreach ($this->__data as $field => $value) {
+                if ($field == 'id') {
+                    continue;
+                }
+
+                $fields[] = "`$field` = '$value'";
+            }
+
+            $query = "UPDATE $this->__tableName SET " . implode(', ', $fields) . " WHERE id = '$this->id'";
+        } else {
+            $values = array();
+
+            foreach ($this->__data as $field => $value) {
+                $values[$field] = "'$value'";
+            }
+
+            $query = "INSERT INTO $this->__tableName (" . implode(', ', array_keys($values)) . ") VALUES (" . implode(', ', array_values($values)) . ")";
+        }
+
+        mysql_query($query);
+    }
+
+    public function delete() {
+        if (isset($this->id)) {
+            mysql_query("DELETE FROM $this->__tableName WHERE id = '$this->id'");
+        }
+    }
+};
+</code></pre>
+<p>Так шо ж за ад тут коїться?</p>
+<p>По-перше, цей клас - базовий. Всі слєдующі модельки ми будем наслєдувать від нього. Тоість, весь цей ад у нас коїться тільки один раз - дальше всі моделі виглядять приблизно так:</p>
+<pre><code>class Posting extends BaseModel {
+    public function getViewUrl() {
+        return "view.php?$this->id";
+    }
+};
+</code></pre>
+<p>А іспользовать такі моделі тепер - сплошне удовольствіє!</p>
+<pre><code>&#x3C;?php $postings = Posting::all(); ?>
+
+...
+
+&#x3C;?php foreach ($postings as $posting) ?>
+    &#x3C;h2>&#x3C;?php echo $posting->title ?>&#x3C;/h2>
+
+    &#x3C;div class="description">
+        &#x3C;?php echo $posting->description ?>
+    &#x3C;/div>
+
+    &#x3C;div class="read-more">
+        &#x3C;?php echo $posting->getViewUrl() ?>
+    &#x3C;/div>
+&#x3C;?php endforeach; ?>
+</code></pre>
+<p>По-друге, в конструктор ми передаєм (всігда) поля з таблички, а конструктор - записує їх в масив <code>__data</code>. Ну і в конструкторі ж ми дуже хітро достаєм імя таблички з імєні класа: якшо у нас, напрімєр, клас моделі <code>Posting</code>, то ім’я таблички буде <code>postings</code>.</p>
+<p>Ще один ньюанс з приводу імені таблички і того шо ми вертаєм в мєтоді <code>all()</code>: тут іспользується така хітра функція <code>get_called_class()</code>, яка вертає ім’я класа, який визвав поточний мєтод. Воно працює і з наслєдованієм в ООП, тоість якшо запустити отакє:</p>
+<pre><code>class Moo {
+    function whoami() {
+        echo get_called_class();
+    }
+}
+
+class Foo extends Moo {
+}
+
+$a = new Moo();
+$a->whoami();
+
+$b = new Foo();
+$b->whoami();
+</code></pre>
+<p>то воно виведе:</p>
+<pre><code>Moo
+Foo
+</code></pre>
+<p>І якшо ми захочем зробить об’єкт дочєрнього класа внутрі батьківського, то ми можем спокойно визвать</p>
+<pre><code>$class = get_called_class();
+new $class(...);
+</code></pre>
+<p>Ну і всі запроси до бази даних строяться вже іспользуя поля <code>$__data</code> і <code>$__tableName</code>.</p>
+<p>А тепер трошки поправим файлову структуру: у нас тепер є кілька файлів, які не відносяться конкретно до цього блога, а, так сказать, єсть каркасом, на якому можна наліпити ше шось. Це <code>BaseModel.php</code> і <code>connect.php</code>. Точніше, <code>connect.php</code> - в ньому задаються параметри подключєнія до бази даних конкретно цього блога. Шо я предлагаю - зробити три папки:</p>
+<ul><li><code>core</code>, в якому буде <code>BaseModel.php</code></li>
+<li><code>models</code>, куди положити <code>Posting.php</code> і всі прочі моделі, які наслєдують <code>BaseModel</code></li>
+<li><code>config</code>, куди положить <code>connect.php</code></li>
+</ul><p>Не забудь поправити всі путі у <code>require()</code>!</p>
+<p>Замєть, тепер файл <code>connect.php</code> нам треба тільки в одному місці - в <code>BaseModel.php</code>. Шо тоже кагбе упрощає код.</p>
+<p>Тоість, тепер у нас має бути якась така файлова структура:</p>
+<p><img alt="чотка файлова структура" src="/images/tumblr/php-blog-part2/tumblr_inline_pl2njcFk4W1qh5oee_400.webp"></p>
+<h2>Домашнє завдання</h2>
+<p>Зроби моделі поста і камєнтіка і застав їх работать внутрі <code>index.php</code> і <code>view.php</code>. Замєть, шо в бєзопасності <code>BaseModel</code> єсть дірка. А ще - і це <strong>дуже</strong> важно - подивись шо таке <strong>PDO</strong> і зроби замість всіх <code>mysql_query</code> і прочіх роботу з <strong>PDO</strong>.</p>  </div> </article> </main> <footer data-astro-cid-sz7xmlte>
+&copy; 2024 Your name here. All rights reserved.
+<div class="social-links" data-astro-cid-sz7xmlte> <a href="https://m.webtoo.ls/@astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Mastodon</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/mastodon" data-astro-cid-sz7xmlte><path fill="currentColor" d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://twitter.com/astrodotbuild" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Twitter</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/twitter" data-astro-cid-sz7xmlte><path fill="currentColor" d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://github.com/withastro/astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Go to Astro's GitHub repo</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/github" data-astro-cid-sz7xmlte><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" data-astro-cid-sz7xmlte></path></svg> </a> </div> </footer>  </body></html>

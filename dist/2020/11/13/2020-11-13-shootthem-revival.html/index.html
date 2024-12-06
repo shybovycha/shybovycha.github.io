@@ -1,0 +1,258 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-bvzihdzo> <head><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.0.3"><!-- Font preloads --><link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin><!-- Canonical URL --><link rel="canonical" href="https://shybovycha.github.io/2020/11/13/2020-11-13-shootthem-revival.html/"><!-- Primary Meta Tags --><title>ShootThem! revival</title><meta name="title" content="ShootThem! revival"><meta name="description"><link rel="stylesheet" href="/_astro/index.BvFNhZYw.css">
+<style>footer[data-astro-cid-sz7xmlte]{padding:2em 1em 6em;background:linear-gradient(var(--gray-gradient)) no-repeat;color:rgb(var(--gray));text-align:center}.social-links[data-astro-cid-sz7xmlte]{display:flex;justify-content:center;gap:1em;margin-top:1em}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]{text-decoration:none;color:rgb(var(--gray))}.social-links[data-astro-cid-sz7xmlte] a[data-astro-cid-sz7xmlte]:hover{color:rgb(var(--gray-dark))}main[data-astro-cid-bvzihdzo]{width:calc(100% - 2em);max-width:100%;margin:0}.hero-image[data-astro-cid-bvzihdzo]{width:100%}.hero-image[data-astro-cid-bvzihdzo] img[data-astro-cid-bvzihdzo]{display:block;margin:0 auto;border-radius:12px;box-shadow:var(--box-shadow)}.prose[data-astro-cid-bvzihdzo]{width:720px;max-width:calc(100% - 2em);margin:auto;padding:1em;color:rgb(var(--gray-dark))}.title[data-astro-cid-bvzihdzo]{margin-bottom:1em;padding:1em 0;text-align:center;line-height:1}.title[data-astro-cid-bvzihdzo] h1[data-astro-cid-bvzihdzo]{margin:0 0 .5em}.date[data-astro-cid-bvzihdzo]{margin-bottom:.5em;color:rgb(var(--gray))}.last-updated-on[data-astro-cid-bvzihdzo]{font-style:italic}
+[data-astro-image]{width:100%;height:auto;object-fit:var(--fit);object-position:var(--pos);aspect-ratio:var(--w) / var(--h)}[data-astro-image=responsive]{max-width:calc(var(--w) * 1px);max-height:calc(var(--h) * 1px)}[data-astro-image=fixed]{width:calc(var(--w) * 1px);height:calc(var(--h) * 1px)}
+</style></head> <body data-astro-cid-bvzihdzo> <nav class="top"> <div class="links"> <a class="nav-link nav-item" href="/">Home</a> <a class="nav-link nav-item" href="/about.html">About</a> </div> </nav> <main data-astro-cid-bvzihdzo> <article data-astro-cid-bvzihdzo> <div class="hero-image" data-astro-cid-bvzihdzo>  </div> <div class="prose" data-astro-cid-bvzihdzo> <div class="title" data-astro-cid-bvzihdzo> <div class="date" data-astro-cid-bvzihdzo> <time datetime="2020-11-13T02:46:24.000Z"> Nov 13, 2020 </time>  </div> <h1 data-astro-cid-bvzihdzo>ShootThem! revival</h1> <hr data-astro-cid-bvzihdzo> </div>  <p>Quite some time ago I <a href="/tumblr/2015/04/06/shootthem.html">dag out</a> the sources of an old game of mine, ShootThem! made back when I was at high-school, around 2006.</p>
+<p>It has been over a decade ever since I made that game and I had enough inspiration to revisit the code once again.</p>
+<p>This is a short update blog about what it used to be and what it became as of now.</p>
+<div><img src="/images/shootthem-revival/ShootThem 15_09_2020 8_19_43 AM.webp" loading="lazy"></div>
+<div><img src="/images/shootthem-revival/ShootThem 26_09_2020 8_19_43 PM.webp" loading="lazy"></div>
+<div><img src="/images/shootthem-revival/square1_render2.webp" loading="lazy"></div>
+<!--more-->
+<h2 id="2006">2006</h2>
+<p>Back in 2006 I have barely learned some OOP and C / C++, just enough to be able to use it in school programming competitions.</p>
+<p>The game looked awful - there were no textures in the whole game, the models were mostly hand-made by myself in some dodgy 3D editor
+(Calligra TrueSpace or something alike).</p>
+<div><img src="/images/shootthem-revival/ShootThem 13_09_2020 10_18_45 PM.webp" loading="lazy"></div>
+<div><img src="/images/shootthem-revival/ShootThem 13_09_2020 10_18_52 PM.webp" loading="lazy"></div>
+<div><img src="/images/shootthem-revival/ShootThem 15_09_2020 8_19_36 AM.webp" loading="lazy"></div>
+<div><img src="/images/shootthem-revival/ShootThem 15_09_2020 8_19_43 AM.webp" loading="lazy"></div>
+<p>The code was terrible as well - static variables, huge functions, not to mention the whole game was a huge hard-coded, non-configurable mess in one <code>main.cpp</code> file.</p>
+<div><img src="/images/shootthem-revival/Screen Shot 2020-11-13 at 2.02.28 pm.webp" loading="lazy"></div>
+<p>But there was also a map editor, which allowed for some customization - it was basically a first-person camera and few magical buttons that allowed to define target positions for a specific level. The level mesh and output file were both provided via command-line arguments.</p>
+<h2 id="2015">2015</h2>
+<p>I have dag out the sources and decided to put them on GitHub for historical reference. I have also managed to set up CMake for the thing
+so that it could be built on <em>any</em> computer without bothering too much about magical compiler options and everything.</p>
+<h2 id="2020">2020</h2>
+<p>I have started the rework. First things first, I reworked the CMake configuration to a modern style and replaced the dependency “management” (essentially an instruction to manually unzip Irrlich and IrrKlang files and put them in specific directories) with CMake’s <code>Fetch</code> module.</p>
+<p>Then I thought about reshaping the code, so I have split one big <code>main.cpp</code> file with static variables and a handful of functions into classes, encapsulating the logic - <code>Level</code>, <code>Score</code>, <code>PlayerState</code>, <code>GameState</code>. This allowed me to maintain the working state of the game whilst actually improving the state of the code (<a href="https://github.com/shybovycha/shoot-them/commit/b49b478e76c33fd59c5b1960127b21a1039fce9a">commit</a>).</p>
+<p>I have also extracted the settings into a separate file, <code>settings.xml</code> so that the application can be actually somewhat configured. Also, the magical data format for the levels was replaced with much more readable XML, <code>levels.xml</code>:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="xml"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">levels</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">level</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">model</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>room1.dae&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">model</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">entities</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">light</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">position</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> x</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"-717.96405029296875"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> y</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"129.1875"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> z</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"200"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      &#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">light</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">light</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">          &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">position</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> x</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"0"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> y</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"125.34170532226563"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> z</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"258.18295288085938"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      &#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">light</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">target</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">          &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">position</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> x</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"-765.06158447265625"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> y</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"271.0589599609375"</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> z</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"670.49334716796875"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      &#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">target</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">      &#x3C;!-- ... --></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    &#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">entities</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  &#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">level</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">levels</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"></span></code></pre>
+<p>Next step was to reduce the coupling of code components and introduce some sort of state management. I am still unhappy with what I ended up with, but it is still infinitely better than one single <code>main()</code> function.</p>
+<p>I have ended up with something similar to Redux from front-end world (at least that was an initial plan) - there is a <em>Store</em>, where the state is stored; there are <em>Actions</em>, which define a change to the state; there is a <em>Reducer</em>, which modifies the state of the app; and finally, there are <em>Subscribers</em> which react to state changes and render the state of the app.</p>
+<p>But the issue was that there are many <em>effects</em> to handle like playing sound, loading and unloading the data, etc.</p>
+<p>Along the way I have also kept maintaining a list of things I was thinking about - bugs found, improvements, refactoring ideas, etc (<a href="https://github.com/shybovycha/shoot-them/commits/master/README.md">README.md history</a>).</p>
+<p>Few improvements included adding a main menu, replacing the “UI” with something more user-friendly (previously it was just an ugly line of text), improving the “drunk shooter” effect (ended up replacing it with shaders, which is not a trivial task in Irrlicht - more on that later).</p>
+<div><img src="/images/shootthem-revival/ShootThem 20_09_2020 2_48_59 PM.webp" loading="lazy"></div>
+<div><img src="/images/shootthem-revival/ShootThem 26_09_2020 8_19_43 PM.webp" loading="lazy"></div>
+<p>I have also started reworking the 3D models for the game and decided it was a good point to just show how I <em>meant</em> the original art to be in the game:</p>
+<div><img src="/images/shootthem-revival/egypt1_render.webp" loading="lazy"></div>
+<div><img src="/images/shootthem-revival/forest1_render.webp" loading="lazy"></div>
+<div><img src="/images/shootthem-revival/square1_render2.webp" loading="lazy"></div>
+<p>The art is still far from being ready, but here’s a preview of the new training level:</p>
+<div><img src="/images/shootthem-revival/blender_shooting_range3.webp" loading="lazy"></div>
+<p>The editor was also reworked… Or better being said, made from scratch - now it actually has a GUI, it allows to manage all the levels without restarting the app, it allows to place targets and move them around, it allows to place light sources on the scene and it is not a first-person camera anymore.</p>
+<div><img src="/images/shootthem-revival/Shoot Them Editor 26_09_2020 1_09_03 PM.webp" loading="lazy"></div>
+<div><img src="/images/shootthem-revival/Shoot Them Editor 26_09_2020 1_12_56 PM.webp" loading="lazy"></div>
+<div class="content-read-marker" data-fraction="25"></div>
+<h2 id="lessons-learned">Lessons learned</h2>
+<p>There are quite a few lessons that I have learned.</p>
+<h3 id="cmake-sucks-a-lot">CMake sucks. A lot.</h3>
+<p>I freaking hate CMake for a few very good reasons:</p>
+<ul>
+<li>awful syntax, it is still same good old Make, just with syntax being wrecked</li>
+<li>lack of any structure to the projects - everyone does it in their own preferred way, so no one will actually tell you <em>the way</em> to set up your project</li>
+<li>the lack of dependency managemen - which, in 2020, seems like a huge drawback, especially if you don’t develop every single bit of your application from scratch</li>
+<li>performance - yes, performance - by default it performs a clean build every time - it compiles <em>everything</em> from scratch every time you change anything</li>
+<li>documentation - no one will tell you <em>the way to do it</em>; most manuals and articles still rely on CMake 2.6 or 3.0 at best; a lot of information online is so dispersed, inconsistent and out-of-date - you will be surprised!</li>
+</ul>
+<p>The only reason I use CMake is because all the dependencies I use <em>could</em> be used with CMake. Well, except Irrlicht and IrrKlang.</p>
+<p>I thought Bazel or Buck will be better, but they still require one to create custom build instructions for those dependencies and it is especially hard for a cross-platform libraries such as Irrlicht. Well, at least they do solve most of CMake issues I have listed above.</p>
+<h3 id="irrlicht-is-old">Irrlicht is old</h3>
+<p>It is <em>extremely</em> old - last <em>bugfix</em> version, <code>1.8.4</code>, was released on <code>9th July 2016</code> (which is only 4.5 years ago as of now) and the corresponding minor version, <code>1.8.0</code> being released on <code>8th November 2012</code> (8 years ago as of now).</p>
+<p>It might not seem like a <em>huge</em> deal, but here are few things that I have noticed:</p>
+<ul>
+<li>shaders are hard to get working</li>
+<li>only GLSL and HSL are supported</li>
+<li>no frame buffer support</li>
+<li>renderers are OpenGL 3 and DirectX 9</li>
+<li>out-of-the-box tools are quite limited:
+<ul>
+<li>camera movement is either Maya-style, First-Person-Shooter-style or manual control, through matrices and vectors</li>
+<li>the GUI out of the box is not suited for high-resolution monitors with fonts being pixelated</li>
+<li>overall a lot of bugs with GUI (random events missed or fired)</li>
+</ul>
+</li>
+<li>ray-picking is buggy</li>
+<li>textures / lighting is buggy as heck (sometimes textures are disappearing, separate mesh triangles being shaded differently from others, etc.)</li>
+<li>anti-aliasing not working properly for sprites (which makes my HUD look ugly most of the time, even though it is high-res images)</li>
+</ul>
+<p>Check these screenshots for example:</p>
+<div><img src="/images/shootthem-revival/ShootThem 26_09_2020 8_19_30 PM.webp" loading="lazy"></div>
+<div><img src="/images/shootthem-revival/ShootThem 26_09_2020 8_19_43 PM.webp" loading="lazy"></div>
+<p>It is the same scene, with lighting being messed up for <em>all target models</em> on the latter screenshot.</p>
+<p>With the subset of APIs that are needed for my game, I am quite seriously considering just sticking to lower-level graphics APIs (OpenGL / DirectX) and stepping away from Irrlicht.</p>
+<h3 id="c-is-not-easy">C++ is not easy</h3>
+<p>With the idea of having redux-like state management and the strong type system of C++ I thought it would be a good idea to leverage the compiler and language features to do some compile-time checks for the actions that are being dispatched. I started with templates, but then figured out (the most painful way possible) that templates are merely hints for compiler.</p>
+<p>Also, one can not define method overrides for the base class of the hierarchy by specifying child class as method param.</p>
+<p>So my initial design like below fell apart very quickly:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cpp"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> BaseAction</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {};</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> PlaySoundAction</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> : </span><span style="color:#D73A49;--shiki-dark:#F97583">public</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> BaseAction</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  public:</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::string filename;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">};</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> DestroyEntityAction</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> : </span><span style="color:#D73A49;--shiki-dark:#F97583">public</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> BaseAction</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  public:</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::shared_ptr</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">Entity</span><span style="color:#D73A49;--shiki-dark:#F97583">></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> entity;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">};</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">// ---</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> BaseReducer</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  public:</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> processAction</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">BaseAction</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> action</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">};</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Reducer</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> : </span><span style="color:#D73A49;--shiki-dark:#F97583">public</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> BaseReducer</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  public:</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    // error: 'processAction' marked 'override' but does not override any member functions</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> processAction</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">DestroyEntityAction</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> action</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">override</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">      // ...</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    // error: 'processAction' marked 'override' but does not override any member functions</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> processAction</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">PlaySoundAction</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> action</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">override</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">      // ...</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">};</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">// ---</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Store</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  private:</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::unique_ptr</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">BaseReducer</span><span style="color:#D73A49;--shiki-dark:#F97583">></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> reducer;</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::queue</span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">BaseAction</span><span style="color:#D73A49;--shiki-dark:#F97583">*></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> actionQueue;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> processQueue</span><span style="color:#24292E;--shiki-dark:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">      while</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8">actionQueue.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">empty</span><span style="color:#24292E;--shiki-dark:#E1E4E8">()) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        auto</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> action </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> actionQueue.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">front</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        actionQueue.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        // error: no matching member function for call to 'processAction'</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        reducer-></span><span style="color:#6F42C1;--shiki-dark:#B392F0">processAction</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(action);</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">};</span></span>
+<span class="line"></span></code></pre>
+<div class="content-read-marker" data-fraction="50"></div>
+<p>Templates won’t solve the issue either:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cpp"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> BaseReducer</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  public:</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    // only this method will be called every time</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    template</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> &#x3C;</span><span style="color:#D73A49;--shiki-dark:#F97583">class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> T</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> processAction</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">T</span><span style="color:#E36209;--shiki-dark:#FFAB70"> action</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">      std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "processing unknown action"</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::endl;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">};</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Reducer</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> : </span><span style="color:#D73A49;--shiki-dark:#F97583">public</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> BaseReducer</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  public:</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> processAction</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">DestroyEntityAction</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> action</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">      BaseReducer</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">processAction</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(action);</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">      std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "destroying an object"</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::endl;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> processAction</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">PlaySoundAction</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> action</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">      BaseReducer</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::</span><span style="color:#6F42C1;--shiki-dark:#B392F0">processAction</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(action);</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">      std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "playing a sound"</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::endl;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">};</span></span>
+<span class="line"></span></code></pre>
+<p>Also, a template method can’t be virtual.</p>
+<p>So here comes another trick front-end developers use, the <code>type</code> field for actions and <code>switch..case</code> statement in reducer:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="cpp"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> BaseReducer</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  public:</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> processAction</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">BaseAction</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> action</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">};</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">class</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Reducer</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> : </span><span style="color:#D73A49;--shiki-dark:#F97583">public</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> BaseReducer</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  public:</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    virtual</span><span style="color:#D73A49;--shiki-dark:#F97583"> void</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> processAction</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">BaseAction</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#E36209;--shiki-dark:#FFAB70"> action</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">override</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">      switch</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (action->type) {</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        case</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> ActionType</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::PLAY_SOUND:</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">          std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "playing a sound"</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::endl;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        break</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        case</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> ActionType</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::DESTROY_ENTITY:</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">          std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "destroying an object"</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::endl;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        break</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        default</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">          std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::cout </span><span style="color:#D73A49;--shiki-dark:#F97583">&#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "unknown action"</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;&#x3C;</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> std</span><span style="color:#24292E;--shiki-dark:#E1E4E8">::endl;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">};</span></span>
+<span class="line"></span></code></pre>
+<h3 id="editor-is-really-important">Editor is really important</h3>
+<p>My game has multiple levels. Each level requires its own lighting and target placement. It is quite hard to do properly without the editor.
+And the first version of my “editor” has proven that.</p>
+<p>Even the new version of editor lacks lots of features - one still can’t rotate the targets or see the actual targets, there are no particle emitters available, there are no scene-specific events that would have allowed some neat mechanics.</p>
+<p>And finally, it is hard to see the result in the editor itself - there will be differences with the game.</p>
+<p>However, I did consider using GoDot engine for the game.</p>
+<p>There are features that I really liked about it.</p>
+<h4 id="i18n-support">I18n support</h4>
+<div><img src="/images/shootthem-revival/Screen Shot 2020-08-26 at 9.58.10 am.webp" loading="lazy"></div>
+<h4 id="configurable-user-actions">Configurable user actions</h4>
+<p>This way you can have same handler for gamepad buttons’ and keyboard/mouse input events:</p>
+<div><img src="/images/shootthem-revival/Screen Shot 2020-08-26 at 9.57.58 am.webp" loading="lazy"></div>
+<h4 id="attaching-scripts-to-any-object-on-the-scene">Attaching scripts to any object on the scene</h4>
+<p>This allows for a magnitude of interesting mechanics.</p>
+<div><img src="/images/shootthem-revival/Screen Shot 2020-08-26 at 9.55.19 am.webp" loading="lazy"></div>
+<p>For a number of reasons I didn’t choose it - there were some user experience issues significantly reducing my productivity.</p>
+<div class="content-read-marker" data-fraction="75"></div>
+<h4 id="asset-management">Asset management</h4>
+<p>Sspecifically the neccesity to specify every single texture for every single object on a scene. Check out this chicken model:</p>
+<div><img src="/images/shootthem-revival/Screen Shot 2020-08-26 at 9.55.34 am.webp" loading="lazy"></div>
+<p>It is just an OBJ file with every material specified:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>mtllib chicken.mtl</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span># 262 vertex positions</span></span>
+<span class="line"><span>v  18.556948 41.779099 -12.354659</span></span>
+<span class="line"><span>v  20.53804 50.283123 -13.547608</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span># ...</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span># Mesh '0' with 68 faces</span></span>
+<span class="line"><span>g 0</span></span>
+<span class="line"><span>usemtl Material #1</span></span>
+<span class="line"><span>f  1/1/1 2/2/2 3/3/3</span></span>
+<span class="line"><span>f  3/3/3 2/2/2 4/4/4</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span># ...</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>Yet in the editor you’ll have to manually assign every single material to every single sub-mesh:</p>
+<div><img src="/images/shootthem-revival/Screen Shot 2020-08-26 at 9.56.56 am.webp" loading="lazy"></div>
+<h4 id="not-really-clear-scene-node-types">Not really clear scene node types</h4>
+<p>Now which node do I use for kinematic physical body?</p>
+<div><img src="/images/shootthem-revival/Screen Shot 2020-08-26 at 10.10.15 am.webp" loading="lazy"></div>
+<p>Just what the heck is “spatial” and why does it have both “camera” and “collision shape” next to “audio stream”?</p>
+<div><img src="/images/shootthem-revival/Screen Shot 2020-08-26 at 10.10.20 am.webp" loading="lazy"></div>
+<h4 id="lack-of-any-sort-of-pre-made-solutions">Lack of any sort of pre-made solutions</h4>
+<p>So that every time you need an FPS camera - you have to define it from zero, using the matrix transformations. This increases the amount of boilerplate code and actually reduces the productivity even compared to Irrlicht:</p>
+<div><img src="/images/shootthem-revival/Screen Shot 2020-08-26 at 9.55.19 am.webp" loading="lazy"></div>
+<h2 id="this-is-not-the-end">This is not the end</h2>
+<p>I am not done with this project revival just yet - I still want it to build under OSX and I still have few assets to put into the game.
+Also, the plot is still not very clear, so I’d better come up with something rather interesting.
+Stay tuned for more updates!</p>
+<div class="content-read-marker" data-fraction="100"></div>  </div> </article> </main> <footer data-astro-cid-sz7xmlte>
+&copy; 2024 Your name here. All rights reserved.
+<div class="social-links" data-astro-cid-sz7xmlte> <a href="https://m.webtoo.ls/@astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Mastodon</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/mastodon" data-astro-cid-sz7xmlte><path fill="currentColor" d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://twitter.com/astrodotbuild" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Follow Astro on Twitter</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/twitter" data-astro-cid-sz7xmlte><path fill="currentColor" d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z" data-astro-cid-sz7xmlte></path></svg> </a> <a href="https://github.com/withastro/astro" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Go to Astro's GitHub repo</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" astro-icon="social/github" data-astro-cid-sz7xmlte><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" data-astro-cid-sz7xmlte></path></svg> </a> </div> </footer>  </body></html>

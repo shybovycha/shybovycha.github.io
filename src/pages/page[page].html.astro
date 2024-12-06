@@ -1,0 +1,26 @@
+---
+import { getCollection } from 'astro:content';
+import { PAGE_SIZE } from '../consts';
+import chunk from 'lodash/chunk';
+import IndexPage from '../components/IndexPage.astro';
+
+export async function getStaticPaths() {
+    const allPosts = await getCollection('blog');
+    return chunk(allPosts, PAGE_SIZE).map((posts, page) => ({
+        params: {
+            page,
+        },
+        props: {
+            page,
+        },
+    }));
+};
+
+interface Props {
+    page: number;
+}
+
+const { page } = Astro.props;
+---
+
+<IndexPage page={page} />

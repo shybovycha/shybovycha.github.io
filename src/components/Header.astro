@@ -1,0 +1,18 @@
+---
+import '../styles/global.css';
+
+interface Props {
+    isHome: boolean;
+    isAbout: boolean;
+}
+
+const { isHome, isAbout } = Astro.props;
+---
+
+<nav class="top">
+    <div class="links">
+        <a class:list={['nav-link', 'nav-item', { 'active': isHome } ]} href="/">Home</a>
+
+        <a class:list={[ 'nav-link', 'nav-item', { 'active': isAbout } ]} href="/about.html">About</a>
+    </div>
+</nav>
