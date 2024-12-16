@@ -216,6 +216,73 @@ For fair comparison, the implementation is kept same (no platform-specific code,
 The test checks both the result and the assumes no exception is thrown, even when the input is incorrect.
 For the interest sake, the exceptions thrown as well as bundle sizes will be listed below.
 
+### Gleam
+
+A naive implementation:
+
+```gleam
+import gleam/int
+import gleam/list
+import gleam/option.{Some}
+import gleam/regexp.{Match}
+import gleam/result
+
+pub type RGB {
+  RGB(r: Int, g: Int, b: Int)
+}
+
+pub fn hex2rgb(color: String) -> RGB {
+  let assert Ok(re) = from_string("^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$")
+
+  let assert [
+    Match(content: _, submatches: [Some(r_str), Some(g_str), Some(b_str)]),
+  ] = scan(with: re, content: color)
+
+  let assert [Ok(r), Ok(g), Ok(b)] = [
+    base_parse(r_str, 16),
+    base_parse(g_str, 16),
+    base_parse(b_str, 16),
+  ]
+
+  RGB(r, g, b)
+}
+```
+
+This produces approximately `8 KB` bundle.
+
+A somewhat more conventional implementation:
+
+```gleam
+pub fn hex2rgb(color: String) {
+  use re <- result.try(
+    result.try_recover(
+      regexp.from_string("^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$"),
+      fn(_) { Error("can not parse regexp pattern") },
+    ),
+  )
+
+  use rgb_strs <- result.try(case regexp.scan(re, color) {
+    [Match(content: _, submatches: [Some(r_str), Some(g_str), Some(b_str)])] ->
+      Ok([r_str, g_str, b_str])
+    _ -> Error("can not match components of a regexp")
+  })
+
+  let parse_res =
+    result.all(list.map(rgb_strs, fn(x) { int.base_parse(x, 16) }))
+
+  use rgb <- result.try(
+    result.try_recover(parse_res, fn(_) { Error("can not parse hex numbers") }),
+  )
+
+  case rgb {
+    [r, g, b] -> Ok(RGB(r, g, b))
+    _ -> Error("can not find three integer color components")
+  }
+}
+```
+
+Unfortunately, this one is a bit larger at `10 KB`.
+
 <!--more-->
 
 ### The test
@@ -226,6 +293,7 @@ const Purescript = require('./dist/bundle.purescript.js');
 const Rescript = require('./dist/bundle.rescript.js');
 const ScalaJS = require('./dist/bundle.scalajs.js');
 const Typescript = require('./dist/bundle.typescript.js');
+const Gleam = require('./dist/bundle.gleam.js');
 
 describe('DarkenColor', () => {
   const interpretations = {
@@ -233,7 +301,8 @@ describe('DarkenColor', () => {
     'PureScript': Purescript,
     'ReScript': Rescript,
     'ScalaJS': ScalaJS.DarkenColor,
-    'TypeScript': Typescript
+    'TypeScript': Typescript,
+    'Gleam': Gleam,
   };
 
   Object.entries(interpretations).forEach(([language, DarkenColor]) => {
@@ -488,6 +557,10 @@ Here is a comparison of the test results:
       <td>Elm</td>
       <td>n/a</td>
     </tr>
+    <tr>
+      <td>Gleam</td>
+      <td>❌</td>
+    </tr>
   </tbody>
 </table>
 
@@ -584,6 +657,87 @@ But `hex2rgb` needs the 1st argument to be:
 Hint: Try using String.fromInt to convert it to a string?
 ```
 
+### Gleam
+
+```
+ ● DarkenColor › in Gleam › hex2rgb › for number › positive › floating point › does not fail
+
+    expect(received).not.toThrow()
+
+    Error name:    "TypeError"
+    Error message: "string.matchAll is not a function"
+
+  ● DarkenColor › in Gleam › hex2rgb › for number › positive › integer › does not fail
+
+    expect(received).not.toThrow()
+
+    Error name:    "TypeError"
+    Error message: "string.matchAll is not a function"
+
+  ● DarkenColor › in Gleam › hex2rgb › for number › negative › floating point › does not fail
+
+    expect(received).not.toThrow()
+
+    Error name:    "TypeError"
+    Error message: "string.matchAll is not a function"
+
+  ● DarkenColor › in Gleam › hex2rgb › for number › negative › integer › does not fail
+
+    expect(received).not.toThrow()
+
+    Error name:    "TypeError"
+    Error message: "string.matchAll is not a function"
+
+  ● DarkenColor › in Gleam › hex2rgb › for object › null › does not fail
+
+    expect(received).not.toThrow()
+
+    Error name:    "TypeError"
+    Error message: "Cannot read properties of null (reading 'matchAll')"
+
+  ● DarkenColor › in Gleam › hex2rgb › for object › undefined › does not fail
+
+    expect(received).not.toThrow()
+
+    Error name:    "TypeError"
+    Error message: "Cannot read properties of undefined (reading 'matchAll')"
+
+  ● DarkenColor › in Gleam › hex2rgb › for object › NaN › does not fail
+
+    expect(received).not.toThrow()
+
+    Error name:    "TypeError"
+    Error message: "string.matchAll is not a function"
+
+  ● DarkenColor › in Gleam › hex2rgb › for object › JSON › does not fail
+
+    expect(received).not.toThrow()
+
+    Error name:    "TypeError"
+    Error message: "string.matchAll is not a function"
+
+  ● DarkenColor › in Gleam › hex2rgb › for object › array › does not fail
+
+    expect(received).not.toThrow()
+
+    Error name:    "TypeError"
+    Error message: "string.matchAll is not a function"
+
+  ● DarkenColor › in Gleam › hex2rgb › for object › Boolean › does not fail
+
+    expect(received).not.toThrow()
+
+    Error name:    "TypeError"
+    Error message: "string.matchAll is not a function"
+
+  ● DarkenColor › in Gleam › hex2rgb › for object › Map › does not fail
+
+    expect(received).not.toThrow()
+
+    Error name:    "TypeError"
+    Error message: "string.matchAll is not a function"
+```
+
 ## Bundle size
 
 <table>
@@ -617,6 +771,10 @@ Hint: Try using String.fromInt to convert it to a string?
     <tr>
       <td>Elm</td>
       <td>n/a</td>
+    </tr>
+    <tr>
+      <td>Gleam</td>
+      <td>10.8K</td>
     </tr>
   </tbody>
 </table>
