@@ -186,5 +186,6 @@ but with `-O1`
 Interesting how iterating forwards adds an extra boundary check and a jump (`cmd rbx, rbp` and `je .L19` in samples #1 and #3),
 whereas iterating backwards does not.
 
-In reality, this is such a fine-grained micro-optimization, which would only benefit on an incredibly large scale.
-Think of this as just an interesting find.
+But this find actually must come with one pretty big caveat: the cache lines. The number of assembly instructions is a pretty poor measure of performance - after all, CPU instructions are ridiculously fast, compared to any form of IO - specifically memory access.
+
+Iterating over a vector backwards affects the memory caching in a pretty poor manner _(benchmarking TBD)_.
