@@ -7,13 +7,14 @@ date: '2021-04-19T08:56:24+09:00'
 ### Contents
 
 1. [Introduction](/strongly-typed-front-end/2021/04/19/introduction.html)
-2. [**Experiment 1, darken_color  (you are here)**](/strongly-typed-front-end/experiment-1/2021/04/19/experiment-1.html)
+2. [**Experiment 1, hex2rgb  (you are here)**](/strongly-typed-front-end/experiment-1/2021/04/19/experiment-1.html)
 3. Experiment 2, simple application
     - [Elm](/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-elm.html)
     - [F#](/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-fsharp.html)
     - [PureScript & purescript-react-dom](/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-purescript.html)
     - [PureScript & Halogen](/strongly-typed-front-end/experiment-2/2024/05/17/experiment-2-purescript-halogen.html)
     - [ReasonML](/strongly-typed-front-end/experiment-2/2021/04/19/experiment-2-reasonml.html)
+    - [Gleam](/strongly-typed-front-end/experiment-2/2024/12/20/experiment-2-gleam.html)
 
 For a sake 🍶of <del>science</del> experiment, I have [converted](https://github.com/shybovycha/darken_color.js/tree/experiment/strong-typing) **one function** of a [library](https://github.com/shybovycha/darken_color.js) I created long time ago to multiple languages that compile to JS and called it with various values.
 
@@ -248,9 +249,9 @@ pub fn hex2rgb(color: String) -> RGB {
 }
 ```
 
-This produces approximately `8 KB` bundle.
+This produces approximately `8 KB` bundle, but this implementation treats any error as a panic.
 
-A somewhat more conventional implementation:
+An implementation which handles the errors properly looks somewhat like this:
 
 ```gleam
 pub fn hex2rgb(color: String) {
@@ -282,6 +283,43 @@ pub fn hex2rgb(color: String) {
 ```
 
 Unfortunately, this one is a bit larger at `10 KB`.
+
+An idiomatic Gleam implementation would make use of separate helper functions:
+
+```gleam
+fn parse_color(color: String) {
+  use re <- result.try(
+    result.map_error(
+      regexp.from_string("^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$"),
+      fn(_) { "can not parse regexp pattern" },
+    ),
+  )
+
+  case regexp.scan(re, color) {
+    [Match(content: _, submatches: [Some(r_str), Some(g_str), Some(b_str)])] ->
+      Ok(#(r_str, g_str, b_str))
+    _ -> Error("can not match components of a regexp")
+  }
+}
+
+fn parse_hex(input: String) {
+  result.map_error(int.base_parse(input, 16), fn(_) {
+    "can not parse " <> input <> " as hexadecimal number"
+  })
+}
+
+pub fn hex2rgb(color: String) {
+  use #(r_str, g_str, b_str) <- result.try(parse_color(color))
+
+  use r <- result.try(parse_hex(r_str))
+  use g <- result.try(parse_hex(g_str))
+  use b <- result.try(parse_hex(b_str))
+
+  Ok(RGB(r, g, b))
+}
+```
+
+This implementation is the smallest of the bunch at `8.7 KB` and as an added bonus, passes all the tests (unlike the previous implementations - in Gleam, that is).
 
 <!--more-->
 
@@ -559,7 +597,7 @@ Here is a comparison of the test results:
     </tr>
     <tr>
       <td>Gleam</td>
-      <td>❌</td>
+      <td>✅</td>
     </tr>
   </tbody>
 </table>
@@ -659,6 +697,8 @@ Hint: Try using String.fromInt to convert it to a string?
 
 ### Gleam
 
+The implementation using a regular expression panics with not really helpful error messages:
+
 ```
  ● DarkenColor › in Gleam › hex2rgb › for number › positive › floating point › does not fail
 
@@ -666,77 +706,9 @@ Hint: Try using String.fromInt to convert it to a string?
 
     Error name:    "TypeError"
     Error message: "string.matchAll is not a function"
-
-  ● DarkenColor › in Gleam › hex2rgb › for number › positive › integer › does not fail
-
-    expect(received).not.toThrow()
-
-    Error name:    "TypeError"
-    Error message: "string.matchAll is not a function"
-
-  ● DarkenColor › in Gleam › hex2rgb › for number › negative › floating point › does not fail
-
-    expect(received).not.toThrow()
-
-    Error name:    "TypeError"
-    Error message: "string.matchAll is not a function"
-
-  ● DarkenColor › in Gleam › hex2rgb › for number › negative › integer › does not fail
-
-    expect(received).not.toThrow()
-
-    Error name:    "TypeError"
-    Error message: "string.matchAll is not a function"
-
-  ● DarkenColor › in Gleam › hex2rgb › for object › null › does not fail
-
-    expect(received).not.toThrow()
-
-    Error name:    "TypeError"
-    Error message: "Cannot read properties of null (reading 'matchAll')"
-
-  ● DarkenColor › in Gleam › hex2rgb › for object › undefined › does not fail
-
-    expect(received).not.toThrow()
-
-    Error name:    "TypeError"
-    Error message: "Cannot read properties of undefined (reading 'matchAll')"
-
-  ● DarkenColor › in Gleam › hex2rgb › for object › NaN › does not fail
-
-    expect(received).not.toThrow()
-
-    Error name:    "TypeError"
-    Error message: "string.matchAll is not a function"
-
-  ● DarkenColor › in Gleam › hex2rgb › for object › JSON › does not fail
-
-    expect(received).not.toThrow()
-
-    Error name:    "TypeError"
-    Error message: "string.matchAll is not a function"
-
-  ● DarkenColor › in Gleam › hex2rgb › for object › array › does not fail
-
-    expect(received).not.toThrow()
-
-    Error name:    "TypeError"
-    Error message: "string.matchAll is not a function"
-
-  ● DarkenColor › in Gleam › hex2rgb › for object › Boolean › does not fail
-
-    expect(received).not.toThrow()
-
-    Error name:    "TypeError"
-    Error message: "string.matchAll is not a function"
-
-  ● DarkenColor › in Gleam › hex2rgb › for object › Map › does not fail
-
-    expect(received).not.toThrow()
-
-    Error name:    "TypeError"
-    Error message: "string.matchAll is not a function"
 ```
+
+The pattern-matching-based implementation does not fail at all.
 
 ## Bundle size
 
