@@ -7,6 +7,8 @@ import { parse as parseDate, isValid as isValidDate } from 'date-fns';
 import matter from 'gray-matter';
 
 import rehypeStringify from 'rehype-stringify';
+import remarkGridTable from '@adobe/remark-gridtables';
+import { TYPE_TABLE, mdast2hastGridTablesHandler } from '@adobe/mdast-util-gridtables';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
@@ -35,9 +37,14 @@ import logger from './logger';
 
 const parseMarkdown = async (src: string): Promise<string> => {
     const res = await unified()
-        .use(remarkParse, { fragment: true })
+        .use(remarkParse)
+        .use(remarkGridTable)
         .use(remarkGfm)
-        .use(remarkRehype)
+        .use(remarkRehype, {
+            handlers: {
+                [TYPE_TABLE]: mdast2hastGridTablesHandler(),
+            },
+        })
         .use(rehypeShiki, {
             themes: {
                 light: 'catppuccin-latte',
