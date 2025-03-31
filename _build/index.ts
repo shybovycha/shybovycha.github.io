@@ -6,81 +6,14 @@ import { parse as parseDate, isValid as isValidDate } from 'date-fns';
 
 import matter from 'gray-matter';
 
-import { marked } from 'marked';
-import { markedHighlight } from 'marked-highlight';
-import markedExtendedTables from 'marked-extended-tables';
-import { gfmHeadingId as markedGfmHeadingId  } from 'marked-gfm-heading-id';
-import { mangle as markedMangle } from 'marked-mangle';
-import { markedSmartypants } from 'marked-smartypants';
-import { markedXhtml } from 'marked-xhtml';
+import rehypeStringify from 'rehype-stringify';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
+import remarkRehype from 'remark-rehype';
+import rehypeShiki from '@shikijs/rehype';
+import { unified } from 'unified';
 
 import { chunk, isString } from 'lodash';
-
-import Prism from'prismjs';
-
-import 'prismjs/components/prism-antlr4';
-import 'prismjs/components/prism-avro-idl';
-import 'prismjs/components/prism-bash';
-import 'prismjs/components/prism-basic';
-import 'prismjs/components/prism-c';
-import 'prismjs/components/prism-cpp'; // has to be imported before chaiscript to prevent errors
-import 'prismjs/components/prism-chaiscript';
-import 'prismjs/components/prism-clike';
-import 'prismjs/components/prism-clojure';
-import 'prismjs/components/prism-cmake';
-import 'prismjs/components/prism-coffeescript';
-import 'prismjs/components/prism-ruby'; // has to be imported before crystal to prevent errors
-import 'prismjs/components/prism-crystal';
-import 'prismjs/components/prism-csharp';
-import 'prismjs/components/prism-css';
-import 'prismjs/components/prism-d';
-import 'prismjs/components/prism-diff';
-import 'prismjs/components/prism-dot';
-import 'prismjs/components/prism-elixir';
-import 'prismjs/components/prism-elm';
-import 'prismjs/components/prism-erlang';
-import 'prismjs/components/prism-flow';
-import 'prismjs/components/prism-fsharp';
-import 'prismjs/components/prism-gherkin';
-import 'prismjs/components/prism-git';
-import 'prismjs/components/prism-glsl';
-import 'prismjs/components/prism-go';
-import 'prismjs/components/prism-groovy';
-import 'prismjs/components/prism-handlebars';
-import 'prismjs/components/prism-haskell';
-import 'prismjs/components/prism-ini';
-import 'prismjs/components/prism-java';
-import 'prismjs/components/prism-javascript';
-import 'prismjs/components/prism-json';
-import 'prismjs/components/prism-jsx';
-import 'prismjs/components/prism-kotlin';
-import 'prismjs/components/prism-latex';
-import 'prismjs/components/prism-less';
-import 'prismjs/components/prism-lisp';
-import 'prismjs/components/prism-lua';
-import 'prismjs/components/prism-markdown';
-import 'prismjs/components/prism-markup-templating';
-import 'prismjs/components/prism-nasm';
-import 'prismjs/components/prism-ocaml';
-import 'prismjs/components/prism-php';
-import 'prismjs/components/prism-prolog';
-import 'prismjs/components/prism-protobuf';
-import 'prismjs/components/prism-pug';
-import 'prismjs/components/prism-purescript';
-import 'prismjs/components/prism-python';
-import 'prismjs/components/prism-reason';
-import 'prismjs/components/prism-regex';
-import 'prismjs/components/prism-rust';
-import 'prismjs/components/prism-sass';
-import 'prismjs/components/prism-scala';
-import 'prismjs/components/prism-scss';
-import 'prismjs/components/prism-sql';
-import 'prismjs/components/prism-squirrel';
-import 'prismjs/components/prism-swift';
-import 'prismjs/components/prism-typescript';
-import 'prismjs/components/prism-vim';
-import 'prismjs/components/prism-yaml';
-import 'prismjs/components/prism-zig';
 
 import {
     renderRobotsTxt,
@@ -100,40 +33,33 @@ import config from './config';
 
 import logger from './logger';
 
-marked.use({
-    gfm: true, // GitHub-flavoured Markdown
-});
+const parseMarkdown = async (src: string): Promise<string> => {
+    const res = await unified()
+        .use(remarkParse, { fragment: true })
+        .use(remarkGfm)
+        .use(remarkRehype)
+        .use(rehypeShiki, {
+            themes: {
+                light: 'catppuccin-latte',
+                dark: 'catppuccin-frappe',
+            },
+        })
+        .use(rehypeStringify)
+        .process(src);
 
-marked.use(markedXhtml()); // self-close single tags
-marked.use(markedSmartypants()); // dashes and ellipses
-marked.use(markedGfmHeadingId());
-marked.use(markedMangle());
-marked.use(markedExtendedTables());
-
-marked.use(markedHighlight({
-    highlight(code: string, language: string) {
-        if (!Prism.languages[language]) {
-            if (language) {
-                logger.warn(`Can't find language "${language}" for code ${code}`);
-            }
-
-            return code;
-        }
-
-        return Prism.highlight(code, Prism.languages[language], language);
-    },
-}));
+    return String(res);
+};
 
 const parsePostContent = async (src: string, loadOptions?: LoadPostContentOptions): Promise<PostContent> => {
     const options = loadOptions ? { excerpt: true, excerpt_separator: loadOptions.excerptSeparator } : {};
 
     const { data: frontMatter, excerpt, content } = matter(src, options);
 
-    const parsedExcerpt = excerpt ? await marked.parse(excerpt) : undefined;
-    const parsedContent = await marked.parse(content);
+    const parsedExcerpt = excerpt ? await parseMarkdown(excerpt) : undefined;
+    const parsedContent = await parseMarkdown(content);
 
     return {
-        frontMatter,
+        frontMatter: frontMatter,
         excerpt: parsedExcerpt,
         content: parsedContent,
     };
@@ -356,9 +282,7 @@ const copyStaticFiles = (staticDirs: string[], outputDir: string) =>
             }),
 
         [
-            ['main_bundle.css', 'main.css'],
-            ['prism.min_bundle.css', 'prism.min.css'],
-            ['prism-twilight.min_bundle.css', 'prism-twilight.min.css'],
+            ['builder_bundle.css', 'main.css'],
         ].map(async ([file, alias]) => {
             try {
                 await fsPromise.copyFile(path.join('_build_tmp', file), path.join(outputDir, alias));
@@ -435,3 +359,4 @@ const build = async () => {
 };
 
 await build();
+

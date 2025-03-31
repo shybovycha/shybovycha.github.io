@@ -1,7 +1,5 @@
 import React from 'react';
 
-import 'prismjs/themes/prism.min.css';
-import 'prismjs/themes/prism-twilight.min.css';
 import '../styles/main.css';
 
 export interface LayoutProps {
