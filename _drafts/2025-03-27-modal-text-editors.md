@@ -88,6 +88,7 @@ And there are a few quality-of-life improvements:
 - [cmp-cmdline](https://github.com/hrsh7th/cmp-cmdline) - for autocomplete suggestions in the Noice command popup
 - [nvim-treesitter-context](nvim-treesitter/nvim-treesitter-context) - shows the current context as fixed lines at the top of the screen (like in VSCode)
 - [outline](https://github.com/hedyhli/outline.nvim) - shows symbols defined in the current buffer
+- [quicker](https://github.com/stevearc/quicker.nvim) - allows for better quickref buffer experience
 
 The config I have at the moment allows the following:
 
@@ -101,6 +102,7 @@ The config I have at the moment allows the following:
     - `s` performs a Flash search (with literal references to different points in text)
     - `S-s` performs a treesitter Flash search
 - terminal
+    - trying to utilize zellij instead of built-in NeoVim terminal, following the "one tool for its purpose" principle
     - `<leader>t` toggles a terminal
     - `C-\ C-n` switches terminal to Normal mode, but I also remapped it to `<Esc><Esc>`
     - `i` switches terminal to Insert mode
@@ -126,13 +128,18 @@ The config I have at the moment allows the following:
     - `gI` (built-in `gri` since NeoVim 0.11) shows a list of LSP implementations
     - `grr` (built-in since NeoVim 0.11) renames a symbol under cursor
     - `C-s` (built-in since NeoVim 0.11) shows method signature reference
-
+    - `]d` / `[d` (built-in) goes to previous / next diagnostic message location (e.g. warnings, errors, suggestions in the code)
+    - `C-w,d` shows the diagnostic message at cursor
 - Telescope
     - `<leader><leader>` opens a quick action menu (Telescope builtin)
     - `<leader>f` opens search in files
     - `<leader>gf` opens search only in files tracked by Git
     - `<leader>b` opens a list of NeoVim buffers, ignoring current buffer and sorting by last used timestamp
     - `<leader>/` performs a live-grep on files
+    - `C-q` (in the search results; needs Zellij in the locked mode - `C-g` - to prevent conflict) moves files to quickref buffer; then
+        - `]c` / `[c` for next / previous quickref entry
+        - `<leader>q` toggles quickref buffer
+        - `<leader>l` toggles locations buffer
 
 ## Kakoune
 
