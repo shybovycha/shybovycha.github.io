@@ -43,7 +43,7 @@ This program exhibits the concept of scope isolation - it does not change anythi
 
 Using the power of [Godbolt compiler exporer](https://godbolt.org/) we can see what it will be compiled to (using `x86-64 gcc 13.1` with no compiler options):
 
-```nasm
+```asm
 sum(std::vector<int, std::allocator<int> >):
         push    rbp
         mov     rbp, rsp
@@ -97,7 +97,7 @@ sum2 [] = 0
 
 And it is compiled into the following assembly:
 
-```nasm
+```asm
 .LrB_bytes:
         .string "Example"
 .Lrz_bytes:
@@ -206,7 +206,7 @@ int sum3(std::span<int> a, int res = 0) {
 
 This yields a very similar assembly code too:
 
-```nasm
+```asm
 sum3(std::span<int, 18446744073709551615ul>, int):
         push    rbp
         mov     rbp, rsp
@@ -343,7 +343,7 @@ We will refer to this example a couple of times later.
 
 It compiles to the following assembly code (with `-std=c++1z -O1` compiler flags):
 
-```nasm
+```asm
 sum(int*, int): # @sum(int*, int)
   test esi, esi
   jle .LBB0_1
@@ -376,7 +376,7 @@ int sum(int *a, int n) {
 
 with `-O2` compiler flag yields the following assembly code:
 
-```nasm
+```asm
 sum(int*, int): # @sum(int*, int)
   test esi, esi
   jle .LBB0_1
@@ -462,7 +462,7 @@ int reduce(std::vector<int> a, int init, std::function<int(int, int)> &reducer) 
 
 the first one produces this result:
 
-```nasm
+```asm
 reduce(int*, int, int, int (*)(int, int)): # @reduce(int*, int, int, int (*)(int, int))
   push rbp
   mov rbp, rsp
@@ -498,7 +498,7 @@ reduce(int*, int, int, int (*)(int, int)): # @reduce(int*, int, int, int (*)(int
 
 Still pretty conscise assebmly code. But the C++ one produces quite a bit of noise due to the use of `std::function` and `std::vector`:
 
-```nasm
+```asm
 reduce(std::vector<int, std::allocator<int> >, int, std::function<int (int, int)>&): # @reduce(std::vector<int, std::allocator<int> >, int, std::function<int (int, int)>&)
   push rbp
   mov rbp, rsp
@@ -686,7 +686,7 @@ int&& std::forward<int>(std::remove_reference<int>::type&): # @int&& std::forwar
 
 But in the essence it is still 41 LOC:
 
-```nasm
+```asm
 reduce(std::vector<int, std::allocator<int> >, int, std::function<int (int, int)>&): # @reduce(std::vector<int, std::allocator<int> >, int, std::function<int (int, int)>&)
   push rbp
   mov rbp, rsp
@@ -777,7 +777,7 @@ int main() {
 
 Which compile into these two Assemblies:
 
-```nasm
+```asm
 reduce: # @reduce
   push rbp
   mov rbp, rsp
@@ -846,7 +846,7 @@ main: # @main
 
 and
 
-```nasm
+```asm
 reduce(std::vector<int, std::allocator<int> >, int, std::function<int (int, int)>): # @reduce(std::vector<int, std::allocator<int> >, int, std::function<int (int, int)>)
   push rbp
   mov rbp, rsp
@@ -2966,7 +2966,7 @@ int reduce(int n, int *a, int (*f)(int a, int b), int init) {
 
 This last example will be compiled (using Clang 5.0.0) into this:
 
-```nasm
+```asm
 reduce(int, int*, int (*)(int, int), int): # @reduce(int, int*, int (*)(int, int), int)
   push rbp
   mov rbp, rsp
@@ -3002,7 +3002,7 @@ reduce(int, int*, int (*)(int, int), int): # @reduce(int, int*, int (*)(int, int
 
 With `-O2` option:
 
-```nasm
+```asm
 reduce(int, int*, int (*)(int, int), int): # @reduce(int, int*, int (*)(int, int), int)
   push r15
   push r14
@@ -3046,7 +3046,7 @@ int reduce(std::vector<int> a, std::function<int (int, int)> f, int init) {
 
 its output (with Clang 5.0.0 and `-std=c++1z -O2` options:
 
-```nasm
+```asm
 reduce(std::vector<int, std::allocator<int> >, std::function<int (int, int)>, int): # @reduce(std::vector<int, std::allocator<int> >, std::function<int (int, int)>, int)
   push r15
   push r14
@@ -3096,7 +3096,7 @@ sum2 :: [Int] -> Int
 sum2 = foldr (+) 0
 ```
 
-```nasm
+```asm
 __stginit_Example:
 c10H_str:
   .byte 109
@@ -3202,7 +3202,7 @@ sum1 [] =  0
 
 which compiles into
 
-```nasm
+```asm
 __stginit_Example:
 cHx_str:
   .byte 109
@@ -3298,7 +3298,7 @@ Please note: no compiler options provided!
 
 With `-O2` the last one gives us this:
 
-```nasm
+```asm
 __stginit_Example:
 cKp_str:
   .byte 109
@@ -3408,7 +3408,7 @@ cLw_info:
 
 Effectively, the summing function in Haskell has this Assembly output:
 
-```nasm
+```asm
 Example_$wsum1_info:
   leaq -16(%rbp),%rax
   cmpq %r15,%rax
@@ -3532,7 +3532,7 @@ int sum(int *a, int n) {
 
 which yields
 
-```nasm
+```asm
 sum(int*, int): # @sum(int*, int)
   push rbp
   mov rbp, rsp
@@ -3566,7 +3566,7 @@ sum(int*, int): # @sum(int*, int)
 
 With `-O2` it produces somewhat more code:
 
-```nasm
+```asm
 sum(int*, int): # @sum(int*, int)
   test esi, esi
   jle .LBB0_1

@@ -17,7 +17,7 @@ Currently I am working on a long arithmetic problem at the university. This prob
 <!--more-->
 Thus, I created this piece of snippet code:
 
-```nasm
+```asm
 ; void addition(int* x, int x_len, int* y, int y_len, int* &z, int* z_len);
 global _Z8additionPiiS_iRS_S_
 _Z8additionPiiS_iRS_S_:

@@ -454,7 +454,7 @@ SSE on integers: 0.00274800 (49453512)
 
 Now here is a thing to think about: the assembly output of the `sum` function is much shorter than the one for the `sum_sse` function:
 
-```nasm
+```asm
 sum(float*, int):
         push    rbp
         mov     rbp, rsp
@@ -488,7 +488,7 @@ vs
 
 <div class="content-read-marker" data-fraction="75"></div>
 
-```nasm
+```asm
 sum_sse(float*, int):
         push    rbp
         mov     rbp, rsp

@@ -33,7 +33,7 @@ And to start off, we will write a very simple program in assembly language. I sh
 
 Our first program will do nothing. It will just contain globally available function, named <code>myfunc</code>.
 
-```nasm
+```asm
     BITS 32
 
     section .text
@@ -298,7 +298,7 @@ These 60 lines of code is caused by a C type sizes. See, in 32-bit mode we have 
 
 But let’s go back and take a look at, let’s say, <code>func1</code> function assembly:
 
-```nasm
+```asm
 _Z5func1v:
 .LFB0:
     .cfi_startproc
@@ -321,7 +321,7 @@ _Z5func1v:
 
 Yeah, monstrous&hellip; Cleaning it up and using <code>enter</code> and <code>leave</code>, we have only this:
 
-```nasm
+```asm
 _Z5func1v:
     enter 0, 0
     mov eax, 120
@@ -335,7 +335,7 @@ Let’s take a look at the assembly code for a <code>func7</code> function and c
 
 **32-bit func7:**
 
-```nasm
+```asm
 _Z5func7v:
     enter 0, 0
     mov eax, 2147483647
@@ -346,7 +346,7 @@ _Z5func7v:
 
 **64-bit func7:**
 
-```nasm
+```asm
 _Z5func8l:
     enter 0, 0
     mov QWORD PTR [rbp-8], rdi
@@ -365,20 +365,20 @@ long long func7() {
 
 We will end-up with this code in a 32-bit mode:
 
-```nasm
+```asm
 mov eax, -2147483647
 mov edx, -1
 ```
 
 And in 64-bit mode it will have only one operation:
 
-```nasm
+```asm
     mov rax, -2147483647
 ```
 
 Now let’s take a look over the <code>func8</code> function:
 
-```nasm
+```asm
 _Z5func8x:
     enter 0, 0
     sub esp, 8
@@ -396,7 +396,7 @@ _Z5func8x:
 
 We may clean it up removing all those <code>DWORD PTR</code> type hints:
 
-```nasm
+```asm
 _Z5func8x:
     enter 0, 0
     sub esp, 8
@@ -414,7 +414,7 @@ All the memory “by the negative side” of <code>EBP</code> is dedicated to lo
 
 Taking that into account, we may rewrite our assembly function as this:
 
-```nasm
+```asm
 _Z5func8x:
     enter 0, 0
 
@@ -473,7 +473,7 @@ int main() {
 
 And let’s create the function <code>sum</code> in NASM. To start off, we’ll use a function, receiving two arguments, <code>int</code> and <code>int*</code> and returning a zero.
 
-```nasm
+```asm
 BITS 32
 
 section .text
@@ -501,7 +501,7 @@ In NASM we may calculate the address of each array element in the operand itself
 
 Now everything what we need is to add all those hints into a single program:
 
-```nasm
+```asm
 BITS 32
 
 section .text
@@ -542,7 +542,7 @@ These two codes are completely identical for processor:
 
 **manual loop**:
 
-```nasm
+```asm
 mov ecx, n
 
 add_loop:
@@ -556,7 +556,7 @@ add_loop:
 
 **with <code>loop</code> instruction**:
 
-```nasm
+```asm
 mov ecx, n
 
 add_loop:
@@ -608,7 +608,7 @@ int main() {
 
 This one will calculate a dot product of two _n-element_ vectors.
 
-```nasm
+```asm
 BITS 32
 
 section .text
@@ -686,7 +686,7 @@ int main() {
 
 **NASM program**:
 
-```nasm
+```asm
 BITS 32
 
 section .text

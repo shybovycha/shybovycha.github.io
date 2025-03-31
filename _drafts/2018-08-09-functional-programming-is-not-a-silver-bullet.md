@@ -26,7 +26,7 @@ int sum(int* a, int n) {
 }
 ```
 
-```nasm
+```asm
 sum: # @sum
   push rbp
   mov rbp, rsp
@@ -76,7 +76,7 @@ int main() {
 }
 ```
 
-```nasm
+```asm
 reduce: # @reduce
   push rbp
   mov rbp, rsp
@@ -168,7 +168,7 @@ int main() {
 }
 ```
 
-```nasm
+```asm
 reduce(std::vector<int, std::allocator<int> >, int, std::function<int (int, int)>): # @reduce(std::vector<int, std::allocator<int> >, int, std::function<int (int, int)>)
   push rbp
   mov rbp, rsp
@@ -2218,7 +2218,7 @@ sum a = sum' a 0
 
 yields
 
-```nasm
+```asm
 rYy_bytes:
         .asciz "main"
 rYS_closure:
@@ -2319,7 +2319,7 @@ sum a = foldl (+) 0 a
 
 yields
 
-```nasm
+```asm
 r1qE_bytes:
         .asciz "main"
 r1qP_closure:
@@ -2387,7 +2387,7 @@ reduce [] init reducer = init
 reduce (x:xs) acc reducer = reduce xs (reducer x acc) reducer
 ```
 
-```nasm
+```asm
 __stginit_Example:
 Example_reduce_closure:
   .quad Example_reduce_info
@@ -2553,7 +2553,7 @@ int levenshtein(char *s1, int i, char *s2, int j) {
 
 In this case we add an early return condition, which adds ~30 lines of assembly output:
 
-```nasm
+```asm
 levenshtein(char*, int, char*, int):
         push    rbp
         mov     rbp, rsp
@@ -2720,7 +2720,7 @@ levenshtein s1 s2 = levenshtein' s1 (length s1) s2 (length s2)
 
 Yields
 
-```nasm
+```asm
 r2wR_bytes:
         .asciz "main"
 r2xp_closure:

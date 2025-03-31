@@ -348,7 +348,7 @@ clang: error: linker command failed with exit code 1 (use -v to see invocation)
 What? Why? We've declared that method explicitly! Or maybe not?.. Let's look at our object file using `nm` utility:
 `nm video_reader.o`.
 
-```nasm
+```asm
 00000000000001d8 s GCC_except_table1
 0000000000000258 s GCC_except_table10
 0000000000000308 s GCC_except_table12

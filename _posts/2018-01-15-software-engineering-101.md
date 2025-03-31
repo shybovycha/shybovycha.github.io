@@ -131,7 +131,7 @@ It would also be nice to be able to comment out some code. To comment the line (
 
 Now that we have everything we need to componse a full program we can finally translate our `sum` function in C to our Assembly dialect:
 
-```nasm
+```asm
 ; program bootstrap:
 ; these 3 steps are done by the callee (operating system or other function)
 ; - load the number of arguments, 2, to memory[0x0000]
@@ -265,7 +265,7 @@ We will also need to extract only effective lines from our code and number each 
 
 We have just did the same job a compiler does for us when we write code in a high-level language like C. You can see the code is verbose, what is caused by us and the limitations / conventions we have agreed on. But we can extend either the assembly language by adding new instructions, which will simplify writing programs or by extending the processor architecture by introducing stack and increasing the power of ALU etc. For instance, we could have changed the moving data between memory and registers and thus reduce the amount of both registers needed to do that and the amount of commands needed for the operation:
 
-```nasm
+```asm
 MOV A, addr
 MOV B, value
 SAVEB
@@ -273,7 +273,7 @@ SAVEB
 
 could become
 
-```nasm
+```asm
 MOV B, [addr]
 ```
 
@@ -325,7 +325,7 @@ int product(int a, int b) {
 
 It will be compiled into this assembly code:
 
-```nasm
+```asm
 product(int, int): # @product(int, int)
   imul edi, esi
   mov eax, edi
@@ -336,7 +336,7 @@ Looks simple, huh?
 
 In essence, each line of a program in assembly language looks like this:
 
-```nasm
+```asm
 label: command operand1, operand2 # comment
 ```
 
@@ -364,7 +364,7 @@ back to RAM after the operation execution (usually this step is stated separated
 This is time-consuming. And since RAM is not that fast as processor's registers, it makes operations slow.
 Memory is addressed using one of these syntaxes:
 
-```nasm
+```asm
 [address] ; [0x12345]
 [register] ; [RAX] - takes address, contained in register RAX
 [register + number] ; [RAX + 2]
@@ -375,7 +375,7 @@ Memory is addressed using one of these syntaxes:
 You can also do more tricky thing: define a named constant - give a literal name to a number and then refer
 to a value by its name. But first you need to reserve a memory for it:
 
-```nasm
+```asm
 constant_name: db 0x123 ; define one byte value (0x123) and give it a name "constant_name"
 constant2: dw 'ab' ; define one word (two bytes) of values 0x61 and 0x62, correspondingly
 const3: dd 'abcd' ; define double-word (four bytes)
@@ -391,7 +391,7 @@ values to hexadecimal integer values anyway.
 
 You can also reserve a bunch of memory cells using `res` command:
 
-```nasm
+```asm
 const1: resb 2 ; reserve 2 bytes
 const2: resw 16 ; reserve 16 words
 const3: resq 7 ; reserve seven 8-byte cells
@@ -409,7 +409,7 @@ int product(int a, int b) {
 
 Its assembly code is:
 
-```nasm
+```asm
 product(int, int): # @product(int, int)
   imul edi, esi
   mov eax, edi
@@ -418,15 +418,15 @@ product(int, int): # @product(int, int)
 
 This program has exactly three effective lines:
 
-```nasm
+```asm
 imul edi, esi ; multiply the data in two registers, EDI and ESI and store the result of multiplication in EAX register
 ```
 
-```nasm
+```asm
 mov eax, edi ; copy the data from EAX to EDI
 ```
 
-```nasm
+```asm
 ret ; restore pointer to the currently running command and the values in registers from stack
 ```
 

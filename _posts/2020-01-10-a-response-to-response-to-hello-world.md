@@ -46,7 +46,7 @@ func main() {
 
 ### Assembly
 
-```nasm
+```asm
 _start:
     mov rdi, [rsp + 16]
     call atoi
@@ -98,7 +98,7 @@ I came up with the code in Assembly that does exactly the same - allocates the m
 
 <div class="content-read-marker" data-fraction="25"></div>
 
-```nasm
+```asm
 ;; compile me on OSX: nasm -fmacho64 helloworld.asm && ld helloworld.o -lSystem -macosx_version_min 10.13
 ;; compile me on Linux: nasm -felf64 helloworld.asm && ld helloworld.o # AND DO NOT FORGET TO ALIGN WITH THE SYSCALL CONVENTION BY USING STACK INSTEAD OF REGISTERS
 
@@ -214,7 +214,7 @@ As Caleb highlights in his blog, a lot of "burden" introduced by many languages 
 
 I went ahead and added few logs, memory deallocation and test for allocation success to the code in Assembly:
 
-```nasm
+```asm
 ;; compile me on OSX: nasm -fmacho64 helloworld.asm && ld helloworld.o -lSystem -macosx_version_min 10.13
 ;; compile me on Linux: nasm -felf64 helloworld.asm && ld helloworld.o # AND DO NOT FORGET TO ALIGN WITH THE SYSCALL CONVENTION BY USING STACK INSTEAD OF REGISTERS
 
