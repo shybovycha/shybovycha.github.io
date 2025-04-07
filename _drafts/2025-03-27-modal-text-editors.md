@@ -87,8 +87,9 @@ And there are a few quality-of-life improvements:
 - [indent-blankline](https://github.com/lukas-reineke/indent-blankline.nvim) - to show indentation lines
 - [cmp-cmdline](https://github.com/hrsh7th/cmp-cmdline) - for autocomplete suggestions in the Noice command popup
 - [nvim-treesitter-context](nvim-treesitter/nvim-treesitter-context) - shows the current context as fixed lines at the top of the screen (like in VSCode)
-- [outline](https://github.com/hedyhli/outline.nvim) - shows symbols defined in the current buffer
+- [outline](https://github.com/hedyhli/outline.nvim) with [outline-treesitter-provider](https://github.com/epheien/outline-treesitter-provider.nvim) - shows symbols defined in the current buffer
 - [quicker](https://github.com/stevearc/quicker.nvim) - allows for better quickref buffer experience
+- [telescope-live-grep-args](https://github.com/nvim-telescope/telescope-live-grep-args.nvim) - allows to search not by text (or regex) alone, but also by filename / filetype (and more)
 
 The config I have at the moment allows the following:
 
@@ -106,6 +107,8 @@ The config I have at the moment allows the following:
     - `<leader>t` toggles a terminal
     - `C-\ C-n` switches terminal to Normal mode, but I also remapped it to `<Esc><Esc>`
     - `i` switches terminal to Insert mode
+- navigation
+    - `C-left` / `C-right` goes through the jumplist (similarly to back/forward in IntelliJ / VSCode)
 - editing
     - `ys<motion><character>` wraps selected text in a specified character
     - `cs<old char><new char>` changes the wrapped character around text under cursor from `<old char>` to `<new char>`
@@ -135,7 +138,7 @@ The config I have at the moment allows the following:
     - `<leader>f` opens search in files
     - `<leader>gf` opens search only in files tracked by Git
     - `<leader>b` opens a list of NeoVim buffers, ignoring current buffer and sorting by last used timestamp
-    - `<leader>/` performs a live-grep on files
+    - `<leader>/` performs a live-grep (with arguments) on files
     - `C-q` (in the search results; needs Zellij in the locked mode - `C-g` - to prevent conflict) moves files to quickref buffer; then
         - `]c` / `[c` for next / previous quickref entry
         - `<leader>q` toggles quickref buffer
