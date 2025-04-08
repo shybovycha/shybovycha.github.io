@@ -125,6 +125,9 @@ The config I have at the moment allows the following:
         - `ac` / `ic` - outer class code / inner class code
         - `af` / `if` - outer function / inner function
         - `as` - local scope
+        - `ai` / `ii` - outer function call / inner function call (`i` for `invocation`)
+        - `ap` / `ip` - outer / inner parameter
+        - `ar` / `ir` - outer / inner return statement
     - `<leader>o` shows list of symbols defined in the current buffer (outline)
     - `gr` (built-in `grr` since NeoVim 0.11) shows a list of LSP references; `<C-q>` sends the list of locations to quick buffer
     - `gd` shows a list of LSP definitions
