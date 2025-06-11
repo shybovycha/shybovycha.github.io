@@ -132,7 +132,7 @@ The config I have at the moment allows the following:
     - `gr` (built-in `grr` since NeoVim 0.11) shows a list of LSP references; `<C-q>` sends the list of locations to quick buffer
     - `gd` shows a list of LSP definitions
     - `gI` (built-in `gri` since NeoVim 0.11) shows a list of LSP implementations
-    - `grr` (built-in since NeoVim 0.11) renames a symbol under cursor
+    - `grn` (built-in since NeoVim 0.11) renames a symbol under cursor
     - `C-s` (built-in since NeoVim 0.11) shows method signature reference
     - `]d` / `[d` (built-in) goes to previous / next diagnostic message location (e.g. warnings, errors, suggestions in the code)
     - `C-w,d` shows the diagnostic message at cursor
