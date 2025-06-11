@@ -8,3 +8,4 @@ _site/
 node_modules/
 out/
 _build_tmp/
+dist/
