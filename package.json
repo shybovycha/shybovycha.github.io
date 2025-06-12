@@ -26,7 +26,7 @@
     "@types/uuid": "^9.0.8",
     "bun-types": "latest",
     "classnames": "^2.5.1",
-    "date-fns": "^3.6.0",
+    "date-fns": "^4.1.0",
     "fast-xml-parser": "^4.5.3",
     "gray-matter": "^4.0.3",
     "lodash": "^4.17.21",
