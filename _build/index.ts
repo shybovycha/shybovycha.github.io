@@ -13,6 +13,8 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import rehypeShiki from '@shikijs/rehype';
+import rehypeRaw from 'rehype-raw';
+import { toHtml } from 'hast-util-to-html';
 import { unified } from 'unified';
 
 import { chunk, isString } from 'lodash';
@@ -41,16 +43,19 @@ const parseMarkdown = async (src: string): Promise<string> => {
         .use(remarkGridTable)
         .use(remarkGfm)
         .use(remarkRehype, {
+            allowDangerousHtml: true,
             handlers: {
                 [TYPE_TABLE]: mdast2hastGridTablesHandler(),
-            },
+            }
         })
+        .use(rehypeRaw)
         .use(rehypeShiki, {
             themes: {
                 light: 'catppuccin-latte',
                 dark: 'catppuccin-frappe',
             },
         })
+        .use(remarkRehype)
         .use(rehypeStringify)
         .process(src);
 
@@ -169,6 +174,8 @@ const loadStaticPages = async (staticPages: Record<string, string>, staticPagesD
                 try {
                     const txt = await Bun.file(filePath, { type: 'text/plain;charset=utf-8' }).text();
                     const parsedContent = await parsePostContent(txt);
+
+                    console.error('>>>', parsedContent);
 
                     return { ...parsedContent, outputPath };
                 } catch (e) {
