@@ -3,7 +3,9 @@
 
   import PostPreview from '../../../../../components/PostPreview.svelte';
 
-  let { data }: PageProps = $props();
+  let { data } = $props();
+
+  const { post } = data;
 </script>
 
 <style>
@@ -11,10 +13,8 @@
 </style>
 
 <div class="content">
-  {#each data.posts as post}
-    <PostPreview title={post.title} timestamp={post.timestamp} link={post.link}>
-      <post.component />
-    </PostPreview>
-  {/each}
+  <PostPreview title={post.title} timestamp={post.timestamp} link={post.link}>
+    <post.component />
+  </PostPreview>
 </div>
 
