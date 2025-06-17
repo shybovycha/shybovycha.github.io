@@ -12,7 +12,7 @@
 
 <div class="content">
   {#each data.posts as post}
-    <PostPreview title={post.title} timestamp={post.timestamp} link={post.slug}>
+    <PostPreview title={post.title} timestamp={post.timestamp} link={post.link}>
       <post.component />
     </PostPreview>
   {/each}

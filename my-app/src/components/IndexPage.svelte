@@ -9,7 +9,7 @@ let posts = orderBy(posts1, 'timestamp', 'asc');
 </script>
 
 {#each posts as post}
-  <PostPreview title={post.title} link={post.slug} timestamp={post.timestamp}>
+  <PostPreview title={post.title} link={post.link} timestamp={post.timestamp}>
     <post.component />
   </PostPreview>
 {/each}

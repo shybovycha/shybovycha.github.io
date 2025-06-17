@@ -19,11 +19,16 @@ const resolveTitle = (path, meta) => {
   return meta?.title ?? sentenceCase(path.replace(/^\d{4}-\d{2}-\d{2}-(.+)\..+$/, '$1') || path);
 };
 
+const resolveLink = (path, meta) => {
+  return (meta?.slug ?? path.replace(/^\D+(.+)$/, '$1')).replace(/^(\d{4})-(\d{2})-(\d{2})-(.+)$/, '$1/$2/$3/$4');
+};
+
 const fillProps = ({ path, meta }) => {
 	return {
 		timestamp: resolveTimestamp(path, meta),
 		slug: resolveSlug(path, meta),
 		title: resolveTitle(path, meta),
+		link: resolveLink(path, meta),
 	};
 };
 
