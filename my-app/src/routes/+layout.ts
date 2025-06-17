@@ -3,13 +3,12 @@ import type { LayoutLoad } from './$types';
 import orderBy from 'lodash/orderBy';
 import chunk from 'lodash/chunk';
 
-import { parseISO } from 'date-fns';
 import { sentenceCase } from 'change-case';
 
 const postsModules = import.meta.glob('../posts/**/*.md', { eager: true });
 
 const resolveTimestamp = (path, meta) => {
-  return parseISO(meta?.date ?? (path.replace(/^(\d{4}-\d{2}-\d{2})-.*$/, '$1') || new Date()));
+  return meta?.date ?? (path.replace(/^(\d{4}-\d{2}-\d{2})-.*$/, '$1T00:00:00+10:00'));
 };
 
 const resolveSlug = (path, meta) => {
