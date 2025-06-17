@@ -151,9 +151,9 @@ It is mostly about spiders:
 And starry sky:
 
 <div class="inline-gallery">
-  <div class="image"><img src="/images/about/astrophoto-orion.webp" alt="Orion nebula"></div>
-  <div class="image"><img src="/images/about/astrophoto-large-magellanic-cloud.webp" alt="Milky way"></div>
-  <div class="image"><img src="/images/about/astrophoto-milky-way.webp" alt="Large Magellanic Cloud"></div>
+  <div class="image"><img src="/images/about/astrophoto-orion-2.webp" alt="Orion nebula"></div>
+  <div class="image"><img src="/images/about/astrophoto-trifid.webp" alt="Trifid nebula"></div>
+  <div class="image"><img src="/images/about/astrophoto-horsehead.webp" alt="Horsehead nebula"></div>
 </div>
 
 ## Guitars
