@@ -1,10 +1,47 @@
 import type { LayoutLoad } from './$types';
 
-const posts = import.meta.glob('../posts/**/*.md', { eager: true });
+import orderBy from 'lodash/orderBy';
+import chunk from 'lodash/chunk';
+
+import { parseISO } from 'date-fns';
+import { sentenceCase } from 'change-case';
+
+const postsModules = import.meta.glob('../posts/**/*.md', { eager: true });
+
+const resolveTimestamp = (path, meta) => {
+  return parseISO(meta?.date ?? (path.replace(/^(\d{4}-\d{2}-\d{2})-.*$/, '$1') || new Date()));
+};
+
+const resolveSlug = (path, meta) => {
+  return meta?.slug ?? (path.replace(/^\d{4}-\d{2}-\d{2}-(.+)\..+$/, '$1') || path);
+};
+
+const resolveTitle = (path, meta) => {
+  return meta?.title ?? sentenceCase(path.replace(/^\d{4}-\d{2}-\d{2}-(.+)\..+$/, '$1') || path);
+};
+
+const fillProps = ({ path, meta }) => {
+	return {
+		timestamp: resolveTimestamp(path, meta),
+		slug: resolveSlug(path, meta),
+		title: resolveTitle(path, meta),
+	};
+};
 
 export const load: LayoutLoad = async () => {
+  const posts1 = Object.entries(postsModules)
+		.map(([path, m]) => ({ component: m.default, path: path, meta: m.metadata }))
+		.map(p => ({ ...p, ...fillProps(p) }));
+
+	const posts = orderBy(posts1, 'timestamp', 'desc');
+	
+	const PAGE_SIZE = 10;
+
+	const pages = chunk(posts, PAGE_SIZE);
+
 	return {
-		posts: Object.values(posts).map(m => ({ component: m.default })),
+		posts, 
+		pages,
 	};
 };
 

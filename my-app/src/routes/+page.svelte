@@ -1,2 +1,14 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+  import lodash from 'lodash';
+  const { take } = lodash;
+
+  let { data } = $props(); 
+
+  let posts = take(data.posts, 10);
+</script>
+
+{#each posts as post}
+  {#if post.component}
+    <post.component />
+  {/if}
+{/each}
