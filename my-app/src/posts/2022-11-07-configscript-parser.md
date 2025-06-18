@@ -31,7 +31,7 @@ I thought if I could harvest anything from OGRE into my OpenGL application, that
 
 Hence I crafted this simple grammar in ANTLR4 to parse these files:
 
-```g4
+```text
 grammar ConfigScript;
 
 config : (object | comment)* EOF ;
@@ -290,7 +290,7 @@ This might get out of hand quite quickly.
 
 Alternatively, and arguably more convenient way to handle this is using attributes and actions in the grammar itself:
 
-```g4
+```text
 grammar ConfigScript;
 
 @header {
@@ -355,7 +355,7 @@ However, there quite a few tricks involved.
 
 First of all, the huge benefit is that this way we are free to specify code to be run on entering each rule and we have an access to all of the rule context:
 
-```g4
+```text
 propertyValue
     : intVector { antlrcpp::downCast<PropertyContext*>(_localctx->parent)->value = $intVector.elements; }
     | floatVector { antlrcpp::downCast<PropertyContext*>(_localctx->parent)->value = $floatVector.elements; }
@@ -377,7 +377,7 @@ inserted into the generated code as-is. You will have to make sure it compiles a
 
 Some of the rules allow you to define what other data will can be accessed (like the integer value of an `INT` rule or elements of the `intVector` rule):
 
-```g4
+```text
 intVector
     returns [ std::vector<int> elements ]
     : INT+ { auto v = $ctx->INT(); std::for_each(v.begin(), v.end(), [&](auto* node) { _localctx->elements.push_back(std::stoi(node->getText())); }); }
@@ -398,7 +398,7 @@ Hence a trick is to access it via context: `$ctx->INT().begin()`.
 
 Accessing parent attribute:
 
-```g4
+```text
 propertyValue
     : vector { $property::value.emplace($vector.elements); }
 ```
@@ -406,7 +406,7 @@ propertyValue
 The `$property::value` won't work and will throw `missing code generation template NonLocalAttrRefHeader`.
 I am unsure how to fix this correctly (this should be valid, according to documentation), so I hacked my way through:
 
-```g4
+```text
 propertyValue
     : vector { antlrcpp::downCast<PropertyContext*>(_localctx->parent)->value = $vector.elements; }
 ```

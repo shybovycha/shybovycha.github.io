@@ -1,6 +1,20 @@
 import adapter from '@sveltejs/adapter-auto';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
-import { mdsvex } from 'mdsvex';
+import { mdsvex, escapeSvelte } from 'mdsvex';
+
+import remarkGridTable from '@adobe/remark-gridtables';
+import remarkGfm from 'remark-gfm';
+import { createHighlighter, bundledLanguages } from 'shiki';
+
+const shikiThemes = {
+	light: 'catppuccin-latte',
+	dark: 'catppuccin-frappe',
+};
+
+const highlighter = await createHighlighter({
+	themes: Object.values(shikiThemes),
+	langs: Object.keys(bundledLanguages),
+});
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -10,6 +24,18 @@ const config = {
 	preprocess: [
 		mdsvex({
 			extensions: [ '.md', '.svx' ],
+			remarkPlugings: [
+				remarkGridTable,
+				remarkGfm,
+			],
+			rehypePlugins: [
+			],
+			highlight: {
+				async highlighter(code, lang = 'text') {
+					const html = escapeSvelte(highlighter.codeToHtml(code, { lang, themes: shikiThemes }));
+					return `{@html \`${html}\`}`;
+				},
+			},
 		}),
 
 		vitePreprocess(), 

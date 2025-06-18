@@ -48,7 +48,7 @@ Take sample graph:
 
 In <em>GraphViz</em> it would be described as follows:
 
-```dot
+```mermaid
 digraph G {
     layout = "circo";
 

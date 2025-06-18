@@ -445,7 +445,7 @@ the effort to implement serialization might become a decisive factor against it,
 
 Schema for Thrift looks like this:
 
-```thrift
+```text
 struct TimeframeValues {
   1: required double category1;
   2: required double category2;
