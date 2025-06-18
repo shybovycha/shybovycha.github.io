@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { PageProps } from './$types';
 
-  import PostPreview from '../../../../../components/PostPreview.svelte';
+  import Post from '../../../../../components/Post.svelte';
 
   let { data } = $props();
 
@@ -13,8 +13,8 @@
 </style>
 
 <div class="content">
-  <PostPreview title={post.title} timestamp={post.timestamp} link={post.link}>
+  <Post title={post.title} timestamp={post.timestamp} link={post.link}>
     <post.component />
-  </PostPreview>
+  </Post>
 </div>
 

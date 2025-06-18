@@ -1,7 +1,7 @@
 <script lang="ts">
   import { format, parseISO } from 'date-fns';
 
-  let { link, title, timestamp, children } = $props();
+  let { link, title, timestamp, isPreview = false, children } = $props();
 
   let originalTime = new Date(), time = format(originalTime, 'dd MMM yyyy');
 
@@ -20,7 +20,11 @@
 
 <article>
   <h1>
-    <a href={link}>{title}</a>
+    {#if isPreview}
+      <a href={link}>{title}</a>
+    {:else}
+      {title}
+    {/if}
   </h1>
 
   <div>
