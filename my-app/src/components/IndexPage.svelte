@@ -5,7 +5,7 @@ import Post from './Post.svelte';
 
 let { posts: posts1 } = $props();
 
-let posts = orderBy(posts1, 'timestamp', 'asc');
+let posts = orderBy(posts1, 'timestamp', 'desc');
 </script>
 
 {#each posts as post}
