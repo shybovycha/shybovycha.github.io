@@ -5,9 +5,394 @@
 </script>
 
 <style>
-.nav-link {}
+:global {
+@media (prefers-color-scheme: dark) {
+  .shiki,
+  .shiki span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+    /* Optional, if you also want font styles */
+    font-style: var(--shiki-dark-font-style) !important;
+    font-weight: var(--shiki-dark-font-weight) !important;
+    text-decoration: var(--shiki-dark-text-decoration) !important;
+  }
+}
 
-.nav-item {}
+/* inline */
+
+.content-read-marker {
+    display: inline-block;
+    width: 0;
+    height: 0;
+}
+
+:root {
+    --left-side: 200px;
+    --right-side: 200px;
+    --nav-height: 64px;
+    --background-color: #FFD166;
+    --primary-color: #06D6A0;
+    --primary-accent-color: #049F76;
+    --secondary-color: #118AB2;
+    --sub-color: #073B4C;
+    --nav-background: #fff;
+    --article-background: #fff;
+    --code-background: #eff1f5;
+    --code-outline-color: #e6e7e9
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    color: var(--sub-color);
+    background: var(--background-color);
+    font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 18px;
+    display: grid;
+    grid-template: var(--nav-height) auto var(--nav-height)/var(--left-side) calc(100% - var(--left-side) - var(--right-side)) var(--right-side)
+}
+
+nav.top .links {
+    grid-area: 1/2/2/3;
+    display: flex;
+    align-items: center
+}
+
+nav.top .links a {
+    margin-right: 1em
+}
+
+nav.top links a.active {
+    color: var(--sub-color);
+}
+
+a {
+    color: var(--secondary-color);
+    text-decoration: none
+}
+
+a:hover,
+a:active {
+    color: var(--sub-color)
+}
+
+img {
+    max-width: 100%
+}
+
+pre {
+    overflow: auto
+}
+
+pre.highlight {
+    overflow: auto;
+    padding: .5em
+}
+
+button.btn {
+    border: none
+}
+
+.btn {
+    display: inline-flex;
+    font-size: 18px;
+    color: #fff;
+    background: var(--primary-color);
+    padding: 10px;
+    border-radius: 8px
+}
+
+.btn:hover {
+    background: var(--primary-accent-color);
+    color: #fff
+}
+
+footer {
+    grid-area: 3/1/4/4;
+    background: var(--nav-background);
+    display: inline-grid;
+    grid-template: 100%/var(--left-side) auto var(--right-side)
+}
+
+footer nav {
+    grid-area: 1/2/2/3;
+    display: inline-grid;
+    grid-template: 1fr / 1fr 1fr 1fr
+}
+
+footer nav div {
+    display: flex;
+    align-items: center
+}
+
+footer nav .prev {
+    grid-area: 1/1/2/2;
+    justify-content: flex-start
+}
+
+footer nav .current {
+    grid-area: 1/2/2/3;
+    justify-content: center
+}
+
+footer nav .next {
+    grid-area: 1/3/2/4;
+    justify-content: flex-end
+}
+
+nav.top {
+    background-color: var(--nav-background);
+    display: inline-grid;
+    grid-template: 100%/var(--left-side) auto var(--right-side);
+    grid-area: 1/1/2/4
+}
+
+main {
+    grid-area: 2/2/3/3;
+    margin-top: 1em;
+    display: flex;
+    flex-direction: column
+}
+
+main article {
+    margin-bottom: 1em;
+    padding: 1em;
+    background: var(--article-background);
+    border-radius: 5px;
+    font-size: 18px
+}
+
+h1 {
+    font-size: 36px
+}
+
+h2 {
+    font-size: 24px
+}
+
+h3 {
+    font-size: 20px
+}
+
+h1,
+h2,
+h3 {
+    margin-top: 0
+}
+
+kbd {
+    border-radius: 8px;
+    background: #fff;
+    padding: 10px;
+    box-shadow: 1px 4px #dedede;
+    /* text-shadow: 1px 3px #dedede; */
+    display: inline-flex;
+    margin: 4px 0;
+    border: 1px solid #dedede
+}
+
+@media screen and (max-width: 1340px) {
+    :root {
+        --left-side: 0px;
+        --right-side: 0px
+    }
+
+    body {
+        background: var(--background-color)
+    }
+
+    nav.top .links {
+        justify-content: space-around
+    }
+
+    main article {
+        border-radius: 0
+    }
+}
+
+/* main.scss */
+
+blockquote {
+    border-left: 4px solid #bebebe;
+    padding-left: 1em;
+    font-style: italic;
+}
+
+pre {
+    overflow: auto;
+    background-color: var(--code-background);
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    border: 1px solid var(--code-outline-color)
+}
+
+code:not(pre > code) {
+    background: var(--code-background);
+    /* #fffcf3; */
+    padding: 0.085rem 0.25rem;
+    border-radius: 6px;
+    border: 1px solid var(--code-outline-color);
+    /* #ddd; */
+    margin: 0
+}
+
+table {
+    border-collapse: collapse;
+    border: 1px solid black
+}
+
+table tr,
+table td,
+table th {
+    border: 1px solid black;
+}
+
+table td.head {
+    font-weight: bold;
+    background: #dedede;
+    text-align: center;
+}
+
+table td.change {
+    font-weight: bold;
+    background: #5f76d8;
+    color: #ffff8e;
+}
+
+.center {
+    text-align: center;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+}
+
+.row.space-between {
+    justify-content: space-around;
+}
+
+.row .col {
+    display: flex;
+    flex-direction: column;
+}
+
+table thead th {
+    font-weight: bold;
+}
+
+table td, table th {
+    padding: 0.25em 0.5em;
+}
+
+table code:not(pre > code) {
+    display: block;
+    width: fit-content;
+}
+
+ul, ol {
+    padding-left: 20px;
+}
+
+li:has(code) {
+    margin: 0.5em 0;
+}
+
+li code {
+    margin: 0.2em;
+}
+
+/* table' "read more" */
+
+table.expandable {
+    position: relative;
+    display: block;
+    max-height: 250px;
+    overflow-y: hidden;
+    border: none;
+}
+
+table.expandable.expand {
+    display: table;
+    overflow-y: visible;
+}
+
+table.expandable td, table.expandable th {
+    padding: 0.5em;
+}
+
+table.expandable.expand:before {
+    display: none;
+}
+
+table.expandable:before {
+    content: ' ';
+    display: block;
+    top: 250px;
+    position: absolute;
+    width: 100%;
+    height: 15px;
+    box-shadow: 1px 1px 10px 20px #555b;
+}
+
+/* _syntax-highlighting.scss */
+
+.highlight {
+    background: var(--code-background);
+    /* @extend %vertical-rhythm !optional; */
+}
+
+code {
+    font-size: 1rem;
+}
+
+code[class*="language-"] {
+    font-size: 0.95rem;
+}
+
+@media (prefers-color-scheme: dark) {
+    img {
+        filter: brightness(.85) contrast(1.2);
+    }
+
+    :root {
+        --background-color: #1f1f1f;
+
+        --article-background: #28292a;
+        --nav-background: #28292a;
+
+        --sub-color: #E6E1E5;
+
+        --code-background: #303446;
+        --code-outline-color: #938F99;
+
+        --secondary-color: #c2e7ff;
+
+        --primary-color: #004a77;
+        --primary-accent-color: #12567f;
+    }
+
+    a {
+        color: #d3e3fd;
+    }
+
+    a:hover:not(.btn),
+    a:active:not(.btn) {
+        text-decoration: underline;
+    }
+
+    table,
+    table th,
+    table td,
+    table tr {
+        border-color: var(--code-outline-color);
+    }
+
+    table.expandable:before {
+        box-shadow: 1px 1px 10px 20px #bbbb;
+    }
+}
+}
 </style>
 
 <nav class="top">
