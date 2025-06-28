@@ -4,6 +4,7 @@ import { mdsvex, escapeSvelte } from 'mdsvex';
 
 import remarkGridTable from '@adobe/remark-gridtables';
 import remarkGfm from 'remark-gfm';
+import remarkExcerpt from 'remark-excerpt';
 import { createHighlighter, bundledLanguages } from 'shiki';
 
 const shikiThemes = {
@@ -24,9 +25,10 @@ const config = {
 	preprocess: [
 		mdsvex({
 			extensions: [ '.md', '.svx' ],
-			remarkPlugings: [
+			remarkPlugins: [
 				remarkGridTable,
 				remarkGfm,
+				[remarkExcerpt, { identifier: 'more', }],
 			],
 			rehypePlugins: [
 			],

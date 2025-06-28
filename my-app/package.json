@@ -27,6 +27,7 @@
 		"change-case": "^5.4.4",
 		"date-fns": "^4.1.0",
 		"lodash": "^4.17.21",
+		"remark-excerpt": "^1.0.0-beta.1",
 		"remark-gfm": "^4.0.1",
 		"shiki": "^3.6.0"
 	}
