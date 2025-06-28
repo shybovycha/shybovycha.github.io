@@ -42,6 +42,8 @@ export const load: LayoutLoad = async () => {
 		.map(([path, m]) => ({ component: m.default, path: path, meta: m.metadata }))
 		.map(p => ({ ...p, ...fillProps(p) }));
 
+	console.log('>>>', posts1);
+
 	const posts = orderBy(posts1, 'timestamp', 'desc');
 	
 	const PAGE_SIZE = 10;
