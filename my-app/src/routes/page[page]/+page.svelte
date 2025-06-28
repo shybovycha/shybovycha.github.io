@@ -9,7 +9,9 @@ let { data }: PageProps = $props();
 let posts = data.pages[data.page];
 </script>
 
-<IndexPage posts={posts} />
+<main>
+  <IndexPage posts={posts} />
+</main>
 
 <Footer page={data.page + 1} totalPages={data.pages.length} />
 

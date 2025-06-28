@@ -151,9 +151,9 @@ It is mostly about spiders:
 And starry sky:
 
 <div class="inline-gallery">
-  <div class="image"><img src="/images/about/astrophoto-orion.webp" alt="Orion nebula"></div>
-  <div class="image"><img src="/images/about/astrophoto-large-magellanic-cloud.webp" alt="Milky way"></div>
-  <div class="image"><img src="/images/about/astrophoto-milky-way.webp" alt="Large Magellanic Cloud"></div>
+  <div class="image"><img src="/images/about/astrophoto-orion-2.webp" alt="Orion nebula"></div>
+  <div class="image"><img src="/images/about/astrophoto-trifid.webp" alt="Trifid nebula"></div>
+  <div class="image"><img src="/images/about/astrophoto-horsehead.webp" alt="Horsehead nebula"></div>
 </div>
 
 ## Guitars
@@ -165,7 +165,6 @@ For quite a few years been trying to learn to play guitar. Since I’ve moved co
   <div class="image"><img src="/images/about/guitar-fender-telecaster-deluxe.webp" alt="Fender Telecaster Deluxe"></div>
   <div class="image"><img src="/images/about/guitar-cort-g-110.webp" alt="Cort G110"></div>
 </div>
-
 
 ## Contacts
 

@@ -129,7 +129,7 @@ The config I have at the moment allows the following:
         - `ap` / `ip` - outer / inner parameter
         - `ar` / `ir` - outer / inner return statement
     - `<leader>o` shows list of symbols defined in the current buffer (outline)
-    - `gr` (built-in `grr` since NeoVim 0.11) shows a list of LSP references; `<C-q>` sends the list of locations to quick buffer
+    - `gr` (built-in `grr` since NeoVim 0.11) shows a list of LSP references; `<C-q>` sends the list of locations to quick buffer (even from Telescope search results)
     - `gd` shows a list of LSP definitions
     - `gI` (built-in `gri` since NeoVim 0.11) shows a list of LSP implementations
     - `grn` (built-in since NeoVim 0.11) renames a symbol under cursor
@@ -144,6 +144,7 @@ The config I have at the moment allows the following:
     - `<leader>/` performs a live-grep (with arguments) on files
     - `C-q` (in the search results; needs Zellij in the locked mode - `C-g` - to prevent conflict) moves files to quickref buffer; then
         - `]c` / `[c` for next / previous quickref entry
+        - `>` / `<` to toggle context around quickbuffer entry
         - `<leader>q` toggles quickref buffer
         - `<leader>l` toggles locations buffer
 

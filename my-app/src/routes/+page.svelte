@@ -9,7 +9,9 @@
   let posts = take(data.posts, 10);
 </script>
 
-<IndexPage posts={posts} />
+<main>
+  <IndexPage posts={posts} />
+</main>
 
 <Footer page={1} totalPages={Math.floor(data.posts.length / 10)} />
 

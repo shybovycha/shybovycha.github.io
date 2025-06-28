@@ -12,9 +12,9 @@
 .content {}
 </style>
 
-<div class="content">
+<main>
   <Post title={post.title} timestamp={post.timestamp} link={post.link}>
     <post.component />
   </Post>
-</div>
+</main>
 

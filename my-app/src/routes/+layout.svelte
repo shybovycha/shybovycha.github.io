@@ -399,11 +399,9 @@ code[class*="language-"] {
   <div class="links">
     <a class="nav-link nav-item" href="/">Home</a>
 
-    <a class="nav-link nav-item" href="/about.html">About</a>
+    <a class="nav-link nav-item" href="/about/">About</a>
   </div>
 </nav>
 
-<main>
-  {@render children()}
-</main>
+{@render children()}
 
