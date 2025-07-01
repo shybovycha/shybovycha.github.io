@@ -572,4 +572,100 @@ main = do
     Right p   -> pure p
 ```
 
+To align this with the original statement about `JobLocation`, here's how this would look like in PureScript:
+
+```purs
+module Main where
+
+import Prelude
+import Data.Argonaut (jsonParser)
+import Data.Argonaut.Decode (decodeJson, (.:), printJsonDecodeError)
+import Data.Argonaut.Decode.Class (class DecodeJson)  
+import Data.Argonaut.Decode.Error (JsonDecodeError(..))
+import Data.Argonaut.Encode (encodeJson, (:=), (~>))
+import Data.Argonaut.Encode.Class (class EncodeJson)
+import Data.Bifunctor (bimap)
+import Data.Either (Either(..))
+import Data.Generic.Rep (class Generic)
+import Data.Show.Generic (genericShow)
+import Effect (Effect)
+import Effect.Console (log)
+
+data JobLocation
+  = CollectionLocation { collection :: String }
+  | DocumentLocation { collection :: String, document :: String }
+  | TableLocation { table :: String }
+
+derive instance Eq JobLocation
+derive instance Generic JobLocation _
+instance showJobLocation :: Show JobLocation where
+  show a = genericShow a
+
+instance DecodeJson JobLocation where
+  decodeJson json = do
+    obj <- decodeJson json
+    
+    -- Check which fields are present
+    maybeCollection :: Maybe String <- obj .:? "collection"
+    maybeDocument :: Maybe String <- obj .:? "document" 
+    maybeTable :: Maybe String <- obj .:? "table"
+    
+    let hasCollection = isJust maybeCollection
+    let hasDocument = isJust maybeDocument
+    let hasTable = isJust maybeTable
+    
+    case hasCollection, hasDocument, hasTable of
+      true, true, false -> do
+        collection <- obj .: "collection"
+        document <- obj .: "document"
+        pure $ DocumentLocation { collection, document }
+        
+      true, false, false -> do
+        collection <- obj .: "collection"
+        pure $ CollectionLocation { collection }
+        
+      false, false, true -> do
+        table <- obj .: "table"
+        pure $ TableLocation { table }
+        
+      _, _, _ -> Left $ AtKey "structure" $ UnexpectedValue json
+
+parseJobLocation :: String -> Either String JobLocation
+-- same as
+-- jsonParser jsonStr >>= (decodeJson >>> bimap printJsonDecodeError identity)
+parseJobLocation jsonStr = do
+  json <- jsonParser jsonStr
+  bimap printJsonDecodeError identity (decodeJson json)
+
+-- Example usage
+examples :: Effect Unit
+examples = do
+  let collectionJson = """{"collection": "users"}"""
+  case parseJobLocation collectionJson of
+    Left err -> log $ "Collection parse error: " <> err
+    Right location -> do
+      log $ "Parsed CollectionLocation: " <> show location
+  
+  let documentJson = """{"collection": "users", "document": "user123"}"""
+  case parseJobLocation documentJson of
+    Left err -> log $ "Document parse error: " <> err
+    Right location -> do
+      log $ "Parsed DocumentLocation: " <> show location
+  
+  let tableJson = """{"table": "analytics"}"""
+  case parseJobLocation tableJson of
+    Left err -> log $ "Table parse error: " <> err
+    Right location -> do
+      log $ "Parsed TableLocation: " <> show location
+  
+  let invalidJson = """{"data": "something"}"""
+  case parseJobLocation invalidJson of
+    Left err -> log $ "Expected error: " <> err
+    Right location -> log $ "Unexpected success: " <> show location
+
+main :: Effect Unit
+main = do
+  examples
+```
+
 Just to reiterate, I do understand that converting the application (and developers) to this new weird technology is an almost impossible task, especially in a large long-lived project. One way to reason about it and justify the transition is the resilience requirements of a project (the need for actually error-prone code) and the amount of time and effort spent to date on finding and fixing those nasty bugs and undefined behaviours in an application.
