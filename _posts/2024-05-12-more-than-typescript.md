@@ -572,7 +572,7 @@ main = do
     Right p   -> pure p
 ```
 
-To align this with the original statement about `JobLocation`, here's how this would look like in PureScript:
+To align this with the original problem about `JobLocation`, here's how this would look like in PureScript:
 
 ```purs
 module Main where
@@ -703,7 +703,64 @@ parseJobLocation jsonStr = do
 ```
 
 Explanations like those make it a huge barrier to entry for newcomers.
-On the readability side, I think Scala 3 beats the competition:
+
+Incorporating the above solution in an existing TypeScript project might look a tad cumbersome.
+For Vite, there is a PureScript plugin:
+
+```js
+import { defineConfig } from 'vite';
+import purescript from 'vite-plugin-purescript';
+
+export default defineConfig({
+  plugins: [
+    // ...
+    purescript(),
+  ],
+});
+```
+
+The tricky part is that we have to re-define types in TypeScript:
+
+```ts
+type CollectionLocation = { collection: string };
+type DocumentLocation = { collection: string; document: string };
+type TableLocation = { table: string };
+
+type JobLocation = CollectionLocation | DocumentLocation | TableLocation;
+```
+
+Moreover, since the function returns an `Either`, we would need that one too:
+
+```ts
+interface Left<E> {
+  readonly _tag: 'Left';
+  readonly value0: E;
+}
+
+interface Right<A> {
+  readonly _tag: 'Right';
+  readonly value0: A;
+}
+
+type Either<E, A> = Left<E> | Right<A>;
+```
+
+And then importing the function and calling it from TypeScript:
+
+```ts
+import { parseJobLocation } from '../output/JobLocation';
+
+const loc = parseJobLocation('{ "collection": "col", "document": "doc" }');
+
+if (loc._tag === 'Right') {
+    // ...
+}
+```
+
+Quite the bother, right? That's why it is most beneficial if the entire critical section can be written in PureScript entirely.
+In my case, the `JobLocation` is used for displaying a corresponding UI element (in React), so there's little benefit at a cost of lots of boilerplate and not the best experience defining those parsers.
+
+I personally prefer Scala 3 implementation (not the integration with TypeScript part though, just the JSON parser implementation):
 
 ```scala
 import io.circe.*
@@ -744,9 +801,10 @@ object JobLocationApp extends IOApp.Simple:
     testCases.traverse_ { jsonStr =>
       parseJobLocation(jsonStr) match
         case Right(location) =>
-          IO.println(s"✓ Parsed: $jsonStr -> $location")
+          IO.println(s"Parsed: $jsonStr -> $location")
+
         case Left(error) =>
-          IO.println(s"✗ Failed to parse: $jsonStr -> ${error.getMessage}")
+          IO.println(s"Failed to parse: $jsonStr -> ${error.getMessage}")
     }
 ```
 
