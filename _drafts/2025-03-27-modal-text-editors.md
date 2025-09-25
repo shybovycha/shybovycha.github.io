@@ -38,6 +38,24 @@ My first take was Helix, but I immediately stumbled on the first roadblock - the
 
 I tried configuring a file tree via [Yazi](https://github.com/sxyazi/yazi), which has an integration example on their website (using [zellij](https://github.com/zellij-org/zellij) terminal multiplexer panels), but it just refused to work for me. That was when I timeboxed this and decided to switch my focus to NeoVim for the moment being.
 
+After a while of just living my life, a new version of Helix has dropped, 25.07. And it introduced a few quality o flife changes. For example, the file explorer, which is now built in. It is not as powerful as Yazi, but it does the job.
+So I decided to switch to Helix for a while.
+
+Here are the important notes I have learned:
+
+* `m` lesser mode - allows you to select inside / outside words, paragraphs, LSP entities (function body, arguments, etc.) and change the surrounding
+* search
+  * selecting a word and entering a visual mode with `v` allows you to extend selection with the next occurrence of the selected text by using `n` or previous occurrence with `N`; to skip the current match, the view mode is used with `z`, making it `zn` to ignore the current occurrence and go to the next
+  * the selection this way would create multiple cursors, so go wild!
+* adding a new cursor with `C`
+* collapsing cursors with `,`
+* file explorer with `<Spc><e>` or `<Spc><E>` to open it in the directory of a current buffer
+* commenting the selection with `<Spc><c>` and `<Spc><C>`
+* piping the selection to the external command with just `|` (pipe character)
+  * use interpolation with `%{}`, for instance, `%{cursor_line}` or `%{buffer_name}`
+* searching within the selection with `s`
+* using external tool like `ccase` (from Cargo) to change case: `| ccase -t screamingsnake`
+
 ## NeoVim
 
 So I decided to use Vim to try it out first. I thought about trying [NeoVim](https://neovim.io/) since it was the hype at the time. I was dumbfolded by the fact it did not even come with the default config file to work with (in a stumbling contrast to Helix, which has `:config-open` and `:config-reload` commands built in).
