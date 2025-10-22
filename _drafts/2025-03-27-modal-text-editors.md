@@ -36,7 +36,48 @@ So this would be my measure of success in other editors (in terms of comfort) - 
 
 My first take was Helix, but I immediately stumbled on the first roadblock - the task I was working on at that time involved some Mustache templates. And Helix did not support it even on the most basic level (syntax highlighting). Moreover, Helix did not have plugins at the time, so there was little I could do for that particular task. The reason I wanted at least syntax highlighting had to do with the issue I was working on, which had misplaced conditionals in the template file, resulting in an incorrect rendering. I liked, however, how Helix came with a lot of handy utilities out of the box - the file picker, treesitter integration (so I could jump between the rest of Java / TypeScript codebase with ease).
 
-I tried configuring a file tree via [Yazi](https://github.com/sxyazi/yazi), which has an integration example on their website (using [zellij](https://github.com/zellij-org/zellij) terminal multiplexer panels), but it just refused to work for me. That was when I timeboxed this and decided to switch my focus to NeoVim for the moment being.
+I tried configuring a file tree via [Yazi](https://github.com/sxyazi/yazi), which has an integration example on their website (using [zellij](https://github.com/zellij-org/zellij) terminal multiplexer panels), but it just refused to work for me on my Mac. That was when I timeboxed this and decided to switch my focus to NeoVim for the moment being.
+
+Upon getting back to Helix, there was a new release, [25.07.1](https://helix-editor.com/news/release-25-07-highlights/) which introduced a few quality of life improvements, including the file browser, sort of addressing the file tree issue I had before. Invoked with `<leader>e` (compared to `<lead>f` which just lists all the files in one long list), this one allows you to see directories. It is sort of an immediate-mode file manager as in it only shows the contents of a selected directory, but it is arguably more useful solution to the file tree problem than a list of all the files (recursively listing sub-directories). Additionally, tree-sitter was replaced so the syntax highlighting should be better - this would most likely be helpful in content like my blogs, often featuring multiple languages on top of the main Markdown.
+
+Something that I liked about Helix was how it handles selections. For the most part, native multi-cursor is a great start - you just have to remember the difference between splitting the selection and selecting inside the selection - `S` (split) vs `s` (select) -  both would create multiple cursors, just in a different way.
+
+Different selection objects, including the ones provided by the tree-sitter - with the [match mode](https://docs.helix-editor.com/keymap.html#match-mode) you can select different objects (`ma` and `mi` are your friends). But you can also surround the selection (`ms<char>`) and change the surrounding (`mr<from><to>`) and delete the surrounding (`md<char>`), which I find pretty handy sometimes.
+
+Some things I find bearable are the use of external tools for some actions, instead of plugins. Since Helix lacks plugin system in any shape or form (as of late October 2025), you can just pipe the selection to the external program. One such case is changing the case of selection - I use this **often**, especially in conjunction with multiple cursors - to quickly edit, say test data or a bunch of constants or to refactor multiple class fields. In this case I found a [comment on Github](https://github.com/helix-editor/helix/issues/5197#issuecomment-2569811785) suggesting the use of [ccase](https://github.com/rutrum/ccase) - you first need to install this Rust utility, ccase, and then you'll be able to send your selection(-s) by using `:pipe ccase -t screamingsnake`, for instance.
+
+Something I did not realize until writing this blog is that there are some really useful default keybindings for insert mode, like `Ctrl+w` to delete the previous word, `Alt+w` to delete the next word, `Ctrl+k` to delete to the end of the line and `Ctrl+x` to trigger autocomplete.
+
+One annoying thing about Helix is the buffer picker (available via `<lead>b`) - it shows the list of open buffers (files). It does not appear to be sorting the elements of the list and the first element is always the _current buffer_. This is not really helpful if you want to quickly go the previously edited file. To make things worse, it does not seem to have any configuration around it, so the behaviour is pretty much set in stone.
+
+Here is my condensed cheatsheet of key shortcuts I use in Helix:
+
+- Pickers
+    - `<lead>b` buffer list
+    - `<lead>e` file explorer; far superior to file list
+    - `<lead>/` search
+    - `<lead>d` show diagnostics (hints, errors, warnings, etc)
+- Multiple cursors
+    - `,` collapse all cursors into one
+    - `s` select in selection; create a new cursor at each selection; takes a regexp as a pattern
+    - `S` split selection; create a new cursor at each occurrence of pattern; takes regexp as a pattern
+- Selection
+    - `v` enters visual (selection) mode; this is how you can select multiple words - `vwwww`
+    - `m` enters marking mode; this is how you can select paragraphs, text and LSP objects, add, change and remove wrapping characters (like brackets and quotes); few examples:
+        - `mi(` - select inside parentheses
+        - `ma"` - select everything inside double-quotes and the double-quotes themselves
+        - `ms[` - surround selection with square brackets
+        - `mr[(` - replace the surrounding square brackets with regular braces
+        - `mif` - select the body of a function (method)
+    - `=` / `<` / `>` - format / unindent / indent selection
+    - `:pipe` or `|` - send selection to an external program and replace selection with the output of said program
+    - `%` - select an entire buffer (file)
+- Go to
+    - `gl` / `gh` - go to end of line / start of line (contrary to `$` and `^` in Vim)
+    - `gg` / `ge` - go to first line / last line of the file
+    - `Ctrl+i` / `Ctrl+o` - go back and forth in your jumplist (places where the cursor has been placed; jumplist itself is available with `<lead>j`)
+    - `gd` / `gD` - go to definition / declaration
+    - `gr` - go to references
 
 After a while of just living my life, a new version of Helix has dropped, 25.07. And it introduced a few quality o flife changes. For example, the file explorer, which is now built in. It is not as powerful as Yazi, but it does the job.
 So I decided to switch to Helix for a while.
@@ -61,6 +102,8 @@ Here are the important notes I have learned:
 So I decided to use Vim to try it out first. I thought about trying [NeoVim](https://neovim.io/) since it was the hype at the time. I was dumbfolded by the fact it did not even come with the default config file to work with (in a stumbling contrast to Helix, which has `:config-open` and `:config-reload` commands built in).
 Yet I kept going, spending days perfecting my config. I switched my terminal emulator from [Warp](https://www.warp.dev/) to [Ghostty](https://github.com/ghostty-org/ghostty) (so that I can see images right inside my terminal, improving file manager experience), installed a good dozen of plugins and messed with color schemes.
 
+My full neovim config is actually [public](https://github.com/shybovycha/moo-nvim-config/).
+
 After almost a week, my NeoVim plugin setup looked like this:
 
 - [Lazy](https://github.com/folke/lazy.nvim) - plugin manager
@@ -75,7 +118,7 @@ These three plugins alone allowed me to already be quite a bit productive compar
 - [mason-lspconfig](https://github.com/williamboman/mason-lspconfig.nvim) - a middleware between mason and lspconfig
 - [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig) - for configuring LSP in NeoVim
 - [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) - for treesitter integration
-- [toggleterm](https://github.com/akinsho/toggleterm.nvim) - terminal integration, toggleable
+- [toggleterm](https://github.com/akinsho/toggleterm.nvim) - terminal integration, toggleable; obsolete when using zellij
 - [vim-sleuth](https://github.com/tpope/vim-sleuth) - automatically detects tabwidth settings for the buffer
 - [Comment.nvim](https://github.com/numToStr/Comment.nvim) - toggle comment for lines and blocks
 
