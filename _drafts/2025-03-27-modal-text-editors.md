@@ -78,6 +78,8 @@ Here is my condensed cheatsheet of key shortcuts I use in Helix:
     - `Ctrl+i` / `Ctrl+o` - go back and forth in your jumplist (places where the cursor has been placed; jumplist itself is available with `<lead>j`)
     - `gd` / `gD` - go to definition / declaration
     - `gr` - go to references
+- Copying (yanking)
+    - `"+y` - copy to the OS clip buffer (translates to "change the buffer to the `+` - OS clipboard and then yank the selection")
 
 After a while of just living my life, a new version of Helix has dropped, 25.07. And it introduced a few quality o flife changes. For example, the file explorer, which is now built in. It is not as powerful as Yazi, but it does the job.
 So I decided to switch to Helix for a while.
