@@ -9,7 +9,7 @@ Interestingly enough, there **is** a difference in **how exactly** you iterate -
 
 Let us see what output does a compiler produce in each of these cases.
 
-`sample1`:
+`sample1` (simple `for` loop):
 
 ```cpp
 std::vector<int> data{ 5, 3, 2, 1, 4 };
@@ -47,7 +47,7 @@ for (auto i = 0; i < data.size(); ++i) {
 
 but
 
-`sample2`:
+`sample2` (reversed `for` loop):
 
 ```cpp
 for (auto i = data.size() - 1; i >= 0; --i) {
@@ -76,7 +76,7 @@ for (auto i = data.size() - 1; i >= 0; --i) {
 
 also
 
-`sample3`:
+`sample3` (foreach):
 
 ```cpp
 for (auto i : data) {
@@ -120,7 +120,7 @@ for (auto i : data) {
 
 but with `-O1`
 
-`sample1`:
+`sample1` (simple `for` loop):
 
 ```asm
         movabs  rax, 12884901893
@@ -141,7 +141,7 @@ but with `-O1`
         jmp     .L20
 ```
 
-`sample2`:
+`sample2` (reversed `for` loop):
 
 ```asm
         movabs  rax, 12884901893
@@ -159,7 +159,7 @@ but with `-O1`
         jmp     .L8
 ```
 
-`sample3`:
+`sample3` (foreach):
 
 ```asm
         mov     r12, rax
@@ -188,4 +188,25 @@ whereas iterating backwards does not.
 
 But this find actually must come with one pretty big caveat: the cache lines. The number of assembly instructions is a pretty poor measure of performance - after all, CPU instructions are ridiculously fast, compared to any form of IO - specifically memory access.
 
-Iterating over a vector backwards affects the memory caching in a pretty poor manner _(benchmarking TBD)_.
+The code is also available on Github: [https://github.com/shybovycha/iterate-over-vector-in-cpp/]
+
+The benchmarking results seem to prove the assumption: bacwards iteration seems to be faster:
+
+| Test    | Min     | Max     | 50%     | 90%     | 95%     |
+|---------|---------|---------|---------|---------|---------|
+| sample1 | 1325447 | 3762733 | 1339309 | 1416805 | 1429724 |
+| sample2 | 1290571 | 2596630 | 1308953 | 1334955 | 1342008 |
+| sample3 | 1438847 | 3034474 | 1460698 | 1506001 | 1508657 |
+
+Out of curiosity, I also benchmarked using the postfix operator instead of prefix: `i++` (postfix) instead of `++i` (prefix), which shows prefix operator is slightly faster:
+
+| Test            | Min     | Max     | 50%     | 90%     | 95%     |
+|-----------------|---------|---------|---------|---------|---------|
+| sample1 prefix  | 1325447 | 3762733 | 1339309 | 1416805 | 1429724 |
+| sample1 postfix | 1292195 | 4155596 | 1308721 | 1370542 | 1382136 |
+| sample2 prefix  | 1290571 | 2596630 | 1308953 | 1334955 | 1342008 |
+| sample2 postfix | 1256929 | 2598426 | 1267088 | 1277779 | 1282787 |
+
+The above tests were performed on a `10000` `int` elements of an `std::vector`.
+
+One other assumption is that iterating over a vector backwards affects the memory caching in a pretty poor manner.
