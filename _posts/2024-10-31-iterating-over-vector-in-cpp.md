@@ -192,11 +192,11 @@ The code is also available on Github: [https://github.com/shybovycha/iterate-ove
 
 The benchmarking results seem to prove the assumption: bacwards iteration seems to be faster:
 
-| Test               | Min     | Max     | 50%     | 90%     | 95%     |
-|--------------------|---------|---------|---------|---------|---------|
-| sample1 (`++i`)    | 1325447 | 3762733 | 1339309 | 1416805 | 1429724 |
-| sample2 (`--i`)    | 1290571 | 2596630 | 1308953 | 1334955 | 1342008 |
-| sample3 (`for(:)`) | 1438847 | 3034474 | 1460698 | 1506001 | 1508657 |
+| Test               | Min     | Max     | 50%     | 90%     | 95%     | delta |
+|--------------------|---------|---------|---------|---------|---------|-------|
+| sample1 (`++i`)    | 1325447 | 3762733 | 1339309 | 1416805 | 1429724 | +7%   |
+| sample2 (`--i`)    | 1290571 | 2596630 | 1308953 | 1334955 | 1342008 | 0%    |
+| sample3 (`for(:)`) | 1438847 | 3034474 | 1460698 | 1506001 | 1508657 | +11%  |
 
 Out of curiosity, I also benchmarked using the postfix operator instead of prefix: `i++` (postfix) instead of `++i` (prefix), which shows prefix operator is slightly faster:
 
@@ -232,16 +232,18 @@ This is a rather complex scenario to test, since there are two potential scenari
 
 Since this blog is about iterating over a vector, it would be seem to be easier to generate absurdely large chunks of data and try to iterate over them. But in reality it would only happen with absurdely large files - my machine, for instance, sports 32GB of RAM, so it would be quite a task to generate *multiple* 32GB files.
 
-Simulating random memory access could actually be easier - we just need to replace integers with structures of variable size and use `std::list` (linked list) instead of `std::vector` (single block of memory):
+Simulating random memory access will break the purpose of iterating over the elements one by one - in these cases we either use iterators to access a linked list (each element is in random part of RAM) or access elements by index. And there is no way to iterate over them by incrementing an index.
+Alternatively, we have to dereference indexes from another block of memory. Either way it has nothing to do comparing `for` loops.
+
+Simulating accessing multiple cache lines could actually be easier - we just need to replace integers with structures of variable size and use `std::list` (linked list) instead of `std::vector` (single block of memory):
 
 ```cpp
 struct MyStruct {
-  bool f0;
-  long f1;
-  float f2;
-  int* f3;
-  long long f4[10];
-};
+  bool f0; // 1 byte
+  float f1[100]; // sizeof(float) * 100 = 4 * 100 = 400 bytes
+  double f2[53]; // sizeof(double) * 53 = 8 * 53 = 424 bytes
+  char f3[64]; // sizeof(char) * 64 = 1 * 64 = 64 bytes
+}; // total size = 889 bytes, likely to span across multiple cache lines
 
 std::list<MyStruct> a;
 ```
@@ -255,23 +257,22 @@ std::random_device rd;
 std::mt19937_64 gen(rd());
 
 std::uniform_int_distribution<int> bool_dist(0, 1);
-std::uniform_int_distribution<long> long_dist(std::numeric_limits<long>::min(), std::numeric_limits<long>::max());
 std::uniform_real_distribution<float> float_dist(0.0f, 1000.0f);
 std::uniform_int_distribution<int> int_dist(std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
-std::uniform_int_distribution<long long> long_long_dist(std::numeric_limits<long long>::min(), std::numeric_limits<long long>::max());
 
 for (auto i = 0; i < 10000; ++i) {
-  auto e = MyStruct {
-    .f0 = static_cast<bool>(bool_dist(gen)),
-    .f1 = lond_dist(gen),
-    .f2 = float_dist(gen),
-    .f3 = new int(int_dist(gen) & 7),
-    .f4 = { 0 }
-  };
+  MyStruct e;
 
-  for (auto t = 0; t < int_dist(gen) % 10; ++t) {
-    e.f4[t] = int_dist(gen);
-  }
+  e.f0 = static_cast<bool>(bool_dist(gen));
+
+  for (auto t = 0; t < 100; ++t)
+    e.f1[t] = float_dist(gen);
+
+  for (auto t = 0; t < 53; ++t)
+    e.f2[t] = static_cast<double>(float_dist(gen));
+
+  for (auto t = 0; t < 64; ++t)
+    e.f3[t] = static_cast<char>(int_dist(gen) % 255);
 
   a.push_back(e);
 }
@@ -291,14 +292,44 @@ These benchmarks take significantly longer time to run and produce big numbers:
 
 | Test               | Min     | Max      | 50%     | 90%     | 95%     | delta |
 |--------------------|---------|----------|---------|---------|---------|-------|
-| sample1 (`++i`)    | 6594160 | 12230338 | 6672436 | 6728386 | 6758193 | +1%   |
-| sample2 (`--i`)    | 6479624 | 11910333 | 6550249 | 6603793 | 6632227 | 0%    |
-| sample3 (`for(:)`) | 6688370 | 15104530 | 6770925 | 6813835 | 6843606 | +3%   |
+| sample1 (`++i`)    | 7882057 | 15385569 | 7948012 | 8004355 | 8031673 | 0%    |
+| sample2 (`--i`)    | 7915870 | 16297070 | 8971293 | 9109493 | 9151567 | +13%  |
+| sample3 (`for(:)`) | 8094894 | 16496526 | 8159004 | 8229138 | 8259364 | +3%   |
+
+Compare this to a structure which actually fits in one cache line.
+Cache line size is apparently `64 B` - that is **sixty-four bytes** - on most CPUs ([AMD Zen](https://www.7-cpu.com/cpu/Zen.html), [Intel Ice Lake](https://www.7-cpu.com/cpu/Ice_Lake.html)).
+My Apple M1 laptop has twice as much, `128 B`, as shown by running `sysctl -a | grep 'hw.cachelinesize'`.
+
+If the structure was reorganized to fit in that limit, like so:
+
+```cpp
+struct MyStruct {
+  bool f0; // 1 byte
+  float* f1; // sizeof(float*) = 8 bytes
+  double* f2; // sizeof(double*) = 8 bytes
+  char* f3; // sizeof(char*) = 8 bytes
+}; // total size = 25 bytes, likely to fir in a single cache line
+```
+
+The timings are considerably lower for the backwards iteration:
+
+| Test               | Min     | Max      | 50%     | 90%     | 95%     | delta |
+|--------------------|---------|----------|---------|---------|---------|-------|
+| sample1 (`++i`)    | 7575860 | 20005185 | 7640651 | 7700057 | 7725933 | 0%    |
+| sample2 (`--i`)    | 7466816 | 18068148 | 7657415 | 8109531 | 8208603 | +6%   |
+| sample3 (`for(:)`) | 7832724 | 14264212 | 7882930 | 7932295 | 7960718 | +3%   |
+
+This highlights how predictive cache loading and data element size that fits into a single CPU cache line actually impacts RAM reads - by a significant margin.
 
 ## Conclusion
 
-Even then the locality impact (which is negligible for one-by-one iteration) is within 2..3% difference, with backwards iteration being the fastest, followed by forward iteration and foreach being the slowest of the bunch.
-Bear in mind: these numbers are in *nanoseconds*, meaning the worst case scenario is `10000` (ten thousand) elements of variable size being iterated in `6.8 ms` and the fastest being `6.6 ms` - that is **milliseconds**.
-For comparison, rendering a frame at `120 FPS` rate would take about `8.3 ms`. And if you were to process some requests (in a client-server system), you would be able to handle `151` request per second while iterating over this list.
+In simplest case (vector of numbers), the worst case scenario is within 11% difference, with backwards iteration being the fastest, followed by forward iteration and foreach being the slowest of the bunch.
+Prefix decrement in the backwards iteration being the fastest.
+Bear in mind: these numbers are in *nanoseconds*, meaning the worst case scenario is `10000` (ten thousand) elements of variable size being iterated in `1.5 ms` and the fastest being `1.3 ms` - that is **milliseconds**.
+For comparison, rendering a frame at `120 FPS` rate would take about `8.3 ms`. And if you were to process some requests (in a client-server system), you would be able to handle `699` requests per second while iterating over this list.
+So realistically, the way you iterate a vector of integers, any of these techniques would only really matter if you are working on a really high performance system.
 
-So realistically, the way you iterate a **vector** would only really matter if you are working on a really high performance system.
+That being said, this is all true while the vector elements fit in one CPU cache line or cache block, that is L1 and L2 caches.
+
+So if the data element does not fit in a block of `64 B` (or `128 B` on some CPUs), the performance impact of backwards iteration is going to be more significant.
+In this case we are talking about `8 ms` vs `9.1 ms`. In terms of FPS, the difference would be `125 FPS` vs `109 FPS`. Or about `15` requests per second more.
