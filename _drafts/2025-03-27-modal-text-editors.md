@@ -17,6 +17,8 @@ Since we have a few people in our team using NeoVim or Vim plugin for VS Code or
 
 For a number of years, the way I develop in IntelliJ is quite keyboard-centric - I disable tabs and use `Shift-Shift` menu and its tabs to navigate the project and perform actions.
 
+<img src="/images/modal-text-editors/intellij-quick-actions-menu.png" loading="lazy" alt="Quick Actions menu in IntelliJ Idea">
+
 The quick action menu has 6 tabs:
 
 - Classes
@@ -31,6 +33,9 @@ For the most part I only use Classes, Files and Actions tabs via a keyboard shor
 The only other two features of the IDE I actually use are the file tree (so that I can see the _structure_ of the project - it comes handy for Java packages organization, for example) which I configure to automatically focus the file currently opened in the editor and the terminal, which I use for pretty much everything else (including Git interactions and running / building project).
 
 Actually, IntelliJ Idea gives you the statistics of features you use in the **Help** -> **My Productivity** menu.
+
+<img src="/images/modal-text-editors/intellij-features-usage.png" loading="lazy" alt="My feature usage in IntelliJ Idea">
+
 In my case it looks like this (ordered by the usage frequency, descending - from most used to least):
 
 - Recent files
@@ -56,6 +61,8 @@ Some of these (implement methods, introduce variable, generate code) might be ha
 So this would be my measure of success in other editors (in terms of comfort) - on top of movement in a document, I would like to compare the editors in terms of moving in the _project_ (files, symbols / classes and references) and quick actions.
 
 ## NeoVim
+
+<img src="/images/modal-text-editors/nvim-0.png" loading="lazy" alt="Neovim">
 
 I thought about trying [NeoVim](https://neovim.io/) since it was the hype at the time. I was dumbfolded by the fact it did not even come with the default config file to work with (in a stumbling contrast to Helix, which has `:config-open` and `:config-reload` commands built in).
 Yet I kept going, spending days perfecting my config. I switched my terminal emulator from [Warp](https://www.warp.dev/) to [Ghostty](https://github.com/ghostty-org/ghostty) (so that I can see images right inside my terminal, improving file manager experience), installed a good dozen of plugins and messed with color schemes.
@@ -187,6 +194,8 @@ Aside from ridiculous amount of time spent configuring Neovim, it ticks most of 
 - Implement methods ❌
 
 ## Helix
+
+<img src="/images/modal-text-editors/helix-0.png" loading="lazy" alt="Helix">
 
 Actually, my first try was Helix, but I immediately stumbled upon the first blocker - the task I was working on at that time involved some Mustache templates. And Helix did not support it even on the most basic level (syntax highlighting). Moreover, Helix did not have plugins at the time, so there was little I could do for that particular task. The reason I wanted at least syntax highlighting had to do with the issue I was working on, which had misplaced conditionals in the template file, resulting in an incorrect rendering. I liked, however, how Helix came with a lot of handy utilities out of the box - the file picker, treesitter integration (so I could jump between the rest of Java / TypeScript codebase with ease).
 
