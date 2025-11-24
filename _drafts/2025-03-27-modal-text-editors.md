@@ -26,79 +26,38 @@ The quick action menu has 6 tabs:
 - Text
 - All (combined of the above)
 
-For the most part I only use Classes, Files and Actions tabs via a keyboard shortcut.
+For the most part I only use Classes, Files and Actions tabs via a keyboard shortcut. From the Actions tab I rarely use more than "rename", "extract variable/method" or "copy path/reference".
 
 The only other two features of the IDE I actually use are the file tree (so that I can see the _structure_ of the project - it comes handy for Java packages organization, for example) which I configure to automatically focus the file currently opened in the editor and the terminal, which I use for pretty much everything else (including Git interactions and running / building project).
 
-So this would be my measure of success in other editors (in terms of comfort) - on top of movement in a document, I would like to compare the editors in terms of moving in the _project_ (files, symbols / classes and references), quick action access and terminal integration.
+Actually, IntelliJ Idea gives you the statistics of features you use in the **Help** -> **My Productivity** menu.
+In my case it looks like this (ordered by the usage frequency, descending - from most used to least):
 
-## Helix
+- Recent files
+- Go to declaration
+- Code completion
+- Syntax-aware selection (<kbd>Cmd</kbd> + <kbd>w</kbd>)
+- Find in files
+- Context actions (suggestions like "remove unused", "replace with X", "import Y", etc.)
+- Find (in current file)
+- Toggle comment
+- Go to file
+- Go to class
+- Rename
+- Find and replace (in current file)
+- Generate code (constructors, getters and setters)
+- Go to implementation
+- Introduce variable
+- Change case (camel case)
+- Implement methods
 
-My first take was Helix, but I immediately stumbled on the first roadblock - the task I was working on at that time involved some Mustache templates. And Helix did not support it even on the most basic level (syntax highlighting). Moreover, Helix did not have plugins at the time, so there was little I could do for that particular task. The reason I wanted at least syntax highlighting had to do with the issue I was working on, which had misplaced conditionals in the template file, resulting in an incorrect rendering. I liked, however, how Helix came with a lot of handy utilities out of the box - the file picker, treesitter integration (so I could jump between the rest of Java / TypeScript codebase with ease).
+Some of these (implement methods, introduce variable, generate code) might be hard to achieve in either of editors, so they are not requirements, but rather nice to haves.
 
-I tried configuring a file tree via [Yazi](https://github.com/sxyazi/yazi), which has an integration example on their website (using [zellij](https://github.com/zellij-org/zellij) terminal multiplexer panels), but it just refused to work for me on my Mac. That was when I timeboxed this and decided to switch my focus to NeoVim for the moment being.
-
-After a while of just living my life, a new version of Helix has dropped, 25.07. And it introduced a few quality o flife changes. For example, the file explorer, which is now built in. It is not as powerful as Yazi, but it does the job.
-So I decided to switch to Helix for a while.
-
-Upon getting back to Helix, there was a new release, [25.07.1](https://helix-editor.com/news/release-25-07-highlights/) which introduced a few quality of life improvements, including the file browser, sort of addressing the file tree issue I had before. Invoked with `<leader>e` (compared to `<lead>f` which just lists all the files in one long list), this one allows you to see directories. It is sort of an immediate-mode file manager as in it only shows the contents of a selected directory, but it is arguably more useful solution to the file tree problem than a list of all the files (recursively listing sub-directories). Additionally, tree-sitter was replaced so the syntax highlighting should be better - this would most likely be helpful in content like my blogs, often featuring multiple languages on top of the main Markdown.
-
-Something that I liked about Helix was how it handles selections. For the most part, native multi-cursor is a great start - you just have to remember the difference between splitting the selection and selecting inside the selection - `S` (split) vs `s` (select) -  both would create multiple cursors, just in a different way.
-
-Different selection objects, including the ones provided by the tree-sitter - with the [match mode](https://docs.helix-editor.com/keymap.html#match-mode) you can select different objects (`ma` and `mi` are your friends). But you can also surround the selection (`ms<char>`) and change the surrounding (`mr<from><to>`) and delete the surrounding (`md<char>`), which I find pretty handy sometimes.
-
-Some things I find bearable are the use of external tools for some actions, instead of plugins. Since Helix lacks plugin system in any shape or form (as of late October 2025), you can just pipe the selection to the external program. One such case is changing the case of selection - I use this **often**, especially in conjunction with multiple cursors - to quickly edit, say test data or a bunch of constants or to refactor multiple class fields. In this case I found a [comment on Github](https://github.com/helix-editor/helix/issues/5197#issuecomment-2569811785) suggesting the use of [ccase](https://github.com/rutrum/ccase) - you first need to install this Rust utility, ccase, and then you'll be able to send your selection(-s) by using `:pipe ccase -t screamingsnake`, for instance.
-
-Something I did not realize until writing this blog is that there are some really useful default keybindings for insert mode, like `Ctrl+w` to delete the previous word, `Alt+w` to delete the next word, `Ctrl+k` to delete to the end of the line and `Ctrl+x` to trigger autocomplete.
-
-One annoying thing about Helix is the buffer picker (available via `<lead>b`) - it shows the list of open buffers (files). It does not appear to be sorting the elements of the list and the first element is always the _current buffer_. This is not really helpful if you want to quickly go the previously edited file. To make things worse, it does not seem to have any configuration around it, so the behaviour is pretty much set in stone.
-
-I also am still missing one feature which made me try NeoVim in the first place, which is [`flash.nvim`](https://github.com/folke/flash.nvim) for quick jumps on the screen. Helix team did add something similar to `HopWord` command from [`hop.nvim`](https://github.com/smoka7/hop.nvim), called `goto_word`, available via `gw` key shortcut. But unlike `hop.nvim`, Helix implementation is barely configurable (you can only configure the alphabet used for making labels) and comes with just one mode - `HopWord`. Additionally, it enforces exactly two-character abbreviations (jump labels). I thought this is rather limiting and since Helix is an open-source project, I decided to implement a behaviour similar to `leap.nvim`, since it is much less obstructive (it does not cover your entire screen in labels, making it super hard to figure out where you want to jump) and it allows to narrow down the places to jump by having prefix search. So I raised a [PR](https://github.com/helix-editor/helix/pull/14644) and a [suggestion discussion](https://github.com/helix-editor/helix/discussions/14653) on Helix Github repo. To which the team just said "we don't want it" and dismissed the proposal:
-
-> We made intentional choices when implementing the goto_word behavior. We were quite aware if the nvim plugins. We are not going to replace or add alternative commands
-
-One comment pointed to the plugin system when it is available:
-
-> I'm not inclined to add more jumping commands as core Helix commands like gw. There are a lot of different spins on jumping functions in Neovim plugins and I believe that future work should be done in plugins (once available) rather than as core faetures.
-
-For context, plugin system has been [discussed](https://github.com/helix-editor/helix/discussions/3806) for over three years (as the moment of this writing, since September 2022) and apparently has been [worked on](https://github.com/helix-editor/helix/pull/8675) for over two years (since October 2023). So I have no hope of seeing it released in the near future.
-
-Here is my condensed cheatsheet of key shortcuts I use in Helix:
-
-- Pickers
-    - `<lead>b` buffer list
-    - `<lead>e` file explorer; far superior to file list
-    - `<lead>/` search
-    - `<lead>d` show diagnostics (hints, errors, warnings, etc)
-- Multiple cursors
-    - `,` collapse all cursors into one
-    - `s` select in selection; create a new cursor at each selection; takes a regexp as a pattern
-    - `S` split selection; create a new cursor at each occurrence of pattern; takes regexp as a pattern
-- Selection
-    - `v` enters visual (selection) mode; this is how you can select multiple words - `vwwww`
-    - `m` enters marking mode; this is how you can select paragraphs, text and LSP objects, add, change and remove wrapping characters (like brackets and quotes); few examples:
-        - `mi(` - select inside parentheses
-        - `ma"` - select everything inside double-quotes and the double-quotes themselves
-        - `ms[` - surround selection with square brackets
-        - `mr[(` - replace the surrounding square brackets with regular braces
-        - `mif` - select the body of a function (method)
-    - `=` / `<` / `>` - format / unindent / indent selection
-    - `:pipe` or `|` - send selection to an external program and replace selection with the output of said program
-        * as of version 25.7 you can also use interpolation with `%{}`, for instance, `%{cursor_line}` or `%{buffer_name}`, so you can pass in the filename to the external tool
-    - `%` - select an entire buffer (file)
-    - `<lead><c>` / `<lead><C>` - comment/uncomment the selection
-- Go to
-    - `gl` / `gh` - go to end of line / start of line (contrary to `$` and `^` in Vim)
-    - `gg` / `ge` - go to first line / last line of the file
-    - `Ctrl+i` / `Ctrl+o` - go back and forth in your jumplist (places where the cursor has been placed; jumplist itself is available with `<lead>j`)
-    - `gd` / `gD` - go to definition / declaration
-    - `gr` - go to references
-- Copying (yanking)
-    - `"+y` - copy to the OS clip buffer (translates to "change the buffer to the `+` - OS clipboard and then yank the selection")
+So this would be my measure of success in other editors (in terms of comfort) - on top of movement in a document, I would like to compare the editors in terms of moving in the _project_ (files, symbols / classes and references) and quick actions.
 
 ## NeoVim
 
-So I decided to use Vim to try it out first. I thought about trying [NeoVim](https://neovim.io/) since it was the hype at the time. I was dumbfolded by the fact it did not even come with the default config file to work with (in a stumbling contrast to Helix, which has `:config-open` and `:config-reload` commands built in).
+I thought about trying [NeoVim](https://neovim.io/) since it was the hype at the time. I was dumbfolded by the fact it did not even come with the default config file to work with (in a stumbling contrast to Helix, which has `:config-open` and `:config-reload` commands built in).
 Yet I kept going, spending days perfecting my config. I switched my terminal emulator from [Warp](https://www.warp.dev/) to [Ghostty](https://github.com/ghostty-org/ghostty) (so that I can see images right inside my terminal, improving file manager experience), installed a good dozen of plugins and messed with color schemes.
 
 My full neovim config is actually [public](https://github.com/shybovycha/moo-nvim-config/).
@@ -207,6 +166,136 @@ The config I have at the moment allows the following:
         - `<leader>q` toggles quickref buffer
         - `<leader>l` toggles locations buffer
 
+Aside from ridiculous amount of time spent configuring Neovim, it ticks most of my boxes:
+
+- Recent files ✅ `<leader>b`
+- Go to declaration ✅ `gd`
+- Code completion ✅ (`nvim-cmp`) `C-space`
+- Syntax-aware selection ✅ (`nvim-treesitter` with customized `incremental_selection`): initialize treesitter selection mode with `gsn` and then increment / decrement node selection with `gss` and `gsm`
+- Find in files ✅ `<leader>/` (`telescope` + `telescope-live-grep-args`, [rg](https://github.com/BurntSushi/ripgrep)-powered)
+- Context actions ✅ `gra`
+- Find in current file ✅ `/`
+- Toggle comment ✅ `gcc` / `gc<object>` (e.g. `gcaw` - comment word)
+- Go to file ✅ `<leader>f`
+- Go to class ✅ `<leader>S` (`telescope` + LSP)
+- Rename ✅ `grn`
+- Find and replace in current file `:%s/<search>/<replace>`
+- Generate code ❌
+- Go to implementation ✅ `gri`
+- Introduce variable ❌
+- Change case ✅ (`text-case.nvim` or through external program)
+- Implement methods ❌
+
+## Helix
+
+Actually, my first try was Helix, but I immediately stumbled upon the first blocker - the task I was working on at that time involved some Mustache templates. And Helix did not support it even on the most basic level (syntax highlighting). Moreover, Helix did not have plugins at the time, so there was little I could do for that particular task. The reason I wanted at least syntax highlighting had to do with the issue I was working on, which had misplaced conditionals in the template file, resulting in an incorrect rendering. I liked, however, how Helix came with a lot of handy utilities out of the box - the file picker, treesitter integration (so I could jump between the rest of Java / TypeScript codebase with ease).
+
+I tried configuring a file tree via [Yazi](https://github.com/sxyazi/yazi), which has an integration example on their website (using [zellij](https://github.com/zellij-org/zellij) terminal multiplexer panels), but it just refused to work for me on my Mac. That was when I timeboxed this and decided to switch my focus to NeoVim for the moment being.
+
+After a while of just living my life, a new version of Helix has dropped, 25.07. And it introduced a few quality o flife changes. For example, the file explorer, which is now built in. It is not as powerful as Yazi, but it does the job.
+So I decided to switch to Helix for a while.
+
+Upon getting back to Helix some time after, there was a new release, [25.07.1](https://helix-editor.com/news/release-25-07-highlights/) which introduced a few quality of life improvements, including the file browser, sort of addressing the file tree issue I had before. Invoked with `<leader>e` (compared to `<lead>f` which just lists all the files in one long list), this one allows you to see directories. It is sort of an immediate-mode file manager as in it only shows the contents of a selected directory, but it is arguably more useful solution to the file tree problem than a list of all the files (recursively listing sub-directories). Additionally, tree-sitter was replaced so the syntax highlighting should be better - this would most likely be helpful in content like my blogs, often featuring multiple languages on top of the main Markdown.
+
+Something that I liked about Helix was how it handles selections. For the most part, native multi-cursor is a great start - you just have to remember the difference between splitting the selection and selecting inside the selection - `S` (split) vs `s` (select) -  both would create multiple cursors, just in a different way.
+
+Different selection objects, including the ones provided by the tree-sitter - with the [match mode](https://docs.helix-editor.com/keymap.html#match-mode) you can select different objects (`ma` and `mi` are your friends). But you can also surround the selection (`ms<char>`) and change the surrounding (`mr<from><to>`) and delete the surrounding (`md<char>`), which I find pretty handy sometimes.
+
+Some things I find bearable are the use of external tools for some actions, instead of plugins. Since Helix lacks plugin system in any shape or form (as of late October 2025), you can just pipe the selection to the external program. One such case is changing the case of selection - I use this **often**, especially in conjunction with multiple cursors - to quickly edit, say test data or a bunch of constants or to refactor multiple class fields. In this case I found a [comment on Github](https://github.com/helix-editor/helix/issues/5197#issuecomment-2569811785) suggesting the use of [ccase](https://github.com/rutrum/ccase) - you first need to install this Rust utility, ccase, and then you'll be able to send your selection(-s) by using `:pipe ccase -t screamingsnake`, for instance.
+
+Something I did not realize until writing this blog is that there are some really useful default keybindings for insert mode, like `Ctrl+w` to delete the previous word, `Alt+w` to delete the next word, `Ctrl+k` to delete to the end of the line and `Ctrl+x` to trigger autocomplete.
+
+One annoying thing about Helix is the buffer picker (available via `<lead>b`) - it shows the list of open buffers (files). It does not appear to be sorting the elements of the list and the first element is always the _current buffer_. This is not really helpful if you want to quickly go the previously edited file. To make things worse, it does not seem to have any configuration around it, so the behaviour is pretty much set in stone.
+
+I also am still missing one feature which made me try NeoVim in the first place, which is [`flash.nvim`](https://github.com/folke/flash.nvim) for quick jumps on the screen. Helix team did add something similar to `HopWord` command from [`hop.nvim`](https://github.com/smoka7/hop.nvim), called `goto_word`, available via `gw` key shortcut. But unlike `hop.nvim`, Helix implementation is barely configurable (you can only configure the alphabet used for making labels) and comes with just one mode - `HopWord`. Additionally, it enforces exactly two-character abbreviations (jump labels). I thought this is rather limiting and since Helix is an open-source project, I decided to implement a behaviour similar to `leap.nvim`, since it is much less obstructive (it does not cover your entire screen in labels, making it super hard to figure out where you want to jump) and it allows to narrow down the places to jump by having prefix search. So I raised a [PR](https://github.com/helix-editor/helix/pull/14644) and a [suggestion discussion](https://github.com/helix-editor/helix/discussions/14653) on Helix Github repo. To which the team just said "we don't want it" and dismissed the proposal:
+
+> We made intentional choices when implementing the goto_word behavior. We were quite aware if the nvim plugins. We are not going to replace or add alternative commands
+
+One comment pointed to the plugin system when it is available:
+
+> I'm not inclined to add more jumping commands as core Helix commands like gw. There are a lot of different spins on jumping functions in Neovim plugins and I believe that future work should be done in plugins (once available) rather than as core faetures.
+
+For context, plugin system has been [discussed](https://github.com/helix-editor/helix/discussions/3806) for over three years (as the moment of this writing, since September 2022) and apparently has been [worked on](https://github.com/helix-editor/helix/pull/8675) for over two years (since October 2023). So I have no hope of seeing it released in the near future.
+
+But instead of giving up, I decided to give a try to this work-in-progress plugin system and after a week a [`flash.hx`](https://github.com/shybovycha/flash.hx/) plugin was born.
+
+Here is my condensed cheatsheet of key shortcuts I use in Helix:
+
+- Pickers
+    - `<lead>b` buffer list
+    - `<lead>e` file explorer; far superior to file list
+    - `<lead>/` search
+    - `<lead>d` show diagnostics (hints, errors, warnings, etc)
+- Multiple cursors
+    - `,` collapse all cursors into one
+    - `s` select in selection; create a new cursor at each selection; takes a regexp as a pattern
+    - `S` split selection; create a new cursor at each occurrence of pattern; takes regexp as a pattern
+- Selection
+    - `v` enters visual (selection) mode; this is how you can select multiple words - `vwwww`
+    - `m` enters marking mode; this is how you can select paragraphs, text and LSP objects, add, change and remove wrapping characters (like brackets and quotes); few examples:
+        - `mi(` - select inside parentheses
+        - `ma"` - select everything inside double-quotes and the double-quotes themselves
+        - `ms[` - surround selection with square brackets
+        - `mr[(` - replace the surrounding square brackets with regular braces
+        - `mif` - select the body of a function (method)
+    - `=` / `<` / `>` - format / unindent / indent selection
+    - `:pipe` or `|` - send selection to an external program and replace selection with the output of said program
+        * as of version 25.7 you can also use interpolation with `%{}`, for instance, `%{cursor_line}` or `%{buffer_name}`, so you can pass in the filename to the external tool
+    - `%` - select an entire buffer (file)
+    - `<lead><c>` / `<lead><C>` - comment/uncomment the selection
+- Go to
+    - `gl` / `gh` - go to end of line / start of line (contrary to `$` and `^` in Vim)
+    - `gg` / `ge` - go to first line / last line of the file
+    - `Ctrl+i` / `Ctrl+o` - go back and forth in your jumplist (places where the cursor has been placed; jumplist itself is available with `<lead>j`)
+    - `gd` / `gD` - go to definition / declaration
+    - `gr` - go to references
+- Copying (yanking)
+    - `"+y` - copy to the OS clip buffer (translates to "change the buffer to the `+` - OS clipboard and then yank the selection")
+
+After a few weeks of working in Helix I was pleasantly surprised by how much out-of-the-box stuff it comes shipped with. And I did not have to spend a whole lot of time configuring it (aside from that week I spent developing `flash.hx`).
+
+It checks most of my boxes too:
+
+- Recent files ✅ `<leader>b`
+- Go to declaration ✅ `gd`
+- Code completion ✅ `C-x`
+- Syntax-aware selection ✅ `m<selection><see tooltip>`
+- Find in files ✅ `<leader>/` (simplified)
+- Context actions ✅ `<leader>a` (depends on LSP)
+- Find in current file ✅ `/`
+- Toggle comment ✅ `<leader>c`
+- Go to file ✅ `<leader>f`
+- Go to class ✅ `<leader>S` (capital `S` for workspace symbols, lowercase `s` for current file symbols) (partial)
+- Rename ✅ `<leader>r`
+- Find and replace in current file ⚠️ (unconventinal): select scope (`%` for current buffer), then use `s` to select occurrences or `S` to split selections into multiple cursors, then use actions - `i` or `c` to change the selections, `d` to delete selections
+- Generate code ❌
+- Go to implementation ✅ `gi` (depends on LSP)
+- Introduce variable ❌
+- Change case ✅ (through external tool): select text, then `|` (pipe it), then specify external program (`ccase -t snake`, for instance)
+- Implement methods ❌
+
 ## Kakoune
 
-I kept pushing forward. 
+_TBD_
+
+## Final thoughts
+
+I was surprised by how nice these seemingly limiting editors have become over the years (last time I used them was over-configured Emacs back in circa 2015)!
+
+Although rough around the edges and coming with massive pros and massive cons, both editors are being actively developed to become even nicer.
+
+Neovim:
+
+- 👍 comes with some quite nice things out of the box
+- 👎 the out-of-the-box niceities need LSP to be plugged in, which comes through a plugin manager
+- 👍 insane amount of plugins for all sorts of things
+- 👎 a proportionally insane amount of time required to find and configure the plugins to make for a comfortable experience
+- 👍 overall, the experience that you _can_ create is on its own league
+
+Helix:
+
+- 👍 comes with **a ton** of nice things out of the box
+- 👍 none of the niceities require extensive configuration (if any at all)
+- 👎 very slow development cycle, so new features do not come out often (like twice a year, I believe)
+- 👎 no plugin system, making the new features even less frequent or even possible
+- 👎 very strongly opinionated developers, so if you are not comfortable with a feature - tough luck!
