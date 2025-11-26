@@ -15,9 +15,9 @@ Recently I've received an email from StackOverflow newsletters with a link to a 
 In the former article, author compared the performance of a tiny "Hello, World" program in Assembly to the same program in Go.
 He then tried to optimize the program in Go to run faster and towards the end of an article comes up with a program that is faster than its Assembly counterpart.
 
-<img alt="" src="/images/a-response-to-response-to-hello-world/hello-world-original-chart-min.webp">
-<img alt="" src="/images/a-response-to-response-to-hello-world/hello-world-new-chart-min.webp">
-<img alt="" src="/images/a-response-to-response-to-hello-world/hello-world-new-chart2-min.webp">
+<img alt="" data-src="/images/a-response-to-response-to-hello-world/hello-world-original-chart-min.webp">
+<img alt="" data-src="/images/a-response-to-response-to-hello-world/hello-world-new-chart-min.webp">
+<img alt="" data-src="/images/a-response-to-response-to-hello-world/hello-world-new-chart2-min.webp">
 
 And this totally makes sense, since if you give it a good read, you will notice that author did optimize the program in Go but did not do that for the Assembly program.
 
@@ -362,6 +362,6 @@ Finally, I ran the aforementioned programs with the following arguments: `1M`, `
 
 The results became more reasonable:
 
-<img alt="" src="/images/a-response-to-response-to-hello-world/go_vs_asm_hello_world-min.webp">
+<img alt="" data-src="/images/a-response-to-response-to-hello-world/go_vs_asm_hello_world-min.webp">
 
 <div class="content-read-marker" data-fraction="100"></div>

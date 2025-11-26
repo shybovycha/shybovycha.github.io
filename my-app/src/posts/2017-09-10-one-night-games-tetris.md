@@ -15,7 +15,7 @@ And recently I've came to the point when I really wanted to create something int
 
 As I wanted to accomplish my goal as soon as possible, I've decided to not pick up any libraries and just implement everything with HTML5 Canvas API. And this is what I ended up with:
 
-<img alt="" src="/images/one-night-games/tetris-screenshot.webp" class="medium">
+<img src="" alt="" data-src="/images/one-night-games/snake-screenshot.webp" class="medium">
 
 In this post I'll talk about Tetris. Under the cut you'll find the interesting algorithmic solutions I've used for it.
 
