@@ -43,12 +43,13 @@ int main() {
 }
 ```
 
-Some time ago I have heard Zig uses compile-time for template / generic programming. Curious idea, but I never really explored it.
+Some time ago I have heard [`Zig`](https://ziglang.org/) uses compile-time for template / generic programming. Curious idea, but I never really explored it.
 
-Then my friend, FireMage, suggested me to try D (which I vaguely explored quite a long time ago) and mentioned D has access to the file system at compile time.
+Then my friend, FireMage, suggested me to try [`D`](https://dlang.org/) (which I vaguely explored quite a long time ago). He himself created a [compile-time template parser/compiler for D](https://github.com/katyukha/darktemple), which is a rather cool idea. He has also mentioned was D has access to the file system at compile time.
+
 With that said, there are plethora of things I wish to try out myself!
 
-I have been working on my ~~trying to come up with a simple WYSIWYG editor for my~~ [chicken shooter game](https://github.com/shybovycha/shoot-them/tree/rework-2024).
+I have been ~~trying to come up with a simple WYSIWYG editor for my~~ working on my [chicken shooter game](https://github.com/shybovycha/shoot-them/tree/rework-2024).
 The idea I have right now is to have OpenGL shaders be defined as C++ classes, with shader code hard-coded as a string literal.
 All the shader inputs (uniform variables) have locations which you have to obtain when linking shader, so for performance considerations, each variable location could be persisted in class member at startup and then used by reference in the code via a dedicated setter method.
 The issue with this approach, however, is that there is quite a lot of dummy code that has to come with each shader.
