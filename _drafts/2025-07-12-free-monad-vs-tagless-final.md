@@ -14,7 +14,7 @@ For example, a program that gets a currency conversion rate from a Forex API and
 
 ```scala
 def forexExchange(from: Currency, to: Currency) =
-  makeHttpCall("http://forex.com/convert/${from}/${to}")
+  makeHttpCall(s"http://forex.com/convert/${from}/${to}")
     .andThen(response => parseForexJson(response).andThen(json => getExchangeRate(json).andThen(rate => makeHtml(rate, from, to))))
 ```
 
@@ -86,7 +86,7 @@ It is totally possible to not use either approach, like the example above, which
 
 ```scala
 def forexExchange(from: Currency, to: Currency) =
-  makeHttpCall("http://forex.com/convert/${from}/${to}")
+  makeHttpCall(s"http://forex.com/convert/${from}/${to}")
     .andThen(response => parseForexJson(response).andThen(json => getExchangeRate(json).andThen(rate => makeHtml(rate, from, to))))
 ```
 
@@ -107,7 +107,7 @@ def forexExchange(from: Currency, to: Currency)(implicit C: Cache[IO, (Currency,
   C.get((from, to)) match {
     case Some(rate) => IO.pure(makeHtml(rate, from, to))
     case None =>
-      makeHttpCall("http://forex.com/convert/${from}/${to}")
+      makeHttpCall(s"http://forex.com/convert/${from}/${to}")
         .andThen(response => parseForexJson(response).andThen(json => getExchangeRate(json).andThenThru(rate => C.put((from, to), rate)).andThen(rate => makeHtml(rate, from, to))))
   }
 }
@@ -120,7 +120,7 @@ def forexExchange(from: Currency, to: Currency)(implicit C: Cache[IO, (Currency,
   C.get((from, to)) match {
     case Some(rate) => IO.pure(makeHtml(rate, from, to))
     case None =>
-      makeHttpCall("http://forex.com/convert/${from}/${to}")
+      H.get(s"http://forex.com/convert/${from}/${to}")
         .andThen(response => parseForexJson(response).andThen(json => getExchangeRate(json).andThenThru(rate => C.put((from, to), rate)).andThen(rate => makeHtml(rate, from, to))))
   }
 }
@@ -137,7 +137,7 @@ def forexExchange(from: Currency, to: Currency)(implicit C: Cache[IO, (Currency,
   C.get((from, to)) match {
     case Some(rate) => IO.pure(makeHtml(rate, from, to))
     case None =>
-      H.makeHttpCall("http://forex.com/convert/${from}/${to}")
+      H.get(s"http://forex.com/convert/${from}/${to}")
         .andThen(response => parseForexJson(response)
           .andThen(json => getExchangeRate(json)
             .andThenThru(rate => C.put((from, to), rate))
@@ -152,14 +152,22 @@ def forexExchange(from: Currency, to: Currency)(implicit C: Cache[IO, (Currency,
 It is quite hard to read a code like that, so usually we would use the `do` notation (`for` in Scala) to simplify it:
 
 ```scala
-def forexExchange(from: Currency, to: Currency)(implicit C: Cache[IO, (Currency, Currency), BigDecimal], H: HttpClient[IO], S: Scheduler[IO]) = for {
-  httpResponse <- H.makeHttpCall("http://forex.com/convert/${from}/${to}")
-  json <- parseForexJson(httpResponse)
-  rate <- getExchangeRate(json)
-  _ <- C.put((from, to), rate)
-  _ <- S.schedule(DateTime.now + Duration.ofHours(1), () => C.invalidate())
-  html = makeHtml(rate, from, to)
-} yield html
+def forexExchange(from: Currency, to: Currency)(implicit C: Cache[IO, (Currency, Currency), BigDecimal], H: HttpClient[IO], S: Scheduler[IO]) =
+  for {
+    cached <- C.get((from, to))
+    rate <- cached match {
+      case Some(r) => Monad[F].pure(r)
+      case None    =>
+        for {
+          response <- H.get(s"http://forex.com/convert/${from.code}/${to.code}")
+          j        <- parseForexJson(response.body)
+          r        <- getExchangeRate(j)
+          _        <- C.put((from, to), r)
+          _        <- S.schedule(1.hour, C.invalidateAll())
+        } yield r
+    }
+    html <- makeHtml(rate, from, to)
+  } yield html
 ```
 
 <info>
@@ -194,10 +202,10 @@ The composition of the effects (or return types of each of the calls listed abov
 
 ```scala
 def forexExchange(from: Currency, to: Currency)(implicit C, H, S) =
-  makeHttpCall("...")
+  H.get("...")
     .flatMap(httpResponse => parseForexJson(httpResponse))
     .flatMap(json => getExchangeRate(json))
-    .flatMap(rate => C.put(CurrencyPair(from, to), rate).flatTap(() => S.schedule(1.hour, () => C.invalidate())))
+    .flatMap(rate => C.put((from, to), rate).flatTap(() => S.schedule(1.hour, () => C.invalidate())))
     .map(rate => makeHtml(rate, from, to))
 ```
 
@@ -264,14 +272,14 @@ def mockHttpClient: HttpClient[IO] = new HttpClient[IO] {
   def get(url: String): IO[HttpResponse] = IO.pure(HttpResponse("""{"rate": 1.23}""", 200))
 }
 
-def ioCache(ref: Ref[IO, Map[CurrencyPair, BigDecimal]]): Cache[IO, CurrencyPair, BigDecimal] = new Cache[IO, CurrencyPair, BigDecimal] {
-  def put(key: CurrencyPair, value: BigDecimal): IO[Unit] =
+def ioCache(ref: Ref[IO, Map[(Currency, Currency), BigDecimal]]): Cache[IO, (Currency, Currency), BigDecimal] = new Cache[IO, (Currency, Currency), BigDecimal] {
+  def put(key: (Currency, Currency), value: BigDecimal): IO[Unit] =
     ref.update(_ + (key -> value))
 
-  def get(key: CurrencyPair): IO[Option[BigDecimal]] =
+  def get(key: (Currency, Currency)): IO[Option[BigDecimal]] =
     ref.get.map(_.get(key))
 
-  def invalidate(key: CurrencyPair): IO[Unit] =
+  def invalidate(key: (Currency, Currency)): IO[Unit] =
     ref.update(_ - key)
 }
 
@@ -286,10 +294,10 @@ Remember that we must provide these implementations to the program in order for 
 ```scala
 def run = {
   for {
-    cacheRef <- Ref.of[IO, Map[CurrencyPair, BigDecimal]](Map.empty)
+    cacheRef <- Ref.of[IO, Map[(Currency, Currency), BigDecimal]](Map.empty)
 
     implicit val httpClient: HttpClient[IO] = mockHttpClient
-    implicit val cache: Cache[IO, CurrencyPair, BigDecimal] = ioCache(cacheRef)
+    implicit val cache: Cache[IO, (Currency, Currency), BigDecimal] = ioCache(cacheRef)
     implicit val scheduler: Scheduler[IO] = ioScheduler
 
     result <- forexExchange[IO](Currency("USD"), Currency("EUR"))
@@ -314,20 +322,15 @@ def zioHttpClient: HttpClient[AppContext] = new HttpClient[AppContext] {
     ZIO.succeed(HttpResponse("""{"rate": 1.23}""", 200))
 }
 
-def zioJsonParser: JsonParser[AppContext] = new JsonParser[AppContext] {
-  def parseForexResponse(json: String): AppContext[BigDecimal] =
-    ZIO.succeed(BigDecimal("1.23"))
-}
-
-def zioCache(ref: zio.Ref[Map[CurrencyPair, BigDecimal]]): Cache[AppContext, CurrencyPair, BigDecimal] =
-  new Cache[AppContext, CurrencyPair, BigDecimal] {
-    def put(key: CurrencyPair, value: BigDecimal): AppContext[Unit] =
+def zioCache(ref: zio.Ref[Map[(Currency, Currency), BigDecimal]]): Cache[AppContext, (Currency, Currency), BigDecimal] =
+  new Cache[AppContext, (Currency, Currency), BigDecimal] {
+    def put(key: (Currency, Currency), value: BigDecimal): AppContext[Unit] =
       ref.update(_ + (key -> value))
 
-    def get(key: CurrencyPair): AppContext[Option[BigDecimal]] =
+    def get(key: (Currency, Currency)): AppContext[Option[BigDecimal]] =
       ref.get.map(_.get(key))
 
-    def invalidate(key: CurrencyPair): AppContext[Unit] =
+    def invalidate(key: (Currency, Currency)): AppContext[Unit] =
       ref.update(_ - key)
   }
 
@@ -340,17 +343,17 @@ def zioScheduler: Scheduler[AppContext] = new Scheduler[AppContext] {
 And in the runner program (`run`):
 
 ```diff
-- cacheRef <- Ref.of[IO, Map[CurrencyPair, BigDecimal]](Map.empty)
+- cacheRef <- Ref.of[IO, Map[(Currency, Currency), BigDecimal]](Map.empty)
 -
 - implicit val httpClient: HttpClient[IO] = mockHttpClient
-- implicit val cache: Cache[IO, CurrencyPair, BigDecimal] = ioCache(cacheRef)
+- implicit val cache: Cache[IO, (Currency, Currency), BigDecimal] = ioCache(cacheRef)
 - implicit val scheduler: Scheduler[IO] = ioScheduler
 -
 - result <- forexExchange[IO](Currency("USD"), Currency("EUR"))
-+ cacheRef <- zio.Ref.make(Map.empty[CurrencyPair, BigDecimal])
++ cacheRef <- zio.Ref.make(Map.empty[(Currency, Currency), BigDecimal])
 +
 + implicit val httpClient: HttpClient[AppContext] = zioHttpClient
-+ implicit val cache: Cache[AppContext, CurrencyPair, BigDecimal] = zioCache(cacheRef)
++ implicit val cache: Cache[AppContext, (Currency, Currency), BigDecimal] = zioCache(cacheRef)
 + implicit val scheduler: Scheduler[AppContext] = zioScheduler
 +
 + result <- forexExchange[AppContext](Currency("USD"), Currency("EUR"))
@@ -365,18 +368,112 @@ type AppContext[F] = IO[F]
 you would only really have to replace the *summoners* (another beautiful word from the land of functional programming - effectively just a constructor / initializer / factory invocation):
 
 ```diff
-- cacheRef <- Ref.of[AppContext, Map[CurrencyPair, BigDecimal]](Map.empty)
+- cacheRef <- Ref.of[AppContext, Map[(Currency, Currency), BigDecimal]](Map.empty)
 -
 - implicit val httpClient: HttpClient[AppContext] = mockHttpClient
-- implicit val cache: Cache[AppContext, CurrencyPair, BigDecimal] = ioCache(cacheRef)
+- implicit val cache: Cache[AppContext, (Currency, Currency), BigDecimal] = ioCache(cacheRef)
 - implicit val scheduler: Scheduler[AppContext] = ioScheduler
 -
 - result <- forexExchange[AppContext](Currency("USD"), Currency("EUR"))
-+ cacheRef <- zio.Ref.make(Map.empty[CurrencyPair, BigDecimal])
++ cacheRef <- zio.Ref.make(Map.empty[(Currency, Currency), BigDecimal])
 +
 + implicit val httpClient: HttpClient[AppContext] = zioHttpClient
-+ implicit val cache: Cache[AppContext, CurrencyPair, BigDecimal] = zioCache(cacheRef)
++ implicit val cache: Cache[AppContext, (Currency, Currency), BigDecimal] = zioCache(cacheRef)
 + implicit val scheduler: Scheduler[AppContext] = zioScheduler
 +
 + result <- forexExchange[AppContext](Currency("USD"), Currency("EUR"))
 ```
+
+## Free Monad
+
+Whereas Tagless Final is easy to relate to if you know OOP - it is very similar to abstraction and interface implementation,
+Free Monad introduces a completely different approach to writing programs - using Algebraic Data Types (ADTs).
+And it does rely on the definition of `Free` monad, whereas Tagless Final does not really require anything but the basic language features - it is literally just a glorified abstraction mechanism.
+
+You first define all the possible operations that the program could perform. The program is then defined as a chain (or rather layers) of those operations. Lastly, you define *parsers* which unwrap the operations and effectively interpret the program.
+
+Effectively, the program becomes a glorified state machine. Or a [Redux](https://redux.js.org/) application.
+
+Check out the example of the above program converted to Free Monad step-by-step.
+
+First we define the operations the program can perform:
+
+```scala
+sealed trait ForexOp[A]
+
+case class HttpGet(url: String) extends ForexOp[HttpResponse]
+
+case class ParseJson(json: String) extends ForexOp[Json]
+
+case class GetExchangeRate(json: Json) extends ForexOp[BigDecimal]
+
+case class CacheGet(key: (Currency, Currency)) extends ForexOp[Option[BigDecimal]]
+case class CachePut(key: (Currency, Currency), value: BigDecimal) extends ForexOp[Unit]
+case class CacheInvalidate extends ForexOp[Unit]
+
+case class Schedule(delay: FiniteDuration, task: ForexProgram[Unit]) extends ForexOp[Unit]
+
+case class RenderHtml(rate: BigDecimal, from: Currency, to: Currency) extends ForexOp[String]
+```
+
+Note how all the operations are instances of `ForexOp`, which is **not** an instance of `Monad`, meaning we can **not** chain or combine them yet. To make them chainable (or combineable), we would use an existing tool, the `Free` monad:
+
+```scala
+type ForexProgram[A] = Free[ForexOp, A]
+
+object dsl {
+  def httpGet(url: String): ForexProgram[HttpResponse] =
+    Free.liftF(HttpGet(url))
+
+  def parseJson(json: String): ForexProgram[Json] =
+    Free.liftF(ParseJson(json))
+
+  def getExchangeRate(json: Json): ForexProgram[BigDecimal] =
+    Free.liftF(GetExchangeRate(json))
+
+  def cacheGet(key: (Currency, Currency)): ForexProgram[Option[BigDecimal]] =
+    Free.liftF(CacheGet(key))
+
+  def cachePut(key: (Currency, Currency), value: BigDecimal): ForexProgram[Unit] =
+    Free.liftF(CachePut(key, value))
+
+  def cacheInvalidate(): ForexProgram[Unit] =
+    Free.liftF(CacheInvalidate())
+
+  def schedule(delay: FiniteDuration)(task: ForexProgram[Unit]): ForexProgram[Unit] =
+    Free.liftF(Schedule(delay, task))
+
+  def renderHtml(rate: BigDecimal, from: Currency, to: Currency): ForexProgram[String] =
+    Free.liftF(RenderHtml(rate, from, to))
+
+  def pure[A](a: A): ForexProgram[A] =
+    Free.pure(a)
+}
+```
+
+These are the constructors for each operation. But instead of creating objects of each operation, they wrap ("lift") the operation in the `Free` monad.
+
+There is also a `pure` constructor, which creates a program of a static value. Whilst each operation wrapped in a `Free` monad is an intermediate state of a program, this is the final state of a program.
+
+Let's now define the program or a chain of these intermediate states:
+
+```scala
+def forexExchange(from: Currency, to: Currency): ForexProgram[String] =
+  for {
+    cached <- cacheGet((from, to))
+    rate <- cached match {
+      case Some(r) => pure(r)
+      case None    =>
+        for {
+          response <- httpGet(s"http://forex.com/convert/${from.code}/${to.code}")
+          j        <- parseJson(response.body)
+          r        <- getExchangeRate(j)
+          _        <- cachePut((from, to), r)
+          _        <- schedule(1.hour, cacheInvalidate())
+        } yield r
+    }
+    html <- renderHtml(rate, from, to)
+  } yield html
+```
+
+The job of an interpreter is to parse the program by unwrapping each of the intermediate states and executing a corresponding logic. It does that until the program becomes a "pure" value.
