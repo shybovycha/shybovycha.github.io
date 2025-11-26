@@ -18,7 +18,13 @@ def forexExchange(from: Currency, to: Currency) =
     .andThen(response => parseForexJson(response).andThen(json => getExchangeRate(json).andThen(rate => makeHtml(rate, from, to))))
 ```
 
-In a pure functional style, `makeHttpCall` would be a function of _something_ that can make HTTP calls and the request (or just a URL in this example):
+A more "canonical" way to represent the same program is by using a `do` notation, but we will preserve this for a bit later.
+
+<info>
+In a general purpose language such as JavaScript or Java, this would make perfect sense. But there is a little trick hidden in this code, which _might_ be a source of many errors: `makeHttpCall` function only takes one parameter - a URL, and it magically knows how to make HTTP requests and handle errors - it does not only return a value based on its arguments - for instance, if the server is down, it would throw an error. Effectively this function has a side-effect of _sending a HTTP request_ - it is doing something outside of the scope of the function body.
+</info>
+
+In a *pure functional* style, `makeHttpCall` would be also a function of _something_ that can make HTTP calls and the request, not just a URL:
 
 ```scala
 def makeHttpCall(H: HttpClient, url: String) = ???
@@ -33,14 +39,16 @@ def httpGet(url: String): IO[Either[HttpError, HttpResponse]] = ???
 def makeHttpCall(url: String): IO[Either[HttpError, HttpResponse]] = httpGet(url)
 ```
 
+Note how `IO` type in this made up example saves the hassle of having to specify the `HttpClient`.
+
 Or it could be expressed as an implicit object that can make HTTP requests:
 
 ```scala
-trait HttpClient {
-  def get(url: String): IO[Either[HttpError, HttpResponse]]
+trait HttpClient[F[_]] {
+  def get(url: String): F[Either[HttpError, HttpResponse]]
 }
 
-def makeHttpCall(url: String)(implicit H: HttpClient): IO[Either[HttpError, HttpResponse]] = H.makeHttpCall(url)
+def makeHttpCall(url: String)(implicit H: HttpClient[IO]): IO[Either[HttpError, HttpResponse]] = H.makeHttpCall(url)
 
 // ...
 
@@ -52,10 +60,36 @@ def run(args: List[String]): IO[ExitCode] = {
 ```
 
 Since this function call is the first in the application, the entire application would be a function that works in this context (`IO`).
-The application would then need to be written in a way so that all of its steps are combined using the proper combination operations (`map` and `flatMap`).
+The application would then need to be written in a way so that all of its steps are combined using the proper combination operations (`map` and `flatMap`) to preserve the type integrity:
+
+```scala
+def forexExchange(from: Currency, to: Currency) =
+  for {
+    response <- makeHttpCall(s"http://forex.com/convert/$from/$to")
+    json     <- parseForexJson(response)
+    rate     <- getExchangeRate(json)
+    html     = makeHtml(rate, from, to)
+  } yield html
+
+def makeHttpCall(url: String)(implicit H: HttpClient): IO[Either[HttpError, HttpResponse]] = H.get(url)
+
+def parseForexJson(response: HttpResponse): IO[Either[AppError, Json]] = ???
+
+def getExchangeRate(json: Json): IO[Either[AppError, BigDecimal]] = ???
+
+def makeHtml(rate: BigDecimal, from: Currency, to: Currency): String = ???
+```
 
 Both Free monad and Tagless Final are two approaches in functional programming to structuring programs to make combining different steps of the application logic easier.
-It is totally possible to not use either approach, like the example above, which merely uses `map` and `flatMap` (actually, `andThen`, for sake of simplicity).
+
+It is totally possible to not use either approach, like the example above, which merely uses `map` and `flatMap` (actually, `andThen`, for sake of simplicity):
+
+```scala
+def forexExchange(from: Currency, to: Currency) =
+  makeHttpCall("http://forex.com/convert/${from}/${to}")
+    .andThen(response => parseForexJson(response).andThen(json => getExchangeRate(json).andThen(rate => makeHtml(rate, from, to))))
+```
+
 But as application gets more and more complex, it becomes progressively harder to structure the code and combine different parts of application.
 
 For instance, if the above application required some sort of caching and a scheduler (like CRON), `IO` might not be a sufficient context anymore (again, simplifying for the sake of example):
@@ -79,7 +113,7 @@ def forexExchange(from: Currency, to: Currency)(implicit C: Cache[IO, (Currency,
 }
 ```
 
-The only change required here is the passing of implicits from the parent function (which declares them) to the corresponding :
+The only change required here is to pass the implicit values to the "parent" (or top-level) function (the one that combines the program steps):
 
 ```scala
 def forexExchange(from: Currency, to: Currency)(implicit C: Cache[IO, (Currency, Currency), Decimal], H: HttpClient) = {
@@ -92,10 +126,10 @@ def forexExchange(from: Currency, to: Currency)(implicit C: Cache[IO, (Currency,
 }
 ```
 
-And with scheduled cache invalidation:
+The program already becomes a bit of a mess, but still somewhat manageable. Assume there is a need to periodically invalidate the cache:
 
 ```scala
-trait Schedule[F[_]] {
+trait Scheduler[F[_]] {
   def schedule(delay: Duration, task: F[Unit]): F[Unit]
 }
 
@@ -118,7 +152,7 @@ def forexExchange(from: Currency, to: Currency)(implicit C: Cache[IO, (Currency,
 It is quite hard to read a code like that, so usually we would use the `do` notation (`for` in Scala) to simplify it:
 
 ```scala
-def forexExchange(from: Currency, to: Currency)(implicit C: Cache[F, (Currency, Currency), Decimal], H: HttpClient[F], S: Scheduler[F]) = do {
+def forexExchange(from: Currency, to: Currency)(implicit C: Cache[IO, (Currency, Currency), Decimal], H: HttpClient[IO], S: Scheduler[IO]) = do {
   httpResponse <- H.makeHttpCall("http://forex.com/convert/${from}/${to}")
   json <- parseForexJson(httpResponse)
   rate <- getExchangeRate(json)
@@ -128,8 +162,34 @@ def forexExchange(from: Currency, to: Currency)(implicit C: Cache[F, (Currency, 
 } yield html
 ```
 
-The above code defines a program `forexExchange` which runs in a context `F` which must be provided at runtime and it must have the capabilities of a cache, an IO and Schedule.
-Assuming somehow the types of each call (`IO::makeHttpCall`, `parseForexJson`, `getExchangeRate`, `Cache::put`, `Scheduler::schedule`) can compose, we need to provide an implementation of each capability.
+<info>
+The above code defines a program `forexExchange` which runs in a context `IO`.
+It is highly specific - `IO` is generally reserved for situations where literally *any* side-effect could happen in a program.
+Usually the programs are generalized over a template parameter `F[_]`:
+
+```scala
+def forexExchange[F[_]](from: Currency, to: Currency)(implicit C: Cache[F, (Currency, Currency), Decimal], H: HttpClient[F], S: Scheduler[F]) = ???
+```
+
+Most of the time the type `F` must meet certaing requirements such as support apply / construct function `()`, `map` or both `map` and `flatMap` functions (the last two requirements make `F` available to be used with `do` notation). This is done by either specifying these requirements in the template parameter itself:
+
+```scala
+def forexExchange[F[_]: Monad](from: Currency, to: Currency)(implicit C: Cache[F, (Currency, Currency), Decimal], H: HttpClient[F], S: Scheduler[F]) = ???
+```
+
+Or in the implicits:
+
+```scala
+def forexExchange[F[_]](from: Currency, to: Currency)(implicit C: Cache[F, (Currency, Currency), Decimal], H: HttpClient[F], S: Scheduler[F], M: Monad[F]) = ???
+```
+
+After specifying this template parameter, there must be a suitable implementation for each of the functions used in the `forexExchange` provided at runtime and each of them must be compatible with the specified requirements of type `F` (such as it must implement `Monad`, for example).
+</info>
+
+Since there are a few implicit parameters of the `forexExchange` function, there must be a context defined at runtime, which must have the capabilities of a `Cache`, an `HttpClient` and `Schedule`.
+
+Assuming somehow the types of each call (`HttpClient::get`, `parseForexJson`, `getExchangeRate`, `Cache::put`, `Scheduler::schedule`) can compose, we need to provide an implementation of each capability.
+
 The composition of the effects (or return types of each of the calls listed above) means that we can chain the calls to each of the functions - without the `do` notation, the program would look just like a chain of `flatMap` calls:
 
 ```scala
