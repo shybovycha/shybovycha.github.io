@@ -176,17 +176,56 @@ The config I have at the moment allows the following:
 Aside from ridiculous amount of time spent configuring Neovim, it ticks most of my boxes:
 
 - Recent files ✅ `<leader>b`
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/nvim2-2025-11-26_09.24.48.webm" />
+    </video>
 - Go to declaration ✅ `gd`
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/nvim2-2025-11-26_09.09.54.webm" />
+    </video>
 - Code completion ✅ (`nvim-cmp`) `C-space`
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/nvim2-2025-11-26_09.12.35.webm" />
+    </video>
 - Syntax-aware selection ✅ (`nvim-treesitter` with customized `incremental_selection`): initialize treesitter selection mode with `gsn` and then increment / decrement node selection with `gss` and `gsm`
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/nvim2-2025-11-26_09.13.21.webm" />
+    </video>
 - Find in files ✅ `<leader>/` (`telescope` + `telescope-live-grep-args`, [rg](https://github.com/BurntSushi/ripgrep)-powered)
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/nvim2-2025-11-26_09.28.39.webm" />
+    </video>
 - Context actions ✅ `gra`
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/nvim2-2025-11-26_09.28.19.webm" />
+    </video>
 - Find in current file ✅ `/`
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/nvim2-2025-11-26_09.29.25.webm" />
+    </video>
 - Toggle comment ✅ `gcc` / `gc<object>` (e.g. `gcaw` - comment word)
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/nvim2-2025-11-26_09.29.48.webm" />
+    </video>
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/nvim2-2025-11-26_09.30.31.webm" />
+    </video>
 - Go to file ✅ `<leader>f`
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/nvim2-2025-11-26_09.30.53.webm" />
+    </video>
 - Go to class ✅ `<leader>S` (`telescope` + LSP)
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/nvim2-2025-11-26_09.31.45.webm" />
+    </video>
 - Rename ✅ `grn`
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/nvim2-2025-11-26_09.32.07.webm" />
+    </video>
 - Find and replace in current file `:%s/<search>/<replace>`
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/nvim2-2025-11-26_09.32.25.webm" />
+    </video>
 - Generate code ❌
 - Go to implementation ✅ `gri`
 - Introduce variable ❌
@@ -266,21 +305,60 @@ After a few weeks of working in Helix I was pleasantly surprised by how much out
 It checks most of my boxes too:
 
 - Recent files ✅ `<leader>b`
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/helix2-2025-11-26_09.47.19.webm" />
+    </video>
 - Go to declaration ✅ `gd`
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/helix2-2025-11-26_09.48.21.webm" />
+    </video>
 - Code completion ✅ `C-x`
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/helix2-2025-11-26_09.48.52.webm" />
+    </video>
 - Syntax-aware selection ✅ `m<selection><see tooltip>`
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/helix2-2025-11-26_09.49.32.webm" />
+    </video>
 - Find in files ✅ `<leader>/` (simplified)
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/helix2-2025-11-26_09.50.42.webm" />
+    </video>
 - Context actions ✅ `<leader>a` (depends on LSP)
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/helix2-2025-11-26_09.51.04.webm" />
+    </video>
 - Find in current file ✅ `/`
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/helix2-2025-11-26_09.51.22.webm" />
+    </video>
 - Toggle comment ✅ `<leader>c`
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/helix2-2025-11-26_09.51.42.webm" />
+    </video>
 - Go to file ✅ `<leader>f`
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/helix2-2025-11-26_09.52.11.webm" />
+    </video>
 - Go to class ✅ `<leader>S` (capital `S` for workspace symbols, lowercase `s` for current file symbols) (partial)
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/helix2-2025-11-26_09.52.37.webm" />
+    </video>
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/helix2-2025-11-26_09.53.15.webm" />
+    </video>
 - Rename ✅ `<leader>r`
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/helix2-2025-11-26_09.53.45.webm" />
+    </video>
 - Find and replace in current file ⚠️ (unconventinal): select scope (`%` for current buffer), then use `s` to select occurrences or `S` to split selections into multiple cursors, then use actions - `i` or `c` to change the selections, `d` to delete selections
 - Generate code ❌
 - Go to implementation ✅ `gi` (depends on LSP)
 - Introduce variable ❌
 - Change case ✅ (through external tool): select text, then `|` (pipe it), then specify external program (`ccase -t snake`, for instance)
+    <video preload autoplay loop muted style="max-width:100%">
+    <source src="/images/modal-text-editors/helix2-2025-11-26_09.55.39.webm" />
+    </video>
 - Implement methods ❌
 
 ## Kakoune
