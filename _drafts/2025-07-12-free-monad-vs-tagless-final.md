@@ -98,12 +98,12 @@ For instance, if the above application required some sort of caching and a sched
 trait Cache[F[_], K, V] {
   def put(key: K, value: V): F[Unit]
 
-  def get(key: K): F[Optional[V]]
+  def get(key: K): F[Option[V]]
 
   def invalidate(): F[Unit]
 }
 
-def forexExchange(from: Currency, to: Currency)(implicit C: Cache[IO, (Currency, Currency), Decimal]) = {
+def forexExchange(from: Currency, to: Currency)(implicit C: Cache[IO, (Currency, Currency), BigDecimal]) = {
   C.get((from, to)) match {
     case Some(rate) => IO.pure(makeHtml(rate, from, to))
     case None =>
@@ -116,7 +116,7 @@ def forexExchange(from: Currency, to: Currency)(implicit C: Cache[IO, (Currency,
 The only change required here is to pass the implicit values to the "parent" (or top-level) function (the one that combines the program steps):
 
 ```scala
-def forexExchange(from: Currency, to: Currency)(implicit C: Cache[IO, (Currency, Currency), Decimal], H: HttpClient) = {
+def forexExchange(from: Currency, to: Currency)(implicit C: Cache[IO, (Currency, Currency), BigDecimal], H: HttpClient) = {
   C.get((from, to)) match {
     case Some(rate) => IO.pure(makeHtml(rate, from, to))
     case None =>
@@ -130,10 +130,10 @@ The program already becomes a bit of a mess, but still somewhat manageable. Assu
 
 ```scala
 trait Scheduler[F[_]] {
-  def schedule(delay: Duration, task: F[Unit]): F[Unit]
+  def schedule(delay: FiniteDuration, task: F[Unit]): F[Unit]
 }
 
-def forexExchange(from: Currency, to: Currency)(implicit C: Cache[IO, (Currency, Currency), Decimal], S: Scheduler[IO]) = {
+def forexExchange(from: Currency, to: Currency)(implicit C: Cache[IO, (Currency, Currency), BigDecimal], S: Scheduler[IO]) = {
   C.get((from, to)) match {
     case Some(rate) => IO.pure(makeHtml(rate, from, to))
     case None =>
@@ -152,7 +152,7 @@ def forexExchange(from: Currency, to: Currency)(implicit C: Cache[IO, (Currency,
 It is quite hard to read a code like that, so usually we would use the `do` notation (`for` in Scala) to simplify it:
 
 ```scala
-def forexExchange(from: Currency, to: Currency)(implicit C: Cache[IO, (Currency, Currency), Decimal], H: HttpClient[IO], S: Scheduler[IO]) = do {
+def forexExchange(from: Currency, to: Currency)(implicit C: Cache[IO, (Currency, Currency), BigDecimal], H: HttpClient[IO], S: Scheduler[IO]) = for {
   httpResponse <- H.makeHttpCall("http://forex.com/convert/${from}/${to}")
   json <- parseForexJson(httpResponse)
   rate <- getExchangeRate(json)
@@ -168,19 +168,19 @@ It is highly specific - `IO` is generally reserved for situations where literall
 Usually the programs are generalized over a template parameter `F[_]`:
 
 ```scala
-def forexExchange[F[_]](from: Currency, to: Currency)(implicit C: Cache[F, (Currency, Currency), Decimal], H: HttpClient[F], S: Scheduler[F]) = ???
+def forexExchange[F[_]](from: Currency, to: Currency)(implicit C: Cache[F, (Currency, Currency), BigDecimal], H: HttpClient[F], S: Scheduler[F]) = ???
 ```
 
 Most of the time the type `F` must meet certaing requirements such as support apply / construct function `()`, `map` or both `map` and `flatMap` functions (the last two requirements make `F` available to be used with `do` notation). This is done by either specifying these requirements in the template parameter itself:
 
 ```scala
-def forexExchange[F[_]: Monad](from: Currency, to: Currency)(implicit C: Cache[F, (Currency, Currency), Decimal], H: HttpClient[F], S: Scheduler[F]) = ???
+def forexExchange[F[_]: Monad](from: Currency, to: Currency)(implicit C: Cache[F, (Currency, Currency), BigDecimal], H: HttpClient[F], S: Scheduler[F]) = ???
 ```
 
 Or in the implicits:
 
 ```scala
-def forexExchange[F[_]](from: Currency, to: Currency)(implicit C: Cache[F, (Currency, Currency), Decimal], H: HttpClient[F], S: Scheduler[F], M: Monad[F]) = ???
+def forexExchange[F[_]](from: Currency, to: Currency)(implicit C: Cache[F, (Currency, Currency), BigDecimal], H: HttpClient[F], S: Scheduler[F], M: Monad[F]) = ???
 ```
 
 After specifying this template parameter, there must be a suitable implementation for each of the functions used in the `forexExchange` provided at runtime and each of them must be compatible with the specified requirements of type `F` (such as it must implement `Monad`, for example).
@@ -194,7 +194,7 @@ The composition of the effects (or return types of each of the calls listed abov
 
 ```scala
 def forexExchange(from: Currency, to: Currency)(implicit C, H, S) =
-  H.makeHttpCall("...")
+  makeHttpCall("...")
     .flatMap(httpResponse => parseForexJson(httpResponse))
     .flatMap(json => getExchangeRate(json))
     .flatMap(rate => C.put(CurrencyPair(from, to), rate).flatTap(() => S.schedule(1.hour, () => C.invalidate())))
@@ -210,7 +210,7 @@ def makeHttpCall(url: String): IO[Either[HttpError, String]] = ???
 
 def parseForexJson(json: String): Either[JsonParseError, Json] = ???
 
-def getExchangeRate(json: Json): Option[Decimal]
+def getExchangeRate(json: Json): Option[BigDecimal]
 ```
 
 With these declarations, the program won't compose.
@@ -223,4 +223,160 @@ But neither `flatMap` nor `map` would work for the types `makeHttpCall` and `par
 IO[Either[A, B]].flatMap((a: Either[A, B]) -> Option[C]): IO[???] // this won't work: Option[C] should have been IO[C]
 
 IO[Either[A, B]].map((a: Either[A, B]) -> Option[C]): IO[Option[C]] // this would only work if parseForexJson uses Either[A, B] as an argument
+```
+
+This was a long introduction, but what is the problem either Tagless Final or Free Monad are supposed to solve?
+Mostly for swappable implementations - think mocking logic for testing or having multiple implementations for different deployment environments.
+But also for code organization and abstraction - there could be multiple implementations of the functions and moreover multiple supported effects (`IO`, `Future`, `ZIO` etc.). If you ever wanted to swap one for another - instead of rewriting the original code you really only implement the smallest bits - even just type signatures.
+
+I have actually stumbled upon this problem myself while implementing this very program (forex exchange), when the API was rate limiting me or unavailable. Back in the day, I created a mock server in Ruby - effectively making an integration testing suite. Looking at it retrospectively, I should have just created another implementation.
+
+## Tagless Final
+
+There are two concepts which describe Tagless Final - algebras and interpreters (yes, functional programming is notorious for coming up with theorethically heavy mathematical names, which are not very helpful for us common people).
+
+We already defined algebras:
+
+```scala
+trait HttpClient[F[_]] {
+  def get(url: String): F[Either[HttpError, HttpResponse]]
+}
+
+trait Cache[F[_], K, V] {
+  def put(key: K, value: V): F[Unit]
+
+  def get(key: K): F[Option[V]]
+
+  def invalidate(): F[Unit]
+}
+
+trait Scheduler[F[_]] {
+  def schedule(delay: FiniteDuration, task: F[Unit]): F[Unit]
+}
+```
+
+These are effectively just interfaces, the declarations of certain capabilities.
+
+Then there are interpreters:
+
+```scala
+def mockHttpClient: HttpClient[IO] = new HttpClient[IO] {
+  def get(url: String): IO[HttpResponse] = IO.pure(HttpResponse("""{"rate": 1.23}""", 200))
+}
+
+def ioCache(ref: Ref[IO, Map[CurrencyPair, BigDecimal]]): Cache[IO, CurrencyPair, BigDecimal] = new Cache[IO, CurrencyPair, BigDecimal] {
+  def put(key: CurrencyPair, value: BigDecimal): IO[Unit] =
+    ref.update(_ + (key -> value))
+
+  def get(key: CurrencyPair): IO[Option[BigDecimal]] =
+    ref.get.map(_.get(key))
+
+  def invalidate(key: CurrencyPair): IO[Unit] =
+    ref.update(_ - key)
+}
+
+def ioScheduler: Scheduler[IO] = new Scheduler[IO] {
+  def schedule(delay: FiniteDuration, task: IO[Unit]): IO[Unit] =
+    IO.sleep(delay).flatMap(_ => task)
+}
+```
+
+Remember that we must provide these implementations to the program in order for it to work:
+
+```scala
+def run = {
+  for {
+    cacheRef <- Ref.of[IO, Map[CurrencyPair, BigDecimal]](Map.empty)
+
+    implicit val httpClient: HttpClient[IO] = mockHttpClient
+    implicit val cache: Cache[IO, CurrencyPair, BigDecimal] = ioCache(cacheRef)
+    implicit val scheduler: Scheduler[IO] = ioScheduler
+
+    result <- forexExchange[IO](Currency("USD"), Currency("EUR"))
+  } yield result
+}
+```
+
+If I were to run this program, it would most likely work. If I want to actually send requests to the Forex Exchange API, I would need to implement a `HttpClient[IO]` which would actually send requests and then replace this one single line:
+
+```diff
+- implicit val httpClient: HttpClient[IO] = mockHttpClient
++ implicit val httpClient: HttpClient[IO] = realHttpClient
+```
+
+If I were ever to replace Cats Effects (or, roughly put, `IO` monad) with ZIO, it would be as simple as implementing new interpreters:
+
+```scala
+type AppContext[A] = ZIO[Any, Throwable, A]
+
+def zioHttpClient: HttpClient[AppContext] = new HttpClient[AppContext] {
+  def get(url: String): AppContext[HttpResponse] =
+    ZIO.succeed(HttpResponse("""{"rate": 1.23}""", 200))
+}
+
+def zioJsonParser: JsonParser[AppContext] = new JsonParser[AppContext] {
+  def parseForexResponse(json: String): AppContext[BigDecimal] =
+    ZIO.succeed(BigDecimal("1.23"))
+}
+
+def zioCache(ref: zio.Ref[Map[CurrencyPair, BigDecimal]]): Cache[AppContext, CurrencyPair, BigDecimal] =
+  new Cache[AppContext, CurrencyPair, BigDecimal] {
+    def put(key: CurrencyPair, value: BigDecimal): AppContext[Unit] =
+      ref.update(_ + (key -> value))
+
+    def get(key: CurrencyPair): AppContext[Option[BigDecimal]] =
+      ref.get.map(_.get(key))
+
+    def invalidate(key: CurrencyPair): AppContext[Unit] =
+      ref.update(_ - key)
+  }
+
+def zioScheduler: Scheduler[AppContext] = new Scheduler[AppContext] {
+  def scheduleAfter(delay: FiniteDuration)(task: AppContext[Unit]): AppContext[Unit] =
+    ZIO.sleep(delay.toMillis.millis).flatMap(_ => task)
+}
+```
+
+And in the runner program (`run`):
+
+```diff
+- cacheRef <- Ref.of[IO, Map[CurrencyPair, BigDecimal]](Map.empty)
+-
+- implicit val httpClient: HttpClient[IO] = mockHttpClient
+- implicit val cache: Cache[IO, CurrencyPair, BigDecimal] = ioCache(cacheRef)
+- implicit val scheduler: Scheduler[IO] = ioScheduler
+-
+- result <- forexExchange[IO](Currency("USD"), Currency("EUR"))
++ cacheRef <- zio.Ref.make(Map.empty[CurrencyPair, BigDecimal])
++
++ implicit val httpClient: HttpClient[AppContext] = zioHttpClient
++ implicit val cache: Cache[AppContext, CurrencyPair, BigDecimal] = zioCache(cacheRef)
++ implicit val scheduler: Scheduler[AppContext] = zioScheduler
++
++ result <- forexExchange[AppContext](Currency("USD"), Currency("EUR"))
+```
+
+And if you have pre-defined type alias like `AppContext` for Cats' `IO` before:
+
+```scala
+type AppContext[F] = IO[F]
+```
+
+you would only really have to replace the *summoners* (another beautiful word from the land of functional programming - effectively just a constructor / initializer / factory invocation):
+
+```diff
+- cacheRef <- Ref.of[AppContext, Map[CurrencyPair, BigDecimal]](Map.empty)
+-
+- implicit val httpClient: HttpClient[AppContext] = mockHttpClient
+- implicit val cache: Cache[AppContext, CurrencyPair, BigDecimal] = ioCache(cacheRef)
+- implicit val scheduler: Scheduler[AppContext] = ioScheduler
+-
+- result <- forexExchange[AppContext](Currency("USD"), Currency("EUR"))
++ cacheRef <- zio.Ref.make(Map.empty[CurrencyPair, BigDecimal])
++
++ implicit val httpClient: HttpClient[AppContext] = zioHttpClient
++ implicit val cache: Cache[AppContext, CurrencyPair, BigDecimal] = zioCache(cacheRef)
++ implicit val scheduler: Scheduler[AppContext] = zioScheduler
++
++ result <- forexExchange[AppContext](Currency("USD"), Currency("EUR"))
 ```
