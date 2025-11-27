@@ -2,6 +2,7 @@
 layout: post
 title: Easy way to understand algorithm complexity and big O notation
 date: '2017-08-15T11:38:24+02:00'
+tags: [algorithms, big-o, complexity, computer-science, data-structures, performance, programming, tutorial, optimization, time-complexity]
 ---
 
 ## Foreword

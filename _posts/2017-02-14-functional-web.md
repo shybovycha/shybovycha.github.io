@@ -2,6 +2,7 @@
 layout: post
 title: Functional web
 date: '2017-02-18T17:44:39+01:00'
+tags: [functional-programming, javascript, react, redux, elm, web-development, frontend, immutable, fp, programming-paradigms]
 ---
 
 <img src="/images/functional_web/bicycle.webp" loading="lazy" class="img-responsive img-sm img-rounded pull-right">

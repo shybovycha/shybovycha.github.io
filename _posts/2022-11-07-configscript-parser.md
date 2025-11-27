@@ -2,6 +2,7 @@
 layout: post
 title: "ConfigScript"
 date: "07-11-2022T00:00:00+10:00"
+tags: [parsing, ogre3d, antlr, grammar, compiler, configuration, language-design, cpp, opengl, config-files]
 ---
 
 Once upon a time I thought OGRE was overly too complicated - all those unnecessary script files, custom formats, a ton of setup hassle.

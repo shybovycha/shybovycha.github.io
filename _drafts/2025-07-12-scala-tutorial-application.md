@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 'Scala tutorial application'
+tags: [rest, fsharp, fp, backend, dotnet, programming-paradigms, frontend, data, functional-programming, api]
 ---
 
 I have been reading some Rock the JVM articles about [FS2](https://rockthejvm.com/articles/fs2-more-than-functional-streaming-in-scala), [Http4S](https://rockthejvm.com/articles/http4s-unleashing-the-power-of-http-apis-library) and [Doobie](https://rockthejvm.com/articles/learning-doobie-for-the-greater-good).

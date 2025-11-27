@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Note transposer"
+tags: [programming]
 ---
 
 This thing allows one to transpose any note in a given tuning to any other tuning (or rather string / fret on a guitar).

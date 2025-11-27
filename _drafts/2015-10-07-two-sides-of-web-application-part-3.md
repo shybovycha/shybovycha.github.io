@@ -2,7 +2,7 @@
 layout: post
 title: Two sides of web application. Part 3
 categories: []
-tags: []
+tags: [ruby, napa, api, backend, rest, tutorial]
 published: True
 
 ---

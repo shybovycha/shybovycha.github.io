@@ -2,6 +2,7 @@
 layout: post
 title: "Rust vs C++ for game development"
 date: 22-06-2021T11:13:09+0800
+tags: [rest, cpp, fp, backend, game-development, programming, c++, programming-paradigms, functional-programming, api]
 ---
 
 Recently I've stumbled upon a blog (Rust vs C++ for game development)[https://blog.logrocket.com/rust-vs-c-for-game-development/].

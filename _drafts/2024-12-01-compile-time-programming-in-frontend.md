@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Compile-time programming in frontend"
+tags: [javascript, performance, typescript, type-safety, benchmarking, optimization, frontend, angular, react, web-development]
 ---
 
 Modern-day frontend is a wild west - no rules, tons of gaps in application resilience, millions of tools for the same job each with its own massive flaws.

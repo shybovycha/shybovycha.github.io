@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 'Clean before running a Spring Boot application in IntelliJ Idea'
+tags: [spring-boot, intellij-idea, gradle, java, build-tools, ide, configuration, development-tools, debugging, workflow]
 ---
 
 My teammate has faced an issue when running our SpringBoot application in IntelliJ Idea: there were certain Gradle artifacts cached between switching the branches, which prevented the application from running. The issue is easily solved by running `clean` Gradle task. But my teammate was running it using IntelliJ's UI. And by default, it does not do a _clean_ build before running - just the normal build, if the files have changed.

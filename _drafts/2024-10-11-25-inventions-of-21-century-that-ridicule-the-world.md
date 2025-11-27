@@ -2,6 +2,7 @@
 layout: post
 title: 25 inventions of 21st century that "changed" the world
 date: '2024-10-11T15:51:24+10:00'
+tags: [programming]
 ---
 
 Insider Monkey has crafted a list ranking 25 inventions made in 21st century that have significant impact on the world.

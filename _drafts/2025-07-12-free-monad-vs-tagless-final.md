@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 'Free monad vs tagless final'
+tags: [monads, rest, javascript, java, fp, backend, programming, programming-paradigms, functional-programming, api]
 ---
 
 Much like there are design patterns in OOP world, there are design patterns in functional programming world as well.

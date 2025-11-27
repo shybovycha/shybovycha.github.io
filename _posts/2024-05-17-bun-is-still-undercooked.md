@@ -2,6 +2,7 @@
 layout: post
 title: "Bun is still undercooked"
 date: '2024-05-17T14:10:00+10:00'
+tags: [bun, nodejs, javascript, bundler, package-manager, testing, performance, web-development, build-tools, benchmarking]
 ---
 
 my Skunkworks project was trying out [Bun](https://bun.sh/). it was not a successful project, but there are some learnings:

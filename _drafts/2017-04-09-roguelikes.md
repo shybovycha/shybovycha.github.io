@@ -2,6 +2,7 @@
 layout: post
 title: My new hobby
 date: '2017-04-09T11:38:24+02:00'
+tags: [game-development, frontend, web-development, game-programming, gamedev]
 ---
 
 I've got amused by how deep and well-designed are those old ASCII-art rogue-like games!

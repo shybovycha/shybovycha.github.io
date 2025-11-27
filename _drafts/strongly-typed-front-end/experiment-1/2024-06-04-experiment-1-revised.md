@@ -2,6 +2,7 @@
 layout: post
 title: 'Experiment #1, revised'
 date: '2024-06-04T22:13:00+10:00'
+tags: [reasonml, javascript, rest, typescript, type-safety, development-tools, backend, frontend, functional-programming, git]
 ---
 
 ## TypeScript

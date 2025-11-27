@@ -2,6 +2,7 @@
 layout: post
 title: "So why Redux is bad?"
 date: '2024-06-26T21:15:24+10:00'
+tags: [redux, react, state-management, javascript, frontend, jotai, react-query, architecture, web-development, performance]
 ---
 
 Redux is generally considered a bad choice for state management on front-end.

@@ -1,6 +1,7 @@
 ---
 title: Iterating a vector in C++
 layout: post
+tags: [cpp, c++, performance, optimization, vectors, assembly, benchmarking, algorithms, memory, cache]
 ---
 
 Such a simple topic - iterating over a vector, is it even worth discussing?

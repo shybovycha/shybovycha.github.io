@@ -1,6 +1,7 @@
 ---
 title: "JavaScript features killing your application's performance"
 layout: post
+tags: [javascript, performance, typescript, type-safety, java, benchmarking, optimization, programming, frontend, web-development]
 ---
 
 Thesis: spread operator when used with array-iterating functions (filter, map, reduce, etc.) is killing your app performance.

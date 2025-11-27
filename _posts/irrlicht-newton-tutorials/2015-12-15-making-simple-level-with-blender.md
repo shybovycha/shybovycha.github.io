@@ -2,6 +2,7 @@
 layout: post
 title: "Irrlicht Newton GD tutorial: making simple level with Blender"
 date: '2015-12-15T18:06:00+01:00'
+tags: [cpp, irrlicht, physics, game-development, frontend, newton-dynamics, web-development, 3d-graphics, 3d-modeling, blender]
 ---
 
 In this section we will have short but powerful introduction to Blender. We will cover

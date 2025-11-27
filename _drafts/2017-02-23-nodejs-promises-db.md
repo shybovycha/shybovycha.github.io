@@ -1,6 +1,7 @@
 ---
 layout: post
 title: NodeJS promises + DB
+tags: [programming]
 ---
 
 ```js

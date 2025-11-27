@@ -2,6 +2,7 @@
 layout: post
 title: "IntelliJ productivity tips"
 date: '2017-09-18T18:00:00+11:00'
+tags: [intellij-idea, productivity, ide, keyboard-shortcuts, development-tools, workflow, coding-tips, refactoring, code-navigation, programming-tools]
 ---
 
 This post is based on a [talk on IntelliJ productivity](https://www.youtube.com/watch?v=eq3KiAH4IBI) and contains some tips and tricks I found handy in my everyday work.

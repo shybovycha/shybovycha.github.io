@@ -2,6 +2,7 @@
 layout: post
 title: 'Gamedev in Rust with WGPU'
 date: '2022-12-08T00:24:00+00:00'
+tags: [rest, cpp, backend, game-development, text-editors, programming, c++, opengl, graphics-programming, api]
 ---
 
 ## The good

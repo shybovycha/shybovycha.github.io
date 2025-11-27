@@ -2,7 +2,7 @@
 layout: post
 title: Two sides of web application. Part Java
 categories: []
-tags: []
+tags: [java, spring-boot, maven, backend, tutorial]
 published: True
 ---
 

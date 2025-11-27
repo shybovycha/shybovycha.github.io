@@ -2,6 +2,7 @@
 layout: post
 title: 'Strongly-typed front-end: experiment 3, server communication'
 date: '2021-04-19T12:58:15+0700'
+tags: [programming, code-examples, tutorial]
 ---
 
 The idea of this experiment is to assess how server communication works in these technologies.

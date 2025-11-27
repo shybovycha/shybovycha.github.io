@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Game development with Newton Game Dynamics and Irrlicht tutorial
+tags: [game-development, irrlicht, newton-dynamics, cpp, physics, 3d-graphics, game-engine, tutorial, cmake, gamedev]
 ---
 
 <img src="/images/slow-compressed.webp" loading="lazy" class="img-responsive pull-right" style="max-height: 150px" alt="Slowpoke image" />

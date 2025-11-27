@@ -2,6 +2,7 @@
 layout: post
 title: "How unique are your bundles?"
 date: '2024-01-04T14:01:24+10:00'
+tags: [javascript, bundling, vite, webpack, performance, optimization, frontend, build-tools, code-analysis, web-development]
 ---
 
 In the modern front-end development we are all used to package managers, transpilation and bundling.

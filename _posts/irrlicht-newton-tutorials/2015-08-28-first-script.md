@@ -2,6 +2,7 @@
 layout: post
 title: "Irrlicht Newton GD tutorial: first script"
 date: '2015-08-28T18:10:00+01:00'
+tags: [cpp, fp, irrlicht, game-development, physics, opengl, programming, c++, programming-paradigms, functional-programming]
 ---
 
 As we discussed, we will describe the whole game in scripts, and the core functionality

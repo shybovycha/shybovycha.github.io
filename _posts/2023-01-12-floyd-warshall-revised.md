@@ -2,6 +2,7 @@
 layout: post
 title: Floyd-Warshall algorithm, revised
 date: '2023-01-12T11:38:24+11:00'
+tags: [algorithms, graph-theory, floyd-warshall, csharp, data-structures, optimization, programming, shortest-path, computer-science, adjacency-matrix]
 ---
 
 In this blog I would like to brush upon Floyd-Warshall algorithm implementation I have described <a href="/2017/08/16/floyd-warshall-algorithm.html">previously</a>.

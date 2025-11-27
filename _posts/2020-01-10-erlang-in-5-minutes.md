@@ -2,6 +2,7 @@
 layout: post
 date: '2020-01-10T15:24:24+11:00'
 title: 'Erlang in 5 minutes'
+tags: [erlang, functional-programming, programming-language, tutorial, elixir, distributed-systems, concurrency, fp, learning, quick-reference]
 ---
 
 ## X = erlang, Y = 5, io:format("Learn ~s in ~s minutes", [ X, Y ]).

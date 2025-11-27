@@ -2,6 +2,7 @@
 layout: post
 title: 'One-night games: Tetris'
 date: '2018-06-01T16:00:00+10:00'
+tags: [game-development, javascript, tetris, algorithms, matrix, canvas, html5, game-programming, arcade, web-games]
 ---
 
 Did you ever think of how old games like tetris or snake _(hail the Nokia fans!)_ work?

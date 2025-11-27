@@ -3,6 +3,7 @@ layout: post
 title: Modelling with Blender
 date: '2018-04-24T18:06:00+01:00'
 order: 50
+tags: [frontend, web-development, 3d-graphics, 3d-modeling, blender]
 ---
 
 In this section we will have short but powerful introduction to Blender. We will cover

@@ -1,5 +1,6 @@
 ---
 title: "Pains of a C++ developer"
+tags: [cpp, c++, programming]
 ---
 
 I have tried to modernize my old chess project.

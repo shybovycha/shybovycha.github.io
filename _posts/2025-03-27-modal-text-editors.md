@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 'Modal text editors'
+tags: [vim, neovim, helix, kakoune, text-editors, ide, productivity, developer-tools, plugins, code-editing]
 ---
 
 I was using vim on-and-off since my pal showed me Linux on my first ever computer, back in circa 2005.

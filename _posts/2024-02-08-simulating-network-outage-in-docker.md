@@ -2,6 +2,7 @@
 layout: post
 title: "Simulating network outages in Docker"
 date: '2024-02-08T14:01:24+10:00'
+tags: [docker, networking, devops, testing, firewall, iptables, containers, linux, debugging, infrastructure]
 ---
 
 Recently, for my work project I needed to simulate a system of ours going offline for a period of time (similar to having a network outage on a customer side).

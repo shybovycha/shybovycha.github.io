@@ -2,6 +2,7 @@
 layout: post
 title: 'Jargon-free functional programming. Part 3: structuring application'
 date: '2025-07-30T00:15:00+10:00'
+tags: [javascript, typescript, type-safety, fp, frontend, programming-paradigms, functional-programming]
 ---
 
 In the [previous entries](/2022/08/24/jargon-free-functional-programming-part2.html) I have described functional programming patterns in TypeScript based on a somewhat generic helper classes such as `Wrappable`, `Maybe`, `Either` and `IO`.

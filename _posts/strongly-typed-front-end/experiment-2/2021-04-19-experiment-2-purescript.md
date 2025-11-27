@@ -2,6 +2,7 @@
 layout: post
 title: 'Strongly-typed front-end: experiment 2, simple application, in PureScript'
 date: '2021-04-19T09:47:48+09:00'
+tags: [monads, reasonml, fsharp, javascript, fp, dotnet, frontend, functional-programming, react, web-development]
 ---
 
 ### Contents

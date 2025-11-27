@@ -2,7 +2,7 @@
 layout: post
 title: Encapsulation in Web review
 categories: []
-tags: []
+tags: [review, bem, web-components, frontend]
 published: True
 
 ---

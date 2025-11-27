@@ -2,6 +2,7 @@
 layout: post
 title: 'Pure functional frontend'
 date: '2024-05-16T19:00:00+10:00'
+tags: [javascript, fp, frontend, programming-paradigms, functional-programming, react, web-development, elm]
 ---
 
 Idea: separate IO and business logic and make that logic referentially transparent.

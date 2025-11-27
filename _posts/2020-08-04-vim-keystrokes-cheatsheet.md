@@ -2,6 +2,7 @@
 layout: post
 title: Vim keystrokes cheatsheet
 date: '2020-08-04T11:04:24+10:00'
+tags: [vim, text-editors, productivity, keyboard-shortcuts, cheatsheet, development-tools, command-line, workflow, coding-tips, reference]
 ---
 
 The time has come for me to list few of the commands and keystrokes that I use (and the ones that I don't but would like to start) in Vim.

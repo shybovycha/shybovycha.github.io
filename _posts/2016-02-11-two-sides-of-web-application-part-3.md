@@ -2,6 +2,7 @@
 layout: post
 title: "Two sides of web application. Part 3: Communication Layer"
 date: '2016-02-11T14:47:39+01:00'
+tags: [web-development, angular, api, rest, javascript, frontend, backend, services, http, web-architecture]
 ---
 
 <div class="row" style="justify-content: space-between">

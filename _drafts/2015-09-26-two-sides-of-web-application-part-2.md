@@ -2,7 +2,7 @@
 layout: post
 title: Two sides of web application. Part 2
 categories: []
-tags: []
+tags: [backend, angular, web-development]
 published: True
 
 ---

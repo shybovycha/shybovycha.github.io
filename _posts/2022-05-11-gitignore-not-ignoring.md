@@ -1,6 +1,7 @@
 ---
 layout: post
 title: '.gitignore is not ignoring'
+tags: [git, gitignore, encoding, debugging, version-control, utf-8, powershell, troubleshooting, development-tools, workflow]
 ---
 
 This is going to be a very short blog. I have been struggling with this issue for few days now - having a seemingly valid `.gitignore` file which does not make Git ignore any of the files.

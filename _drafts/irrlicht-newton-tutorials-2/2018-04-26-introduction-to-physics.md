@@ -3,6 +3,7 @@ layout: post
 title: Introduction to physics
 date: '2018-04-26T18:06:00+10:00'
 order: 70
+tags: [cpp, irrlicht, physics, game-development, programming, c++, newton-dynamics, 3d-graphics]
 ---
 
 ***TODO***

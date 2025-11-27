@@ -2,6 +2,7 @@
 layout: post
 title: 'Strongly-typed front-end'
 date: '2021-04-19T10:35:15+09:00'
+tags: [type-safety, frontend, elm, fsharp, purescript, reasonml, functional-programming, typescript, web-development, programming-languages]
 ---
 
 <img src="/images/strongly-typed-front-end/serial_experiments_lain.gif" loading="lazy" alt="Serial experiments Lain">

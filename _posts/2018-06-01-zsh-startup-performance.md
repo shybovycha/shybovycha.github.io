@@ -2,6 +2,7 @@
 layout: post
 title: Improving ZSH startup performance
 date: '2018-06-01T14:00:00+10:00'
+tags: [zsh, shell, performance, optimization, terminal, unix, profiling, command-line, development-tools, productivity]
 ---
 
 ## Adding profiling to ZSH

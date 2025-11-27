@@ -2,6 +2,7 @@
 layout: post
 title: "OpenGL: advanced samples"
 date: "26-10-2022T00:00:00+10:00"
+tags: [opengl, graphics-programming, shaders, rendering, 3d-graphics, cpp, c++, computer-graphics, game-development, gpu-programming]
 ---
 
 Damn this blog was long coming - I picked my interest in shaders over a decade ago, started to actually learn something in early 2021 and started writing this blog at the end of 2021. Now the time has finally come to share this with the world!

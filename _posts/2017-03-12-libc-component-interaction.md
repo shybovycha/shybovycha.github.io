@@ -2,6 +2,7 @@
 layout: post
 title: "libc.js: component interaction"
 date: '2017-03-12T23:22:24+02:00'
+tags: [fp, state-management, frontend, programming-paradigms, functional-programming, git, react, web-development, development-tools, redux]
 ---
 
 <img src="/images/microverse-battery_optimized.webp" loading="lazy" alt="">

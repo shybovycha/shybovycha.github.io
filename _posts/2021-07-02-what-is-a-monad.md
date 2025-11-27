@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "What is a Monad?"
+tags: [monad, functional-programming, haskell, scala, programming-concepts, fp, category-theory, abstractions, type-theory, programming-paradigms]
 ---
 
 ## What is a monad?

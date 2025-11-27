@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Dijkstra algorithm in Clojure"
+tags: [lisp, computer-science, clojure, programming, functional-programming, jvm, algorithms]
 ---
 
 ```clojure

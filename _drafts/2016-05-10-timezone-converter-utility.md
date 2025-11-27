@@ -2,6 +2,7 @@
 layout: post
 title: Timezone converter utility
 date: '2016-05-10T16:36:39+01:00'
+tags: [programming, code-examples]
 ---
 
 Many times I needed a tool or an utility for quick conversion between timezones, to book a meeting with my US 

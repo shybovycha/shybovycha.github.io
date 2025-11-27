@@ -2,6 +2,7 @@
 layout: post
 title: 'Erlang example 2.0'
 date: '2020-11-07T11:42:24+9:00'
+tags: [erlang, functional-programming, distributed-systems, data-structures, concurrency, programming, algorithms, tutorial, code-examples, binary-trees]
 ---
 
 Quite some time ago I've published a <a href="/tumblr/2015/01/28/erlang-practice.html">blogpost about Erlang</a>. It claimed to present a *short intro to distributed programming in Erlang*. But it turned to be a very simple communication application, nothing super-exciting.

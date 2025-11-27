@@ -2,6 +2,7 @@
 layout: post
 title: 'Strongly-typed front-end: introduction'
 date: '2021-04-19T08:36:15+09:00'
+tags: [reasonml, fsharp, javascript, typescript, type-safety, dotnet, frontend, functional-programming, react, web-development]
 ---
 
 ### Contents

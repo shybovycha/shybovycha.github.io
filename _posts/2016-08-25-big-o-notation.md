@@ -2,7 +2,7 @@
 layout: post
 title: Big O notation
 categories: []
-tags: []
+tags: [big-o, algorithms, complexity, computer-science, tutorial, java, cpp]
 date: '2016-08-25T13:00:00'
 ---
 

@@ -2,6 +2,7 @@
 layout: post
 title: "Продвинутые техники рендеринга с OpenGL"
 date: "22-03-2022T08:00:00+10:00"
+tags: [cpp, opengl, graphics-programming, c++, programming, 3d-graphics]
 ---
 
 <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
