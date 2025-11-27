@@ -34,10 +34,11 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
 
 <div class="row">
   <div class="col">
-    <p><a href="https://facebook.github.io/react/" target="_blank">React</a></p>
 
-    ```js
-    class App extends React.Component {
+<p><a href="https://facebook.github.io/react/" target="_blank">React</a></p>
+
+```js
+class App extends React.Component {
       constructor(props) {
         super(props);
         this.state = { counter: 0 };
@@ -63,18 +64,19 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
     }
 
     ReactDOM.render(<App />, document.body);
-    ```
+```
 
-    <p>
-      <a href="http://codepen.io/shybovycha/pen/dNErOY" target="_blank" class="btn btn-md">Run this code</a>
-    </p>
+<p>
+  <a href="http://codepen.io/shybovycha/pen/dNErOY" target="_blank" class="btn btn-md">Run this code</a>
+</p>
+
   </div>
-
   <div class="col">
-    <p><a href="https://facebook.github.io/react/" target="_blank">React</a> + <a href="http://redux.js.org/" target="_blank">Redux</a></p>
 
-    ```js
-    function App(props) {
+<p><a href="https://facebook.github.io/react/" target="_blank">React</a> + <a href="http://redux.js.org/" target="_blank">Redux</a></p>
+
+```js
+function App(props) {
       var store = props.store;
 
       return (
@@ -106,18 +108,19 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
     render();
 
     store.subscribe(render);
-    ```
+```
 
-    <p>
-      <a href="http://codepen.io/shybovycha/pen/RKmYVy" target="_blank" class="btn btn-md">Code</a>
-    </p>
+<p>
+  <a href="http://codepen.io/shybovycha/pen/RKmYVy" target="_blank" class="btn btn-md">Code</a>
+</p>
+
   </div>
-
   <div class="col">
-    <p><a href="http://elm-lang.org" target="_blank">Elm</a></p>
 
-    ```haskell
-    import Html exposing (beginnerProgram, div, button, text)
+<p><a href="http://elm-lang.org" target="_blank">Elm</a></p>
+
+```haskell
+import Html exposing (beginnerProgram, div, button, text)
     import Html.Events exposing (onClick)
 
 
@@ -146,18 +149,19 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
 
     main =
       beginnerProgram { model = initialState, view = view, update = update }
-    ```
+```
 
-    <p>
-      <a href="http://codepen.io/shybovycha/pen/egaLXv" target="_blank" class="btn btn-md">Compiled code</a>
-    </p>
+<p>
+  <a href="http://codepen.io/shybovycha/pen/egaLXv" target="_blank" class="btn btn-md">Compiled code</a>
+</p>
+
   </div>
-
   <div class="col">
-    <p><a href="http://mithril.js.org" target="_blank">Mithril</a></p>
 
-    ```js
-    var count$ = 0;
+<p><a href="http://mithril.js.org" target="_blank">Mithril</a></p>
+
+```js
+var count$ = 0;
 
     var App = {
         view: function () {
@@ -170,18 +174,19 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
     };
 
     m.mount(document.body, App);
-    ```
+```
 
-    <p>
-      <a href="http://codepen.io/shybovycha/pen/WRBgWv" target="_blank" class="btn btn-small">Code</a>
-    </p>
+<p>
+  <a href="http://codepen.io/shybovycha/pen/WRBgWv" target="_blank" class="btn btn-small">Code</a>
+</p>
+
   </div>
-
   <div class="col">
-    <p><a href="https://cycle.js.org" target="_blank">Cycle</a></p>
 
-    ```js
-    var xs = xstream.default;
+<p><a href="https://cycle.js.org" target="_blank">Cycle</a></p>
+
+```js
+var xs = xstream.default;
     var { div, p, button, makeDOMDriver } = CycleDOM;
 
     function App(sources) {
@@ -210,18 +215,19 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
     }
 
     Cycle.run(App, { DOM: makeDOMDriver('body') });
-    ```
+```
 
-    <p>
-      <a href="http://codepen.io/shybovycha/pen/XpOQvx" target="_blank" class="btn btn-small">Code</a>
-    </p>
+<p>
+  <a href="http://codepen.io/shybovycha/pen/XpOQvx" target="_blank" class="btn btn-small">Code</a>
+</p>
+
   </div>
-
   <div class="col">
-    <p><a href="https://github.com/shybovycha/libc.js" target="_blank">libc</a></p>
 
-    ```js
-    var initialState = 0;
+<p><a href="https://github.com/shybovycha/libc.js" target="_blank">libc</a></p>
+
+```js
+var initialState = 0;
 
     function update(state, message) {
       if (message == 'INCREMENT')
@@ -244,11 +250,12 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
     var app = createApplication(initialState, update, view);
 
     app.mount(document.body);
-    ```
+```
 
-    <p>
-      <a href="http://codepen.io/shybovycha/pen/dNEgNa" target="_blank" class="btn btn-md">Code</a>
-    </p>
+<p>
+  <a href="http://codepen.io/shybovycha/pen/dNEgNa" target="_blank" class="btn btn-md">Code</a>
+</p>
+
   </div>
 </div>
 

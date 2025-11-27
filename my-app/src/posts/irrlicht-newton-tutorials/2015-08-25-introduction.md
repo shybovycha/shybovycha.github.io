@@ -17,7 +17,7 @@ This tutorial covers the development of a game from a very beginning. This inclu
 
 And of course, the whole tutorial is built around **Irrlicht** and **Newton Game Dynamics** libraries.
 
-As for *{{ site.time | date: '%d %b %Y' }}*, the tutorial covers:
+As for *August 2015*, the tutorial covers:
 
 * an introduction to NewtonGD
 * creating Irrlicht-powered application

@@ -49,7 +49,7 @@ Take sample graph:
 
 In <em>GraphViz</em> it would be described as follows:
 
-```dot
+```text
 digraph G {
     layout = "circo";
 

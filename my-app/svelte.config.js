@@ -30,12 +30,16 @@ const config = {
 			],
 			rehypePlugins: [
 			],
-			highlight: {
-				async highlighter(code, lang = 'text') {
-					const html = escapeSvelte(highlighter.codeToHtml(code, { lang, themes: shikiThemes }));
-					return `{@html \`${html}\`}`;
-				},
+		highlight: {
+			async highlighter(code, lang = 'text') {
+				// Check if language is supported, fallback to 'text' if not
+				const supportedLang = highlighter.getLoadedLanguages().includes(lang) ? lang : 'text';
+				const html = escapeSvelte(highlighter.codeToHtml(code, { lang: supportedLang, themes: shikiThemes }));
+				// Escape backslashes for template literal
+				const escaped = html.replace(/\\/g, '\\\\');
+				return `{@html \`${escaped}\`}`;
 			},
+		},
 		}),
 
 		vitePreprocess(), 
