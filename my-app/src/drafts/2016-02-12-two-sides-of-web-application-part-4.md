@@ -2,6 +2,7 @@
 layout: post
 title: "Two sides of web application. Part 4: backend in Ruby"
 date: '2016-02-12T15:47:00+01:00'
+tags: [rest, backend, frontend, data, api, web-development, database]
 ---
 
 <div class="row">

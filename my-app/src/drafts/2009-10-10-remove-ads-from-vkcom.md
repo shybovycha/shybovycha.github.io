@@ -1,6 +1,7 @@
 ---
 title: 'Remove ads from vk.com'
 layout: post
+tags: [programming]
 ---
 
 Starting on from today, vk.com inserts and updates ads on the page periodically, since page has loaded.

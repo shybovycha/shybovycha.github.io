@@ -2,6 +2,7 @@
 title: Divide and conquer explained
 layout: post
 date: '2019-03-05T16:27:00+10:00'
+tags: [performance, java, benchmarking, computer-science, optimization, programming, frontend, jvm, web-development, algorithms]
 ---
 
 Some time ago, I had to parallelize a bunch (around 10k..70k) of jobs in my project to speed up an operation.

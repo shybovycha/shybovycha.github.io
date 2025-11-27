@@ -2,6 +2,7 @@
 layout: post
 title: Entanglement2
 date: '2018-11-11T11:42:24+10:00'
+tags: [javascript, java, programming, jvm, web-development]
 ---
 
 In order to generate valid connections for a tile, we need to have twelve pairs of integers between 0 and 11 (inclusively), where none of the pairs contains same number as any other pair and there are no duplications. There are two ways of doing this:

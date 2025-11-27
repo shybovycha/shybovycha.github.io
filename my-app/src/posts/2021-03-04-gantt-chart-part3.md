@@ -2,6 +2,7 @@
 layout: post
 title: "Gantt chart. Part 3"
 date: '2021-03-04T19:46:24+11:00'
+tags: [canvas, javascript, data-visualization, charts, gantt-chart, project-management, drag-and-drop, frontend, web-development, interactive]
 ---
 
 ## Contents

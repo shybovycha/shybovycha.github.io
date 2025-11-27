@@ -2,7 +2,7 @@
 layout: post
 title: Clojure guards
 categories: []
-tags: []
+tags: [clojure, pattern-matching, functional-programming, cond, core-match, multimethods]
 published: True
 date: '2016-12-21T12:54:00'
 ---

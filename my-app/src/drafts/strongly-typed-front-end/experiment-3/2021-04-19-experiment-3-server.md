@@ -3,6 +3,7 @@ layout: post
 title: 'Strongly-typed front-end: experiment 3, server communication, in Elm'
 date: '2021-04-19T12:58:15+0700'
 published: false
+tags: [monads, fp, frontend, programming-paradigms, functional-programming, elm]
 ---
 
 ## AJAX requests

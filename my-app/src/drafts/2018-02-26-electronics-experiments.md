@@ -2,6 +2,7 @@
 layout: post
 title: 'Electronics experiments'
 date: '2018-02-26T18:01:00+01:00'
+tags: [development-tools, git, version-control]
 ---
 
 Q: What is the difference between PORTB / DDRB / PINB?

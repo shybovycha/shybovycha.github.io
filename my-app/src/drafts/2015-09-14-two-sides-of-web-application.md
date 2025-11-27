@@ -2,6 +2,7 @@
 layout: post
 title: Two sides of web application
 date: '2015-09-14T17:44:39+01:00'
+tags: [rest, typescript, lisp, backend, clojure, frontend, data, functional-programming, angular, jvm]
 ---
 
 # Two sides of web application

@@ -1,6 +1,7 @@
 ---
 title: 'TypeScript classes are not what you think'
 date: '2023-06-05T15:15:00+10:00'
+tags: [typescript, javascript, type-system, oop, classes, programming, type-safety, code-quality, design-patterns, frontend]
 ---
 
 There was a talk at CPPCon 2017 by Matt Goldbolt with an inspirational title, [What has my compiler done for me lately?](https://www.youtube.com/watch?v=bSkpMdDe4g4).

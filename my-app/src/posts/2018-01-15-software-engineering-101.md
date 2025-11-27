@@ -2,6 +2,7 @@
 layout: post
 title: 'Software Engineering 101: how computer works'
 date: '2018-08-08T20:20:00+10:00'
+tags: [computer-science, assembly, cpu, programming, low-level, hardware, processors, computer-architecture, tutorial, education]
 ---
 
 There is some bit of information about computers which I was never told in school or at the university.

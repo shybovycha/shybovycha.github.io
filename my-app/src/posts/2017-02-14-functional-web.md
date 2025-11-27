@@ -2,6 +2,7 @@
 layout: post
 title: Functional web
 date: '2017-02-18T17:44:39+01:00'
+tags: [functional-programming, javascript, react, redux, elm, web-development, frontend, immutable, fp, programming-paradigms]
 ---
 
 <img src="/images/functional_web/bicycle.webp" loading="lazy" class="img-responsive img-sm img-rounded pull-right">
@@ -35,125 +36,127 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
   <div class="col">
     <p><a href="https://facebook.github.io/react/" target="_blank">React</a></p>
 
-```js
-  class App extends React.Component {
-    constructor(props) {
-      super(props);
-      this.state = { counter: 0 };
+    ```js
+    class App extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = { counter: 0 };
+      }
+
+      increment() {
+        this.setState({ counter: this.state.counter + 1 });
+      }
+
+      decrement() {
+        this.setState({ counter: this.state.counter - 1 });
+      }
+
+      render() {
+        return (
+          <div>
+            <button onClick={() => this.increment()}>Increment</button>
+            <button onClick={() => this.decrement()}>Decrement</button>
+            <div>Counter: {this.state.counter}</div>
+          </div>
+        );
+      }
     }
 
-    increment() {
-      this.setState({ counter: this.state.counter + 1 });
-    }
+    ReactDOM.render(<App />, document.body);
+    ```
 
-    decrement() {
-      this.setState({ counter: this.state.counter - 1 });
-    }
+    <p>
+      <a href="http://codepen.io/shybovycha/pen/dNErOY" target="_blank" class="btn btn-md">Run this code</a>
+    </p>
+  </div>
 
-    render() {
+  <div class="col">
+    <p><a href="https://facebook.github.io/react/" target="_blank">React</a> + <a href="http://redux.js.org/" target="_blank">Redux</a></p>
+
+    ```js
+    function App(props) {
+      var store = props.store;
+
       return (
         <div>
-          <button onClick={() => this.increment()}>Increment</button>
-          <button onClick={() => this.decrement()}>Decrement</button>
-          <div>Counter: {this.state.counter}</div>
+          <button onClick={() => store.dispatch({ type: 'INCREMENT' })}>Increment</button>
+          <button onClick={() => store.dispatch({ type: 'DECREMENT' })}>Decrement</button>
+          <div>Counter: {store.getState()}</div>
         </div>
       );
     }
-  }
 
-  ReactDOM.render(<App />, document.body);
-```
-<p>
-  <a href="http://codepen.io/shybovycha/pen/dNErOY" target="_blank" class="btn btn-md">Run this code</a>
-</p>
-</div>
-
-<div class="col">
-<p><a href="https://facebook.github.io/react/" target="_blank">React</a> + <a href="http://redux.js.org/" target="_blank">Redux</a></p>
-
-```js
-  function App(props) {
-    var store = props.store;
-
-    return (
-      <div>
-        <button onClick={() => store.dispatch({ type: 'INCREMENT' })}>Increment</button>
-        <button onClick={() => store.dispatch({ type: 'DECREMENT' })}>Decrement</button>
-        <div>Counter: {store.getState()}</div>
-      </div>
-    );
-  }
-
-  function update(state = 0, action) {
-    switch (action.type) {
-    case 'INCREMENT':
-      return state + 1
-    case 'DECREMENT':
-      return state - 1
-    default:
-      return state
+    function update(state = 0, action) {
+      switch (action.type) {
+      case 'INCREMENT':
+        return state + 1
+      case 'DECREMENT':
+        return state - 1
+      default:
+        return state
+      }
     }
-  }
 
-  var store = Redux.createStore(update);
+    var store = Redux.createStore(update);
 
-  function render() {
-    ReactDOM.render(<App store={store} />, document.body);
-  }
+    function render() {
+      ReactDOM.render(<App store={store} />, document.body);
+    }
 
-  render();
+    render();
 
-  store.subscribe(render);
-```
-<p>
-  <a href="http://codepen.io/shybovycha/pen/RKmYVy" target="_blank" class="btn btn-md">Code</a>
-</p>
-</div>
+    store.subscribe(render);
+    ```
 
-<div class="col">
-<p><a href="http://elm-lang.org" target="_blank">Elm</a></p>
+    <p>
+      <a href="http://codepen.io/shybovycha/pen/RKmYVy" target="_blank" class="btn btn-md">Code</a>
+    </p>
+  </div>
 
-```haskell
-  import Html exposing (beginnerProgram, div, button, text)
-  import Html.Events exposing (onClick)
+  <div class="col">
+    <p><a href="http://elm-lang.org" target="_blank">Elm</a></p>
 
-
-  initialState = 0
+    ```haskell
+    import Html exposing (beginnerProgram, div, button, text)
+    import Html.Events exposing (onClick)
 
 
-  view state =
-    div []
-      [ button [ onClick Increment ] [ text "Increment" ]
-      , button [ onClick Decrement ] [ text "Decrement" ]
-      , div [] [ text ("Counter:" ++ (toString state)) ]
-      ]
+    initialState = 0
 
 
-  type Msg = Increment | Decrement
+    view state =
+      div []
+        [ button [ onClick Increment ] [ text "Increment" ]
+        , button [ onClick Decrement ] [ text "Decrement" ]
+        , div [] [ text ("Counter:" ++ (toString state)) ]
+        ]
 
 
-  update msg state =
-    case msg of
-      Increment ->
-        state + 1
-
-      Decrement ->
-        state - 1
+    type Msg = Increment | Decrement
 
 
-  main =
-    beginnerProgram { model = initialState, view = view, update = update }
-```
+    update msg state =
+      case msg of
+        Increment ->
+          state + 1
 
-<p>
-  <a href="http://codepen.io/shybovycha/pen/egaLXv" target="_blank" class="btn btn-md">Compiled code</a>
-</p>
-</div>
+        Decrement ->
+          state - 1
 
-<div class="col">
-<p><a href="http://mithril.js.org" target="_blank">Mithril</a></p>
 
-```js
+    main =
+      beginnerProgram { model = initialState, view = view, update = update }
+    ```
+
+    <p>
+      <a href="http://codepen.io/shybovycha/pen/egaLXv" target="_blank" class="btn btn-md">Compiled code</a>
+    </p>
+  </div>
+
+  <div class="col">
+    <p><a href="http://mithril.js.org" target="_blank">Mithril</a></p>
+
+    ```js
     var count$ = 0;
 
     var App = {
@@ -167,86 +170,86 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
     };
 
     m.mount(document.body, App);
-  ```
+    ```
 
-<p>
-  <a href="http://codepen.io/shybovycha/pen/WRBgWv" target="_blank" class="btn btn-small">Code</a>
-</p>
-</div>
+    <p>
+      <a href="http://codepen.io/shybovycha/pen/WRBgWv" target="_blank" class="btn btn-small">Code</a>
+    </p>
+  </div>
 
-<div class="col">
-<p><a href="https://cycle.js.org" target="_blank">Cycle</a></p>
+  <div class="col">
+    <p><a href="https://cycle.js.org" target="_blank">Cycle</a></p>
 
-```js
-  var xs = xstream.default;
-  var { div, p, button, makeDOMDriver } = CycleDOM;
+    ```js
+    var xs = xstream.default;
+    var { div, p, button, makeDOMDriver } = CycleDOM;
 
-  function App(sources) {
-    var decrement$ = sources.DOM
-      .select('.decrement')
-      .events('click')
-      .mapTo(-1);
+    function App(sources) {
+      var decrement$ = sources.DOM
+        .select('.decrement')
+        .events('click')
+        .mapTo(-1);
 
-    var increment$ = sources.DOM
-      .select('.increment')
-      .events('click')
-      .mapTo(+1);
+      var increment$ = sources.DOM
+        .select('.increment')
+        .events('click')
+        .mapTo(+1);
 
-    var action$ = xs.merge(decrement$, increment$);
-    var count$ = action$.fold(function (acc, v) { return acc + v; }, 0);
+      var action$ = xs.merge(decrement$, increment$);
+      var count$ = action$.fold(function (acc, v) { return acc + v; }, 0);
 
-    var vtree$ = count$.map(function (count) {
-      return div([
-        button('.decrement', 'Decrement'),
-        button('.increment', 'Increment'),
-        p('Counter: ' + count)
-      ])
-    });
+      var vtree$ = count$.map(function (count) {
+        return div([
+          button('.decrement', 'Decrement'),
+          button('.increment', 'Increment'),
+          p('Counter: ' + count)
+        ])
+      });
 
-    return { DOM: vtree$ };
-  }
+      return { DOM: vtree$ };
+    }
 
-  Cycle.run(App, { DOM: makeDOMDriver('body') });
-```
+    Cycle.run(App, { DOM: makeDOMDriver('body') });
+    ```
 
-<p>
-  <a href="http://codepen.io/shybovycha/pen/XpOQvx" target="_blank" class="btn btn-small">Code</a>
-</p>
-</div>
+    <p>
+      <a href="http://codepen.io/shybovycha/pen/XpOQvx" target="_blank" class="btn btn-small">Code</a>
+    </p>
+  </div>
 
-<div class="col">
-<p><a href="https://github.com/shybovycha/libc.js" target="_blank">libc</a></p>
+  <div class="col">
+    <p><a href="https://github.com/shybovycha/libc.js" target="_blank">libc</a></p>
 
-```js
-  var initialState = 0;
+    ```js
+    var initialState = 0;
 
-  function update(state, message) {
-    if (message == 'INCREMENT')
-      return state + 1;
+    function update(state, message) {
+      if (message == 'INCREMENT')
+        return state + 1;
 
-    if (message == 'DECREMENT')
-      return state - 1;
+      if (message == 'DECREMENT')
+        return state - 1;
 
-    return state;
-  };
+      return state;
+    };
 
-  function view(state, dispatch) {
-    return ['div', [
-      ['button', { click: () => dispatch('INCREMENT') }, 'Increment'],
-      ['button', { click: () => dispatch('DECREMENT') }, 'Decrement'],
-      ['div', `Count: ${ state }`]
-    ]];
-  };
+    function view(state, dispatch) {
+      return ['div', [
+        ['button', { click: () => dispatch('INCREMENT') }, 'Increment'],
+        ['button', { click: () => dispatch('DECREMENT') }, 'Decrement'],
+        ['div', `Count: ${ state }`]
+      ]];
+    };
 
-  var app = createApplication(initialState, update, view);
+    var app = createApplication(initialState, update, view);
 
-  app.mount(document.body);
-```
+    app.mount(document.body);
+    ```
 
-<p>
-  <a href="http://codepen.io/shybovycha/pen/dNEgNa" target="_blank" class="btn btn-md">Code</a>
-</p>
-</div>
+    <p>
+      <a href="http://codepen.io/shybovycha/pen/dNEgNa" target="_blank" class="btn btn-md">Code</a>
+    </p>
+  </div>
 </div>
 
 ## React + Redux

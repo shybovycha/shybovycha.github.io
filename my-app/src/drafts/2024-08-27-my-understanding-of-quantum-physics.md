@@ -1,5 +1,6 @@
 ---
 title: "My understanding of quantum physics"
+tags: [programming]
 ---
 
 Quantum physics is a complex and (by the time of this post) not quite well understood topic.

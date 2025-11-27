@@ -3,6 +3,7 @@ layout: post
 title: Getting started with Irrlicht
 date: '2018-04-19T20:15:00+10:00'
 order: 20
+tags: [javascript, cpp, irrlicht, game-development, programming, c++, frontend, react, web-development, 3d-graphics]
 ---
 
 ## Core concepts

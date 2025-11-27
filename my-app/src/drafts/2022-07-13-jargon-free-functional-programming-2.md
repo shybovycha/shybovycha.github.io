@@ -2,6 +2,7 @@
 layout: post
 title: 'Jargon-free functional programming. Part 2'
 date: '2022-08-24T00:24:00+00:00'
+tags: [monads, fp, haskell, programming-paradigms, functional-programming]
 ---
 
 Tips:

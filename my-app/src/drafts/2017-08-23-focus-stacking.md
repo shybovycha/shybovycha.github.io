@@ -1,6 +1,7 @@
 ---
 title: 'Focus stacking'
 layout: post
+tags: [programming]
 ---
 
 ## Prescription

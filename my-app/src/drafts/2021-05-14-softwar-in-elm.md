@@ -1,41 +1,6 @@
-# SoftWar in Elm
-
-```hs
-module Main exposing (..)
-
-import Browser
-import List
-import Random
-import Random.List
-import Html exposing (Html, button, div, text)
-import Html.Events exposing (onClick)
-
--- MAIN
-
-main =
-  Browser.sandbox { init = init, update = update, view = view }
-
--- MODEL
-
-type Card = Employee Int
-  | Treat Int
-  | Traitor
-  | SickLeave
-  | PairProgramming
-  | GoodClientRelationships
-  | Necromantic
-  | IQuit
-  | GitPull
-  | GitPush
-  | Flush
-  | Nope
-
-type alias Player =
-  { hand : List Card,
-    table : List Card
-  }
-
--- ------
+---
+tags: [game-development, frontend, game-programming, functional-programming, git, development-tools, elm, version-control, gamedev]
+---
 
 type alias Model =
   { players : List Player,

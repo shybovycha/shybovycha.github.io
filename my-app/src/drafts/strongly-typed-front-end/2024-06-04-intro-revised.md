@@ -2,6 +2,7 @@
 layout: post
 title: 'Strongly-typed front-end, revised'
 date: '2024-06-04T22:13:00+10:00'
+tags: [fp, functional-programming, programming-paradigms]
 ---
 
 Back in 2021 I wrote a [series of blog posts](/strongly-typed-front-end/2021/04/19/introduction.html) about using various functional languages on front-end.

@@ -2,6 +2,7 @@
 layout: post
 title: "Two sides of web application. Part 1: the tools"
 date: '2015-09-20T20:18:39+01:00'
+tags: [web-development, angular, frontend, backend, architecture, javascript, clojure, api, rest, build-tools]
 ---
 
 <div class="row" style="justify-content: space-between">

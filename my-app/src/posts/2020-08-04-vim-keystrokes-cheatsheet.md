@@ -2,6 +2,7 @@
 layout: post
 title: Vim keystrokes cheatsheet
 date: '2020-08-04T11:04:24+10:00'
+tags: [vim, text-editors, productivity, keyboard-shortcuts, cheatsheet, development-tools, command-line, workflow, coding-tips, reference]
 ---
 
 The time has come for me to list few of the commands and keystrokes that I use (and the ones that I don't but would like to start) in Vim.
@@ -24,26 +25,26 @@ Bear 🐻 in mind: this blog is aboout _keystrokes_ only, it is not about plugin
   * <kbd>cit</kbd> to change the text within the current XML tag
   * <kbd>ca'</kbd> to change the text surrounded by single quote
   * <kbd>ci&lt;</kbd> to change the text surrounded with `&lt;` and `&gt;`
-  * <kbd>ci&#123;symbol&#125;</kbd> to change the text surrounded by _symbol_, which could be `'`, `"`, `&#96;`; you can also use <kbd>b(</kbd> for block of text, surrounded by braces, <kbd>B&#123;</kbd> for block of text surrounded by curly braces or <kbd>p</kbd> for paragraph, all instead of _symbol_
+  * <kbd>ci{symbol}</kbd> to change the text surrounded by _symbol_, which could be `'`, `"`, `&#96;`; you can also use <kbd>b(</kbd> for block of text, surrounded by braces, <kbd>B{</kbd> for block of text surrounded by curly braces or <kbd>p</kbd> for paragraph, all instead of _symbol_
 * <kbd>v</kbd> to enter the VISUAL mode, followed by the command:
-  * <kbd>v&#125;select&#123;c</kbd> immediately change the selection
-  * <kbd>v&#125;select&#123;d</kbd> cut the selected text
+  * <kbd>v{select}c</kbd> immediately change the selection
+  * <kbd>v{select}d</kbd> cut the selected text
 * <kbd>y</kbd> and <kbd>p</kbd> copy and paste the selected text (lower-case `p` pastes above the current line, capital-case `P` pastes below; capital-case `Y` copies the entire line, so the duplicate line command in Vim is <kbd>Y, P</kbd>)
-* <kbd>&#125;number&#123;&#125;command&#123;</kbd> repeat the _command_ _number_ times
+* <kbd>{number}{command}</kbd> repeat the _command_ _number_ times
 * <kbd>.</kbd> (the period or dot symbol) repeats the last command
 * <kbd>x</kbd> to remove the character under cursor
-* <kbd>r&#125;char&#123;</kbd> to replace the character under cursor with _char_
+* <kbd>r{char}</kbd> to replace the character under cursor with _char_
 * <kbd>A</kbd> to go to the end of the line and enter INSERT mode ("append")
 * <kbd>u</kbd> and <kbd>Ctrl+r</kbd> to undo and redo actions
 * <kbd>&gt;</kbd> and <kbd>&lt;</kbd> adds or removes the indentation
 
 ## Things that I am still getting used to
 
-* <kbd>&#125;number&#123;&#125;motion&#123;</kbd> instead of <kbd>h</kbd>, <kbd>j</kbd>, <kbd>k</kbd>, <kbd>l</kbd>
+* <kbd>{number}{motion}</kbd> instead of <kbd>h</kbd>, <kbd>j</kbd>, <kbd>k</kbd>, <kbd>l</kbd>
 * <kbd>a</kbd> instead of <kbd>i</kbd> to enter INSERT mode _after_ the cursor (as opposed to <kbd>i</kbd> which enters INSERT mode _before_ the cursor)
 * <kbd>H</kbd>, <kbd>M</kbd> and <kbd>L</kbd> to go to the top, middle and the bottom of the screen (High, Mid and Low)
 * <kbd>*</kbd> and <kbd>#</kbd> to search for the word under cursor forwards and backwards
-* <kbd>&#125;count&#123;/&#125;query&#123;⏎</kbd> to go to the _count_-th occurrence of _query_; it is same as searching with <kbd>/</kbd> and then hitting <kbd>n</kbd> _count_ times
+* <kbd>{count}/{query}⏎</kbd> to go to the _count_-th occurrence of _query_; it is same as searching with <kbd>/</kbd> and then hitting <kbd>n</kbd> _count_ times
 * <kbd>gd</kbd> navigates to a definition of an entity under the cursor
 * <kbd>gf</kbd> navigates to the path under cursor
 * <kbd>%</kbd> moves the cursor to the matching brace, bracket or curly brace

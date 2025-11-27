@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 'Compile-time computations'
+tags: [cpp, game-development, programming, c++, game-programming, git, development-tools, version-control, gamedev]
 ---
 
 Since `constexpr` and `consteval` were introduced in C++, there have been quite a few posts on LinkedIn about this.

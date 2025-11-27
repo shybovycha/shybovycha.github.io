@@ -2,6 +2,7 @@
 layout: post
 title: 'Strongly-typed front-end: experiment 2, simple application, in F#'
 date: '2021-04-19T09:23:02+09:00'
+tags: [reasonml, javascript, fsharp, java, development-tools, version-control, dotnet, programming, frontend, functional-programming]
 ---
 
 ### Contents

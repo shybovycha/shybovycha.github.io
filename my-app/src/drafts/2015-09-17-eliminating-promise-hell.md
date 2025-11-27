@@ -2,7 +2,7 @@
 layout: post
 title: Eliminating promise hell
 categories: []
-tags: []
+tags: [javascript, promises, async, nodejs, mongodb, mongoose]
 published: True
 
 ---

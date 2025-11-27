@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 'Modal text editors'
+tags: [vim, neovim, helix, kakoune, text-editors, ide, productivity, developer-tools, plugins, code-editing]
 ---
 
 I was using vim on-and-off since my pal showed me Linux on my first ever computer, back in circa 2005.
@@ -378,6 +379,12 @@ Neovim:
 - 👍 insane amount of plugins for all sorts of things
 - 👎 a proportionally insane amount of time required to find and configure the plugins to make for a comfortable experience
 - 👍 overall, the experience that you _can_ create is on its own league
+- 👍 has a nice file tree implementation (yes, I like to see the structure of the directory and its parents)
+- 👍 has *very* nice semantic and LSP selection **expand**
+- 👍 has an OG Flash implementation
+- 👍 has nice surround behaviour
+- 👍 file picker powered by ripgrep so you can filter all you want
+- 👎 both selection expand and surround are a bit tricky to trigger (`gsn` followed by `gss`; `ysaw"` and `cs[(` and `ds"`)
 
 Helix:
 
@@ -386,3 +393,11 @@ Helix:
 - 👎 very slow development cycle, so new features do not come out often (like twice a year, I believe)
 - 👎 no plugin system, making the new features even less frequent or even possible
 - 👎 very strongly opinionated developers, so if you are not comfortable with a feature - tough luck!
+- 👎 does not have file tree
+- 👎 file picker is very basic - only offers filtering by partial path match
+- 👎 semantic selection expansion is not exactly *expansion*, but more like "select this exact scope"
+- 👍 surround and semantic selection triggers are consistent e.g. make much more sense (`ms(`, `mr([`, `md[`; `maf`, `maa`)
+
+My current stance is that Neovim is a much stronger contender with a much broader set of (much better implemented) features, but the amount of time you have to spend to get to that state is enormous. And whilst much nicely organised out of the box, Helix is very much undercooked (in my opinion).
+
+Hence, for powerful and actual workloads - use Neovim, it is worth spending all that time configuring it for that purpose. For a casual relaxing but very restricted editing - Helix is an-okay choice.

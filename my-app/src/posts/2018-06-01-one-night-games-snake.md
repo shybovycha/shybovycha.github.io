@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 'One-night games: snake'
+tags: [game-development, javascript, snake-game, algorithms, canvas, html5, game-programming, arcade, coding-challenge, web-games]
 ---
 
 [source code](https://github.com/shybovycha/moo-snake)

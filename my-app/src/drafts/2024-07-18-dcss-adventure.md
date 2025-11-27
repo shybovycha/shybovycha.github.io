@@ -1,5 +1,6 @@
 ---
 layout: post
+tags: [game-development, frontend, web-development, game-programming, gamedev]
 ---
 
 <img src="/images/about/game-stone-soup-1.webp" alt="Dungeon Crawl: Stone Soup; My gargoyle fighter turned into a flying mushroom">

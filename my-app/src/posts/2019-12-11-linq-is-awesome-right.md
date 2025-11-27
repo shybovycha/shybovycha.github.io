@@ -2,6 +2,7 @@
 layout: post
 title: 'Linq is awesome, right?'
 date: '2019-12-11T12:49:39+10:00'
+tags: [csharp, dotnet, linq, performance, optimization, programming, c#, code-analysis, database, sql]
 ---
 
 Recently I've seen a curious blog on Dev.to, [C# and .NET Core Appreciation Post. The most beautiful piece of code I have ever seen... this month!](https://dev.to/sduduzog/c-and-net-core-appreciation-post-the-most-beautiful-piece-of-code-i-have-ever-seen-this-month-49gf).

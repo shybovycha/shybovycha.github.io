@@ -1,6 +1,7 @@
 ---
 title: "Irrlicht application template"
 date: 2021-05-02T11:00:00+0700
+tags: [irrlicht, cpp, c++, game-development, cmake, vcpkg, 3d-graphics, game-engine, architecture, tutorial]
 ---
 
 Often when I start revising my old applicaitons with Irrlicht engine, I do few things very similarly.

@@ -2,7 +2,7 @@
 layout: post
 title: 'Multi page/component web application'
 categories: []
-tags: []
+tags: [web-components, routing, angular, riot, frontend, spa]
 published: True
 
 ---

@@ -2,7 +2,7 @@
 layout: post
 title: Custom logging with timbre
 categories: []
-tags: []
+tags: [clojure, logging, timbre, json, tutorial, leiningen]
 published: True
 
 ---

@@ -2,6 +2,7 @@
 layout: post
 title: 'Experiment #1: mismatching type handling & error helpfulness'
 date: '2021-04-19T08:56:24+09:00'
+tags: [reasonml, javascript, fsharp, typescript, type-safety, development-tools, version-control, dotnet, frontend, functional-programming]
 ---
 
 ### Contents
@@ -61,7 +62,7 @@ object DarkenColor {
 
 ### ReasonML
 
-```ocaml
+```reason
 type rgb = {
   r: int,
   g: int,

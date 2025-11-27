@@ -2,6 +2,7 @@
 layout: post
 title: "Irrlicht Newton GD tutorial: finishing the first scene"
 date: '16-12-2015T18:00:00+10:00'
+tags: [cpp, irrlicht, physics, game-development, frontend, newton-dynamics, web-development, 3d-graphics]
 ---
 
 If you remember, we ended our coding excercises at place, where we almost created our first

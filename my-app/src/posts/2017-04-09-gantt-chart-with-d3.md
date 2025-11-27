@@ -2,6 +2,7 @@
 layout: post
 title: Gantt chart with D3
 date: '2017-04-09T11:04:24+02:00'
+tags: [d3js, javascript, data-visualization, charts, svg, web-development, frontend, diagrams, gantt-chart, visualization]
 ---
 
 ## Contents

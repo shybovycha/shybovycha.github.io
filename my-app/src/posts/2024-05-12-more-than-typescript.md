@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 'More than TypeScript'
+tags: [typescript, javascript, purescript, functional-programming, type-safety, frontend, elm, scala, programming-languages, code-quality]
 ---
 
 Back in 2011 frontend was a very different thing - JavaScript had no `class`, `Object.entries` / `Object.keys`, promises were a proof of concept idea (unless you used 3rd party library [bluebird](https://github.com/petkaantonov/bluebird)) and Node was v0.10.
@@ -570,6 +571,269 @@ main = do
       log $ "Error: " <> err <> ". Loading examplePerson"
       pure examplePerson
     Right p   -> pure p
+```
+
+To align this with the original problem about `JobLocation`, here's how this would look like in PureScript:
+
+```purs
+module Main where
+
+import Prelude
+import Data.Argonaut (jsonParser)
+import Data.Argonaut.Decode (decodeJson, (.:), printJsonDecodeError)
+import Data.Argonaut.Decode.Class (class DecodeJson)  
+import Data.Argonaut.Decode.Error (JsonDecodeError(..))
+import Data.Argonaut.Encode (encodeJson, (:=), (~>))
+import Data.Argonaut.Encode.Class (class EncodeJson)
+import Data.Bifunctor (bimap)
+import Data.Either (Either(..))
+import Data.Generic.Rep (class Generic)
+import Data.Show.Generic (genericShow)
+import Effect (Effect)
+import Effect.Console (log)
+
+data JobLocation
+  = CollectionLocation { collection :: String }
+  | DocumentLocation { collection :: String, document :: String }
+  | TableLocation { table :: String }
+
+derive instance Eq JobLocation
+derive instance Generic JobLocation _
+instance showJobLocation :: Show JobLocation where
+  show a = genericShow a
+
+instance DecodeJson JobLocation where
+  decodeJson json = do
+    obj <- decodeJson json
+    
+    -- Check which fields are present
+    maybeCollection :: Maybe String <- obj .:? "collection"
+    maybeDocument :: Maybe String <- obj .:? "document" 
+    maybeTable :: Maybe String <- obj .:? "table"
+    
+    let hasCollection = isJust maybeCollection
+    let hasDocument = isJust maybeDocument
+    let hasTable = isJust maybeTable
+    
+    case hasCollection, hasDocument, hasTable of
+      true, true, false -> do
+        collection <- obj .: "collection"
+        document <- obj .: "document"
+        pure $ DocumentLocation { collection, document }
+        
+      true, false, false -> do
+        collection <- obj .: "collection"
+        pure $ CollectionLocation { collection }
+        
+      false, false, true -> do
+        table <- obj .: "table"
+        pure $ TableLocation { table }
+        
+      _, _, _ -> Left $ AtKey "structure" $ UnexpectedValue json
+
+parseJobLocation :: String -> Either String JobLocation
+parseJobLocation jsonStr = jsonParser jsonStr >>= (decodeJson >>> bimap printJsonDecodeError identity)
+
+-- Example usage
+examples :: Effect Unit
+examples = do
+  let collectionJson = """{"collection": "users"}"""
+  case parseJobLocation collectionJson of
+    Left err -> log $ "Collection parse error: " <> err
+    Right location -> do
+      log $ "Parsed CollectionLocation: " <> show location
+  
+  let documentJson = """{"collection": "users", "document": "user123"}"""
+  case parseJobLocation documentJson of
+    Left err -> log $ "Document parse error: " <> err
+    Right location -> do
+      log $ "Parsed DocumentLocation: " <> show location
+  
+  let tableJson = """{"table": "analytics"}"""
+  case parseJobLocation tableJson of
+    Left err -> log $ "Table parse error: " <> err
+    Right location -> do
+      log $ "Parsed TableLocation: " <> show location
+  
+  let invalidJson = """{"data": "something"}"""
+  case parseJobLocation invalidJson of
+    Left err -> log $ "Expected error: " <> err
+    Right location -> log $ "Unexpected success: " <> show location
+
+main :: Effect Unit
+main = do
+  examples
+```
+
+While this code is type safe and will handle all of the edge cases just perfectly, I find it pretty hard to read.
+Parts that I would be unable to understand in a month of not working with this code, like this one:
+
+```purs
+parseJobLocation jsonStr = jsonParser jsonStr >>= (decodeJson >>> bimap printJsonDecodeError identity)
+```
+
+It could be rewritten in an imperative way:
+
+```purs
+parseJobLocation jsonStr = do
+  json <- jsonParser jsonStr
+  bimap printJsonDecodeError identity (decodeJson json)
+```
+
+But I doubt this makes it any more readable - the `bimap printJsonDecodeError identity (decodeJson json)` part, specifically.
+This is a common issue with Haskell and PureScript - some of the functions are weirdly named and can only be understood either with experience or by reading the docs (which, in turn, are also quite cryptic).
+Take the `bimap` function for example. Its signature looks like this:
+
+```purs
+bimap :: forall a b c d. (a -> b) -> (c -> d) -> f a c -> f b d
+```
+
+This does not really help non-seasoned Haskeller.
+
+The [docs](https://pursuit.purescript.org/packages/purescript-bifunctors/6.1.0/docs/Data.Bifunctor#v:bimap) only say this:
+
+> The `bimap` function maps a pair of functions over the two type arguments of the bifunctor.
+
+I had to use it since there are two function calls in `parseJobLocation`: `jsonParser :: String -> Either String Json` and `decodeJson :: Json -> Either JsonDecodeError a`.
+This means if you just pipe the output of the first to the second (`jsonParser jsonStr >>= decodeJson`), the return type should match - because of the nature of the `>>=` operator: `>>= :: (b -> c) -> m a b -> m a c`, meaning for `Either a b` and a function `b -> c` the return type would have to be `Either a c`, in our case `(Json -> a) -> (Either String Json)` should return `Either String a`, but `decodeJson` returns `Either JsonDecodeError a` instead. Effectively, `>>=` operates on the second argument of a functor (in case of `Either a b`, operator `>>=` changes `b`), whereas we want to change it _first_ and then change the first argument as well (making the chain `Either String Json -> Either JsonDecodeError a -> Either String a`). But this has to be done in one go - or, rather, in one argument of `>>=`. We can create such function by combining `decodeJson` which returns `Either JsonDecodeError a` and another function, which converts that middle argument, `JsonDecodeError` into `String`, making it `Either String a`. We achieve this by using the [`>>>` operator](https://pursuit.purescript.org/packages/purescript-prelude/6.0.2/docs/Control.Semigroupoid#v:(%3E%3E%3E)) which is an alias for [`composeFlipped`](https://pursuit.purescript.org/packages/purescript-prelude/6.0.2/docs/Control.Semigroupoid#v:composeFlipped) and is defined as `composeFlipped :: a b c -> a c d -> a b d`. In fact, instead of using `bimap _ identity _` it is better to use [`lmap _ _`](https://pursuit.purescript.org/packages/purescript-bifunctors/6.1.0/docs/Data.Bifunctor#v:lmap) which would only apply function to the left side of `Either`:
+
+```purs
+parseJobLocation jsonStr = do
+  json <- jsonParser jsonStr
+  lmap printJsonDecodeError (decodeJson json)
+```
+
+Explanations like those make it a huge barrier to entry for newcomers.
+
+Incorporating the above solution in an existing TypeScript project might look a tad cumbersome.
+For Vite, there is a PureScript plugin:
+
+```js
+import { defineConfig } from 'vite';
+import purescript from 'vite-plugin-purescript';
+
+export default defineConfig({
+  plugins: [
+    // ...
+    purescript(),
+  ],
+});
+```
+
+The tricky part is that we have to re-define types in TypeScript:
+
+```ts
+type CollectionLocation = { collection: string };
+type DocumentLocation = { collection: string; document: string };
+type TableLocation = { table: string };
+
+type JobLocation = CollectionLocation | DocumentLocation | TableLocation;
+```
+
+Moreover, since the function returns an `Either`, we would need that one too:
+
+```ts
+interface Left<E> {
+  readonly _tag: 'Left';
+  readonly value0: E;
+}
+
+interface Right<A> {
+  readonly _tag: 'Right';
+  readonly value0: A;
+}
+
+type Either<E, A> = Left<E> | Right<A>;
+```
+
+And then importing the function and calling it from TypeScript:
+
+```ts
+import { parseJobLocation } from '../output/JobLocation';
+
+const loc = parseJobLocation('{ "collection": "col", "document": "doc" }');
+
+if (loc._tag === 'Right') {
+    // ...
+}
+```
+
+Quite the bother, right? That's why it is most beneficial if the entire critical section can be written in PureScript entirely.
+In my case, the `JobLocation` is used for displaying a corresponding UI element (in React), so there's little benefit at a cost of lots of boilerplate and not the best experience defining those parsers.
+
+I personally prefer Scala 3 implementation (not the integration with TypeScript part though, just the JSON parser implementation):
+
+```scala
+import io.circe.*
+import io.circe.parser.*
+import cats.implicits.*
+import cats.effect.{IO, IOApp}
+import io.circe.generic.semiauto.*
+
+enum JobLocation:
+  case CollectionLocation(collection: String)
+  case DocumentLocation(collection: String, document: String)
+  case TableLocation(table: String)
+
+object JobLocation:
+  given Decoder[DocumentLocation] = deriveDecoder
+  given Decoder[CollectionLocation] = deriveDecoder
+  given Decoder[TableLocation] = deriveDecoder
+
+object JobLocationApp extends IOApp.Simple:
+
+  import JobLocation.*
+
+  def parseJobLocation(jsonString: String): Either[Error, JobLocation] =
+    parse(jsonString).flatMap { json =>
+      json.as[TableLocation].widen[JobLocation] orElse
+      json.as[DocumentLocation].widen[JobLocation] orElse
+      json.as[CollectionLocation].widen[JobLocation]
+    }
+
+  def run: IO[Unit] =
+    val testCases = List(
+      """{"collection": "users"}""",
+      """{"collection": "orders", "document": "order-123"}""",
+      """{"table": "analytics"}""",
+      """{"invalid": "data"}"""
+    )
+
+    testCases.traverse_ { jsonStr =>
+      parseJobLocation(jsonStr) match
+        case Right(location) =>
+          IO.println(s"Parsed: $jsonStr -> $location")
+
+        case Left(error) =>
+          IO.println(s"Failed to parse: $jsonStr -> ${error.getMessage}")
+    }
+```
+
+This is a really straightforward implementation in my opinion. In this example, the parsing is literally boiled down to "try parsing `TableLocation` and if it returns `Left`, try parsing `DocumentLocation` instead, and if that returns `Left`, try parsing `CollectionLocation`, otherwise return what you got".
+
+Alternatively, `circe`, the JSON parsing library for `scala-cats` used in the example above, provides an even neater way:
+
+```scala
+object JobLocation:
+  given Decoder[DocumentLocation] = deriveDecoder
+  given Decoder[CollectionLocation] = deriveDecoder
+  given Decoder[TableLocation] = deriveDecoder
+
+  given Decoder[JobLocation] =
+    summon[Decoder[TableLocation]].widen[JobLocation] or
+    summon[Decoder[DocumentLocation]].widen[JobLocation] or
+    summon[Decoder[CollectionLocation]].widen[JobLocation]
+
+def parseJobLocation(jsonString: String): Either[Error, JobLocation] =
+    parse(jsonString).flatMap(_.as[JobLocation])
+```
+
+In this code, the parser for the parent type, `JobLocation` is defined as a combined parser of whichever case class manages to get parsed first:
+
+```scala
+summon[Decoder[TableLocation]].widen[JobLocation] or
+summon[Decoder[DocumentLocation]].widen[JobLocation] or
+summon[Decoder[CollectionLocation]].widen[JobLocation]
 ```
 
 Just to reiterate, I do understand that converting the application (and developers) to this new weird technology is an almost impossible task, especially in a large long-lived project. One way to reason about it and justify the transition is the resilience requirements of a project (the need for actually error-prone code) and the amount of time and effort spent to date on finding and fixing those nasty bugs and undefined behaviours in an application.

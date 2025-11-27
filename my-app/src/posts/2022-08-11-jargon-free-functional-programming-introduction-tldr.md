@@ -2,6 +2,7 @@
 layout: post
 title: 'Jargon-free functional programming. TL;DR'
 date: '2022-08-11T17:00:00+10:00'
+tags: [functional-programming, javascript, typescript, programming-paradigms, fp, monads, functional-concepts, programming, code-quality, tutorial]
 ---
 
 This is a boiled-down version of a much longer read, <a href="/2022/08/24/jargon-free-functional-programming-part1.html"><em>Jargon-free functional programming</em></a>,

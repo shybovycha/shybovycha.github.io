@@ -2,6 +2,7 @@
 layout: post
 title: 'Functional programming in a real world'
 date: '2018-01-13T18:01:00+01:00'
+tags: [cpp, fp, programming, c++, programming-paradigms, functional-programming, data, database]
 ---
 
 There has been quite a lot of hype around functional programming kicking off in past few years.
