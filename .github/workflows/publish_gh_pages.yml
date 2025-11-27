@@ -14,17 +14,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4.1.7
+      - uses: actions/checkout@v6.0.0
 
       - name: Use Bun instead of Node
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@v2.0.2
 
       - run: bun install
 
       - run: bun run build
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3.0.1
+        uses: actions/upload-pages-artifact@v4.0.0
         with:
           # Upload entire repository
           path: '_site'
