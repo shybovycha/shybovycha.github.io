@@ -3,6 +3,7 @@ layout: post
 title: Scripting
 date: '2018-04-23T20:16:00+10:00'
 order: 40
+tags: [rest, cpp, fp, backend, game-development, programming, c++, programming-paradigms, functional-programming, frontend]
 ---
 
 ## Top of the iceberg

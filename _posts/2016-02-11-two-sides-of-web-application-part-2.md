@@ -2,6 +2,7 @@
 layout: post
 title: "Two sides of web application. Part 2: sketching"
 date: '2016-02-11T13:47:39+01:00'
+tags: [web-development, angular, frontend, backend, architecture, javascript, ui-design, templates, web-analytics, tutorial]
 ---
 
 <div class="row" style="justify-content: space-between">

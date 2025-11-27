@@ -2,6 +2,7 @@
 layout: post
 title: 'Jargon-free functional programming. Part 2: functional wrappers'
 date: '2022-08-24T00:15:00+00:00'
+tags: [functional-programming, javascript, typescript, monads, fp, maybe-monad, either-monad, programming, error-handling, code-quality]
 ---
 
 ## Disclaimer

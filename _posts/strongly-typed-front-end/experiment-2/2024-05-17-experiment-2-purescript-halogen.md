@@ -2,6 +2,7 @@
 layout: post
 title: 'Strongly-typed front-end: experiment 2, simple application, in PureScript / Halogen'
 date: '2024-04-19T09:47:48+09:00'
+tags: [reasonml, fsharp, javascript, development-tools, version-control, dotnet, frontend, functional-programming, git, react]
 ---
 
 ### Contents

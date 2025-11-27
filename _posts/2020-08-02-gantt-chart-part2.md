@@ -2,6 +2,7 @@
 layout: post
 title: Gantt chart with D3. Part 2
 date: '2020-08-02T15:04:24+10:00'
+tags: [d3js, javascript, data-visualization, charts, svg, gantt-chart, project-management, frontend, web-development, npm]
 ---
 
 ## Contents

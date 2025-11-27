@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 'More than TypeScript'
+tags: [typescript, javascript, purescript, functional-programming, type-safety, frontend, elm, scala, programming-languages, code-quality]
 ---
 
 Back in 2011 frontend was a very different thing - JavaScript had no `class`, `Object.entries` / `Object.keys`, promises were a proof of concept idea (unless you used 3rd party library [bluebird](https://github.com/petkaantonov/bluebird)) and Node was v0.10.

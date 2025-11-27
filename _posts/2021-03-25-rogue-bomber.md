@@ -2,6 +2,7 @@
 layout: post
 title: "Rogue bomber"
 date: '2021-03-25T20:26:24+11:00'
+tags: [game-development, javascript, hackathon, canvas, html5, web-games, arcade, coding-challenge, game-programming, browser-game]
 ---
 
 This is a yet another show-off blog.

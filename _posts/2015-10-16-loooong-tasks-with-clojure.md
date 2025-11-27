@@ -2,7 +2,7 @@
 layout: post
 title: Loooong lists with Clojure
 categories: []
-tags: []
+tags: [clojure, java, algorithms, recursion, performance, md5, functional-programming]
 published: True
 date: '2015-10-16T18:11:39+01:00'
 ---

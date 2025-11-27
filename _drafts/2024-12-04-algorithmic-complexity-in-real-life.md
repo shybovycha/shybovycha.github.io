@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 'Algorithmic complexity in real life'
+tags: [programming, computer-science, algorithms]
 ---
 
 Some people still say stuff like _"you don't have to know how a combustion engine works to drive a car, so why study algos?"_.

@@ -2,6 +2,7 @@
 layout: post
 title: "ShootThem! revival"
 date: '2020-11-13T13:46:24+11:00'
+tags: [frontend, functional-programming, elm]
 ---
 
 ## Step 1: skeleton

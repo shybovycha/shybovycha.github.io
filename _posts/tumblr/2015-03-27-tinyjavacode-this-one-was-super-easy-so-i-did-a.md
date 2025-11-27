@@ -2,7 +2,7 @@
 layout: post
 title: Tiny java code...
 date: '2015-03-27T08:10:28+01:00'
-tags: []
+tags: [java, algorithms, regex, performance]
 tumblr_url: http://shybovycha.tumblr.com/post/114739833891/tinyjavacode-this-one-was-super-easy-so-i-did-a
 ---
 

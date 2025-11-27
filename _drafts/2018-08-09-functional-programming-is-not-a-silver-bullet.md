@@ -2,6 +2,7 @@
 title: 'Functional programming is not a silver bullet'
 layout: post
 date: '2018-08-08T22:10:00+10:00'
+tags: [fp, cpp, haskell, programming, c++, programming-paradigms, functional-programming]
 ---
 
 <!--

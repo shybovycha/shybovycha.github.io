@@ -2,6 +2,7 @@
 layout: post
 title: "Irrlicht Newton GD tutorial: first application"
 date: '2015-08-27T18:05:00+01:00'
+tags: [cpp, irrlicht, physics, game-development, frontend, newton-dynamics, web-development, 3d-graphics]
 ---
 
 ## Install Irrlicht

@@ -2,6 +2,7 @@
 layout: post
 title: "Irrlicht Newton GD tutorial: introduction"
 date: '2015-08-25T18:01:00+01:00'
+tags: [cpp, irrlicht, physics, game-development, programming, c++, newton-dynamics, 3d-graphics, game-programming, gamedev]
 ---
 
 ## What will you learn?

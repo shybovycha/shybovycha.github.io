@@ -2,6 +2,7 @@
 layout: post
 title: End-to-end testing with WebdriverIO
 date: '2015-11-26T17:03:39+01:00'
+tags: [testing, e2e, selenium, webdriverio, javascript, automation, jasmine, qa, angular, test-automation]
 ---
 
 ## Small intro

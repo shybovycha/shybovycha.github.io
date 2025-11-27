@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Game development tutorials: introduction"
+tags: [cpp, irrlicht, physics, game-development, newton-dynamics, 3d-graphics, game-programming, gamedev]
 ---
 
 Game development is a very broad topic with variety of choices. There are tons of material on this topic already,

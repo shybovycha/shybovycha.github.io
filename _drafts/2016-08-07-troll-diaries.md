@@ -2,7 +2,7 @@
 layout: post
 title: 'Troll diaries'
 categories: []
-tags: []
+tags: [personal, travel, norway, photography]
 published: True
 ---
 

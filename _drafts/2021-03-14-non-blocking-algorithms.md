@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Lock-free algorithms"
+tags: [java, computer-science, programming, jvm, algorithms]
 ---
 
 ## Introduction

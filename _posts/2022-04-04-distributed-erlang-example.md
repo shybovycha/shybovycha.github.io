@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 'Distributed Erlang example'
+tags: [erlang, distributed-systems, database, key-value-store, clustering, backend, concurrency, redis, nosql, microservices]
 ---
 
 As promised in <a href="/2020/11/07/erlang-example-2.html">my previous blog about Erlang</a>, I continue

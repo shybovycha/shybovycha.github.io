@@ -3,6 +3,7 @@ layout: post
 title: 'О красоте'
 date: '2015-01-22T22:08:42+01:00'
 tumblr_url: http://shybovycha.tumblr.com/post/108852891071
+tags: [programming]
 ---
 
 *&copy; "Игры демиургов", Петр Бормор*

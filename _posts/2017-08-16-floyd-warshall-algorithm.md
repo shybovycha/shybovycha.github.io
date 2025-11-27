@@ -2,6 +2,7 @@
 layout: post
 title: Floyd-Warshall algorithm
 date: '2017-09-04T11:38:24+11:00'
+tags: [algorithms, graph-theory, floyd-warshall, shortest-path, csharp, data-structures, computer-science, programming, optimization, dynamic-programming]
 ---
 
 <style>

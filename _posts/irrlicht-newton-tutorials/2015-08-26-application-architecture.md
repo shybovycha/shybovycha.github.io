@@ -2,6 +2,7 @@
 layout: post
 title: "Irrlicht Newton GD tutorial: application architecture"
 date: '2015-08-26T21:50:00+01:00'
+tags: [javascript, fp, irrlicht, cpp, game-development, physics, frontend, programming-paradigms, functional-programming, newton-dynamics]
 ---
 
 ## Basic terms

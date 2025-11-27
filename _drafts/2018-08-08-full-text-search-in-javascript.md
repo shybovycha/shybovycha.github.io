@@ -2,6 +2,7 @@
 title: 'Full text search in JavaScript'
 layout: post
 date: '2018-08-08T22:10:00+10:00'
+tags: [javascript, java, computer-science, programming, frontend, jvm, web-development, algorithms]
 ---
 
 <!--

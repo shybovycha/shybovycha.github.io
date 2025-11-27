@@ -2,7 +2,7 @@
 layout: post
 title: Email validation regexp
 categories: []
-tags: []
+tags: [regex, email-validation, javascript]
 published: True
 
 ---

@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 'Free monad vs tagless final'
+tags: [monads, rest, javascript, java, fp, backend, programming, programming-paradigms, functional-programming, api]
 ---
 
 Much like there are design patterns in OOP world, there are design patterns in functional programming world as well.
@@ -409,7 +410,7 @@ case class GetExchangeRate(json: Json) extends ForexOp[BigDecimal]
 
 case class CacheGet(key: (Currency, Currency)) extends ForexOp[Option[BigDecimal]]
 case class CachePut(key: (Currency, Currency), value: BigDecimal) extends ForexOp[Unit]
-case class CacheInvalidate extends ForexOp[Unit]
+case class CacheInvalidate() extends ForexOp[Unit]
 
 case class Schedule(delay: FiniteDuration, task: ForexProgram[Unit]) extends ForexOp[Unit]
 
@@ -425,8 +426,8 @@ object dsl {
   def httpGet(url: String): ForexProgram[HttpResponse] =
     Free.liftF(HttpGet(url))
 
-  def parseJson(json: String): ForexProgram[Json] =
-    Free.liftF(ParseJson(json))
+  def parseJson(response: HttpResponse): ForexProgram[Json] =
+    Free.liftF(ParseJson(response))
 
   def getExchangeRate(json: Json): ForexProgram[BigDecimal] =
     Free.liftF(GetExchangeRate(json))
@@ -466,7 +467,7 @@ def forexExchange(from: Currency, to: Currency): ForexProgram[String] =
       case None    =>
         for {
           response <- httpGet(s"http://forex.com/convert/${from.code}/${to.code}")
-          j        <- parseJson(response.body)
+          j        <- parseJson(response)
           r        <- getExchangeRate(j)
           _        <- cachePut((from, to), r)
           _        <- schedule(1.hour, cacheInvalidate())
@@ -476,4 +477,55 @@ def forexExchange(from: Currency, to: Currency): ForexProgram[String] =
   } yield html
 ```
 
-The job of an interpreter is to parse the program by unwrapping each of the intermediate states and executing a corresponding logic. It does that until the program becomes a "pure" value.
+Lastly, we define an interpreter. Its job is to parse the program by unwrapping each of the intermediate states and executing a corresponding logic. It does that until the program becomes a "pure" value.
+
+```scala
+def interpreter(cacheRef: Ref[IO, Map[CurrencyPair, BigDecimal]]): ForexOp ~> IO =
+  new (ForexOp ~> IO) {
+    def apply[A](op: ForexOp[A]): IO[A] = op match {
+      case HttpGet(url) =>
+        IO.pure(HttpResponse("""{"rate": 1.23}""", 200))
+
+      case ParseJson(json) =>
+        IO.pure(BigDecimal("1.23"))
+
+      case ParseJson(json) =>
+        IO.pure(BigDecimal("1.23"))
+
+      case CacheGet(key) =>
+        cacheRef.get.map(_.get(key))
+
+      case CachePut(key, value) =>
+        cacheRef.update(_ + (key -> value))
+
+      case CacheInvalidate(key) =>
+        cacheRef.update(_ - key)
+
+      case Schedule(delay, task) =>
+        IO.sleep(delay).flatMap(_ => task.foldMap(this))
+
+      case RenderHtml(rate, from, to) =>
+        IO.pure(s"<html><body>1 ${from.code} = $rate ${to.code}</body></html>")
+    }
+  }
+```
+
+To put these units in terms of Redux, case class `ForexOp` defines types of actions, all the functions in the `dsl` object are action creators and `interpreter` is a reducer.
+
+Since all the states are defined as instances of `Free` monad, a valid program would be either a single "pure" value (wrapped in `Free`, of course) or another program, wrapped in `Free`. The task of `interpreter` is to reduce the program down to a "pure" value by unwrapping each of the `Free` layers and performing a corresponding operation. It does so by using `foldMap` function, just like handling `Schedule` action:
+
+```scala
+case Schedule(delay, task) =>
+  IO.sleep(delay).flatMap(_ => task.foldMap(this))
+```
+
+Running the program is very similar:
+
+```scala
+def run =
+  for {
+    cacheRef <- Ref.of[IO, Map[CurrencyPair, BigDecimal]](Map.empty)
+    i = interpreter(cacheRef)
+    result <- forexExchange(Currency("USD"), Currency("EUR")).foldMap(i)
+  } yield result
+```

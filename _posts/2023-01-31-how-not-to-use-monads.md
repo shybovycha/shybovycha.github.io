@@ -2,6 +2,7 @@
 layout: post
 title: How not to use monads
 date: '2023-01-31T11:23:24+11:00'
+tags: [haskell, monads, functional-programming, error-handling, code-review, best-practices, fp, programming, rust, type-safety]
 ---
 
 Recently I have watched a video titled ["Optionals and errors in Haskell & Rust - monads by example"](https://www.youtube.com/watch?v=c_F1o_so2MQ).

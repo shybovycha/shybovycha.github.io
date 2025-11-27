@@ -2,6 +2,7 @@
 layout: post
 title: "Parser monad"
 date: "06-12-2022T00:00:00+10:00"
+tags: [haskell, monads, parsing, functional-programming, compiler, parser, fp, language-design, state-machine, programming]
 ---
 
 Few years ago I did a course project for the "Functional programming" course at Jagiellonian University.

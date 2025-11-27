@@ -3,6 +3,7 @@ layout: post
 title: Build system
 date: '2018-04-18T20:11:00+10:00'
 order: 10
+tags: [cpp, frontend, c++, programming, web-development]
 ---
 
 ## Why do we need a build system?

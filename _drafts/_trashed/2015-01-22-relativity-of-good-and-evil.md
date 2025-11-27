@@ -3,6 +3,7 @@ layout: post
 title: 'Относительность добра и зла'
 date: '2015-01-22T22:11:18+01:00'
 tumblr_url: http://shybovycha.tumblr.com/post/108853102016
+tags: [programming]
 ---
 
 *&copy; "Игры демиургов", Петр Бормор*

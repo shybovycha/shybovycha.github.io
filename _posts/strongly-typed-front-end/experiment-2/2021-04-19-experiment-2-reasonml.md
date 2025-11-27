@@ -2,6 +2,7 @@
 layout: post
 title: 'Strongly-typed front-end: experiment 2, simple application, in ReasonML'
 date: '2021-04-19T09:23:02+09:00'
+tags: [reasonml, fsharp, javascript, development-tools, version-control, dotnet, frontend, functional-programming, git, react]
 ---
 
 ### Contents

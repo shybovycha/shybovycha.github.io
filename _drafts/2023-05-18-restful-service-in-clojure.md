@@ -1,6 +1,7 @@
 ---
 title: 'RESTful service in Clojure'
 date: '2023-05-18T16:25:00+10:00'
+tags: [rest, java, lisp, backend, clojure, programming, functional-programming, api, jvm]
 ---
 
 ## Intro

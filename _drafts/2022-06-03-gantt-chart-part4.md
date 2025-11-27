@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 'Gantt chart. Part 4'
+tags: [performance, benchmarking, fp, optimization, programming-paradigms, functional-programming]
 ---
 
 Gantt chart could be used in two different scenarios:

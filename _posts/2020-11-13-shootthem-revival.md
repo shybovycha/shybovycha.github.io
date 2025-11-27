@@ -2,6 +2,7 @@
 layout: post
 title: "ShootThem! revival"
 date: '2020-11-13T13:46:24+11:00'
+tags: [game-development, cpp, c++, irrlicht, 3d-graphics, refactoring, game-programming, project-revival, cmake, gamedev]
 ---
 
 Quite some time ago I [dag out](/tumblr/2015/04/06/shootthem.html) the sources of an old game of mine, ShootThem! made back when I was at high-school, around 2006.

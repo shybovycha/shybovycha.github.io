@@ -2,6 +2,7 @@
 layout: post
 title: "Irrlicht Newton GD tutorial: prepare to add some Newtonianity"
 date: '2015-08-29T18:06:00+01:00'
+tags: [cpp, irrlicht, physics, game-development, opengl, programming, c++, graphics-programming, game-programming, git]
 ---
 
 At this point we have an application with

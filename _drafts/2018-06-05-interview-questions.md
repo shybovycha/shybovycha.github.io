@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Interesting interview questions. Vol. 2
+tags: [rest, javascript, java, backend, game-development, programming, frontend, api, jvm, web-development]
 ---
 
 In the [previous post]() I was listing the questions from Ruby interviews I've participated in.

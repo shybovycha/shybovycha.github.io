@@ -1,4 +1,5 @@
 ---
+tags: [d3js, javascript, data-visualization]
 ---
 
 ## D3 -> Canvas

@@ -2,6 +2,7 @@
 title: 'Chicken in Blender'
 layout: post
 date: '2016-03-05T23:24:39+01:00'
+tags: [blender, 3d-modeling, game-art, unity3d, game-development, 3d-graphics, rendering, modeling, texturing, graphics]
 ---
 
 This is a chicken. This 3D model I've made in 3.5 hrs in Blender *(with texturing)*.

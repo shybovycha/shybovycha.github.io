@@ -2,6 +2,7 @@
 layout: post
 title: "Gantt chart. Part 4"
 date: '2024-06-27T22:54:24+10:00'
+tags: [css-grid, react, data-visualization, charts, gantt-chart, project-management, frontend, web-development, html-css, responsive-design]
 ---
 
 ## Contents
