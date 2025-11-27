@@ -20,237 +20,199 @@ This is a story how I <s>implemented</s> invented yet another <s>web framework</
 
 ## TL;DR
 
-<style>
-  .row {
-    display: flex;
-    flex-wrap: wrap;
+### React
+
+```js
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { counter: 0 };
   }
 
-  .row .col {
-    max-width: 48%;
-    margin: 0 1%;
+  increment() {
+    this.setState({ counter: this.state.counter + 1 });
   }
-</style>
 
-<div class="row">
-  <div class="col">
-    <p><a href="https://facebook.github.io/react/" target="_blank">React</a></p>
+  decrement() {
+    this.setState({ counter: this.state.counter - 1 });
+  }
 
-    ```js
-    class App extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = { counter: 0 };
-      }
+  render() {
+    return (
+      <div>
+        <button onClick={() => this.increment()}>Increment</button>
+        <button onClick={() => this.decrement()}>Decrement</button>
+        <div>Counter: {this.state.counter}</div>
+      </div>
+    );
+  }
+}
 
-      increment() {
-        this.setState({ counter: this.state.counter + 1 });
-      }
+ReactDOM.render(<App />, document.body);
+```
 
-      decrement() {
-        this.setState({ counter: this.state.counter - 1 });
-      }
+<a href="http://codepen.io/shybovycha/pen/dNErOY" target="_blank" class="btn btn-md">Run this code</a>
 
-      render() {
-        return (
-          <div>
-            <button onClick={() => this.increment()}>Increment</button>
-            <button onClick={() => this.decrement()}>Decrement</button>
-            <div>Counter: {this.state.counter}</div>
-          </div>
-        );
-      }
+### React + Redux
+
+```js
+function App(props) {
+  var store = props.store;
+
+  return (
+    <div>
+      <button onClick={() => store.dispatch({ type: 'INCREMENT' })}>Increment</button>
+      <button onClick={() => store.dispatch({ type: 'DECREMENT' })}>Decrement</button>
+      <div>Counter: {store.getState()}</div>
+    </div>
+  );
+}
+
+function update(state = 0, action) {
+  switch (action.type) {
+  case 'INCREMENT':
+    return state + 1
+  case 'DECREMENT':
+    return state - 1
+  default:
+    return state
+  }
+}
+
+var store = Redux.createStore(update);
+
+function render() {
+  ReactDOM.render(<App store={store} />, document.body);
+}
+
+render();
+
+store.subscribe(render);
+```
+
+<a href="http://codepen.io/shybovycha/pen/RKmYVy" target="_blank" class="btn btn-md">Code</a>
+
+### Elm
+
+```haskell
+import Html exposing (beginnerProgram, div, button, text)
+import Html.Events exposing (onClick)
+
+
+initialState = 0
+
+
+view state =
+  div []
+    [ button [ onClick Increment ] [ text "Increment" ]
+    , button [ onClick Decrement ] [ text "Decrement" ]
+    , div [] [ text ("Counter:" ++ (toString state)) ]
+    ]
+
+
+type Msg = Increment | Decrement
+
+
+update msg state =
+  case msg of
+    Increment ->
+      state + 1
+
+    Decrement ->
+      state - 1
+
+
+main =
+  beginnerProgram { model = initialState, view = view, update = update }
+```
+
+<a href="http://codepen.io/shybovycha/pen/egaLXv" target="_blank" class="btn btn-md">Compiled code</a>
+
+### Mithril
+
+```js
+var count$ = 0;
+
+var App = {
+    view: function () {
+      return m('main', [
+        m('button', { class: 'decrement', onclick: function () { count$--; } }, 'Decrement'),
+        m('button', { class: 'increment', onclick: function () { count$++; } }, 'Increment'),
+        m('p', {}, 'Counter: ' + count$),
+      ]);
     }
+};
 
-    ReactDOM.render(<App />, document.body);
-    ```
+m.mount(document.body, App);
+```
 
-    <p>
-      <a href="http://codepen.io/shybovycha/pen/dNErOY" target="_blank" class="btn btn-md">Run this code</a>
-    </p>
-  </div>
+<a href="http://codepen.io/shybovycha/pen/WRBgWv" target="_blank" class="btn btn-small">Code</a>
 
-  <div class="col">
-    <p><a href="https://facebook.github.io/react/" target="_blank">React</a> + <a href="http://redux.js.org/" target="_blank">Redux</a></p>
+### Cycle
 
-    ```js
-    function App(props) {
-      var store = props.store;
+```js
+var xs = xstream.default;
+var { div, p, button, makeDOMDriver } = CycleDOM;
 
-      return (
-        <div>
-          <button onClick={() => store.dispatch({ type: 'INCREMENT' })}>Increment</button>
-          <button onClick={() => store.dispatch({ type: 'DECREMENT' })}>Decrement</button>
-          <div>Counter: {store.getState()}</div>
-        </div>
-      );
-    }
+function App(sources) {
+  var decrement$ = sources.DOM
+    .select('.decrement')
+    .events('click')
+    .mapTo(-1);
 
-    function update(state = 0, action) {
-      switch (action.type) {
-      case 'INCREMENT':
-        return state + 1
-      case 'DECREMENT':
-        return state - 1
-      default:
-        return state
-      }
-    }
+  var increment$ = sources.DOM
+    .select('.increment')
+    .events('click')
+    .mapTo(+1);
 
-    var store = Redux.createStore(update);
+  var action$ = xs.merge(decrement$, increment$);
+  var count$ = action$.fold(function (acc, v) { return acc + v; }, 0);
 
-    function render() {
-      ReactDOM.render(<App store={store} />, document.body);
-    }
+  var vtree$ = count$.map(function (count) {
+    return div([
+      button('.decrement', 'Decrement'),
+      button('.increment', 'Increment'),
+      p('Counter: ' + count)
+    ])
+  });
 
-    render();
+  return { DOM: vtree$ };
+}
 
-    store.subscribe(render);
-    ```
+Cycle.run(App, { DOM: makeDOMDriver('body') });
+```
 
-    <p>
-      <a href="http://codepen.io/shybovycha/pen/RKmYVy" target="_blank" class="btn btn-md">Code</a>
-    </p>
-  </div>
+<a href="http://codepen.io/shybovycha/pen/XpOQvx" target="_blank" class="btn btn-small">Code</a>
 
-  <div class="col">
-    <p><a href="http://elm-lang.org" target="_blank">Elm</a></p>
+### libc
 
-    ```haskell
-    import Html exposing (beginnerProgram, div, button, text)
-    import Html.Events exposing (onClick)
+```js
+var initialState = 0;
 
+function update(state, message) {
+  if (message == 'INCREMENT')
+    return state + 1;
 
-    initialState = 0
+  if (message == 'DECREMENT')
+    return state - 1;
 
+  return state;
+};
 
-    view state =
-      div []
-        [ button [ onClick Increment ] [ text "Increment" ]
-        , button [ onClick Decrement ] [ text "Decrement" ]
-        , div [] [ text ("Counter:" ++ (toString state)) ]
-        ]
+function view(state, dispatch) {
+  return ['div', [
+    ['button', { click: () => dispatch('INCREMENT') }, 'Increment'],
+    ['button', { click: () => dispatch('DECREMENT') }, 'Decrement'],
+    ['div', `Count: ${ state }`]
+  ]];
+};
 
+var app = createApplication(initialState, update, view);
 
-    type Msg = Increment | Decrement
+app.mount(document.body);
+```
 
-
-    update msg state =
-      case msg of
-        Increment ->
-          state + 1
-
-        Decrement ->
-          state - 1
-
-
-    main =
-      beginnerProgram { model = initialState, view = view, update = update }
-    ```
-
-    <p>
-      <a href="http://codepen.io/shybovycha/pen/egaLXv" target="_blank" class="btn btn-md">Compiled code</a>
-    </p>
-  </div>
-
-  <div class="col">
-    <p><a href="http://mithril.js.org" target="_blank">Mithril</a></p>
-
-    ```js
-    var count$ = 0;
-
-    var App = {
-        view: function () {
-          return m('main', [
-            m('button', { class: 'decrement', onclick: function () { count$--; } }, 'Decrement'),
-            m('button', { class: 'increment', onclick: function () { count$++; } }, 'Increment'),
-            m('p', {}, 'Counter: ' + count$),
-          ]);
-        }
-    };
-
-    m.mount(document.body, App);
-    ```
-
-    <p>
-      <a href="http://codepen.io/shybovycha/pen/WRBgWv" target="_blank" class="btn btn-small">Code</a>
-    </p>
-  </div>
-
-  <div class="col">
-    <p><a href="https://cycle.js.org" target="_blank">Cycle</a></p>
-
-    ```js
-    var xs = xstream.default;
-    var { div, p, button, makeDOMDriver } = CycleDOM;
-
-    function App(sources) {
-      var decrement$ = sources.DOM
-        .select('.decrement')
-        .events('click')
-        .mapTo(-1);
-
-      var increment$ = sources.DOM
-        .select('.increment')
-        .events('click')
-        .mapTo(+1);
-
-      var action$ = xs.merge(decrement$, increment$);
-      var count$ = action$.fold(function (acc, v) { return acc + v; }, 0);
-
-      var vtree$ = count$.map(function (count) {
-        return div([
-          button('.decrement', 'Decrement'),
-          button('.increment', 'Increment'),
-          p('Counter: ' + count)
-        ])
-      });
-
-      return { DOM: vtree$ };
-    }
-
-    Cycle.run(App, { DOM: makeDOMDriver('body') });
-    ```
-
-    <p>
-      <a href="http://codepen.io/shybovycha/pen/XpOQvx" target="_blank" class="btn btn-small">Code</a>
-    </p>
-  </div>
-
-  <div class="col">
-    <p><a href="https://github.com/shybovycha/libc.js" target="_blank">libc</a></p>
-
-    ```js
-    var initialState = 0;
-
-    function update(state, message) {
-      if (message == 'INCREMENT')
-        return state + 1;
-
-      if (message == 'DECREMENT')
-        return state - 1;
-
-      return state;
-    };
-
-    function view(state, dispatch) {
-      return ['div', [
-        ['button', { click: () => dispatch('INCREMENT') }, 'Increment'],
-        ['button', { click: () => dispatch('DECREMENT') }, 'Decrement'],
-        ['div', `Count: ${ state }`]
-      ]];
-    };
-
-    var app = createApplication(initialState, update, view);
-
-    app.mount(document.body);
-    ```
-
-    <p>
-      <a href="http://codepen.io/shybovycha/pen/dNEgNa" target="_blank" class="btn btn-md">Code</a>
-    </p>
-  </div>
-</div>
+<a href="http://codepen.io/shybovycha/pen/dNEgNa" target="_blank" class="btn btn-md">Code</a>
 
 ## React + Redux
 
@@ -260,7 +222,7 @@ Let's start-off by writing a simple "counter" application with the well-known Re
 
 The purpose of Facebook's React is to provide an interface to a virtual DOM, which allows users to track updates to the _application views_ and perform DOM operations to update views **with a minimal operation overhead**. In other words, we do not need to remove all the DOM nodes and create new ones from scratch when we can update a single property in a single DOM node. It might look like this:
 
-```js
+```jsx
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -299,7 +261,7 @@ Redux is an ancestor of Facebook's Flux architecture and library. Flux' main goa
 
 Than comes Redux and says _"hey! we probably can do that with just a single store!"_. And whilst Flux did not forbid state updates to modify the state objects themselves, Redux states clearly: _"you may not change state directly - rather you just calculate a new value for it and I take care of everything else"_.
 
-```js
+```jsx
 function App(props) {
   var store = props.store;
 
