@@ -37,7 +37,7 @@ tumblr_url: http://shybovycha.tumblr.com/post/92565628101
     <div class="col-md-6 col-xs-12 text-xs-center text-md-right"></div>
 </div>
 
-<h2>Моделі</h2>
+## Моделі
 
 <p>Єсть така штука як <strong>MVC, Model-View-Controller</strong>. Це такий прінцип, по якому програма розділяється на три тіпа дєталєй:</p>
 
@@ -52,7 +52,8 @@ tumblr_url: http://shybovycha.tumblr.com/post/92565628101
 
 <p>Шоб зробити цей клас унівєрсальним до невозможності, представим, шо <strong>класс</strong> отвічає за роботу з всьою табличкою (вибор рядочків з таблички), а <strong>об’єкт цього класа</strong> отвічає за роботу з конкретним рядочком з цеї таблички. Робота з цим класом буде виглядіть якось так:</p>
 
-<pre><code>// всі пости
+```php
+// всі пости
 $postings = Posting::all();
 
 // один конкретний пост
@@ -66,11 +67,12 @@ $posting-&gt;save();
 
 // удалить пост
 $posting-&gt;destroy();
-</code></pre>
+```
 
 <p>Сама проста реалізація моделі буде схожа на оце:</p>
 
-<pre><code>class Posting {
+```php
+class Posting {
     var $id, $title, $description;
 
     function __construct($title, $description) {
@@ -119,7 +121,7 @@ $posting-&gt;destroy();
         }
     }
 };
-</code></pre>
+```
 
 <p>Але з таким ращотом, у нас для кожної таблички буде оддєльний клас і оддєльний набор запросов. І вспоминаєм, шо ми рішили не дублірувать код. Будем іспользувать мощ магічних методів PHP!</p>
 
@@ -127,7 +129,8 @@ $posting-&gt;destroy();
 
 <p>Воспользуємся масивами PHP і магічними методами <code>__set/__get</code>. Ці методи дають можливість описать свою логіку коли програміст записує чи читає неізвєсне поле класа. Напрімєр, якшо у нашого класа <code>Post</code> нема поля <code>moo</code>, то при попитці зробить <code>echo $posting-&gt;moo</code> буде визиватись мєтод <code>__get('moo')</code>, а при попитці записать шось туди <code>$posting-&gt;moo = 'MOO!'</code> буде визваний <code>__set('moo', 'MOO!')</code>. Приступаєм:</p>
 
-<pre><code>class BaseModel {
+```php
+class BaseModel {
     private $__data, $__tableName;
 
     private static function getTableName() {
@@ -214,43 +217,45 @@ $posting-&gt;destroy();
         }
     }
 };
-</code></pre>
+```
 
 <p>Так шо ж за ад тут коїться?</p>
 
 <p>По-перше, цей клас - базовий. Всі слєдующі модельки ми будем наслєдувать від нього. Тоість, весь цей ад у нас коїться тільки один раз - дальше всі моделі виглядять приблизно так:</p>
 
-<pre><code>class Posting extends BaseModel {
+```class Posting extends BaseModel {
     public function getViewUrl() {
         return "view.php?$this-&gt;id";
     }
 };
-</code></pre>
+```
 
 <p>А іспользовать такі моделі тепер - сплошне удовольствіє!</p>
 
-<pre><code>&lt;?php $postings = Posting::all(); ?&gt;
+```php
+<?php $postings = Posting::all(); ?>
 
 ...
 
-&lt;?php foreach ($postings as $posting) ?&gt;
-    &lt;h2&gt;&lt;?php echo $posting-&gt;title ?&gt;&lt;/h2&gt;
+<?php foreach ($postings as $posting) >
+    <h2><?php echo $posting->title ?></h>
 
-    &lt;div class="description"&gt;
-        &lt;?php echo $posting-&gt;description ?&gt;
-    &lt;/div&gt;
+    <div class="description">
+        <?php echo $posting->description ?>
+    </div>
 
-    &lt;div class="read-more"&gt;
-        &lt;?php echo $posting-&gt;getViewUrl() ?&gt;
-    &lt;/div&gt;
-&lt;?php endforeach; ?&gt;
-</code></pre>
+    <div class="read-more">
+        <?php echo $posting->getViewUrl() ?>
+    </div>
+<?php endforeach; ?>
+```
 
 <p>По-друге, в конструктор ми передаєм (всігда) поля з таблички, а конструктор - записує їх в масив <code>__data</code>. Ну і в конструкторі ж ми дуже хітро достаєм імя таблички з імєні класа: якшо у нас, напрімєр, клас моделі <code>Posting</code>, то ім’я таблички буде <code>postings</code>.</p>
 
 <p>Ще один ньюанс з приводу імені таблички і того шо ми вертаєм в мєтоді <code>all()</code>: тут іспользується така хітра функція <code>get_called_class()</code>, яка вертає ім’я класа, який визвав поточний мєтод. Воно працює і з наслєдованієм в ООП, тоість якшо запустити отакє:</p>
 
-<pre><code>class Moo {
+```php
+class Moo {
     function whoami() {
         echo get_called_class();
     }
@@ -260,23 +265,25 @@ class Foo extends Moo {
 }
 
 $a = new Moo();
-$a-&gt;whoami();
+$a->whoami();
 
 $b = new Foo();
-$b-&gt;whoami();
-</code></pre>
+$b->whoami();
+```
 
 <p>то воно виведе:</p>
 
-<pre><code>Moo
+```
+Moo
 Foo
-</code></pre>
+```
 
 <p>І якшо ми захочем зробить об’єкт дочєрнього класа внутрі батьківського, то ми можем спокойно визвать</p>
 
-<pre><code>$class = get_called_class();
+```php
+$class = get_called_class();
 new $class(...);
-</code></pre>
+```
 
 <p>Ну і всі запроси до бази даних строяться вже іспользуя поля <code>$__data</code> і <code>$__tableName</code>.</p>
 
