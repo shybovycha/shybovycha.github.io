@@ -3,7 +3,6 @@ layout: post
 title: Erlang practice
 date: '2015-01-28T15:29:00+01:00'
 tags:
-- rtfm
 - erlang
 - programming
 - tutorial

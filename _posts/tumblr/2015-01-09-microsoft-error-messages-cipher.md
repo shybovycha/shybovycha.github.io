@@ -4,7 +4,6 @@ title: Microsoft' error messages cipher
 date: '2015-01-09T21:43:12+01:00'
 tags:
 - programming
-- rtfm
 - fun
 tumblr_url: http://shybovycha.tumblr.com/post/107622125006/microsoft-error-messages-cipher
 ---

@@ -3,7 +3,7 @@ layout: post
 title: "Чоткій блог. Часть третя"
 date: '2014-07-28T14:30:00+02:00'
 tags:
-- rtfm
+- programming
 - tutorial
 - php
 tumblr_url: http://shybovycha.tumblr.com/post/93106798026

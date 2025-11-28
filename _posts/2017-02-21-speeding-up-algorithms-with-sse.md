@@ -3,7 +3,6 @@ layout: post
 title: Speeding-up algorithms with SSE
 date: '2017-02-21T17:59:54+02:00'
 tags:
-- rtfm
 - tutorial
 - assembly
 - c++

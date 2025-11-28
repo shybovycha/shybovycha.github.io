@@ -5,7 +5,7 @@ date: '2014-07-22T12:45:00+02:00'
 tags:
 - programming
 - php
-- rtfm
+- tutorial
 tumblr_url: http://shybovycha.tumblr.com/post/92523360106/php
 ---
 

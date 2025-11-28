@@ -3,7 +3,6 @@ layout: post
 title: Rails tips
 date: '2015-02-09T10:09:30+01:00'
 tags:
-- rtfm
 - tutorial
 - rails
 - programming

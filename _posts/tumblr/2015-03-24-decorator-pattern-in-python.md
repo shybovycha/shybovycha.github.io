@@ -4,7 +4,6 @@ title: Decorator pattern in Python
 date: '2015-03-24T10:41:35+01:00'
 tags:
 - python
-- rtfm
 - design patterns
 tumblr_url: http://shybovycha.tumblr.com/post/114483612351/decorator-pattern-in-python
 ---

@@ -4,7 +4,7 @@ title: "Чоткій блог. Часть друга"
 date: '2014-07-27T23:20:00+02:00'
 tags:
 - php
-- rtfm
+- tutorial
 - programming
 tumblr_url: http://shybovycha.tumblr.com/post/92565628101
 ---
