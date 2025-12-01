@@ -580,13 +580,125 @@ As described above, for *canonical* Huffman codes, storing only codes' lengths i
 "1111" : 4
 ```
 
-So the list of _codes' lengths_ looks like this:
+So the table of _codes' lengths_ looks like this:
 
 ```
-2: 2 (code of length 2: two codes)
-3: 2 (code of length 3: two codes)
-4: 4 (code of length 4: four codes)
+1: 0 (codes of length 1: none)
+2: 2 (codes of length 2: two codes)
+3: 2 (codes of length 3: two codes)
+4: 4 (codes of length 4: four codes)
 ```
+
+This table looks very much like an indexed array (1-based, though - indexes start at `1` instead of `0` like in C), so it could be represented as an array.
+
+Given this data, at any point Huffman codes could be re-created:
+
+```
+code = 0
+
+// lengths: [0, 2, 2, 4]
+
+length_i = 1, codes_length_i = 0;
+  no codes of length 1 => skip
+
+length_i = 2, codes_length_i = 2;
+  code (0) << 1 => code = 00;
+  create <codes_length_i (2)> codes:
+    emit code (00), code += 1 (code = 01);
+    emit code (01), code += 1 (code = 10);
+
+length_i = 3, codes_length_i = 2;
+  code (10) << 1 => code = 100;
+  create <codes_length_i (2)> codes:
+    emit code (100), code += 1 (code = 101)
+    emit code (101), code += 1 (code = 110);
+
+length_i = 4, codes_length_i = 4;
+  code (110) << 1 => code = 1100;
+  create <codes_length_i (4)> codes:
+    emit code (1100), code += 1 (code = 1101);
+    emit code (1101), code += 1 (code = 1110);
+    emit code (1110), code += 1 (code = 1111);
+    emit code (1111), code += 1 (code = 1100);
+```
+
+So for the list of codes lengths `[0, 2, 2, 4]` the re-created codes will be
+
+```
+00
+01
+100
+101
+1100
+1101
+1110
+1111
+```
+
+For the second phase, the _original symbols_ have to be correlated with these codes somehow.
+Referring back to the compressed content's table of codes:
+
+```
+l  : "00" (code length: 2)
+o  : "01" (code length: 2)
+" ": "100" (code length: 3)
+H  : "101" (code length: 3)
+d  : "1100" (code length: 4)
+e  : "1101" (code length: 4)
+r  : "1110" (code length: 4)
+w  : "1111" (code length: 4)
+```
+
+In a similar manner to codes lengths' table, a table of all possible `256` byte values (ASCII table, effectively) is created and the corresponding byte's code length is written to this table:
+
+```
+0x00: 0
+0x01: 0
+0x02: 0
+...
+0x20 (" "): 3
+0x48 (H)  : 3
+0x64 (d)  : 4
+0x65 (e)  : 4
+0x6c (l)  : 2
+0x6f (o)  : 2
+0x72 (r)  : 4
+0x77 (w)  : 4
+...
+```
+
+Instead of hexadecimal values, here's _decimal_ representation:
+
+```
+32  (" ") : 3
+72  (H)   : 3
+100 (d)   : 4
+101 (e)   : 4
+108 (l)   : 2
+111 (o)   : 2
+114 (r)   : 4
+119 (w)   : 4
+```
+
+This list could be written as follows:
+
+```
+index: [0, 1, 2, 3, 4, ..., 31, 32, 33, 34, 35, ..., 71, 72, 73, ..., 99, 100, 101, 102, ..., 108, ..., 111, 112, 113, 114, ..., 119, ..., 255 ]
+value: [0, 0, 0, 0, 0, ..., 0,  3,  0,  0,  0,  ...,  0,  3,  0, ...,  0,   4,   4,   0, ...,   2, ...,   2,   0,   0,   4, ...,   4, ..., 0 ]
+```
+
+This list contains a lot of duplications and a lot of zeroes. It is then compressed using the run-length algorithm (from the very top of this blog), which **now** makes sense:
+
+```
+(0, 31), (3, 1), (0, 39), (3, 1), (0, 27), (4, 1), (4, 1), (0, 6), (2, 1), (0, 2), (2, 1), (0, 2), (4, 1), (0, 4), (4, 1), (0, 136)
+```
+
+But DEFLATE does it smarter - it uses pre-defined table of symbols, again:
+
+- for values 1..15, use the value itself as a code
+- to repeat previous value 3..6 times, use code `16` and `3` extra bits to represent how many repetitions (`000` - repeat previous value 3 times, `001` - repeat previous value 4 times, `010` - repeat previous value 5 times, `011` - repeat previous value 6 times)
+- to repeat value `0` 3..10 times, use code `17` and extra bits
+- to repeat value `0` 11..138 times, use code `18` and extra bits
 
 ## JPEG, DHT
 
