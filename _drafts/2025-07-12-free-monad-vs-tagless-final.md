@@ -529,3 +529,91 @@ def run =
     result <- forexExchange(Currency("USD"), Currency("EUR")).foldMap(i)
   } yield result
 ```
+
+For a simpler comparison, let us compare an application with a data structure - for example, a linked list:
+
+```scala
+sealed trait LinkedList[A]
+case object EmptyList extends LinkedList[Nothing]
+case class List[A](head: A, tail: LinkedList[A]) extends LinkedList[A]
+```
+
+Let's say we have a linked list of numbers `LinkedList[Int]`:
+
+```scala
+val a: LinkedList[Int] = List(1, List(2, List(3, EmptyList.asInstanceOf[LinkedList[Int]])))
+```
+
+And we want to create a program to calculate a sum of numbers in this list:
+
+```scala
+def sum(l: LinkedList[Int]): Int = l match {
+  case EmptyList => 0
+  case List(head, tail) => head + sum(tail)
+}
+```
+
+This is the simplest case of a program and an interpreter in an overly-simplified Free Monad style: the "program" is defined as an instance of `LinkedList` and the "interpreter" unwraps each of the elements of the list, performing some operation (addition) and keeping it in its internal state (sum), until it reaches the simplest form of a list - an `EmptyList` object.
+
+For a slightly more complex example, consider a binary tree:
+
+```scala
+sealed trait BinaryTree[A]
+case object EmptyNode extends BinaryTree[A]
+case class Node[A](value: A, left: BinaryTree[A], right: BinaryTree[A]) extends BinaryTree[A]
+
+def emptyNode[A]: BinaryTree[A] = EmptyNode.asInstanceOf[BinaryTree[A]]
+```
+
+But for a better showcase, instead of having a universal `Node` case class, let us expand each node combination:
+
+```scala
+case class LeftNode[A](value: A, left: BinaryTree[A]) extends BinaryTree[A]
+case class RightNode[A](value: A, right: BinaryTree[A]) extends BinaryTree[A]
+case class TreeNode[A](value: A, left: BinaryTree[A], right: BinaryTree[A]) extends BinaryTree[A]
+case class LeafNode[A](value: A) extends BinaryTree[A]
+```
+
+And again, for example, let us have a valid [binary search tree](https://en.wikipedia.org/wiki/Binary_search_tree) of integers:
+
+```scala
+val b: BinaryTree[Int] =
+  TreeNode(4,
+    TreeNode(2,
+      LeafNode(1),
+      LeafNode(3)
+    ),
+    LeftNode(6,
+      LeafNode(5)
+    )
+  );
+```
+
+Assume we want to find a value `x`:
+
+```scala
+def findNode[A](tree: BinaryTree[A], value: A): Option[BinaryTree[A]] = tree match {
+  case EmptyNode => None
+  case LeafNode(value) => if (value == value) Some(tree) else None
+  case LeftNode(value, left) => if (value == value) Some(tree) else findNode(left, value)
+  case RightNode(value, right) => if (value == value) Some(tree) else findNode(right, value)
+  case TreeNode(value, left, right) => if (value == value) Some(tree) else findNode(left, value) orElse findNode(right, value)
+}
+```
+
+In this example, the "interpreter" takes action depending on what node it is visiting by either visiting the left, the right or both children of a tree node to search for value.
+
+In a similar manner, the `forexExchange` program is a chain of the following (overly-simplified):
+
+```scala
+renderHtml(cachePut(getExchangeRate(parseJson(httpGet(s"http://forex.com/convert/${from.code}/${to.code}")))))
+```
+
+The difference is that on each step of unwrapping, the interpreter can go to any branch of possible states.
+
+Now, this is all good and nice, but why would you want to structure the entire program as a tree and then interpret it?
+Doesn't it beat the purpose of a compiled language?
+The biggest advantage is that this tree representation of a program is just a _data structure_.
+And it could be reused.
+For instance, you could have another interpreter to transform your initial program before passing it to the "final" or "executing" interpreter.
+Why would you do that? For interesting stuff, of course! You could _inspect_ the program in terms of redundant calls, you could add caching to potentially expensive operations, you could add logging - all without changing the code of the original program.
