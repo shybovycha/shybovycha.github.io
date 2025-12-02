@@ -379,8 +379,8 @@ int main() {
             return a->count > b->count;
         }
 
-        if ((a->c == '\0') != (b->c == '\0')) {
-            return b->c == '\0';
+        if ((a->c == static_cast<char>(255)) != (b->c == static_cast<char>(255))) {
+            return b->c == static_cast<char>(255);
         }
 
         return a->c < b->c;
@@ -403,7 +403,7 @@ int main() {
             std::swap(left, right);
         }
 
-        pq.push(new Node{ .c = '\0', .count = left->count + right->count, .left = left, .right = right });
+        pq.push(new Node{ .c = static_cast<char>(255), .count = left->count + right->count, .left = left, .right = right });
     }
 
     std::queue<CodeNode*> q;
@@ -563,6 +563,53 @@ joined:
 10111010000011001111011110001100
 ```
 
+In Ruby:
+
+```rb
+def build_canonical_table(codes)
+    codes = codes.sort_by {|k, v| [v.length, k]}
+    canonical_codes = {}
+    curr_code = 0
+    prev_length = 0
+
+    codes.each do |char, old_code|
+        curr_code <<= (old_code.length - prev_length)
+        canonical_codes[char] = curr_code.to_s(2).rjust(old_code.length, '0')
+        curr_code += 1
+        prev_length = old_code.length
+    end
+
+    canonical_codes
+end
+```
+
+In C++:
+
+```cpp
+std::vector<std::pair<char, std::string>> sorted_codes(codes.begin(), codes.end());
+
+std::sort(sorted_codes.begin(), sorted_codes.end(),
+    [](const auto& a, const auto& b) {
+        if (a.second.length() != b.second.length()) {
+            return a.second.length() < b.second.length();
+        }
+
+        return a.first < b.first;
+    });
+
+std::map<char, std::string> canonical_codes;
+
+int curr_code = 0;
+int prev_length = 0;
+
+for (auto [ch, code] : sorted_codes) {
+    curr_code <<= (code.length() - prev_length);
+    canonical_codes[ch] = std::bitset<32>(curr_code).to_string().substr(32 - code.length());
+    curr_code++;
+    prev_length = code.length();
+}
+```
+
 ## ZIP, DEFLATE
 
 DEFLATE algorithm compresses the list of codes lengths using a constant table, defined by the standard (or algorithm description, if you will).
@@ -683,12 +730,18 @@ In a similar manner to codes lengths' table, a table of all possible `256` byte 
 0x02: 0
 ...
 0x20 (" "): 3
+...
 0x48 (H)  : 3
+...
 0x64 (d)  : 4
 0x65 (e)  : 4
+...
 0x6c (l)  : 2
+...
 0x6f (o)  : 2
+...
 0x72 (r)  : 4
+...
 0x77 (w)  : 4
 ...
 ```
@@ -716,7 +769,7 @@ value: [0, 0, 0, 0, 0, ..., 0,  3,  0,  0,  0,  ...,  0,  3,  0, ...,  0,   4,  
 This list contains a lot of duplications and a lot of zeroes. It is then compressed using the run-length algorithm (from the very top of this blog), which **now** makes sense:
 
 ```
-(0, 31), (3, 1), (0, 39), (3, 1), (0, 27), (4, 1), (4, 1), (0, 6), (2, 1), (0, 2), (2, 1), (0, 2), (4, 1), (0, 4), (4, 1), (0, 136)
+(0, 32), (3, 1), (0, 39), (3, 1), (0, 27), (4, 1), (4, 1), (0, 6), (2, 1), (0, 2), (2, 1), (0, 2), (4, 1), (0, 4), (4, 1), (0, 136)
 ```
 
 But DEFLATE does it smarter - it uses pre-defined table of symbols, again:
@@ -753,7 +806,7 @@ Repeated zeros are represented by following this simple table:
 These extra bits are *not* encoded using Huffman codes. The rest of the codes (raw values `0..15`, `16`, `17`, `18`) are encoded according to their frequencies.
 
 ```
-(0, 31)  -> 18 (repeat '0' 31 times), followed by extra bits representing 31 repetition: 31 - 11 = 20 (0b00010100)
+(0, 32)  -> 18 (repeat '0' 32 times), followed by extra bits representing 32 repetition: 32 - 11 = 21 (0b00010101)
 (3, 1)   -> 3
 (0, 39)  -> 18 (repeat '0' 39 times), followed by extra bits representing 39 repetitions: 39 - 11 = 28 (0b00011100)
 (3, 1)   -> 3
@@ -774,15 +827,138 @@ These extra bits are *not* encoded using Huffman codes. The rest of the codes (r
 After this, the codes lengths list becomes:
 
 ```
-18, 20 (0b00010100), 3, 18, 28 (0b00011100), 3, 18, 16 (0b00010000), 4, 4, 17, 3 (0b00000011), 2, 0, 0, 2, 0, 0, 4, 17, 1 (0b00000001), 4, 18, 125 (0b01111101)
+18, 21 (0b00010101), 3, 18, 28 (0b00011100), 3, 18, 16 (0b00010000), 4, 4, 17, 3 (0b00000011), 2, 0, 0, 2, 0, 0, 4, 17, 1 (0b00000001), 4, 18, 125 (0b01111101)
+```
+
+In Ruby:
+
+```rb
+def running_codes_lengths(codes)
+    codes_lengths = (0..255).map {|i| (codes[i.chr] || '').length}
+
+    result = []
+    i = 0
+
+    while i < codes_lengths.size
+        len = codes_lengths[i]
+        run_length = 1
+
+        while i + run_length < codes_lengths.size && codes_lengths[i + run_length] == len
+            run_length += 1
+        end
+
+        i += run_length
+
+        if len == 0
+            while run_length > 0
+                if run_length >= 11
+                    # code 18, repeat '0' 11..138 times
+                    diff = [138, [11, run_length].max].min
+                    result << [18, diff - 11]
+                    run_length -= diff
+                elsif run_length >= 3
+                    # code 17, repeat '0' 3..10 times
+                    diff = [10, [3, run_length].max].min
+                    result << [17, diff - 3]
+                    run_length -= diff
+                else
+                    result += [0] * run_length
+                    run_length = 0
+                end
+            end
+        elsif len != 0 && run_length >= 3
+            result << len
+            run_length -= 1
+
+            while run_length > 0
+                # code 16, repeat previous value 3..6 times
+                diff = [6, [3, run_length].max].min
+                result << [16, diff - 3]
+                run_length -= diff
+            end
+        else
+            run_length.times { result << len }
+            run_length = 0
+        end
+    end
+
+    result
+end
+```
+
+In C++:
+
+```cpp
+struct CodeLengthNode {
+    size_t length;
+    int extra_bits;
+};
+
+std::vector<CodeLengthNode*> code_lengths;
+
+for (auto i = 0; i < 256; i++) {
+    auto length = canonical_codes[i].length();
+    auto run_length = 1;
+
+    while (i + run_length < 256 && canonical_codes[i + run_length].length() == length) {
+        run_length++;
+    }
+
+    i += run_length - 1;
+
+    if (length == 0) {
+        while (run_length > 0) {
+            if (run_length >= 11) {
+                // code 18, repeat '0' 11..138 times
+                auto diff = std::min(138, std::max(11, run_length));
+
+                code_lengths.push_back(new CodeLengthNode{ .length = 18, .extra_bits = diff - 11 });
+
+                run_length -= diff;
+            }
+            else if (run_length >= 3) {
+                // code 17, repeat '0' 3..10 times
+                auto diff = std::min(10, std::max(3, run_length));
+
+                code_lengths.push_back(new CodeLengthNode{ .length = 17, .extra_bits = diff - 3 });
+
+                run_length -= diff;
+            }
+            else {
+                for (auto t = 0; t < run_length; t++) {
+                    code_lengths.push_back(new CodeLengthNode{ .length = 0, .extra_bits = 0 });
+                }
+
+                run_length = 0;
+            }
+        }
+    }
+    else if (length != 0 && run_length >= 3) {
+        code_lengths.push_back(new CodeLengthNode{ .length = length, .extra_bits = 0 });
+        run_length--;
+
+        while (run_length > 0) {
+            auto diff = std::min(6, std::max(3, run_length));
+            code_lengths.push_back(new CodeLengthNode{ .length = 16, .extra_bits = diff - 3 });
+            run_length -= diff;
+        }
+    }
+    else {
+        for (auto t = 0; t < run_length; t++) {
+            code_lengths.push_back(new CodeLengthNode{ .length = length, .extra_bits = 0 });
+        }
+
+        run_length = 0;
+    }
+}
 ```
 
 To compress this list, ignore the extra bits and count values 0..18 only:
 
 ```
-18, 20, 3, 18, 28, 3, 18, 16, 4, 4, 17, 3, 2, 0, 0, 2, 0, 0, 4, 17, 1, 4, 18, 125
+18, 21, 3, 18, 28, 3, 18, 16, 4, 4, 17, 3, 2, 0, 0, 2, 0, 0, 4, 17, 1, 4, 18, 125
 
-without values greater than 18:
+without extra bit values:
 
 18, 3, 18, 3, 18, 16, 4, 4, 17, 3, 2, 0, 0, 2, 0, 0, 4, 17, 1, 4, 18
 
@@ -928,17 +1104,17 @@ code = 0, previous_length = 0
 Going back to what the initial codes' lengths list was (the thing being encoded):
 
 ```
-18, 20 (0b00010100), 3, 18, 28 (0b00011100), 3, 18, 16 (0b00010000), 4, 4, 17, 3 (0b00000011), 2, 0, 0, 2, 0, 0, 4, 17, 1 (0b00000001), 4, 18, 125 (0b01111101)
+18, 21 (0b00010101), 3, 18, 28 (0b00011100), 3, 18, 16 (0b00010000), 4, 4, 17, 3 (0b00000011), 2, 0, 0, 2, 0, 0, 4, 17, 1 (0b00000001), 4, 18, 125 (0b01111101)
 ```
 
 Now encoded with this new Huffman encoding:
 
 ```
-100, 00010100, 101, 100, 00011100, 101, 100, 1111, 00010000, 01, 01, 1101, 101, 00000011, 1100, 00, 00, 1100, 00, 00, 01, 1101, 1110, 00000001, 01, 100, 01111101
+100, 00010101, 101, 100, 00011100, 101, 100, 1111, 00010000, 01, 01, 1101, 101, 00000011, 1100, 00, 00, 1100, 00, 00, 01, 1101, 1110, 00000001, 01, 100, 01111101
 
 joined:
 
-1000001010010110000011100101100111100010000010111011010000001111000000110000000111011110000000010110001111101
+1000001010110110000011100101100111100010000010111011010000001111000000110000000111011110000000010110001111101
 ```
 
 And the tree for this encoding could be just a list of 19 elements (one for each code used in this code lengths encoding) of codes lengths (for the encoded code lengths list):
@@ -999,15 +1175,15 @@ code lengths tree:
 
 code lengths for each character, encoded:
 
-1000001010010110000011100101100111100010000010111011010000001111000000110000000111011110000000010110001111101
+1000001010110110000011100101100111100010000010111011010000001111000000110000000111011110000000010110001111101
 
 in bytes:
 
-01010010 00110100 00000000 00000000 00000000 00000000 10010001 11000001 01001011 00000111 00101100 11110001 00000101 11011010 00000111 10000001 10000000 11101111 00000000 10110001 111101
+01010010 01110100 00000000 00000000 00000000 00000000 10010001 11000001 01001011 00000111 00101100 11110001 00000101 11011010 00000111 10000001 10000000 11101111 00000000 10110001 111101
 
 in hex:
 
-0x52 0x34 0x00 0x00 0x00 0x00 0x91 0xC1 0x4B 0x07 0x2C 0xF1 0x05 0xDA 0x07 0x81 0x80 0xEF 0x00 0xB1 0x3D
+0x52 0x74 0x00 0x00 0x00 0x00 0x91 0xC1 0x4B 0x07 0x2C 0xF1 0x05 0xDA 0x07 0x81 0x80 0xEF 0x00 0xB1 0x3D
 ```
 
 And build the content of the archive, which is just the encoded message (from a while ago):
@@ -1029,7 +1205,7 @@ in hex:
 Joining header and the body:
 
 ```
-0x52 0x34 0x00 0x00 0x00 0x00 0x91 0xC1 0x4B 0x07 0x2C 0xF1 0x05 0xDA 0x07 0x81 0x80 0xEF 0x00 0xB1 0x3D 0xBA 0x0C 0xF7 0x8C
+0x52 0x74 0x00 0x00 0x00 0x00 0x91 0xC1 0x4B 0x07 0x2C 0xF1 0x05 0xDA 0x07 0x81 0x80 0xEF 0x00 0xB1 0x3D 0xBA 0x0C 0xF7 0x8C
 ```
 
 Funny enough, the length of this archive is **much** longer than the original message itself - `25` bytes vs original `11` - more than negative 100% increase in size.
