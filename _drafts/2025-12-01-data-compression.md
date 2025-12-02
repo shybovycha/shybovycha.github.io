@@ -534,12 +534,34 @@ w:   1111 (old code length = 4)
 Interestingly, this code did not use the previous codes themselves.
 This implies the codes could be calculated automatically if only the _lengths_ of the codes are given.
 
-For the example above, the original table is:
+For the example above, the encoding table is:
 
 ```
+l:   00
+o:   01
+" ": 100
+H:   101
+d:   1100
+e:   1101
+r:   1110
+w:   1111
 ```
 
-...
+Encoded message with this table looks like this:
+
+```
+message:
+
+Hello world
+
+encoded:
+
+101 1101 00 00 01 100 1111 01 1110 00 1100
+
+joined:
+
+10111010000011001111011110001100
+```
 
 ## ZIP, DEFLATE
 
@@ -912,6 +934,11 @@ Going back to what the initial codes' lengths list was (the thing being encoded)
 Now encoded with this new Huffman encoding:
 
 ```
+100, 00010100, 101, 100, 00011100, 101, 100, 1111, 00010000, 01, 01, 1101, 101, 00000011, 1100, 00, 00, 1100, 00, 00, 01, 1101, 1110, 00000001, 01, 100, 01111101
+
+joined:
+
+1000001010010110000011100101100111100010000010111011010000001111000000110000000111011110000000010110001111101
 ```
 
 And the tree for this encoding could be just a list of 19 elements (one for each code used in this code lengths encoding) of codes lengths (for the encoded code lengths list):
@@ -957,7 +984,56 @@ codes lengths (for codes lengths, so meta!):
 encoded into binary:
 
 010, 100, 100, 011, 010, 000, 000, 000, 000, 000, 000, 000, 000, 000, 000, 000, 100, 100, 011
+
+joined:
+
+010100100011010000000000000000000000000000000000100100011
 ```
+
+Now, build the header for the archive, consisting of code lengths encoded with DEFLATE:
+
+```
+code lengths tree:
+
+010100100011010000000000000000000000000000000000100100011
+
+code lengths for each character, encoded:
+
+1000001010010110000011100101100111100010000010111011010000001111000000110000000111011110000000010110001111101
+
+in bytes:
+
+01010010 00110100 00000000 00000000 00000000 00000000 10010001 11000001 01001011 00000111 00101100 11110001 00000101 11011010 00000111 10000001 10000000 11101111 00000000 10110001 111101
+
+in hex:
+
+0x52 0x34 0x00 0x00 0x00 0x00 0x91 0xC1 0x4B 0x07 0x2C 0xF1 0x05 0xDA 0x07 0x81 0x80 0xEF 0x00 0xB1 0x3D
+```
+
+And build the content of the archive, which is just the encoded message (from a while ago):
+
+```
+encoded message:
+
+10111010000011001111011110001100
+
+in bytes:
+
+10111010 00001100 11110111 10001100
+
+in hex:
+
+0xBA 0x0C 0xF7 0x8C
+```
+
+Joining header and the body:
+
+```
+0x52 0x34 0x00 0x00 0x00 0x00 0x91 0xC1 0x4B 0x07 0x2C 0xF1 0x05 0xDA 0x07 0x81 0x80 0xEF 0x00 0xB1 0x3D 0xBA 0x0C 0xF7 0x8C
+```
+
+Funny enough, the length of this archive is **much** longer than the original message itself - `25` bytes vs original `11` - more than negative 100% increase in size.
+But the important part is that this is due to the fact that the message is short and most symbols only occur once.
 
 ## JPEG, DHT
 
