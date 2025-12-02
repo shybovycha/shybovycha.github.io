@@ -379,6 +379,10 @@ int main() {
             return a->count > b->count;
         }
 
+        if ((a->c == '\0') != (b->c == '\0')) {
+            return b->c == '\0';
+        }
+
         return a->c < b->c;
     };
 
@@ -701,75 +705,258 @@ But DEFLATE does it smarter - it uses pre-defined table of symbols, again:
 - to repeat value `0` 3..10 times, use code `17` and extra bits
 - to repeat value `0` 11..138 times, use code `18` and extra bits
 
-For example, the number `0` repeated `31` times would be represented as `0 (18, extra bits: 30 - 11)`:
+And then DEFLATE compresses the table of codes' lenghts with Huffman encoding.
+Since there is a very limited number of characters to encode (`1..15`, `16`, `17`, `18` - 19 values total), the maximum code length, even if all of these values were used, would be about 4 bits.
+The values `16`, `17` and `18` will always be followed by a pre-defined number of bits (extra bits describing a parameter), so when decoding, if the value decoded is one of those three (`16`, `17` or `18`), the following pre-defined number of bits are interpreted differently.
 
-- `0` - raw value, no previous value to repeat
-- `(18, extra bits: 30 - 11)` - repeat previous value `0` 30 times; code `18` represents 1..138 repetitions, so extra bits `0000000` would translate to '11 repetitions', `0000001` would translate to '12 repetitions' etc, `0010011` (`30 - 11 = 19`, `19` binary = `0010011`) translates to '30 repetitions', `01111111` translates to '138 repetitions'
+Look at this process step-by-step.
+First, the code lenghts array is replaced with the codes from above using run-length algorithm:
 
-The trick here is that all of these values fit nicely into one byte each:
+Repeated zeros are represented by following this simple table:
 
-- `0` -> `0b00000000`
-- `1`..`15` -> `0b00000001` .. `0b00001111`
-- `16` -> `0b00010000`, extra 3 values:  `0b00010001`, `0b00010010`, `0b00010011`
-- `17` -> `0b00010001`, extra bits 
-- `18` -> `0b00010010`, extra bits
+- single zero: `0`
+- two zeros: `0, 0` (two zero bytes)
+- 3..10 zeros: `17` followed by
+    - `0` for 3 zeros
+    - `1` for 4 zeros
+    - `2` for 5 zeros
+    - etc.
+    - `7` for 10 zeros
+- 11..138 zeros: `18` followed by
+    - `0` for 11 zeros
+    - `1` for 12 zeros
+    - etc.
+    - `127` for 138 zeros
 
-
-In case of the array of codes' lengths above:
+These extra bits are *not* encoded using Huffman codes. The rest of the codes (raw values `0..15`, `16`, `17`, `18`) are encoded according to their frequencies.
 
 ```
-(0, 31)
-(3, 1)
-(0, 39)
-(3, 1)
-(0, 27)
-(4, 1)
-(4, 1)
-(0, 6)
-(2, 1)
-(0, 2)
-(2, 1)
-(0, 2)
-(4, 1)
-(0, 4)
-(4, 1)
-(0, 136)
-
-becomes encoded:
-
-(0, 31)  -> [0, (18, extra bits: 30 - 11)]
+(0, 31)  -> 18 (repeat '0' 31 times), followed by extra bits representing 31 repetition: 31 - 11 = 20 (0b00010100)
 (3, 1)   -> 3
-(0, 39)  -> [0, (18, extra bits: 38 - 11)]
+(0, 39)  -> 18 (repeat '0' 39 times), followed by extra bits representing 39 repetitions: 39 - 11 = 28 (0b00011100)
 (3, 1)   -> 3
-(0, 27)  -> [0, (18, extra bits: 26 - 11)]
-(4, 1)   -> [4, 4] - previous value (4) is repeated just once, emit the value itself
-(0, 6)   -> [0, (16, extra bits: 5 - 3)]
+(0, 27)  -> 18 (repeat '0' 27 times), followed by extra bits representing 27 repetitions: 27 - 11 = 16 (0b00010000)
+(4, 1)   -> 4
+(4, 1)   -> 4
+(0, 6)   -> 17 (repeat '0' 6 times), followed by extra bits representing 6 repetitions: 6 - 3 = 3 (0b00000011)
 (2, 1)   -> 2
 (0, 2)   -> [0, 0]
 (2, 1)   -> 2
 (0, 2)   -> [0, 0]
 (4, 1)   -> 4
-(0, 4)   -> [0, (16, extra bits: 3 - 3)]
+(0, 4)   -> 17 (repeat '0' 4 times), followed by extra bits representing 4 repetitions: 4 - 3 = 1 (0b00000001)
 (4, 1)   -> 4
-(0, 136) -> [0, (18, extra bits: 135 - 11)]
+(0, 136) -> 18 (repeat '0' 136 times), followed by extra bits representing 136 repetitions: 136 - 11 = 125 (0b01111101)
+```
 
-in raw bytes:
+After this, the codes lengths list becomes:
 
-[0, (18, extra bits: 30 - 11)]
-3
-[0, (18, extra bits: 38 - 11)]
-3
-[0, (18, extra bits: 26 - 11)]
-[4, 4] - previous value is repeated just once, emit the value itself
-[0, (16, extra bits: 5 - 3)]
-2
-[0, 0]
-2
-[0, 0]
-4
-[0, (16, extra bits: 3 - 3)]
-4
-[0, (18, extra bits: 135 - 11)]
+```
+18, 20 (0b00010100), 3, 18, 28 (0b00011100), 3, 18, 16 (0b00010000), 4, 4, 17, 3 (0b00000011), 2, 0, 0, 2, 0, 0, 4, 17, 1 (0b00000001), 4, 18, 125 (0b01111101)
+```
+
+To compress this list, ignore the extra bits and count values 0..18 only:
+
+```
+18, 20, 3, 18, 28, 3, 18, 16, 4, 4, 17, 3, 2, 0, 0, 2, 0, 0, 4, 17, 1, 4, 18, 125
+
+without values greater than 18:
+
+18, 3, 18, 3, 18, 16, 4, 4, 17, 3, 2, 0, 0, 2, 0, 0, 4, 17, 1, 4, 18
+
+counts:
+
+18 : 4
+3  : 3
+16 : 1
+4  : 4
+17 : 2
+2  : 2
+0  : 4
+1  : 1
+```
+
+Next, order these mappings by count, followed by the number itself (key of this dictionary / hashmap):
+
+```
+0  : 4
+4  : 4
+18 : 4
+3  : 3
+2  : 2
+17 : 2
+1  : 1
+16 : 1
+```
+
+Then, create Huffman tree for these counts:
+
+```
+step 1:
+
+     (8)            (7)            (4)            (2)
+   /     \        /     \       /      \       /      \
+(0, 4) (4, 4) (18, 4) (3, 3) (2, 2) (17, 2) (1, 1) (16, 1)
+
+step 2:
+                                           (6)
+                                     /            \
+     (8)            (7)            (4)            (2)
+   /     \        /     \       /      \       /      \
+(0, 4) (4, 4) (18, 4) (3, 3) (2, 2) (17, 2) (1, 1) (16, 1)
+
+step 3:
+                                 (13)
+                         /                \
+                        /                  \
+                       /                   (6)
+                      /              /            \
+     (8)            (7)            (4)            (2)
+   /     \        /     \       /      \       /      \
+(0, 4) (4, 4) (18, 4) (3, 3) (2, 2) (17, 2) (1, 1) (16, 1)
+
+step 4:
+                    (21)
+            /                   \
+           /                   (13)
+          /              /                \
+         /              /                  \
+        /              /                   (6)
+       /              /              /            \
+     (8)            (7)            (4)            (2)
+   /     \        /     \       /      \       /      \
+(0, 4) (4, 4) (18, 4) (3, 3) (2, 2) (17, 2) (1, 1) (16, 1)
+```
+
+Following the rule "left branch => 0, right branch => 1", traverse the tree and assign codes to each leaf node:
+
+```
+                    (21)
+                /               \
+               /                <1>
+              /                   \
+            <0>                  (13)
+            /              /             \
+           /              /               <1>
+          /             <0>                 \
+         /              /                   (6)
+        /              /             <0>        <1>
+       /              /              /            \
+     (8)            (7)            (4)            (2)
+     / \           /  \           /   \          /   \
+   <0> <1>       <0>  <1>       <0>    <1>     <0>   <1>
+   /     \       /      \       /       \      /       \
+(0, 4) (4, 4) (18, 4) (3, 3) (2, 2) (17, 2) (1, 1)  (16, 1)
+
+yields:
+
+(0, 4, 00) (4, 4, 01) (18, 4, 100) (3, 3, 101) (2, 2, 1100) (17, 2, 1101) (1, 1, 1110) (16, 1, 1111)
+
+or
+
+0 (4 occurrences)  : 00
+4 (4 occurrences)  : 01
+18 (4 occurrences) : 100
+3 (3 occurrences)  : 101
+2 (2 occurrences)  : 1100
+17 (2 occurrences) : 1101
+1 (1 occurrences)  : 1110
+16 (1 occurrences) : 1111
+```
+
+Then, assign the canonical Huffman codes:
+
+```
+step 1: sort codes by lengths and code itself:
+
+0  : 00    (code length: 2)
+4  : 01    (code length: 2)
+18 : 100   (code length: 3)
+3  : 101   (code length: 3)
+2  : 1100  (code length: 4)
+17 : 1101  (code length: 4)
+1  : 1110  (code length: 4)
+16 : 1111  (code length: 4)
+
+becomes
+
+0  : 00    (code length: 2)
+4  : 01    (code length: 2)
+3  : 101   (code length: 3)
+18 : 100   (code length: 3)
+1  : 1110  (code length: 4)
+2  : 1100  (code length: 4)
+16 : 1111  (code length: 4)
+17 : 1101  (code length: 4)
+
+step 2: assign incrementing and shifting code:
+
+code = 0, previous_length = 0
+
+0  : 00    (code length: 2), code = 00, next code = 01
+4  : 01    (code length: 2), code = 01, next code = 10
+3  : 101   (code length: 3), length > previus_length => shift code, code = 100, next code = 101
+18 : 100   (code length: 3), code = 101, next code = 110
+1  : 1110  (code length: 4), length > previous_length => shift code, code = 1100, next code = 1101
+2  : 1100  (code length: 4), code = 1101, next code = 1110
+16 : 1111  (code length: 4), code = 1110, next code = 1111
+17 : 1101  (code length: 4), code = 1111
+```
+
+Going back to what the initial codes' lengths list was (the thing being encoded):
+
+```
+18, 20 (0b00010100), 3, 18, 28 (0b00011100), 3, 18, 16 (0b00010000), 4, 4, 17, 3 (0b00000011), 2, 0, 0, 2, 0, 0, 4, 17, 1 (0b00000001), 4, 18, 125 (0b01111101)
+```
+
+Now encoded with this new Huffman encoding:
+
+```
+```
+
+And the tree for this encoding could be just a list of 19 elements (one for each code used in this code lengths encoding) of codes lengths (for the encoded code lengths list):
+
+```
+0  : 00    (code length: 2)
+4  : 01    (code length: 2)
+3  : 101   (code length: 3)
+18 : 100   (code length: 3)
+1  : 1110  (code length: 4)
+2  : 1100  (code length: 4)
+16 : 1111  (code length: 4)
+17 : 1101  (code length: 4)
+
+simplified:
+
+0  : 2
+1  : 4
+2  : 4
+3  : 3
+4  : 2
+16 : 4
+17 : 4
+18 : 3
+
+becomes
+
+index: [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 ]
+value: [ 2, 4, 4, 3, 2, 0, 0, 0, 0, 0,  0,  0,  0,  0,  0,  0,  4,  4,  3 ]
+
+or just
+
+2, 4, 4, 3, 2, 0, 0, 0, 0, 0,  0,  0,  0,  0,  0,  0,  4,  4,  3
+```
+
+Note one interesting observation: since there is a very limited number of symbols used to encode code lengths, the maximum code for them is `7`, which is `3 bits long`. This means the new encodings for code lengths table could be packed into 3 bit chunks, further reducing the size of this tree:
+
+```
+codes lengths (for codes lengths, so meta!):
+
+2, 4, 4, 3, 2, 0, 0, 0, 0, 0,  0,  0,  0,  0,  0,  0,  4,  4,  3
+
+encoded into binary:
+
+010, 100, 100, 011, 010, 000, 000, 000, 000, 000, 000, 000, 000, 000, 000, 000, 100, 100, 011
 ```
 
 ## JPEG, DHT
