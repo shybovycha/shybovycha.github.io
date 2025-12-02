@@ -695,10 +695,82 @@ This list contains a lot of duplications and a lot of zeroes. It is then compres
 
 But DEFLATE does it smarter - it uses pre-defined table of symbols, again:
 
+- for zero value, use zero itself
 - for values 1..15, use the value itself as a code
 - to repeat previous value 3..6 times, use code `16` and `3` extra bits to represent how many repetitions (`000` - repeat previous value 3 times, `001` - repeat previous value 4 times, `010` - repeat previous value 5 times, `011` - repeat previous value 6 times)
 - to repeat value `0` 3..10 times, use code `17` and extra bits
 - to repeat value `0` 11..138 times, use code `18` and extra bits
+
+For example, the number `0` repeated `31` times would be represented as `0 (18, extra bits: 30 - 11)`:
+
+- `0` - raw value, no previous value to repeat
+- `(18, extra bits: 30 - 11)` - repeat previous value `0` 30 times; code `18` represents 1..138 repetitions, so extra bits `0000000` would translate to '11 repetitions', `0000001` would translate to '12 repetitions' etc, `0010011` (`30 - 11 = 19`, `19` binary = `0010011`) translates to '30 repetitions', `01111111` translates to '138 repetitions'
+
+The trick here is that all of these values fit nicely into one byte each:
+
+- `0` -> `0b00000000`
+- `1`..`15` -> `0b00000001` .. `0b00001111`
+- `16` -> `0b00010000`, extra 3 values:  `0b00010001`, `0b00010010`, `0b00010011`
+- `17` -> `0b00010001`, extra bits 
+- `18` -> `0b00010010`, extra bits
+
+
+In case of the array of codes' lengths above:
+
+```
+(0, 31)
+(3, 1)
+(0, 39)
+(3, 1)
+(0, 27)
+(4, 1)
+(4, 1)
+(0, 6)
+(2, 1)
+(0, 2)
+(2, 1)
+(0, 2)
+(4, 1)
+(0, 4)
+(4, 1)
+(0, 136)
+
+becomes encoded:
+
+(0, 31)  -> [0, (18, extra bits: 30 - 11)]
+(3, 1)   -> 3
+(0, 39)  -> [0, (18, extra bits: 38 - 11)]
+(3, 1)   -> 3
+(0, 27)  -> [0, (18, extra bits: 26 - 11)]
+(4, 1)   -> [4, 4] - previous value (4) is repeated just once, emit the value itself
+(0, 6)   -> [0, (16, extra bits: 5 - 3)]
+(2, 1)   -> 2
+(0, 2)   -> [0, 0]
+(2, 1)   -> 2
+(0, 2)   -> [0, 0]
+(4, 1)   -> 4
+(0, 4)   -> [0, (16, extra bits: 3 - 3)]
+(4, 1)   -> 4
+(0, 136) -> [0, (18, extra bits: 135 - 11)]
+
+in raw bytes:
+
+[0, (18, extra bits: 30 - 11)]
+3
+[0, (18, extra bits: 38 - 11)]
+3
+[0, (18, extra bits: 26 - 11)]
+[4, 4] - previous value is repeated just once, emit the value itself
+[0, (16, extra bits: 5 - 3)]
+2
+[0, 0]
+2
+[0, 0]
+4
+[0, (16, extra bits: 3 - 3)]
+4
+[0, (18, extra bits: 135 - 11)]
+```
 
 ## JPEG, DHT
 
