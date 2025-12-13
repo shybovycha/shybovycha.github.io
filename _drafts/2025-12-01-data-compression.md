@@ -1213,7 +1213,7 @@ But the important part is that this is due to the fact that the message is short
 
 ## JPEG, DHT
 
-Define Huffman Table stores the list of codes lengths using an index-as-value approach - a list of `16` values effectively translated as _"element at index 'i' tells how many codes of length 'i' are there in the table"_.
+Define Huffman Table uses a much simpler approach - it stores the list of codes lengths using an index-as-value approach - a list of `16` values effectively translated as _"element at index 'i' tells how many codes of length 'i' are there in the table"_. This list is followed by the list of raw characters used in the message.
 
 For example, an array like this
 
@@ -1244,3 +1244,60 @@ codes of length 13: 0
 codes of length 14: 0
 codes of length 15: 0
 ```
+
+For the `Hello world` message, the archive header, comprising of codes' lengths and the alphabet, would look as following:
+
+```
+canonical Huffman codes:
+
+l:   00   (length: 2)
+o:   01   (length: 2)
+" ": 100  (length: 3)
+H:   101  (length: 3)
+d:   1100 (length: 4)
+e:   1101 (length: 4)
+r:   1110 (length: 4)
+w:   1111 (length: 4)
+
+number of codes per length:
+
+[ 0, 0, 2, 2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+
+alphabet (in order same order as canonical Huffman codes table):
+
+[ l, o, " ", H, d, e, r, w ]
+```
+
+Followed by the encoded message, the entire archive would look like this:
+
+```
+codes per length:
+
+[ 0, 0, 2, 2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+
+in bytes:
+
+0x00 0x00 0x02 0x02 0x04 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+
+alphabet:
+
+[ l, o, " ", H, d, e, r, w ]
+
+in bytes:
+
+0x6C 0x6F 0x20 0x48 0x64 0x65 0x72 0x77
+
+encoded message:
+
+10111010000011001111011110001100
+
+in bytes:
+
+0xBA 0x0C 0xF7 0x8C
+
+combined:
+
+0x00 0x00 0x02 0x02 0x04 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x6C 0x6F 0x20 0x48 0x64 0x65 0x72 0x77 0xBA 0x0C 0xF7 0x8C
+```
+
+The total length is `28`, almost triple the original length!

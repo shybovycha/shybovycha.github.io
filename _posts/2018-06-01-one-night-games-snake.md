@@ -6,7 +6,7 @@ tags: [game-development, javascript, snake-game, algorithms, canvas, html5, game
 
 [source code](https://github.com/shybovycha/moo-snake)
 
-<img src="" alt="" data-src="/images/one-night-games/snake-screenshot.webp" class="medium">
+<img src="" alt="" src="/images/one-night-games/snake-screenshot.webp" class="medium" loading="lazy">
 
 Under the cut you can find the interesting algorithmic solutions I've mentioned.
 

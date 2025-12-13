@@ -15,11 +15,11 @@ Recently I've received an email from StackOverflow newsletters with a link to a 
 In the former article, author compared the performance of a tiny "Hello, World" program in Assembly to the same program in Go.
 He then tried to optimize the program in Go to run faster and towards the end of an article comes up with a program that is faster than its Assembly counterpart.
 
-<img alt="" data-src="/images/a-response-to-response-to-hello-world/hello-world-original-chart-min.webp">
-<img alt="" data-src="/images/a-response-to-response-to-hello-world/hello-world-new-chart-min.webp">
-<img alt="" data-src="/images/a-response-to-response-to-hello-world/hello-world-new-chart2-min.webp">
+<img alt="" src="/images/a-response-to-response-to-hello-world/hello-world-original-chart-min.webp" loading="lazy">
+<img alt="" src="/images/a-response-to-response-to-hello-world/hello-world-new-chart-min.webp" loading="lazy">
+<img alt="" src="/images/a-response-to-response-to-hello-world/hello-world-new-chart2-min.webp" loading="lazy">
 
-And this totally makes sense, since if you give it a good read, you will notice that author did optimize the program in Go but did not do that for the Assembly program.
+And this totally makes sense, since if you take a close look at the code, you will notice that author did optimize the program in Go but did **not** do that for the Assembly code.
 
 I have decided to burn few hours of my life and jump onto this topic, since, in my opinion, author did not do a fair comparison.
 
@@ -27,7 +27,7 @@ I have decided to burn few hours of my life and jump onto this topic, since, in 
 
 The original code Caleb has used is (I have added the imports and package declaration required to run the program):
 
-### Go
+### Original Go version
 
 ```go
 package main
@@ -44,7 +44,7 @@ func main() {
 }
 ```
 
-### Assembly
+### Assembly for original Go version
 
 ```asm
 _start:
@@ -68,7 +68,7 @@ _start:
     syscall
 ```
 
-### Optimized Go
+### Optimized Go version
 
 ```go
 package main
@@ -87,14 +87,14 @@ func main() {
 }
 ```
 
-What Caleb did was string concatenation in memory, creating a big string in memory and then calling the system function to print it out only once.
-Indeed this is way more performant than making an IO syscall every iteration.
+What Caleb did was string concatenation in memory, creating a big string in memory and then called the system function to print it out all at once.
+Indeed, this is way more performant than making an IO syscall every iteration for a short string.
 
-Since Caleb did not provide an equal program in Assembly, I decided to fill this gap.
-I have spent quite some time (predominantly because I am quite rusty with Assembly at the moment and I forgot that different OSes use [different calling conventions](https://en.wikipedia.org/wiki/X86_calling_conventions)).
-I came up with the code in Assembly that does exactly the same - allocates the memory, fills it with the repeated `"hello world"` string and then makes a syscall to print it to the console.
+Since Caleb did not provide an equal optimized code in Assembly, I decided to fill this gap.
+I have spent quite some time (predominantly because I am quite rusty with Assembly at the moment and I forgot that different operating systems use [different calling conventions](https://en.wikipedia.org/wiki/X86_calling_conventions)).
+I came up with the code in Assembly that does exactly the same as what the optimized Go version does - allocate the memory, fill it with the repeated `"hello world"` string and then make a syscall to print it to the console.
 
-### My optimized Assembly
+### My optimized Assembly version
 
 <div class="content-read-marker" data-fraction="25"></div>
 
@@ -210,7 +210,7 @@ len equ $ - msg
 
 ### My version with logs
 
-As Caleb highlights in his blog, a lot of "burden" introduced by many languages (referring to the original blog by Drew DeVault) is the debugging and safety related information.
+As Caleb highlights in his blog, a lot of "burden" is often introduced by many programming languages (referring to the original blog by Drew DeVault) - the debugging and safety-related information.
 
 I went ahead and added few logs, memory deallocation and test for allocation success to the code in Assembly:
 
@@ -358,10 +358,23 @@ log2: db "atoi = %d", 10, 0
 
 ## Comparison
 
-Finally, I ran the aforementioned programs with the following arguments: `1M`, `2.5M`, `5M`, `7.5M`, `10M`, `12.5M`, `15M` and `17.5M` (where `M` stands for "million").
+Finally, I ran the aforementioned programs with the following arguments: `1M`, `2.5M`, `5M`, `7.5M`, `10M`, `12.5M`, `15M` and `17.5M` (where `M` stands for "million", meaning it will print out X millions of "hello world" strings).
 
 The results became more reasonable:
 
-<img alt="" data-src="/images/a-response-to-response-to-hello-world/go_vs_asm_hello_world-min.webp">
+| N        | Go v1  | ASM v1 | Go v2 | ASM v2 |
+|----------|--------|--------|-------|--------|
+| 1000000  | 1.395  | 0.837  | 0.51  | 0.03   |
+| 2500000  | 2.36   | 2.1    | 0.094 | 0.062  |
+| 5000000  | 4.201  | 4.203  | 0.171 | 0.113  |
+| 7500000  | 6.197  | 6.238  | 0.26  | 0.17   |
+| 10000000 | 8.355  | 8.226  | 0.335 | 0.219  |
+| 12500000 | 10.571 | 10.359 | 0.458 | 0.258  |
+| 15000000 | 12.554 | 13.388 | 0.498 | 0.319  |
+| 17500000 | 14.529 | 14.625 | 0.575 | 0.347  |
+
+<img alt="" src="/images/a-response-to-response-to-hello-world/go_vs_asm_hello_world-min.webp" loading="lazy">
+
+If you look closely, you would notice the ASM v2 version (the optimized Assembly version) is faster than optimized Go version.
 
 <div class="content-read-marker" data-fraction="100"></div>
