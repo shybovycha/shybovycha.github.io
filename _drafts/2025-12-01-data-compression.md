@@ -441,7 +441,320 @@ int main() {
 If the Huffman table is known, the source could be decoded by traversing from the root: if the next _bit_ in the input sequence is `0` - traverse the left child of the current node, if the next bit is `1` - traverse the right child of the current node; if the leaf node is reached - emit a corresponding character:
 
 ```
-======= TBD =======
+=== TBD ===
+```
+
+To construct a Huffman tree from encodings table (given the encodings are sorted in the descending order of their frequency), a very simple algorithm is used - traverse the tree by the bits of the character encoding and if there is no node matched, add to the last seen node - a left child if a bit is `0` or a right child if a bit is `1`.
+
+As an example from above, consider the following encodings table (sorted already):
+
+```
+l => 0b01; o => 0b11; " " => 0b100; H => 0b0101; d => 0b0010; e => 0b0011; r => 0b0000; w => 0b0001
+```
+
+Iterate over the encodings one by one, starting with `l => 0b01`:
+
+```
+encoding: (l, 0b01)
+tree is empty, current node (*):
+
+   (*)
+
+first bit: 0
+add a new left child, make it the current node:
+
+     ()
+    /
+  <0>
+  /
+(*)
+
+next bit: 1
+add a new right child to the previously added node and make it the new current node:
+
+        ()
+       /
+     <0>
+     /
+    ()
+      \
+      <1>
+        \
+        (*)
+
+since this is the last bit, add the value to the current node:
+
+        ()
+       /
+     <0>
+     /
+    ()
+      \
+      <1>
+        \
+        (l)
+```
+
+Next encoding, `o => 0b11`:
+
+```
+encoding: (o, 0b11)
+reset the current node (*) to the root:
+
+        (*)
+       /
+     <0>
+     /
+    ()
+      \
+      <1>
+        \
+        (l)
+
+first bit: 1
+add a new right child node to the current node and make it the new current (*):
+
+        ()
+       /  \
+     <0>  <1>
+     /      \
+    ()      (*)
+      \
+      <1>
+        \
+        (l)
+
+next bit: 1
+add a new right child node and make it current:
+
+        ()
+       /  \
+     <0>  <1>
+     /      \
+    ()      ()
+      \       \
+      <1>     <1>
+        \       \
+        (l)     (*)
+
+since this is the last bit, add the value to the current node:
+
+        ()
+       /  \
+     <0>  <1>
+     /      \
+    ()      ()
+      \       \
+      <1>     <1>
+        \       \
+        (l)     (o)
+```
+
+Next encoding, `" " => 0b100`:
+
+```
+encoding: (" " => 0b100)
+reset the current node (*) to the root:
+
+        (*)
+       /  \
+     <0>  <1>
+     /      \
+    ()      ()
+      \       \
+      <1>     <1>
+        \       \
+        (l)     (o)
+
+first bit: 1
+no changes to the tree, since the node exists:
+
+        ()
+       /  \
+     <0>  <1>
+     /      \
+    ()      (*)
+      \       \
+      <1>     <1>
+        \       \
+        (l)     (o)
+
+next bit: 0
+add a new left child to the current node and make it the new current (*):
+
+          ()
+       /      \
+     <0>      <1>
+     /          \
+    ()          ()
+      \         / \
+      <1>     <0>  <1>
+        \     /      \
+        (l) (*)      (o)
+
+next bit: 0
+add a new left child to the current node and make it the new current (*):
+
+          ()
+       /      \
+     <0>      <1>
+     /          \
+    ()          ()
+      \         / \
+      <1>     <0>  <1>
+        \     /      \
+        (l)  ()      (o)
+            /
+          <0>
+          /
+        (*)
+
+since this is the last bit, add a value to the current node:
+
+              ()
+              /\
+       /------  -----\
+     <0>             <1>
+     /                 \
+    ()                 ()
+      \                / \
+      <1>            <0>  <1>
+        \            /      \
+        (l)         ()      (o)
+                   /
+                 <0>
+                 /
+               (" ")
+```
+
+Next encoding is `H => 0b0101`:
+
+```
+reset the current node (*) to root:
+
+              (*)
+              / \
+       /------   -----\
+     <0>              <1>
+     /                  \
+    ()                  ()
+      \                 / \
+      <1>             <0>  <1>
+        \             /      \
+        (l)          ()      (o)
+                    /
+                  <0>
+                  /
+                (" ")
+
+first bit is: 0
+no changes to the tree since the node exists, just make it current (*):
+
+               ()
+              /  \
+       /------    -----\
+     <0>               <1>
+     /                   \
+    (*)                  ()
+      \                  / \
+      <1>              <0>  <1>
+        \              /      \
+        (l)           ()      (o)
+                     /
+                   <0>
+                   /
+                 (" ")
+
+next bit is: 1
+add a right child node and make it current (*):
+
+               ()
+              /  \
+       /------    -----\
+     <0>               <1>
+     /                   \
+    ()                  ()
+      \                  / \
+      <1>              <0>  <1>
+        \              /      \
+        (l)           ()      (o)
+          \          /
+          <1>      <0>
+            \      /
+            (*)  (" ")
+
+next bit is: 0
+add a left child node and make it current (*):
+
+               ()
+              /  \
+       /------    -----\
+     <0>               <1>
+     /                   \
+    ()                  ()
+      \                  / \
+      <1>              <0>  <1>
+        \              /      \
+        (l)           ()      (o)
+          \          /
+          <1>      <0>
+            \      /
+            ()  (" ")
+            /
+          <0>
+          /
+        (*)
+
+next bit is: 1
+add a right child node and make it current (*):
+
+               ()
+              /  \
+       /------    -----\
+     <0>               <1>
+     /                   \
+    ()                  ()
+      \                  / \
+      <1>              <0>  <1>
+        \              /      \
+        (l)           ()      (o)
+          \          /
+          <1>      <0>
+            \      /
+            ()  (" ")
+            /
+          <0>
+          /
+         ()
+          \
+          <1>
+            \
+            (*)
+
+since this was the last bit, add a value to the current node:
+
+               ()
+              /  \
+       /------    -----\
+     <0>               <1>
+     /                   \
+    ()                  ()
+      \                  / \
+      <1>              <0>  <1>
+        \              /      \
+        (l)           ()      (o)
+          \          /
+          <1>      <0>
+            \      /
+            ()  (" ")
+            /
+          <0>
+          /
+         ()
+          \
+          <1>
+            \
+            (H)
 ```
 
 If the initial message (`Hello world`) is encoded with this algorith (to four bytes: `0xA6 0xBC 0x1C 0x12`), in order to properly decode it, the tree or the code table has to be given alongside with the encoded message:
