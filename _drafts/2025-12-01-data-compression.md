@@ -463,36 +463,26 @@ tree is empty, current node (*):
 first bit: 0
 add a new left child, make it the current node:
 
-     ()
-    /
-  <0>
+   ()
   /
 (*)
 
 next bit: 1
 add a new right child to the previously added node and make it the new current node:
 
-        ()
-       /
-     <0>
+      ()
      /
     ()
       \
-      <1>
-        \
-        (*)
+      (*)
 
 since this is the last bit, add the value to the current node:
 
-        ()
-       /
-     <0>
+      ()
      /
     ()
       \
-      <1>
-        \
-        (l)
+      (l)
 ```
 
 Next encoding, `o => 0b11`:
@@ -501,53 +491,37 @@ Next encoding, `o => 0b11`:
 encoding: (o, 0b11)
 reset the current node (*) to the root:
 
-        (*)
-       /
-     <0>
+     (*)
      /
     ()
-      \
-      <1>
-        \
-        (l)
+     \
+     (l)
 
 first bit: 1
 add a new right child node to the current node and make it the new current (*):
 
-        ()
-       /  \
-     <0>  <1>
-     /      \
-    ()      (*)
-      \
-      <1>
-        \
-        (l)
+      ()
+     /  \
+    ()  (*)
+     \
+     (l)
 
 next bit: 1
 add a new right child node and make it current:
 
-        ()
-       /  \
-     <0>  <1>
-     /      \
-    ()      ()
-      \       \
-      <1>     <1>
-        \       \
-        (l)     (*)
+      ()
+     /  \
+    ()  ()
+     \   \
+     (l) (*)
 
 since this is the last bit, add the value to the current node:
 
-        ()
-       /  \
-     <0>  <1>
-     /      \
-    ()      ()
-      \       \
-      <1>     <1>
-        \       \
-        (l)     (o)
+      ()
+     /  \
+    ()   ()
+      \    \
+      (l)  (o)
 ```
 
 Next encoding, `" " => 0b100`:
@@ -556,56 +530,38 @@ Next encoding, `" " => 0b100`:
 encoding: (" " => 0b100)
 reset the current node (*) to the root:
 
-        (*)
-       /  \
-     <0>  <1>
-     /      \
-    ()      ()
-      \       \
-      <1>     <1>
-        \       \
-        (l)     (o)
+      (*)
+     /   \
+    ()    ()
+      \     \
+      (l)   (o)
 
 first bit: 1
 no changes to the tree, since the node exists:
 
+      ()
+     /  \
+    ()   (*)
+      \    \
+      (l)  (o)
+
+next bit: 0
+add a new left child to the current node and make it the new current (*):
+
         ()
-       /  \
-     <0>  <1>
      /      \
-    ()      (*)
-      \       \
-      <1>     <1>
-        \       \
-        (l)     (o)
+    ()      ()
+      \     / \
+      (l) (*) (o)
 
 next bit: 0
 add a new left child to the current node and make it the new current (*):
 
-          ()
-       /      \
-     <0>      <1>
-     /          \
-    ()          ()
-      \         / \
-      <1>     <0>  <1>
-        \     /      \
-        (l) (*)      (o)
-
-next bit: 0
-add a new left child to the current node and make it the new current (*):
-
-          ()
-       /      \
-     <0>      <1>
-     /          \
-    ()          ()
-      \         / \
-      <1>     <0>  <1>
-        \     /      \
-        (l)  ()      (o)
-            /
-          <0>
+        ()
+     /      \
+    ()      ()
+     \      / \
+     (l)   () (o)
           /
         (*)
 
@@ -614,17 +570,11 @@ since this is the last bit, add a value to the current node:
               ()
               /\
        /------  -----\
-     <0>             <1>
-     /                 \
-    ()                 ()
-      \                / \
-      <1>            <0>  <1>
-        \            /      \
-        (l)         ()      (o)
+      ()             ()
+       \            /  \
+        (l)        ()  (o)
                    /
-                 <0>
-                 /
-               (" ")
+                 (" ")
 ```
 
 Next encoding is `H => 0b0101`:
@@ -635,75 +585,47 @@ reset the current node (*) to root:
               (*)
               / \
        /------   -----\
-     <0>              <1>
-     /                  \
-    ()                  ()
-      \                 / \
-      <1>             <0>  <1>
-        \             /      \
-        (l)          ()      (o)
+      ()              ()
+       \             /  \
+        (l)         ()  (o)
                     /
-                  <0>
-                  /
-                (" ")
+                  (" ")
 
 first bit is: 0
 no changes to the tree since the node exists, just make it current (*):
 
-               ()
-              /  \
-       /------    -----\
-     <0>               <1>
-     /                   \
-    (*)                  ()
-      \                  / \
-      <1>              <0>  <1>
-        \              /      \
-        (l)           ()      (o)
-                     /
-                   <0>
+              ()
+             /  \
+      /------    -----\
+    (*)               ()
+      \              /  \
+      (l)           ()  (o)
                    /
                  (" ")
 
 next bit is: 1
-add a right child node and make it current (*):
+no changes to the tree since the node exists, just make it current (*):
 
-               ()
-              /  \
-       /------    -----\
-     <0>               <1>
-     /                   \
-    ()                  ()
-      \                  / \
-      <1>              <0>  <1>
-        \              /      \
-        (l)           ()      (o)
-          \          /
-          <1>      <0>
-            \      /
-            (*)  (" ")
+             ()
+            /  \
+     /------    -----\
+    ()                ()
+      \              /  \
+    (*l*)          ()   (o)
+                  /
+               (" ")
 
 next bit is: 0
 add a left child node and make it current (*):
 
-               ()
-              /  \
-       /------    -----\
-     <0>               <1>
-     /                   \
-    ()                  ()
-      \                  / \
-      <1>              <0>  <1>
-        \              /      \
-        (l)           ()      (o)
-          \          /
-          <1>      <0>
-            \      /
-            ()  (" ")
-            /
-          <0>
-          /
-        (*)
+             ()
+            /  \
+     /------    -----\
+    ()               ()
+      \             /  \
+      (l)          ()  (o)
+      /            /
+    (*)          (" ")
 
 next bit is: 1
 add a right child node and make it current (*):
@@ -711,50 +633,81 @@ add a right child node and make it current (*):
                ()
               /  \
        /------    -----\
-     <0>               <1>
-     /                   \
-    ()                  ()
-      \                  / \
-      <1>              <0>  <1>
-        \              /      \
-        (l)           ()      (o)
-          \          /
-          <1>      <0>
-            \      /
-            ()  (" ")
-            /
-          <0>
-          /
-         ()
-          \
-          <1>
-            \
-            (*)
+     ()                 ()
+      \                 / \
+      (l)             ()  (o)
+      /              /
+    ()            (" ")
+     \
+      (*)
 
 since this was the last bit, add a value to the current node:
 
                ()
               /  \
        /------    -----\
-     <0>               <1>
-     /                   \
-    ()                  ()
+     ()                 ()
       \                  / \
-      <1>              <0>  <1>
-        \              /      \
-        (l)           ()      (o)
-          \          /
-          <1>      <0>
-            \      /
-            ()  (" ")
-            /
-          <0>
-          /
-         ()
-          \
-          <1>
-            \
-            (H)
+      (l)              ()  (o)
+      /               /
+     ()             (" ")
+      \
+      (H)
+```
+
+And without going step-by-step, for all the remaining encodings: 
+
+```
+encoding: d => 0b0010
+               ()
+              /  \
+       /------    -----\
+     ()                 ()
+    /  \                / \
+   ()  (l)            ()  (o)
+    \   /             /
+    () ()          (" ")
+    /    \
+   (d)   (H)
+
+encoding: e => 0b0011
+
+                ()
+               /  \
+        /------    -----\
+      ()                 ()
+    /    \               /  \
+   ()    (l)          ()   (o)
+     \   /           /
+     () ()         (" ")
+    /  \  \
+   (d) (e) (H)
+
+encoding: r => 0b0000
+
+                 ()
+                /  \
+         /------    -----\
+       ()                 ()
+      /   \              /  \
+     ()    (l)          ()   (o)
+    /  \    /          /
+   ()  ()  ()       (" ")
+  /   /  \   \
+(r)  (d) (e) (H)
+
+encoding: w => 0b0001
+
+                    ()
+                   /  \
+            /------    -----\
+          ()                 ()
+       /     \              /  \
+      ()      (l)          ()   (o)
+    /    \    /          /
+   ()     () ()       (" ")
+  / \    /  \  \
+(r) (w) (d) (e) (H)
 ```
 
 If the initial message (`Hello world`) is encoded with this algorith (to four bytes: `0xA6 0xBC 0x1C 0x12`), in order to properly decode it, the tree or the code table has to be given alongside with the encoded message:
