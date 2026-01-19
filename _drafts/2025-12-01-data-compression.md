@@ -1416,7 +1416,7 @@ or just
 2, 4, 4, 3, 2, 0, 0, 0, 0, 0,  0,  0,  0,  0,  0,  0,  4,  4,  3
 ```
 
-Note one interesting observation: since there is a very limited number of symbols used to encode code lengths, the maximum code for them is `7`, which is `3 bits long`. This means the new encodings for code lengths table could be packed into 3 bit chunks, further reducing the size of this tree:
+Note one interesting observation: since there is a very limited number of symbols used to encode code lengths, the maximum code for them is `7`, which is `3 bits` long. This means the new encodings for code lengths table could be packed into 3 bit chunks, further reducing the size of this tree:
 
 ```
 codes lengths (for codes lengths, so meta!):
