@@ -46,7 +46,7 @@ o (111 = 01101111 => 00000100) <-\    |
   (32 = 00100000 => 00000101)    |    |
 w (119 = 01110111 => 00000110)   |    |
 o (111 = 01101111 => 00000100) <-/    |
-r (114 = 01110010 => 00000101)        |
+r (114 = 01110010 => 00000110)        |
 l (108 = 01101100 => 00000011) <------/
 d (100 = 01100100 => 00000111)
 
@@ -57,10 +57,10 @@ Hello world
 
 New:
 
-00000001 00000010 00000011 00000011 00000100 00000101 00000110 00000100 00000111 00000011 00001000
+00000001 00000010 00000011 00000011 00000100 00000101 00000110 00000100 00000110 00000011 00000111
 ```
 
-On itself this does not present any compression, but what if characters were packed into half-bytes? The longest short code is only 4 bits, so we could get rid of most of zeros:
+On itself this does not present any compression, but what if characters were packed into half-bytes? The longest short code is only 4 (meaningful) bits, so we could get rid of most of zeros:
 
 ```
 Old:
@@ -84,7 +84,7 @@ If we were to add this mapping, the message size would be actually much larger:
 H        code     e        code     l        code     o        code     <space>  code     w        code     r        code     d        code
 ```
 
-This is already `16` bytes. Then add the `6` bytes for the encoded message and you get `22` bytes - a negative 100% compression again.
+This is already `16` bytes. Then add the `6` bytes for the encoded message and you get `22` bytes - a -100% (negative 100%) compression again.
 
 If the initial text was much, **much** longer, this could actually be an improvement, but here's the challenge: once the number of unique letters in the initial text is larger than `15` (the maximum number of variants that could be represented by `4` bits), the compression rate drops below zero - simply because we can not represent every character in less than a full byte anymore.
 
@@ -289,7 +289,7 @@ Then, following the rule _"left branch -> '0', right branch -> '1'"_, mark each 
 Lastly, by following the branches from the root node of this tree, gather the branch labels into the binary code for each of the leaf nodes:
 
 ```
-(l, 3, 0b01)  (o, 2, 0b11)  (" ", 1, 0b100)  (H, 1, 0b0101)  (d, 1, 0b0010)  (e, 1, 0b0011)  (r, 1, 0b0000)  (w, 1, 0b0001)
+(l, 3, 0b01)  (o, 2, 0b11)  (" ", 1, 0b100)  (H, 1, 0b101)  (d, 1, 0b0010)  (e, 1, 0b0011)  (r, 1, 0b0000)  (w, 1, 0b0001)
 ```
 
 This is called Huffman encoding or Huffman tree.
@@ -449,7 +449,7 @@ To construct a Huffman tree from encodings table (given the encodings are sorted
 As an example from above, consider the following encodings table (sorted already):
 
 ```
-l => 0b01; o => 0b11; " " => 0b100; H => 0b0101; d => 0b0010; e => 0b0011; r => 0b0000; w => 0b0001
+l => 0b01; o => 0b11; " " => 0b100; H => 0b101; d => 0b0010; e => 0b0011; r => 0b0000; w => 0b0001
 ```
 
 Iterate over the encodings one by one, starting with `l => 0b01`:
@@ -577,7 +577,7 @@ since this is the last bit, add a value to the current node:
                  (" ")
 ```
 
-Next encoding is `H => 0b0101`:
+Next encoding is `H => 0b101`:
 
 ```
 reset the current node (*) to root:
@@ -591,19 +591,19 @@ reset the current node (*) to root:
                     /
                   (" ")
 
-first bit is: 0
+first bit is: 1
 no changes to the tree since the node exists, just make it current (*):
 
               ()
              /  \
       /------    -----\
-    (*)               ()
+    ()               (*)
       \              /  \
       (l)           ()  (o)
                    /
                  (" ")
 
-next bit is: 1
+next bit is: 0
 no changes to the tree since the node exists, just make it current (*):
 
              ()
@@ -611,12 +611,12 @@ no changes to the tree since the node exists, just make it current (*):
      /------    -----\
     ()                ()
       \              /  \
-    (*l*)          ()   (o)
+     (l)          (*)  (o)
                   /
                (" ")
 
-next bit is: 0
-add a left child node and make it current (*):
+next bit is: 1
+add a right child node and make it current (*):
 
              ()
             /  \
@@ -624,22 +624,8 @@ add a left child node and make it current (*):
     ()               ()
       \             /  \
       (l)          ()  (o)
-      /            /
-    (*)          (" ")
-
-next bit is: 1
-add a right child node and make it current (*):
-
-               ()
-              /  \
-       /------    -----\
-     ()                 ()
-      \                 / \
-      (l)             ()  (o)
-      /              /
-    ()            (" ")
-     \
-      (*)
+                  /  \
+              (" ")  (*)
 
 since this was the last bit, add a value to the current node:
 
@@ -649,10 +635,8 @@ since this was the last bit, add a value to the current node:
      ()                 ()
       \                  / \
       (l)              ()  (o)
-      /               /
-     ()             (" ")
-      \
-      (H)
+                      /  \
+                   (" ") (H)
 ```
 
 And without going step-by-step, for all the remaining encodings: 
@@ -665,10 +649,10 @@ encoding: d => 0b0010
      ()                 ()
     /  \                / \
    ()  (l)            ()  (o)
-    \   /             /
-    () ()          (" ")
-    /    \
-   (d)   (H)
+    \                /  \
+    ()           (" ")  (H)
+    /
+   (d)
 
 encoding: e => 0b0011
 
@@ -678,10 +662,10 @@ encoding: e => 0b0011
       ()                 ()
     /    \               /  \
    ()    (l)          ()   (o)
-     \   /           /
-     () ()         (" ")
-    /  \  \
-   (d) (e) (H)
+     \               /  \
+     ()           (" ") (H)
+    /  \  
+   (d) (e)
 
 encoding: r => 0b0000
 
@@ -691,10 +675,10 @@ encoding: r => 0b0000
        ()                 ()
       /   \              /  \
      ()    (l)          ()   (o)
-    /  \    /          /
-   ()  ()  ()       (" ")
-  /   /  \   \
-(r)  (d) (e) (H)
+    /  \               /  \
+   ()  ()          (" ")  (H)
+  /   /  \   
+(r)  (d) (e) 
 
 encoding: w => 0b0001
 
@@ -704,13 +688,13 @@ encoding: w => 0b0001
           ()                 ()
        /     \              /  \
       ()      (l)          ()   (o)
-    /    \    /          /
-   ()     () ()       (" ")
-  / \    /  \  \
-(r) (w) (d) (e) (H)
+    /    \                /  \
+   ()     ()          (" ")  (H)
+  / \    /  \ 
+(r) (w) (d) (e)
 ```
 
-If the initial message (`Hello world`) is encoded with this algorith (to four bytes: `0xA6 0xBC 0x1C 0x12`), in order to properly decode it, the tree or the code table has to be given alongside with the encoded message:
+If the initial message (`Hello world`) is encoded with this algorithm (to four bytes: `0xA6 0xBC 0x1C 0x12`), in order to properly decode it, the tree or the code table has to be given alongside with the encoded message:
 
 ```
 message: 'Hello world' (11 bytes)
@@ -719,7 +703,7 @@ table:   {"l"=>"01", "o"=>"11", " "=>"100", "H"=>"101", "r"=>"0000", "w"=>"0001"
 compression = 11 bytes -> 20 bytes = negative 100%
 ```
 
-This is not entirely a compression algorith, though. Algorithms such as ZIP (DEFLATE) and JPEG (although slightly different in details, the general approach still applicable) go further to compress the _table_ itself.
+This is not entirely a compression algorithm, though. Algorithms such as ZIP (DEFLATE) and JPEG (although slightly different in details, the general approach still applicable) go further to compress the _table_ itself.
 To understand how they work, one needs to understand the tricks behind them.
 
 ## Canonical Huffman codes
