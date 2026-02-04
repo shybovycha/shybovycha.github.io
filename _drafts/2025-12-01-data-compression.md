@@ -1118,7 +1118,29 @@ So for the list of codes lengths `[0, 2, 2, 4]` the re-created codes will be
 1111
 ```
 
+In Ruby:
+
+```rb
+def recreate_canonical_huffman_codes(codes_of_length)
+  code = 0
+  res = []
+  
+  codes_of_length.each_with_index do |n, len|
+    code <<= 1
+
+    n.times do
+      res << code.to_s(2).rjust(len+1, '0')
+      code += 1
+    end
+  end
+
+  res
+end
+```
+
 For the second phase, the _original symbols_ have to be correlated with these codes somehow.
+DEFLATE does not store the symbols or their corresponding encodings at any point - instead it uses smart algorithm to encode the encodings (so meta!) for all possible symbols.
+ 
 Referring back to the compressed content's table of codes:
 
 ```
@@ -1620,6 +1642,233 @@ Joining header and the body:
 
 Funny enough, the length of this archive is **much** longer than the original message itself - `25` bytes vs original `11` - more than negative 100% increase in size.
 But the important part is that this is due to the fact that the message is short and most symbols only occur once.
+On a longer text the compression is actually good: a typical AI response compression:
+
+```
+Source length: 3994
+Encoded length: 2632
+> encoded length: 2573
+> header length: 59
+>> header1 length: 8
+>> header2 length: 51
+Compression rate: 51%
+```
+
+Decoding works the same three-step way, just in the reverse:
+
+1. decode canonical Huffman tree for codes' lengths
+2. decode codes' lengths and build the canonical Huffman tree again
+3. decode the message using that tree
+
+The only tricky part there is decoding the codes' lengths, since it involves re-building the symbols + extra bits for repeated values.
+
+Decoding codes' lengths:
+
+```rb
+def decode_code_lengths_lengths(header)
+    bits = header.bytes.map {|ch| ch.to_s(2).rjust(8, '0')}.join
+
+    code_lengths = []
+
+    (0..18).each do |e|
+        start_bit = e * 3
+        three_bits = bits[start_bit, 3]
+        length = three_bits.to_i(2)
+        code_lengths[e] = length
+    end
+
+    code_lengths
+end
+```
+
+Then the canonical Huffman codes are reconstructed for decoding next stage of codes' lengths:
+
+```rb
+def recreate_huffman_codes(code_lengths)
+    symbols_with_lengths = code_lengths.each_with_index.filter {|len, _| len > 0}.map {|len, s| [s, len] }.sort_by {|s, len| [len, s]}
+
+    res = Array.new(code_lengths.size)
+    prev_length = 0
+    code = 0
+
+    symbols_with_lengths.each do |s, len|
+        code <<= (len - prev_length)
+        res[s] = code.to_s(2).rjust(len, '0')
+        code += 1
+        prev_length = len
+    end
+
+    res
+end
+```
+
+This is then used to decode running lengths (compressed lengths):
+
+```rb
+def decode_compressed_code_lengths(bits, codes_lengths_tree)
+    tree_inv = codes_lengths_tree.each_with_index.to_h
+
+    compressed_code_lengths = []
+    bit_pos = 0
+    buf = ''
+    decoded_count = 0
+
+    while bit_pos < bits.length && decoded_count < 256
+        buf += bits[bit_pos]
+        bit_pos += 1
+
+        if tree_inv.key?(buf)
+            symbol = tree_inv[buf]
+            buf = ''
+
+            case symbol
+            when 16
+                extra_bits = bits[bit_pos, 2].to_i(2)
+                bit_pos += 2
+                compressed_code_lengths << [16, extra_bits]
+                decoded_count += 3 + extra_bits # code 16 repeats 3-6 repetitions
+            when 17
+                extra_bits = bits[bit_pos, 3].to_i(2)
+                bit_pos += 3
+                compressed_code_lengths << [17, extra_bits]
+                decoded_count += 3 + extra_bits # code 17 repeats 3-10 repetitions
+            when 18
+                extra_bits = bits[bit_pos, 7].to_i(2)
+                bit_pos += 7
+                compressed_code_lengths << [18, extra_bits]
+                decoded_count += 11 + extra_bits # code 18 repeats 11-138 repetitions
+            else
+                compressed_code_lengths << symbol
+                decoded_count += 1 # any other code adds 1 instance of itself
+            end
+        end
+    end
+
+    compressed_code_lengths
+end
+```
+
+Which is then used to reconstruct all codes' lengths for all symbols:
+
+```rb
+def decode_running_lengths(compressed_code_lengths)
+    res = []
+
+    compressed_code_lengths.each do |e|
+        if e.is_a?(Array)
+            code, extras = e
+
+            case code
+            when 16
+                repeats = 3 + extras
+                repeats.times { res << res.last }
+
+            when 17
+                repeats = 3 + extras
+                repeats.times { res << 0 }
+
+            when 18
+                repeats = 11 + extras
+                repeats.times { res << 0 }
+            end
+        else
+            res << e
+        end
+    end
+
+    res
+end
+```
+
+These last two methods are there just to showcase the same process as encoding, but in reverse. Practically speaking, it does not make sense to build the intermediate running lengths encoding (with codes `16`, `17` and `18`) and the actual list could be built in-place:
+
+```rb
+def decode_codes_lengths(header, codes_lengths_tree)
+    bits = header.bytes.map {|b| b.to_s(2).rjust(8, '0')}.join
+
+    tree_inv = codes_lengths_tree.each_with_index.to_h
+
+    bit_pos = 0
+    buf = ''
+
+    res = []
+
+    while bit_pos < bits.length && res.size < 256
+        buf += bits[bit_pos]
+        bit_pos += 1
+
+        if tree_inv.key?(buf)
+            symbol = tree_inv[buf]
+            buf = ''
+
+            case symbol
+            when 16
+                extra_bits = bits[bit_pos, 2].to_i(2)
+                bit_pos += 2
+                repeats = 3 + extra_bits
+                repeats.times { res << res.last }
+            when 17
+                extra_bits = bits[bit_pos, 3].to_i(2)
+                bit_pos += 3
+                repeats = 3 + extra_bits
+                repeats.times { res << 0 }
+            when 18
+                extra_bits = bits[bit_pos, 7].to_i(2)
+                bit_pos += 7
+                repeats = 11 + extra_bits
+                repeats.times { res << 0 }
+            else
+                res << symbol
+            end
+        end
+    end
+
+    res
+end
+```
+
+This list is then used to create the ultimate canonical Huffman codes for the message itself (the "body" of the archive), by calling `recreate_huffman_codes`:
+
+```rb
+def decode(header1, header2, body)
+    code_lengths_lengths = decode_code_lengths_lengths(header1)
+    tree = recreate_huffman_codes(code_lengths_lengths)
+    codes_lengths = decode_codes_lengths(header2, tree)
+
+    codes = recreate_huffman_codes(codes_lengths)
+    decode_body(body, codes)
+end
+```
+
+Decoding the body with this tree is simple:
+
+```rb
+def decode_with_tree(bits, tree)
+    tree_inv = tree.each_with_index.to_h
+
+    res = []
+    buf = ''
+
+    bits.each_char do |bit|
+        buf += bit
+
+        if tree_inv.key? buf
+            res << tree_inv[buf]
+            buf = ''
+        end
+    end
+
+    res
+end
+
+def decode_body(body, codes_lengths)
+    bits = body.bytes.map {|b| b.to_s(2).rjust(8, '0')}.join
+    bytes = decode_with_tree(bits, codes_lengths)
+    bytes.pack('C*').force_encoding('UTF-8')
+end
+```
+
+Note how these methods use `string.bytes` instead of `string.chars` - this is to make the algorithm work with UTF-8 characters and not only ASCII.
 
 ## JPEG, DHT
 
@@ -1711,3 +1960,65 @@ combined:
 ```
 
 The total length is `28`, almost triple the original length!
+
+Implementing this in Ruby:
+
+```rb
+# using the three helpers from the previous implementations - build_tree, build_table, build_canonical_table
+def build_canonical_codes(message)
+  build_canonical_table(build_table(build_tree(message.bytes)))
+end
+
+def encode(message)
+  codes = build_canonical_codes(message)
+  grouped_codes = codes.values.group_by { |code| code.length }
+
+  codes_count_by_length = grouped_codes.transform_values { |cs| cs.size }
+
+  header1 = (1..15).map { |len| codes_count_by_length[len] || 0 }
+  header2 = codes.keys
+  body = message.bytes.map { |byte| codes[byte] }.join.chars.each_slice(8).map { |slice| slice.join.rjust(8, '0').to_i(2) }
+
+  {
+    header1: header1,
+    header2: header2,
+    body: body
+  }
+end
+```
+
+Then, the final message would be comprised of joining those parts together:
+
+```rb
+r = encode('Hello world')
+[ :header1, :header2, :body ].map { |k| r[k].pack('C*').force_encoding('UTF-8') }.join
+```
+
+As I said before, for a simple message such as `Hello world` the archive is `27` bytes long, which is longer than the original data itself.
+But for something longer, like the AI chatbot response from before it is actually a bit better:
+
+```
+Original message: 3994
+Encoded message: 2598
+> header1: 15
+> header2: 90
+> body: 2573
+Compression ratio: 49%
+```
+
+Decoding this is much simpler than DEFLATE: all there is to do is to reconstruct canonical Huffman codes from the number of codes by length (16-element-array)
+
+```rb
+# using `recreate_huffman_codes` helper from before
+def decode(message)
+  counts = []
+
+  message.bytes[0, 15].each_with_index do |l, n|
+    if n == 0
+      counts << 0
+    else
+      n.times { counts << l }
+    end
+  end
+end
+```
