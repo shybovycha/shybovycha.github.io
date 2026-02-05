@@ -4,7 +4,7 @@ title: 'Data compression'
 tags: [programming, algorithms]
 ---
 
-I have been curious about how data compression works for a very long time - back in the day there was an archiver race, with WinRar and KGB archiver being insanely good at it. Bear in mind, those were the days where you had to use 1.44MB 3.5" magnetic "floppy" disks to transfer data - that was the era before DVD and even CD disks. And what WinRar could offer was no joke - you could compress 14MB Doom 2 and split it into 5 _tomes_, write each of them to a separate disk and then unarchive them on another computer - archiver would prompt you to insert the next disk with the next tome when it is done decompressing the current one.
+I have been curious about how data compression works for a very long time - back in the day there was an archiver race, with [WinRar](https://en.wikipedia.org/wiki/WinRAR) and [KGB archiver](https://en.wikipedia.org/wiki/KGB_Archiver) being insanely good at it. Bear in mind, those were the days where you had to use 1.44MB 3.5" magnetic "floppy" disks to transfer data - that was the era before DVD and even CD disks. And what WinRar could offer was no joke - you could compress 14MB Doom 2 and split it into 5 _tomes_, write each of them to a separate disk and then unarchive them on another computer - archiver would prompt you to insert the next disk with the next tome when it is done decompressing the current one.
 
 But I digress. I was curious how WinRar can do that and how the size of the data is actually reduced.
 
@@ -602,7 +602,8 @@ int main() {
     std::cout << "Decoded: " << decoded << std::endl;
 
     return 0;
-}```
+}
+```
 
 To construct a Huffman tree from encodings table (given the encodings are sorted in the descending order of their frequency), a very simple algorithm is used - traverse the tree by the bits of the character encoding and if there is no node matched, add to the last seen node - a left child if a bit is `0` or a right child if a bit is `1`.
 
