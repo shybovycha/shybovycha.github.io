@@ -1977,7 +1977,7 @@ def encode(message)
 
   header1 = (1..15).map { |len| codes_count_by_length[len] || 0 }
   header2 = codes.keys
-  body = message.bytes.map { |byte| codes[byte] }.join.chars.each_slice(8).map { |slice| slice.join.rjust(8, '0').to_i(2) }
+  body = message.bytes.map { |byte| codes[byte] }.join.chars.each_slice(8).map { |slice| slice.join.ljust(8, '0').to_i(2) }
 
   {
     header1: header1,
@@ -2010,15 +2010,40 @@ Decoding this is much simpler than DEFLATE: all there is to do is to reconstruct
 
 ```rb
 # using `recreate_huffman_codes` helper from before
-def decode(message)
-  counts = []
+# decode_with_table is slightly different from decode_with_tree
+def decode_with_table(bits, table)
+    res = []
+    buf = ''
 
-  message.bytes[0, 15].each_with_index do |l, n|
-    if n == 0
-      counts << 0
-    else
-      n.times { counts << l }
+    bits.each_char do |bit|
+        buf += bit
+
+        if table.key? buf
+            res << table[buf]
+            buf = ''
+        end
     end
-  end
+
+    res
+end
+
+def decode(message)
+  bytes = message.bytes
+
+  counts_encoded = bytes[0, 15]
+  counts = counts_encoded.each_with_index.map { |n, len| [ len + 1 ] * n }.flatten
+  codes = recreate_huffman_codes count
+
+  symbols = bytes[15, codes.size]
+  table = codes.zip(symbols).to_h
+  
+  body_encoded = bytes[15 + codes.size ..]
+  body_bits = body_encoded.map { |b| b.to_s(2).rjust(8, '0') }.join
+  body_decoded = decode_with_table(body_bits, table)
+
+  body_decoded.pack('C*').force_encoding('UTF-8')
 end
 ```
+
+All the code in this blog is available in a separate [repo](https://github.com/shybovycha/huffman).
+
