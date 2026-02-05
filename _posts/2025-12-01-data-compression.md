@@ -46,9 +46,9 @@ o (111 = 01101111 => 00000100) <-\    |
   (32 = 00100000 => 00000101)    |    |
 w (119 = 01110111 => 00000110)   |    |
 o (111 = 01101111 => 00000100) <-/    |
-r (114 = 01110010 => 00000110)        |
+r (114 = 01110010 => 00000111)        |
 l (108 = 01101100 => 00000011) <------/
-d (100 = 01100100 => 00000111)
+d (100 = 01100100 => 00001000)
 
 Original:
 
@@ -57,7 +57,7 @@ Hello world
 
 New:
 
-00000001 00000010 00000011 00000011 00000100 00000101 00000110 00000100 00000110 00000011 00000111
+00000001 00000010 00000011 00000011 00000100 00000101 00000110 00000100 00000111 00000011 00001000
 ```
 
 On itself this does not present any compression, but what if characters were packed into half-bytes? The longest short code is only 4 (meaningful) bits, so we could get rid of most of zeros:
@@ -884,7 +884,7 @@ That's where [canonical Huffman codes](https://en.wikipedia.org/wiki/Canonical_H
 
 To obtain canonical codes from _any_ valid Huffman tree for a given input, the codes are transformed following two simple rules:
 
-1. sort the codes by code length (ascending) and then by character (also ascendig)
+1. sort the codes by code length (ascending) and then by character (also ascending)
 2. starting with `current_code = 0` and `current_length = 0`, iterate over each _code length_ (assume iterator is `length_i`):
   1. if the length is greater than `current_length`, left shift `current_code` by the difference `length_i - current_length`
   2. increment `current_code`, filling the unused left-most bits with zeroes
@@ -1103,7 +1103,7 @@ length_i = 4, codes_length_i = 4;
     emit code (1100), code += 1 (code = 1101);
     emit code (1101), code += 1 (code = 1110);
     emit code (1110), code += 1 (code = 1111);
-    emit code (1111), code += 1 (code = 1100);
+    emit code (1111), code += 1 (code = 10000);
 ```
 
 So for the list of codes lengths `[0, 2, 2, 4]` the re-created codes will be
@@ -1871,6 +1871,22 @@ end
 
 Note how these methods use `string.bytes` instead of `string.chars` - this is to make the algorithm work with UTF-8 characters and not only ASCII.
 
+For binary data it can be hit or miss. For example, a PNG is already a compressed binary data, so DEFLATE does not prove too useful:
+
+```
+Raw data (PNG file): 2356 bytes
+Encoded: 2397 bytes
+Compression ratio: -1%
+```
+
+For a larger uncompressed data (so potentially more of the same characters being used more frequently), like a TTF font:
+
+```
+Raw data (TTF font): 7316 bytes
+Encoded: 5161 bytes
+Compression ratio: 29%
+```
+
 ## JPEG, DHT
 
 Define Huffman Table uses a much simpler approach - it stores the list of codes lengths using an index-as-value approach - a list of `16` values effectively translated as _"element at index 'i' tells how many codes of length 'i' are there in the table"_. This list is followed by the list of raw characters used in the message.
@@ -2048,3 +2064,17 @@ end
 
 All the code in this blog is available in a separate [repo](https://github.com/shybovycha/huffman).
 
+This algorithm works much worse with binary data, however:
+
+```
+Raw data (PNG file): 2356 bytes
+Encoded: 2605 bytes
+Compression ratio: -2%
+```
+On a larger uncompressed binary data (same TTF font as before):
+
+```
+Raw data (TTF font): 7316 bytes
+Encoded: 5336 bytes
+Compression ratio: 27%
+```
