@@ -118,172 +118,290 @@ w => 1
 
 Imagine each of these entries as a node:
 
+```mermaid
+graph TD
+    R["(r, 1)"]:::queue
+    W["(w, 1)"]:::queue
+
+    
+    L["(l, 3)"]:::queue
+    O["(o, 2)"]:::queue
+    SP["(' ', 1)"]:::queue
+    H["(H, 1)"]:::queue
+    D["(d, 1)"]:::queue
+    E["(e, 1)"]:::queue
+
+    classDef queue fill:#E0E0E0,stroke:#333,stroke-width:1px
 ```
-(l, 3) (o, 2) (" ", 1) (H, 1) (d, 1) (e, 1) (r, 1) (w, 1)
-```
+
+<img src="/images/data-compression/huffman1_0.png" loading="lazy" alt="" />
 
 Then, take a pair of nodes with the smallest number of occurrences each and merge them into a new node with the number of occurrences as a sum of two original nodes:
 
-```
-                                                 (2)
-                                               /     \
-(l, 3) (o, 2) (" ", 1) (H, 1) (d, 1) (e, 1) (r, 1) (w, 1)
+```mermaid
+graph TD
+    N2["(2)"]:::new
+    R["(r, 1)"]
+    W["(w, 1)"]
 
-becomes
+    N2 --> R
+    N2 --> W
 
-(l, 3) (o, 2) (" ", 1) (H, 1) (d, 1) (e, 1)      (2)
-                                               /     \
-                                            (r, 1) (w, 1)
+    L["(l, 3)"]:::queue
+    O["(o, 2)"]:::queue
+    SP["(' ', 1)"]:::queue
+    H["(H, 1)"]:::queue
+    D["(d, 1)"]:::queue
+    E["(e, 1)"]:::queue
+
+    classDef new fill:#90EE90,stroke:#333,stroke-width:2px
+    classDef queue fill:#E0E0E0,stroke:#333,stroke-width:1px
 ```
 
 Repeat this process until there is just one node left:
 
-```
-                                   (2)
-                                 /     \
-(l, 3) (o, 2) (" ", 1) (H, 1) (d, 1) (e, 1)      (2)
-                                               /     \
-                                            (r, 1) (w, 1)
+```mermaid
+graph TD
+    N2A["(2)"]:::new
+    D["(d, 1)"]
+    E["(e, 1)"]
 
-becomes
+    N2A --> D
+    N2A --> E
 
-(l, 3) (o, 2) (" ", 1) (H, 1)  (2)              (2)
-                             /     \          /     \
-                         (d, 1)  (e, 1)    (r, 1) (w, 1)
+    N2B["(2)"]
+    R["(r, 1)"]
+    W["(w, 1)"]
+
+    N2B --> R
+    N2B --> W
+
+    L["(l, 3)"]:::queue
+    O["(o, 2)"]:::queue
+    SP["(' ', 1)"]:::queue
+    H["(H, 1)"]:::queue
+
+    classDef new fill:#90EE90,stroke:#333,stroke-width:2px
+    classDef queue fill:#E0E0E0,stroke:#333,stroke-width:1px
 ```
 
 And again:
 
-```
-                     (2)
-                   /     \
-(l, 3) (o, 2) (" ", 1) (H, 1)  (2)              (2)
-                             /     \          /     \
-                         (d, 1)  (e, 1)    (r, 1) (w, 1)
+```mermaid
+graph TD
+    N2A["(2)"]:::new
+    SP["(' ', 1)"]
+    H["(H, 1)"]
 
-becomes
+    N2A --> SP
+    N2A --> H
 
-(l, 3)  (2)   (o, 2)      (2)               (2)
-      /     \           /     \           /     \
- (" ", 1) (H, 1)    (d, 1)  (e, 1)     (r, 1) (w, 1)
+    N2B["(2)"]
+    D["(d, 1)"]
+    E["(e, 1)"]
+
+    N2B --> D
+    N2B --> E
+
+    N2C["(2)"]
+    R["(r, 1)"]
+    W["(w, 1)"]
+
+    N2C --> R
+    N2C --> W
+
+    L["(l, 3)"]:::queue
+    O["(o, 2)"]:::queue
+
+    classDef new fill:#90EE90,stroke:#333,stroke-width:2px
+    classDef queue fill:#E0E0E0,stroke:#333,stroke-width:1px
 ```
 
 There are four candidates for the smallest amongst the `(2)` nodes: `(o, 2)` and three internal nodes; in this case the `(o, 2)` node will become the left branch (because the ordering of the characters - none of the internal nodes has the character assigned, but the `(o, 2)` node has it; its code is lexicographically larger than the empty character, assuming empty character has code of `0`):
 
-```
-            (4)
-          /     \
-(l, 3)  (2)   (o, 2)      (2)               (2)
-      /     \           /     \           /     \
- (" ", 1) (H, 1)    (d, 1)  (e, 1)     (r, 1) (w, 1)
+```mermaid
+graph TD
+    N4["(4)"]:::new
+    N2A["(2)"]
+    O["(o, 2)"]
+    SP["(' ', 1)"]
+    H["(H, 1)"]
 
-becomes
+    N4 --> N2A
+    N4 --> O
+    N2A --> SP
+    N2A --> H
 
-            (4)      (l, 3)      (2)            (2)
-          /     \              /     \        /     \
-        (2)   (o, 2)        (r, 1) (w, 1)  (d, 1)  (e, 1)
-      /     \
- (" ", 1) (H, 1)
+    N2B["(2)"]
+    R["(r, 1)"]
+    W["(w, 1)"]
+
+    N2B --> R
+    N2B --> W
+
+    N2C["(2)"]
+    D["(d, 1)"]
+    E["(e, 1)"]
+
+    N2C --> D
+    N2C --> E
+
+    L["(l, 3)"]:::queue
+
+    classDef new fill:#90EE90,stroke:#333,stroke-width:2px
+    classDef queue fill:#E0E0E0,stroke:#333,stroke-width:1px
 ```
 
 Note how the node `(l, 3)` has moved to the middle of the list, between `(4)` and `(2)` nodes - this is needed to preserve the ordering by the number of occurrences.
 
 There are two more nodes `(2)`, join them:
 
-```
-                                        (4)
-                                         |
-                                    /----------\
-                                   /            \
-            (4)      (l, 3)      (2)            (2)
-          /     \              /     \        /     \
-        (2)   (o, 2)        (r, 1) (w, 1)  (d, 1)  (e, 1)
-      /     \
- (" ", 1) (H, 1)
+```mermaid
+graph TD
+    N4A["(4)"]:::new
+    N2A["(2)"]
+    N2B["(2)"]
+    R["(r, 1)"]
+    W["(w, 1)"]
+    D["(d, 1)"]
+    E["(e, 1)"]
 
-becomes
+    N4A --> N2A
+    N4A --> N2B
+    N2A --> R
+    N2A --> W
+    N2B --> D
+    N2B --> E
 
-            (4)                   (4)        (l, 3)
-          /     \                  |
-        (2)   (o, 2)          /----------\
-      /     \                /            \
- (" ", 1) (H, 1)           (2)            (2)
-                         /     \        /     \
-                      (r, 1) (w, 1)  (d, 1)  (e, 1)
+    N4B["(4)"]
+    N2C["(2)"]
+    O["(o, 2)"]
+    SP["(' ', 1)"]
+    H["(H, 1)"]
+
+    N4B --> N2C
+    N4B --> O
+    N2C --> SP
+    N2C --> H
+
+    L["(l, 3)"]:::queue
+
+    classDef new fill:#90EE90,stroke:#333,stroke-width:2px
+    classDef queue fill:#E0E0E0,stroke:#333,stroke-width:1px
 ```
 
 Now the smallest two nodes are `(l, 3)` and `(4)`:
 
-```
-                                        (7)
-                                         |
-                                    /---------\
-                                   /           \
-            (4)                   (4)        (l, 3)
-          /     \                  |
-        (2)   (o, 2)          /----------\
-      /     \                /            \
- (" ", 1) (H, 1)           (2)            (2)
-                         /     \        /     \
-                      (r, 1) (w, 1)  (d, 1)  (e, 1)
+```mermaid
+graph TD
+    N7["(7)"]:::new
+    N4A["(4)"]
+    L["(l, 3)"]
+    N2A["(2)"]
+    N2B["(2)"]
+    R["(r, 1)"]
+    W["(w, 1)"]
+    D["(d, 1)"]
+    E["(e, 1)"]
 
-becomes
+    N7 --> N4A
+    N7 --> L
+    N4A --> N2A
+    N4A --> N2B
+    N2A --> R
+    N2A --> W
+    N2B --> D
+    N2B --> E
 
-                  (7)                      (4)
-                   |                     /     \
-              /---------\              (2)   (o, 2)
-             /           \           /     \
-            (4)        (l, 3)   (" ", 1) (H, 1)
-             |
-        /----------\
-       /            \
-     (2)            (2)
-   /     \        /     \
-(r, 1) (w, 1)  (d, 1)  (e, 1)
+    N4B["(4)"]:::queue
+    N2C["(2)"]
+    O["(o, 2)"]
+    SP["(' ', 1)"]
+    H["(H, 1)"]
+
+    N4B --> N2C
+    N4B --> O
+    N2C --> SP
+    N2C --> H
+
+    classDef new fill:#90EE90,stroke:#333,stroke-width:2px
+    classDef queue fill:#E0E0E0,stroke:#333,stroke-width:1px
 ```
 
 And lastly there are `(7)` and `(4)` nodes to merge:
 
-```
-                              (11)
-                               |
-                     /--------------------\
-                    /                      \
-                  (7)                      (4)
-                   |                     /     \
-              /---------\              (2)   (o, 2)
-             /           \           /     \
-            (4)        (l, 3)   (" ", 1) (H, 1)
-             |
-        /----------\
-       /            \
-     (2)            (2)
-   /     \        /     \
-(r, 1) (w, 1)  (d, 1)  (e, 1)
+```mermaid
+graph TD
+    N11["(11)"]:::new
+    N7["(7)"]
+    N4A["(4)"]
+    N4B["(4)"]
+    L["(l, 3)"]
+    N2A["(2)"]
+    N2B["(2)"]
+    N2C["(2)"]
+    O["(o, 2)"]
+    R["(r, 1)"]
+    W["(w, 1)"]
+    D["(d, 1)"]
+    E["(e, 1)"]
+    SP["(' ', 1)"]
+    H["(H, 1)"]
+
+    N11 --> N7
+    N11 --> N4B
+    N7 --> N4A
+    N7 --> L
+    N4A --> N2A
+    N4A --> N2B
+    N2A --> R
+    N2A --> W
+    N2B --> D
+    N2B --> E
+    N4B --> N2C
+    N4B --> O
+    N2C --> SP
+    N2C --> H
+
+    classDef new fill:#90EE90,stroke:#333,stroke-width:2px
 ```
 
 Then, following the rule _"left branch -> '0', right branch -> '1'"_, mark each branches of this tree:
 
-```
-                              (11)
-                               |
-                      /------------------\
-                    <0>                  <1>
-                    /                      \
-                  (7)                      (4)
-                 /   \                    /   \
-               <0>   <1>                <0>   <1>
-               /       \                /       \
-             (4)     (l, 3)          (2)     (o, 2)
-            /   \                    /   \
-          <0>   <1>                <0>   <1>
-          /       \                /       \
-         /         \          (" ", 1)    (H, 1)
-       (2)         (2)
-      /   \        /  \
-    <0>   <1>    <0>   <1>
-     |     |      |     |
-  (r, 1) (w, 1) (d, 1) (e, 1)
+```mermaid
+graph TD
+    N11["(11)"]
+    N7["(7)"]
+    N4A["(4)"]
+    N4B["(4)"]
+    L["(l, 3)<br/>01"]:::leaf
+    N2A["(2)"]
+    N2B["(2)"]
+    N2C["(2)"]
+    O["(o, 2)<br/>11"]:::leaf
+    R["(r, 1)<br/>0000"]:::leaf
+    W["(w, 1)<br/>0001"]:::leaf
+    D["(d, 1)<br/>0010"]:::leaf
+    E["(e, 1)<br/>0011"]:::leaf
+    SP["(' ', 1)<br/>100"]:::leaf
+    H["(H, 1)<br/>101"]:::leaf
+
+    N11 -->|0| N7
+    N11 -->|1| N4B
+    N7 -->|0| N4A
+    N7 -->|1| L
+    N4A -->|0| N2A
+    N4A -->|1| N2B
+    N2A -->|0| R
+    N2A -->|1| W
+    N2B -->|0| D
+    N2B -->|1| E
+    N4B -->|0| N2C
+    N4B -->|1| O
+    N2C -->|0| SP
+    N2C -->|1| H
+
+    classDef leaf fill:#FFD700,stroke:#333,stroke-width:2px
 ```
 
 Lastly, by following the branches from the root node of this tree, gather the branch labels into the binary code for each of the leaf nodes:
@@ -615,244 +733,120 @@ l => 0b01; o => 0b11; " " => 0b100; H => 0b101; d => 0b0010; e => 0b0011; r => 0
 
 Iterate over the encodings one by one, starting with `l => 0b01`:
 
-```
-encoding: (l, 0b01)
-tree is empty, current node (*):
+**Step 1: Insert l (0b01)**
 
-   (*)
+```mermaid
+graph TD
+    ROOT["()"]
+    N1["()"]:::new
+    L["(l)"]:::new
 
-first bit: 0
-add a new left child, make it the current node:
+    ROOT --> N1
+    N1 --> L
 
-   ()
-  /
-(*)
-
-next bit: 1
-add a new right child to the previously added node and make it the new current node:
-
-      ()
-     /
-    ()
-      \
-      (*)
-
-since this is the last bit, add the value to the current node:
-
-      ()
-     /
-    ()
-      \
-      (l)
+    classDef new fill:#90EE90,stroke:#333,stroke-width:2px
 ```
 
-Next encoding, `o => 0b11`:
+**Step 2: Insert o (0b11)**
 
-```
-encoding: (o, 0b11)
-reset the current node (*) to the root:
+```mermaid
+graph TD
+    ROOT["()"]
+    N1["()"]
+    L["(l)"]
+    N2["()"]:::new
+    O["(o)"]:::new
 
-     (*)
-     /
-    ()
-     \
-     (l)
+    ROOT --> N1
+    ROOT --> N2
+    N1 --> L
+    N2 --> O
 
-first bit: 1
-add a new right child node to the current node and make it the new current (*):
-
-      ()
-     /  \
-    ()  (*)
-     \
-     (l)
-
-next bit: 1
-add a new right child node and make it current:
-
-      ()
-     /  \
-    ()  ()
-     \   \
-     (l) (*)
-
-since this is the last bit, add the value to the current node:
-
-      ()
-     /  \
-    ()   ()
-      \    \
-      (l)  (o)
+    classDef new fill:#90EE90,stroke:#333,stroke-width:2px
 ```
 
-Next encoding, `" " => 0b100`:
+**Step 3: Insert ' ' (0b100)**
 
-```
-encoding: (" " => 0b100)
-reset the current node (*) to the root:
+```mermaid
+graph TD
+    ROOT["()"]
+    N1["()"]
+    L["(l)"]
+    N2["()"]
+    N3["()"]:::new
+    SP["(' ')"]:::new
+    O["(o)"]
 
-      (*)
-     /   \
-    ()    ()
-      \     \
-      (l)   (o)
+    ROOT --> N1
+    ROOT --> N2
+    N1 --> L
+    N2 --> N3
+    N2 --> O
+    N3 --> SP
 
-first bit: 1
-no changes to the tree, since the node exists:
-
-      ()
-     /  \
-    ()   (*)
-      \    \
-      (l)  (o)
-
-next bit: 0
-add a new left child to the current node and make it the new current (*):
-
-        ()
-     /      \
-    ()      ()
-      \     / \
-      (l) (*) (o)
-
-next bit: 0
-add a new left child to the current node and make it the new current (*):
-
-        ()
-     /      \
-    ()      ()
-     \      / \
-     (l)   () (o)
-          /
-        (*)
-
-since this is the last bit, add a value to the current node:
-
-              ()
-              /\
-       /------  -----\
-      ()             ()
-       \            /  \
-        (l)        ()  (o)
-                   /
-                 (" ")
+    classDef new fill:#90EE90,stroke:#333,stroke-width:2px
 ```
 
-Next encoding is `H => 0b101`:
+**Step 4: Insert H (0b101)**
 
-```
-reset the current node (*) to root:
+```mermaid
+graph TD
+    ROOT["()"]
+    N1["()"]
+    L["(l)"]
+    N2["()"]
+    N3["()"]
+    SP["(' ')"]
+    H["(H)"]:::new
+    O["(o)"]
 
-              (*)
-              / \
-       /------   -----\
-      ()              ()
-       \             /  \
-        (l)         ()  (o)
-                    /
-                  (" ")
+    ROOT --> N1
+    ROOT --> N2
+    N1 --> L
+    N2 --> N3
+    N2 --> O
+    N3 --> SP
+    N3 --> H
 
-first bit is: 1
-no changes to the tree since the node exists, just make it current (*):
-
-              ()
-             /  \
-      /------    -----\
-    ()               (*)
-      \              /  \
-      (l)           ()  (o)
-                   /
-                 (" ")
-
-next bit is: 0
-no changes to the tree since the node exists, just make it current (*):
-
-             ()
-            /  \
-     /------    -----\
-    ()                ()
-      \              /  \
-     (l)          (*)  (o)
-                  /
-               (" ")
-
-next bit is: 1
-add a right child node and make it current (*):
-
-             ()
-            /  \
-     /------    -----\
-    ()               ()
-      \             /  \
-      (l)          ()  (o)
-                  /  \
-              (" ")  (*)
-
-since this was the last bit, add a value to the current node:
-
-               ()
-              /  \
-       /------    -----\
-     ()                 ()
-      \                  / \
-      (l)              ()  (o)
-                      /  \
-                   (" ") (H)
+    classDef new fill:#90EE90,stroke:#333,stroke-width:2px
 ```
 
-And without going step-by-step, for all the remaining encodings: 
+**Final tree with all encodings (d, e, r, w):**
 
-```
-encoding: d => 0b0010
-               ()
-              /  \
-       /------    -----\
-     ()                 ()
-    /  \                / \
-   ()  (l)            ()  (o)
-    \                /  \
-    ()           (" ")  (H)
-    /
-   (d)
+```mermaid
+graph TD
+    ROOT["()"]
+    N1["()"]
+    N2["()"]
+    N3["()"]
+    N4["()"]
+    N5["()"]:::new
+    N6["()"]:::new
+    L["(l)"]
+    O["(o)"]
+    SP["(' ')"]
+    H["(H)"]
+    D["(d)"]:::new
+    E["(e)"]:::new
+    R["(r)"]:::new
+    W["(w)"]:::new
 
-encoding: e => 0b0011
+    ROOT --> N1
+    ROOT --> N2
+    N1 --> N5
+    N1 --> L
+    N5 --> N6
+    N5 --> N4
+    N6 --> R
+    N6 --> W
+    N4 --> D
+    N4 --> E
+    N2 --> N3
+    N2 --> O
+    N3 --> SP
+    N3 --> H
 
-                ()
-               /  \
-        /------    -----\
-      ()                 ()
-    /    \               /  \
-   ()    (l)          ()   (o)
-     \               /  \
-     ()           (" ") (H)
-    /  \  
-   (d) (e)
-
-encoding: r => 0b0000
-
-                 ()
-                /  \
-         /------    -----\
-       ()                 ()
-      /   \              /  \
-     ()    (l)          ()   (o)
-    /  \               /  \
-   ()  ()          (" ")  (H)
-  /   /  \   
-(r)  (d) (e) 
-
-encoding: w => 0b0001
-
-                    ()
-                   /  \
-            /------    -----\
-          ()                 ()
-       /     \              /  \
-      ()      (l)          ()   (o)
-    /    \                /  \
-   ()     ()          (" ")  (H)
-  / \    /  \ 
-(r) (w) (d) (e)
+    classDef new fill:#90EE90,stroke:#333,stroke-width:2px
 ```
 
 If the initial message (`Hello world`) is encoded with this algorithm (to four bytes: `0xA6 0xBC 0x1C 0x12`), in order to properly decode it, the tree or the code table has to be given alongside with the encoded message:
@@ -1422,77 +1416,83 @@ Next, order these mappings by count, followed by the number itself (key of this 
 
 Then, create Huffman tree for these counts:
 
+**Step 1: Initial leaf nodes**
+
+```mermaid
+graph TD
+    N8["(8)"]
+    N7["(7)"]
+    N4["(4)"]
+    N2["(2)"]
+
+    N8 --> C0["(0, 4)"]
+    N8 --> C4["(4, 4)"]
+    N7 --> C18["(18, 4)"]
+    N7 --> C3["(3, 3)"]
+    N4 --> C2["(2, 2)"]
+    N4 --> C17["(17, 2)"]
+    N2 --> C1["(1, 1)"]
+    N2 --> C16["(16, 1)"]
 ```
-step 1:
 
-     (8)            (7)            (4)            (2)
-   /     \        /     \       /      \       /      \
-(0, 4) (4, 4) (18, 4) (3, 3) (2, 2) (17, 2) (1, 1) (16, 1)
+**Step 2-4: Building the complete tree**
 
-step 2:
-                                           (6)
-                                     /            \
-     (8)            (7)            (4)            (2)
-   /     \        /     \       /      \       /      \
-(0, 4) (4, 4) (18, 4) (3, 3) (2, 2) (17, 2) (1, 1) (16, 1)
+```mermaid
+graph TD
+    N21["(21)"]
+    N13["(13)"]
+    N8["(8)"]
+    N7["(7)"]
+    N6["(6)"]
+    N4["(4)"]
+    N2["(2)"]
 
-step 3:
-                                 (13)
-                         /                \
-                        /                  \
-                       /                   (6)
-                      /              /            \
-     (8)            (7)            (4)            (2)
-   /     \        /     \       /      \       /      \
-(0, 4) (4, 4) (18, 4) (3, 3) (2, 2) (17, 2) (1, 1) (16, 1)
+    N21 --> N8
+    N21 --> N13
+    N13 --> N7
+    N13 --> N6
+    N6 --> N4
+    N6 --> N2
 
-step 4:
-                    (21)
-            /                   \
-           /                   (13)
-          /              /                \
-         /              /                  \
-        /              /                   (6)
-       /              /              /            \
-     (8)            (7)            (4)            (2)
-   /     \        /     \       /      \       /      \
-(0, 4) (4, 4) (18, 4) (3, 3) (2, 2) (17, 2) (1, 1) (16, 1)
+    N8 --> C0["(0, 4)"]
+    N8 --> C4["(4, 4)"]
+    N7 --> C18["(18, 4)"]
+    N7 --> C3["(3, 3)"]
+    N4 --> C2["(2, 2)"]
+    N4 --> C17["(17, 2)"]
+    N2 --> C1["(1, 1)"]
+    N2 --> C16["(16, 1)"]
 ```
 
 Following the rule "left branch => 0, right branch => 1", traverse the tree and assign codes to each leaf node:
 
-```
-                    (21)
-                /               \
-               /                <1>
-              /                   \
-            <0>                  (13)
-            /              /             \
-           /              /               <1>
-          /             <0>                 \
-         /              /                   (6)
-        /              /             <0>        <1>
-       /              /              /            \
-     (8)            (7)            (4)            (2)
-     / \           /  \           /   \          /   \
-   <0> <1>       <0>  <1>       <0>    <1>     <0>   <1>
-   /     \       /      \       /       \      /       \
-(0, 4) (4, 4) (18, 4) (3, 3) (2, 2) (17, 2) (1, 1)  (16, 1)
+```mermaid
+graph TD
+    N21["(21)"]
+    N13["(13)"]
+    N8["(8)"]
+    N7["(7)"]
+    N6["(6)"]
+    N4["(4)"]
+    N2["(2)"]
 
-yields:
+    N21 -->|0| N8
+    N21 -->|1| N13
+    N13 -->|0| N7
+    N13 -->|1| N6
+    N6 -->|0| N4
+    N6 -->|1| N2
 
-(0, 4, 00) (4, 4, 01) (18, 4, 100) (3, 3, 101) (2, 2, 1100) (17, 2, 1101) (1, 1, 1110) (16, 1, 1111)
+    N8 -->|0| C0["0: 00"]:::leaf
+    N8 -->|1| C4["4: 01"]:::leaf
+    N7 -->|0| C18["18: 100"]:::leaf
+    N7 -->|1| C3["3: 101"]:::leaf
+    N4 -->|0| C2["2: 1100"]:::leaf
+    N4 -->|1| C17["17: 1101"]:::leaf
+    N2 -->|0| C1["1: 1110"]:::leaf
+    N2 -->|1| C16["16: 1111"]:::leaf
 
-or
-
-0 (4 occurrences)  : 00
-4 (4 occurrences)  : 01
-18 (4 occurrences) : 100
-3 (3 occurrences)  : 101
-2 (2 occurrences)  : 1100
-17 (2 occurrences) : 1101
-1 (1 occurrences)  : 1110
-16 (1 occurrences) : 1111
+    classDef leaf fill:#FFD700,stroke:#333,stroke-width:2px
 ```
 
 Then, assign the canonical Huffman codes:
