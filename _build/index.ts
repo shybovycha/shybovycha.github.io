@@ -69,13 +69,12 @@ const parsePostContent = async (src: string, loadOptions?: LoadPostContentOption
 
     const { data: frontMatter, excerpt, content } = matter(src, options);
 
-    const parsedExcerpt = excerpt ? await parseMarkdown(excerpt) : undefined;
-    const parsedContent = await parseMarkdown(content);
+    const [parsedExcerpt, parsedContent]= await Promise.all([ excerpt, content ].map(s => s ? parseMarkdown(s) : undefined));
 
     return {
         frontMatter: frontMatter,
         excerpt: parsedExcerpt,
-        content: parsedContent,
+        content: parsedContent!,
     };
 };
 
