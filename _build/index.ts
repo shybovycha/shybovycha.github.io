@@ -175,8 +175,6 @@ const loadStaticPages = async (staticPages: Record<string, string>, staticPagesD
                     const txt = await Bun.file(filePath, { type: 'text/plain;charset=utf-8' }).text();
                     const parsedContent = await parsePostContent(txt);
 
-                    console.error('>>>', parsedContent);
-
                     return { ...parsedContent, outputPath };
                 } catch (e) {
                     logger.error(`Could not find static page ${filePath}`);
