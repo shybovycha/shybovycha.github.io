@@ -99,17 +99,29 @@ const CACHE_FILE = '_build_tmp/build-cache.json';
 
 if (fs.existsSync(CACHE_FILE)) {
     const cache = JSON.parse(await Bun.file(CACHE_FILE).text());
-    cache.posts.forEach(([ key, value ]) => postCache.set(key, value));
+
+    cache.posts.forEach(([ key, value ]) => {
+        if (value.post?.timestamp) {
+            value.post.timestamp = new Date(value.post.timestamp);
+        }
+
+        if (value.post?.updateTimestamp) {
+            value.post.updateTimestamp = new Date(value.post.updateTimestamp);
+        }
+
+        postCache.set(key, value);
+    });
 }
 
 const loadPost = async (absoluteFilePath: string, postDir: string): Promise<Post> => {
     const postPath = postDir ? absoluteFilePath.replace(postDir, '') : absoluteFilePath;
     const fileStat = fs.statSync(absoluteFilePath);
-    const updateTimestamp = fileStat.mtime;
+    const updateTimestamp = fileStat.mtime.getTime();
 
     const cached = postCache.get(postPath);
 
-    if (cached && updateTimestamp === cached.timestamp) {
+    if (cached && cached.timestamp === updateTimestamp) {
+        logger.log(`Using cached post ${postPath}`);
         return cached.post;
     }
 
@@ -124,7 +136,7 @@ const loadPost = async (absoluteFilePath: string, postDir: string): Promise<Post
         title: frontMatter.title,
         link: postLink,
         timestamp: parsePostDate(postPath, frontMatter),
-        updateTimestamp,
+        updateTimestamp: new Date(updateTimestamp),
         excerpt,
         content,
     };
@@ -161,15 +173,11 @@ const getFilesRec = (dir: string): string[] => {
 };
 
 const loadPosts = async (postDir: string): Promise<Post[]> => {
-    if (postCache.size > 0) {
-        return Object.values(postCache).sort((a, b) => b.timestamp - a.timestamp);
-    }
-
     const files = getFilesRec(postDir);
 
     const BATCH_SIZE = 10;
     const batches = chunk(files, BATCH_SIZE);
-    
+
     const posts: Post[] = [];
 
     for (const batch of batches) {
