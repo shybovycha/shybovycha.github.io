@@ -53,13 +53,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-bun-
 
-      # - name: Cache build files
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: _build_tmp
-      #     key: ${{ runner.os }}-build-${{ hashFiles('_posts/**', '_build/**') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-build-
+      - name: Cache build files
+        uses: actions/cache@v4
+        with:
+          path: _build_tmp
+          key: ${{ runner.os }}-build-${{ hashFiles('_build_tmp/**') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
 
       - run: bun install --frozen-lockfile
 
