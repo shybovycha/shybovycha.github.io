@@ -37,27 +37,28 @@ import config from './config';
 
 import logger from './logger';
 
+const markdownProcessor = unified()
+  .use(remarkParse)
+  .use(remarkGridTable)
+  .use(remarkGfm)
+  .use(remarkRehype, {
+    allowDangerousHtml: true,
+    handlers: {
+      [TYPE_TABLE]: mdast2hastGridTablesHandler(),
+    }
+  })
+  .use(rehypeRaw)
+  .use(rehypeShiki, {
+    themes: {
+      light: 'catppuccin-latte',
+      dark: 'catppuccin-frappe',
+    },
+  })
+  .use(remarkRehype)
+  .use(rehypeStringify);
+        
 const parseMarkdown = async (src: string): Promise<string> => {
-    const res = await unified()
-        .use(remarkParse)
-        .use(remarkGridTable)
-        .use(remarkGfm)
-        .use(remarkRehype, {
-            allowDangerousHtml: true,
-            handlers: {
-                [TYPE_TABLE]: mdast2hastGridTablesHandler(),
-            }
-        })
-        .use(rehypeRaw)
-        .use(rehypeShiki, {
-            themes: {
-                light: 'catppuccin-latte',
-                dark: 'catppuccin-frappe',
-            },
-        })
-        .use(remarkRehype)
-        .use(rehypeStringify)
-        .process(src);
+    const res = await markdownProcessor.process(src);
 
     return String(res);
 };
