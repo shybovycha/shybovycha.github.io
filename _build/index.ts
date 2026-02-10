@@ -53,7 +53,6 @@ const markdownProcessor = unified()
       light: 'catppuccin-latte',
       dark: 'catppuccin-frappe',
     },
-    lazy: true,
   })
   .use(remarkRehype)
   .use(rehypeStringify);
