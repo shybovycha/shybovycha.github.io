@@ -3,9 +3,16 @@ name: Build & publish on GitHub pages
 on:
   push:
     branches: [ master ]
-
-  pull_request:
-    branches: [ master ]
+    paths:
+      - '_posts/**'
+      - 'about.md'
+      - '_build/**'
+      - 'images/**'
+      - 'js/**'
+      - 'package.json'
+      - 'bun.lockb'
+      - 'tumblr_files/**'
+      - '.github/workflows/**'
 
   workflow_dispatch:
 
@@ -16,17 +23,53 @@ jobs:
     steps:
       - uses: actions/checkout@v6.0.0
 
+      # - name: Check for content changes
+      #   id: changes
+      #   uses: dorny/paths-filter@v3
+      #   with:
+      #     filters: |
+      #       content:
+      #         - '_posts/**'
+      #         - 'about.md'
+      #         - '_build/**'
+      #         - 'images/**'
+      #         - 'js/**'
+      #         - 'package.json'
+      #         - 'bun.lockb'
+      #         - 'tumblr_files/**'
+
       - name: Use Bun instead of Node
         uses: oven-sh/setup-bun@v2.0.2
+        with:
+          bun-version: latest
 
-      - run: bun install
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      # - name: Cache build files
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: _build_tmp
+      #     key: ${{ runner.os }}-build-${{ hashFiles('_posts/**', '_build/**') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-build-
+
+      - run: bun install --frozen-lockfile
 
       - run: bun run build
+        # if: steps.changes.outputs.content == 'true'
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4.0.0
+        # if: steps.changes.outputs.content == 'true'
         with:
-          # Upload entire repository
           path: '_site'
 
   deploy:
