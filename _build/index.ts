@@ -95,6 +95,12 @@ const parsePostDate = (postPath: string, frontMatter: Record<string, any>) => {
 };
 
 const postCache = new Map();
+const CACHE_FILE = '_build_tmp/build-cache.json';
+
+if (fs.existsSync(CACHE_FILE)) {
+    const cache = JSON.parse(await Bun.file(CACHE_FILE).text());
+    cache.posts.forEach(([ key, value ]) => postCache.set(key, value));
+}
 
 const loadPost = async (absoluteFilePath: string, postDir: string): Promise<Post> => {
     const postPath = postDir ? absoluteFilePath.replace(postDir, '') : absoluteFilePath;
@@ -161,7 +167,23 @@ const loadPosts = async (postDir: string): Promise<Post[]> => {
 
     const files = getFilesRec(postDir);
 
-    const posts = await Promise.all(files.map((file) => loadPost(file, postDir)));
+    const BATCH_SIZE = 10;
+    const batches = chunk(files, BATCH_SIZE);
+    
+    const posts: Post[] = [];
+
+    for (const batch of batches) {
+        const loaded = await Promise.all(batch.map((file) => loadPost(file, postDir)));
+        loaded.forEach(p => posts.push(p));
+    }
+
+    await Bun.write(
+        CACHE_FILE,
+        JSON.stringify({
+            posts: Array.from(postCache.entries()),
+            timestamp: Date.now(),
+        })
+    );
 
     return posts;
 };
