@@ -288,7 +288,7 @@ const copyStaticFiles = (staticDirs: string[], outputDir: string) =>
 
                 try {
                     await fsPromise.mkdir(path.dirname(dst), { recursive: true });
-                    return await fsPromise.copyFile(src, dst);
+                    return await Bun.write(dst, Bun.file(src)); // await fsPromise.copyFile(src, dst);
                 } catch (e) {
                     logger.error(`Could not copy file ${src} to ${dst}`); throw e;
                 }
