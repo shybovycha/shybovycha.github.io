@@ -7,4 +7,7 @@ tags:
 - quote
 tumblr_url: http://shybovycha.tumblr.com/post/117120744816/always-code-as-if-the-guy-who-ends-up-maintaining
 ---
-<blockquote>Always code as if the guy who ends up maintaining your code will be a violent psychopath who knows where you live.</blockquote>&#8212;Martin Golding<br/>
+
+> Always code as if the guy who ends up maintaining your code will be a violent psychopath who knows where you live.
+
+—Martin Golding
