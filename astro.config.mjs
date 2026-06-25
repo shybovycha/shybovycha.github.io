@@ -10,6 +10,17 @@ export default defineConfig({
   markdown: {
     shikiConfig: {
       themes: { light: 'catppuccin-latte', dark: 'catppuccin-frappe' },
+      langAlias: {
+        purs: 'haskell',
+        reason: 'ocaml',
+        mustache: 'handlebars',
+        git: 'bash',
+        thrift: 'protobuf',
+        class: 'java',
+        conf: 'ini',
+        dot: 'plaintext',
+        g4: 'plaintext',
+      },
     },
   },
 });
