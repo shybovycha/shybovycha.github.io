@@ -822,4 +822,4 @@ calls.
 That was some short introduction to the Irrlicht engine. And that's basically everything we will use
 for the next few sections.
 
-<a href="/irrlicht-newton-tutorials/2015/08/28/first-script.html" class="btn btn-success">Next chapter</a>
+<a href="/2015/08/28/irrlicht-newton-tutorials-first-script.html" class="btn btn-success">Next chapter</a>

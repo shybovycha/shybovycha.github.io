@@ -17,17 +17,17 @@ tumblr_url: http://shybovycha.tumblr.com/post/92565628101
             </div>
             <ul class="list-group list-group-flush">
                 <li class="list-group-item">
-                    <a href="/tumblr/2014/07/22/php-blog-part-1.html">
+                    <a href="/2014/07/22/tumblr-php-blog-part-1.html">
                         Чоткій блог. Часть перша
                     </a>
                 </li>
                 <li class="list-group-item">
-                    <a href="/tumblr/2014/07/27/php-blog-part-2.html">
+                    <a href="/2014/07/27/tumblr-php-blog-part-2.html">
                         Чоткій блог. Часть друга
                     </a>
                 </li>
                 <li class="list-group-item">
-                    <a href="/tumblr/2014/07/28/php-blog-part-3.html">
+                    <a href="/2014/07/28/tumblr-php-blog-part-3.html">
                         Чоткій блог. Часть третя
                     </a>
                 </li>

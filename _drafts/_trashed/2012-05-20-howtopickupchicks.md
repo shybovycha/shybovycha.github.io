@@ -1,9 +1,0 @@
----
-layout: post
-title: howtopickupchicks
-date: '2012-05-20T22:37:01+02:00'
-tags: []
-tumblr_url: http://shybovycha.tumblr.com/post/23435603213/howtopickupchicks
----
-
-![](/tumblr_files/tumblr_m39n93FaRw1qewacoo1_500.webp)

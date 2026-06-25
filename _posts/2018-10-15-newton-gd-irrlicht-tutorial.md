@@ -29,43 +29,43 @@ Tutorial chapters <em>(yet to be updated)</em>:
 <div>
     <ul>
         <li>
-            <a href="/irrlicht-newton-tutorials/2015/08/25/introduction.html">
+            <a href="/2015/08/25/irrlicht-newton-tutorials-introduction.html">
                 Introduction
             </a>
         </li>
 
         <li>
-            <a href="/irrlicht-newton-tutorials/2015/08/26/application-architecture.html">
+            <a href="/2015/08/26/irrlicht-newton-tutorials-application-architecture.html">
                 Application architecture
             </a>
         </li>
 
         <li>
-            <a href="/irrlicht-newton-tutorials/2015/08/27/first-application.html">
+            <a href="/2015/08/27/irrlicht-newton-tutorials-first-application.html">
                 First application
             </a>
         </li>
 
         <li>
-            <a href="/irrlicht-newton-tutorials/2015/08/28/first-script.html">
+            <a href="/2015/08/28/irrlicht-newton-tutorials-first-script.html">
                 First script
             </a>
         </li>
 
         <li>
-            <a href="/irrlicht-newton-tutorials/2015/08/29/prepare-to-add-some-newtonianity.html">
+            <a href="/2015/08/29/irrlicht-newton-tutorials-prepare-to-add-some-newtonianity.html">
                 Let's add some physics
             </a>
         </li>
 
         <li>
-            <a href="/irrlicht-newton-tutorials/2015/12/15/making-simple-level-with-blender.html">
+            <a href="/2015/12/15/irrlicht-newton-tutorials-making-simple-level-with-blender.html">
                 Modelling simple level with Blender3D
             </a>
         </li>
 
         <li>
-            <a href="/irrlicht-newton-tutorials/2015/12/16/finishing-the-first-scene.html">
+            <a href="/2015/12/16/irrlicht-newton-tutorials-finishing-the-first-scene.html">
                 Finishing the first scene
             </a>
         </li>

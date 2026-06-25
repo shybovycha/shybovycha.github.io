@@ -78,4 +78,4 @@ Just try it!
 
 Remember all the three rules for our architecture. And keeping them in mind, let's get to some coding already!
 
-<a href="/irrlicht-newton-tutorials/2015/08/27/first-application.html" class="btn btn-success">Next chapter</a>
+<a href="/2015/08/27/irrlicht-newton-tutorials-first-application.html" class="btn btn-success">Next chapter</a>
