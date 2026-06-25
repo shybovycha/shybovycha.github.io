@@ -1,0 +1,59 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import PostPreview from '../components/PostPreview.astro';
+import Pagination from '../components/Pagination.astro';
+import { sortPosts, splitExcerpt, renderExcerpt, parsePostId, postUrl } from '../utils/posts';
+
+const PAGE_SIZE = 10;
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts');
+  const drafts = import.meta.env.DEV ? await getCollection('drafts') : [];
+  const all = sortPosts([...posts, ...drafts]);
+  const totalPages = Math.ceil(all.length / PAGE_SIZE);
+
+  return Array.from({ length: totalPages - 1 }, (_, i) => ({
+    params: { page: String(i + 2) },
+    props: { pageNum: i + 2, totalPages },
+  }));
+}
+
+const { pageNum, totalPages } = Astro.props;
+
+const posts = await getCollection('posts');
+const drafts = import.meta.env.DEV ? await getCollection('drafts') : [];
+const all = sortPosts([...posts, ...drafts]);
+
+const offset = (pageNum - 1) * PAGE_SIZE;
+const pageSlice = all.slice(offset, offset + PAGE_SIZE);
+
+const previews = await Promise.all(
+  pageSlice.map(async (entry) => {
+    const { excerpt, hasMore } = splitExcerpt(entry.body ?? '');
+    const excerptHtml = await renderExcerpt(excerpt);
+    const meta = parsePostId(entry.id)!;
+    return {
+      entry,
+      excerptHtml,
+      hasMore,
+      url: postUrl(entry.id),
+      date: `${meta.year}-${meta.month}-${meta.day}`,
+    };
+  })
+);
+---
+
+<Layout>
+  {previews.map(({ entry, excerptHtml, hasMore, url, date }) => (
+    <PostPreview
+      title={entry.data.title ?? entry.id.slice(11).replace(/-/g, ' ')}
+      date={date}
+      url={url}
+      excerptHtml={excerptHtml}
+      hasMore={hasMore}
+    />
+  ))}
+
+  <Pagination slot="footer" currentPage={pageNum} totalPages={totalPages} />
+</Layout>
