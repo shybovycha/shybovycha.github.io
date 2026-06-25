@@ -1,0 +1,32 @@
+---
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import remarkRehype from 'remark-rehype';
+import rehypeRaw from 'rehype-raw';
+import rehypeStringify from 'rehype-stringify';
+import { readFile } from 'node:fs/promises';
+import Layout from '../layouts/Layout.astro';
+
+const raw = await readFile('about.md', 'utf-8');
+
+// Strip frontmatter
+const body = raw.replace(/^---[\s\S]*?---\n?/, '');
+
+const result = await unified()
+  .use(remarkParse)
+  .use(remarkRehype, { allowDangerousHtml: true })
+  .use(rehypeRaw)
+  .use(rehypeStringify, { allowDangerousHtml: true })
+  .process(body);
+
+const contentHtml = String(result);
+---
+
+<Layout title="About" isAbout={true}>
+  <article>
+    <h1>About</h1>
+    <div class="content" set:html={contentHtml} />
+  </article>
+
+  <script src="/js/about.js" is:inline></script>
+</Layout>
