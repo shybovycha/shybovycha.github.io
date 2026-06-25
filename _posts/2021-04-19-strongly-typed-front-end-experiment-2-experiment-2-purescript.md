@@ -16,6 +16,7 @@ tags: [monads, reasonml, fsharp, javascript, fp, dotnet, frontend, functional-pr
     - [PureScript & Halogen](/2024/05/17/strongly-typed-front-end-experiment-2-experiment-2-purescript-halogen.html)
     - [ReasonML](/2021/04/19/strongly-typed-front-end-experiment-2-experiment-2-reasonml.html)
     - [Gleam](/2024/12/20/strongly-typed-front-end-experiment-2-experiment-2-gleam.html)
+    - [ReScript](/2026/06/25/strongly-typed-front-end-experiment-2-rescript.html)
 
 In PureScript world there are quite a few libraries for React. And all of them have terrible (or rather non-existent) documentation, so I had to use as much intuition as outdated and barely working code samples. In this case I have picked [purescript-react-dom](https://pursuit.purescript.org/packages/purescript-react-dom/8.0.0).
 

@@ -16,6 +16,7 @@ tags: [reasonml, fsharp, javascript, development-tools, version-control, dotnet,
     - [**PureScript & Halogen (you are here)**](/2024/05/17/strongly-typed-front-end-experiment-2-experiment-2-purescript-halogen.html)
     - [ReasonML](/2021/04/19/strongly-typed-front-end-experiment-2-experiment-2-reasonml.html)
     - [Gleam](/2024/12/20/strongly-typed-front-end-experiment-2-experiment-2-gleam.html)
+    - [ReScript](/2026/06/25/strongly-typed-front-end-experiment-2-rescript.html)
 
 A more "conventional" way to implement the front-end application in PureScript would be using a framework called [Halogen](https://github.com/purescript-halogen/).
 

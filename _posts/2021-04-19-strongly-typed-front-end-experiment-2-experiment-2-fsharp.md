@@ -16,6 +16,7 @@ tags: [reasonml, javascript, fsharp, java, development-tools, version-control, d
     - [PureScript & Halogen](/2024/05/17/strongly-typed-front-end-experiment-2-experiment-2-purescript-halogen.html)
     - [ReasonML](/2021/04/19/strongly-typed-front-end-experiment-2-experiment-2-reasonml.html)
     - [Gleam](/2024/12/20/strongly-typed-front-end-experiment-2-experiment-2-gleam.html)
+    - [ReScript](/2026/06/25/strongly-typed-front-end-experiment-2-rescript.html)
 
 In F# world, there is a framework called [Fable](https://fable.io/). It allows one to compile their F# code to JavaScript. There is a built-in package for React, but Fable developers themselves [suggest](https://fable.io/docs/your-fable-project/use-a-fable-library.html) using [Elmish](https://elmish.github.io/), which is a framework similar to Elm, just suited for F#.
 

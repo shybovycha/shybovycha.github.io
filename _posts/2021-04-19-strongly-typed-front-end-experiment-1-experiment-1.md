@@ -16,6 +16,7 @@ tags: [reasonml, javascript, fsharp, typescript, type-safety, development-tools,
     - [PureScript & Halogen](/2024/05/17/strongly-typed-front-end-experiment-2-experiment-2-purescript-halogen.html)
     - [ReasonML](/2021/04/19/strongly-typed-front-end-experiment-2-experiment-2-reasonml.html)
     - [Gleam](/2024/12/20/strongly-typed-front-end-experiment-2-experiment-2-gleam.html)
+    - [ReScript](/2026/06/25/strongly-typed-front-end-experiment-2-rescript.html)
 
 For a sake 🍶of <del>science</del> experiment, I have [converted](https://github.com/shybovycha/darken_color.js/tree/experiment/strong-typing) **one function** of a [library](https://github.com/shybovycha/darken_color.js) I created long time ago to multiple languages that compile to JS and called it with various values.
 
