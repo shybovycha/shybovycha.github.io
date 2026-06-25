@@ -1,27 +1,4 @@
-import { unified } from 'unified';
-import remarkParse from 'remark-parse';
-import remarkRehype from 'remark-rehype';
-import rehypeStringify from 'rehype-stringify';
-import rehypeShiki from '@shikijs/rehype';
-
-const excerptProcessor = unified()
-  .use(remarkParse)
-  .use(remarkRehype, { allowDangerousHtml: true })
-  .use(rehypeShiki, {
-    themes: { light: 'catppuccin-latte', dark: 'catppuccin-frappe' },
-    langAlias: {
-      purs: 'haskell',
-      reason: 'ocaml',
-      mustache: 'handlebars',
-      git: 'bash',
-      thrift: 'protobuf',
-      class: 'java',
-      conf: 'ini',
-      dot: 'plaintext',
-      g4: 'plaintext',
-    },
-  })
-  .use(rehypeStringify, { allowDangerousHtml: true });
+import type { CollectionEntry } from 'astro:content';
 
 export function parsePostId(id: string): {
   year: string;
@@ -35,15 +12,14 @@ export function parsePostId(id: string): {
   return { year, month, day, slug };
 }
 
-export function splitExcerpt(body: string): { excerpt: string; hasMore: boolean } {
-  const idx = body.indexOf('<!--more-->');
-  if (idx === -1) return { excerpt: body, hasMore: false };
-  return { excerpt: body.slice(0, idx).trim(), hasMore: true };
-}
-
-export async function renderExcerpt(md: string): Promise<string> {
-  const result = await excerptProcessor.process(md);
-  return String(result);
+export function splitExcerptHtml(entry: CollectionEntry<'posts'> | CollectionEntry<'drafts'>): {
+  excerptHtml: string;
+  hasMore: boolean;
+} {
+  const html = entry.rendered?.html ?? '';
+  const idx = html.indexOf('<!--more-->');
+  if (idx === -1) return { excerptHtml: html, hasMore: false };
+  return { excerptHtml: html.slice(0, idx), hasMore: true };
 }
 
 export function sortPosts<T extends { id: string }>(posts: T[]): T[] {
