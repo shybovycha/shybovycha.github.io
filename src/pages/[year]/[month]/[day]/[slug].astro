@@ -1,0 +1,42 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../../../layouts/Layout.astro';
+import { parsePostId } from '../../../../utils/posts';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts');
+  const drafts = import.meta.env.DEV ? await getCollection('drafts') : [];
+
+  return [...posts, ...drafts].flatMap((entry) => {
+    const meta = parsePostId(entry.id);
+    if (!meta) return [];
+    return [{ params: meta, props: { entry } }];
+  });
+}
+
+const { entry } = Astro.props;
+const meta = parsePostId(entry.id)!;
+
+const { Content } = await render(entry);
+
+const dateObj = new Date(`${meta.year}-${meta.month}-${meta.day}`);
+const formatted = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+const title = entry.data.title ?? meta.slug.replace(/-/g, ' ');
+---
+
+<Layout title={title}>
+  <article>
+    <h1>{title}</h1>
+
+    <div>
+      <time datetime={`${meta.year}-${meta.month}-${meta.day}`}>{formatted}</time>
+    </div>
+
+    <div class="content">
+      <Content />
+    </div>
+
+    <span class="content-read-marker"></span>
+  </article>
+</Layout>
