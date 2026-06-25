@@ -1,0 +1,29 @@
+---
+interface Props {
+  title: string;
+  date: string;
+  url: string;
+  excerptHtml: string;
+  hasMore: boolean;
+}
+
+const { title, date, url, excerptHtml, hasMore } = Astro.props;
+
+const [year, month, day] = date.split('-');
+const dateObj = new Date(`${year}-${month}-${day}`);
+const formatted = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+---
+
+<article>
+  <h1>
+    <a href={url}>{title}</a>
+  </h1>
+
+  <div>
+    <time datetime={date}>{formatted}</time>
+  </div>
+
+  <div class="content" set:html={excerptHtml} />
+
+  {hasMore && <a role="button" class="btn btn-md btn-primary read-more" href={url}>Read more</a>}
+</article>

@@ -1,0 +1,47 @@
+---
+import Analytics from '../components/Analytics.astro';
+
+interface Props {
+  title?: string;
+  isHome?: boolean;
+  isAbout?: boolean;
+}
+
+const { title, isHome = false, isAbout = false } = Astro.props;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title ?? 'shybovycha.github.io'}</title>
+
+    <link rel="alternate" href="/rss.xml" type="application/rss+xml" title="RSS feed" />
+
+    <link rel="icon" href="/images/favicon-compressed.webp" />
+    <link rel="shortcut icon" href="/images/favicon-compressed.webp" />
+    <link rel="apple-touch-icon" href="/images/favicon-compressed.webp" />
+
+    <link rel="preload" href="/main.css" as="style" />
+    <link rel="stylesheet" href="/main.css" />
+
+    <slot name="head" />
+  </head>
+  <body>
+    <nav class="top">
+      <div class="links">
+        <a class:list={['nav-link', 'nav-item', { active: isHome }]} href="/">Home</a>
+        <a class:list={['nav-link', 'nav-item', { active: isAbout }]} href="/about.html">About</a>
+      </div>
+    </nav>
+
+    <main>
+      <slot />
+    </main>
+
+    <slot name="footer" />
+
+    <Analytics />
+  </body>
+</html>

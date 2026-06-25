@@ -1,0 +1,29 @@
+---
+interface Props {
+  currentPage: number;
+  totalPages: number;
+}
+
+const { currentPage, totalPages } = Astro.props;
+
+const prevUrl = currentPage === 1 ? '/' : `/page${currentPage - 1}.html`;
+const nextUrl = `/page${currentPage + 1}.html`;
+---
+
+<footer>
+  <nav>
+    {currentPage > 1 && (
+      <div class="prev">
+        <a href={prevUrl} class="prev">&larr; Previous page</a>
+      </div>
+    )}
+
+    <div class="current">Page #{currentPage} of {totalPages}</div>
+
+    {currentPage < totalPages && (
+      <div class="next">
+        <a href={nextUrl} class="next">Next page &rarr;</a>
+      </div>
+    )}
+  </nav>
+</footer>
