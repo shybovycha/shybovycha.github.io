@@ -475,199 +475,58 @@ Although, on the modern machines the difference between having one function and 
 
 Here is a shortened list of top abusers from different bundlers for our tool:
 
-+----------------------------------------------------------------------------+----------------+---------------+--------------+
-| Function                                                                   | vite           | esbuild       | bun          |
-|                                                                            +------+---------+------+--------+------+-------+
-|                                                                            | \#   | Bytes   | \#   | Bytes  | \#   | Bytes |
-+============================================================================+======+=========+======+========+======+=======+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(){}                                                               |      |         |      |        |      |       |
-| ```                                                                        | 753  | 9036    | 844  | 10128  | 739  | 8868  |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(){return!0}                                                       |      |         |      |        |      |       |
-| ```                                                                        | 92   | 1840    | 93   | 1860   | 91   | 1820  |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(){return!1}                                                       |      |         |      |        |      |       |
-| ```                                                                        | 78   | 1560    | 79   | 1580   | 76   | 1520  |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(){return null}                                                    |      |         |      |        |      |       |
-| ```                                                                        | 27   | 621     | 29   | 667    | 28   | 644   |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(){return this}                                                    |      |         |      |        |      |       |
-| ```                                                                        | 20   | 460     | 24   | 552    | 19   | 437   |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(){return 0}                                                       |      |         |      |        |      |       |
-| ```                                                                        | 17   | 340     | n/a  | 0      | n/a  | 0     |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(n){return!1}                                                      |      |         |      |        |      |       |
-| ```                                                                        | 13   | 273     | n/a  | 0      | 18   | 378   |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(n){}                                                              |      |         |      |        |      |       |
-| ```                                                                        | 29   | 377     | 31   | 403    | 29   | 377   |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(n){return n}                                                      |      |         |      |        |      |       |
-| ```                                                                        | 15   | 315     | 20   | 420    | 23   | 483   |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(n){return typeof n}                                               |      |         |      |        |      |       |
-| ```                                                                        | n/a  | 0       | 64   | 1792   | 17   | 476   |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(n){return this===n}                                               |      |         |      |        |      |       |
-| ```                                                                        | n/a  | 0       | 119  | 3332   | 119  | 3332  |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(n,r){return n}                                                    |      |         |      |        |      |       |
-| ```                                                                        | 14   | 322     | n/a  | 0      | 15   | 345   |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(n,r){return r}                                                    |      |         |      |        |      |       |
-| ```                                                                        | 11   | 253     | n/a  | 0      | 11   | 253   |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(n,c){}                                                            |      |         |      |        |      |       |
-| ```                                                                        | n/a  | 0       | n/a  | 0      | 12   | 180   |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| ()=>{}                                                                     |      |         |      |        |      |       |
-| ```                                                                        | 27   | 162     | 129  | 774    | 141  | 846   |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| a=>a                                                                       |      |         |      |        |      |       |
-| ```                                                                        | 12   | 48      | n/a  | 0      | 12   | 48    |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| a=>a()                                                                     |      |         |      |        |      |       |
-| ```                                                                        | 12   | 72      | n/a  | 0      | n/a  | 0     |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(r){                                                               |      |         |      |        |      |       |
-| for(var t=1;t<arguments.length;t++){                                       |      |         |      |        |      |       |
-| var n,o=arguments[t];                                                      |      |         |      |        |      |       |
-| for(n in o)                                                                |      |         |      |        |      |       |
-| Object.prototype.hasOwnProperty.call(o,n)&&(r[n]=o[n])                     |      |         |      |        |      |       |
-| }                                                                          |      |         |      |        |      |       |
-| return r                                                                   |      |         |      |        |      |       |
-| }                                                                          |      |         |      |        |      |       |
-| ```                                                                        | 2205 | 317520  | 2216 | 319104 | 197  | 28368 |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function n(){                                                              |      |         |      |        |      |       |
-| return Object.assign&&Object.assign.bind(),n.apply(this,arguments)         |      |         |      |        |      |       |
-| }                                                                          |      |         |      |        |      |       |
-| ```                                                                        | 1197 | 95760   | 1204 | 96320  | n/a  | 0     |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function n(){return Object.assign,n.apply(this,arguments)}                 |      |         |      |        |      |       |
-| ```                                                                        | 1008 | 58464   | 1010 | 58580  | n/a  | 0     |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(n,r){(null==r\|\|r>n.length)&&(r=n.length);                       |      |         |      |        |      |       |
-| for(var e=0,l=new Array(r);e<r;e++)l[e]=n[e];                              |      |         |      |        |      |       |
-| return l}                                                                  |      |         |      |        |      |       |
-| ```                                                                        | 93   | 9672    | 106  | 11024  | n/a  | 0     |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(r){if(Array.isArray(r))return r}                                  |      |         |      |        |      |       |
-| ```                                                                        | 77   | 3157    | 83   | 3403   | 36   | 1476  |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(){                                                                |      |         |      |        |      |       |
-| throw new TypeError(&#39;Invalid attempt to destructure                    |      |         |      |        |      |       |
-| non-iterable instance.\nIn order to be iterable,                           |      |         |      |        |      |       |
-| non-array objects must have a [Symbol.iterator]() method.&#39;)}           |      |         |      |        |      |       |
-| ```                                                                        | 77   | 13244   | 83   | 14276  | 36   | 6192  |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(t){                                                               |      |         |      |        |      |       |
-| return t&&"object"==typeof t&&"default"in t?t:{default:t}                  |      |         |      |        |      |       |
-| }                                                                          |      |         |      |        |      |       |
-| ```                                                                        | 76   | 5624    | 260  | 19240  | n/a  | 0     |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(_,o){_.__proto__=o}                                               |      |         |      |        |      |       |
-| ```                                                                        | 14   | 392     | n/a  | 0      | n/a  | 0     |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(o,r){                                                             |      |         |      |        |      |       |
-| for(var t in r)                                                            |      |         |      |        |      |       |
-| Object.prototype.hasOwnProperty.call(r,t)&&(o[t]=r[t])                     |      |         |      |        |      |       |
-| }                                                                          |      |         |      |        |      |       |
-| ```                                                                        | 14   | 1176    | n/a  | 0      | n/a  | 0     |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(e){return e&&e.__esModule?e:{default:e}}                          |      |         |      |        |      |       |
-| ```                                                                        | 11   | 539     | 21   | 1029   | n/a  | 0     |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(e,n,r){                                                           |      |         |      |        |      |       |
-| return n in e?Object.defineProperty(e,n,{                                  |      |         |      |        |      |       |
-| value:r,enumerable:!0,configurable:!0,writable:!0                          |      |         |      |        |      |       |
-| }):e[n]=r,e                                                                |      |         |      |        |      |       |
-| }                                                                          |      |         |      |        |      |       |
-| ```                                                                        | n/a  | 0       | 115  | 13570  | n/a  | 0     |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(r,n){                                                             |      |         |      |        |      |       |
-| return Array.isArray(r)?r.concat(n):"string"==typeof r?r:void 0            |      |         |      |        |      |       |
-| }                                                                          |      |         |      |        |      |       |
-| ```                                                                        | n/a  | 0       | 19   | 1520   | n/a  | 0     |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(n){return null!=n&&n instanceof Array}                            |      |         |      |        |      |       |
-| ```                                                                        | n/a  | 0       | 21   | 987    | n/a  | 0     |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(n,e){                                                             |      |         |      |        |      |       |
-| if(null==n)                                                                |      |         |      |        |      |       |
-| return{};                                                                  |      |         |      |        |      |       |
-| for(var r,t={},f=Object.keys(n),u=0;u<f.length;u++)                        |      |         |      |        |      |       |
-| r=f[u],0<=e.indexOf(r)\|\|(t[r]=n[r]);                                     |      |         |      |        |      |       |
-| return t                                                                   |      |         |      |        |      |       |
-| }                                                                          |      |         |      |        |      |       |
-| ```                                                                        | n/a  | 0       | n/a  | 0      | 53   | 6890  |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(r,t){                                                             |      |         |      |        |      |       |
-| if("object"!=typeof r\|\|null===r)return r;                                |      |         |      |        |      |       |
-| var e=r[Symbol.toPrimitive];                                               |      |         |      |        |      |       |
-| if(void 0===e)return("string"===t?String:Number)(r);                       |      |         |      |        |      |       |
-| e=e.call(r,t\|\|"default");                                                |      |         |      |        |      |       |
-| if("object"!=typeof e)return e;                                            |      |         |      |        |      |       |
-| throw new TypeError("@@toPrimitive must return a primitive value.")        |      |         |      |        |      |       |
-| }                                                                          |      |         |      |        |      |       |
-| ```                                                                        | n/a  | 0       | 137  | 36853  | 51   | 13719 |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(e,r){                                                             |      |         |      |        |      |       |
-| return r=r\|\|e.slice(0),                                                  |      |         |      |        |      |       |
-| Object.freeze(Object.defineProperties(e,{raw:{value:Object.freeze(r)}}))   |      |         |      |        |      |       |
-| }                                                                          |      |         |      |        |      |       |
-| ```                                                                        | n/a  | 0       | 160  | 17600  | n/a  | 0     |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(o){                                                               |      |         |      |        |      |       |
-| return o&&"function"==typeof Symbol&&                                      |      |         |      |        |      |       |
-| o.constructor===Symbol&&o!==Symbol.prototype?"symbol":typeof o             |      |         |      |        |      |       | 
-| }                                                                          |      |         |      |        |      |       |
-| ```                                                                        | n/a  | 0       | 64   | 7424   | n/a  | 0     |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
-| ```js                                                                      |      |         |      |        |      |       |
-| function(r){                                                               |      |         |      |        |      |       |
-| if("undefined"!=typeof Symbol&&                                            |      |         |      |        |      |       |
-| null!=r[Symbol.iterator]\|\|null!=r["@@iterator"])                         |      |         |      |        |      |       |
-| return Array.from(r)                                                       |      |         |      |        |      |       |
-| }                                                                          |      |         |      |        |      |       |
-| ```                                                                        | n/a  | 0       | n/a  | 0      | 14   | 1624  |
-+----------------------------------------------------------------------------+------+---------+------+--------+------+-------+
+<table>
+<thead>
+<tr>
+<th rowspan="2">Function</th>
+<th colspan="2">vite</th>
+<th colspan="2">esbuild</th>
+<th colspan="2">bun</th>
+</tr>
+<tr>
+<th>#</th><th>Bytes</th>
+<th>#</th><th>Bytes</th>
+<th>#</th><th>Bytes</th>
+</tr>
+</thead>
+<tbody>
+<tr><td><code>function(){}</code></td><td>753</td><td>9036</td><td>844</td><td>10128</td><td>739</td><td>8868</td></tr>
+<tr><td><code>function(){return!0}</code></td><td>92</td><td>1840</td><td>93</td><td>1860</td><td>91</td><td>1820</td></tr>
+<tr><td><code>function(){return!1}</code></td><td>78</td><td>1560</td><td>79</td><td>1580</td><td>76</td><td>1520</td></tr>
+<tr><td><code>function(){return null}</code></td><td>27</td><td>621</td><td>29</td><td>667</td><td>28</td><td>644</td></tr>
+<tr><td><code>function(){return this}</code></td><td>20</td><td>460</td><td>24</td><td>552</td><td>19</td><td>437</td></tr>
+<tr><td><code>function(){return 0}</code></td><td>17</td><td>340</td><td>n/a</td><td>0</td><td>n/a</td><td>0</td></tr>
+<tr><td><code>function(n){return!1}</code></td><td>13</td><td>273</td><td>n/a</td><td>0</td><td>18</td><td>378</td></tr>
+<tr><td><code>function(n){}</code></td><td>29</td><td>377</td><td>31</td><td>403</td><td>29</td><td>377</td></tr>
+<tr><td><code>function(n){return n}</code></td><td>15</td><td>315</td><td>20</td><td>420</td><td>23</td><td>483</td></tr>
+<tr><td><code>function(n){return typeof n}</code></td><td>n/a</td><td>0</td><td>64</td><td>1792</td><td>17</td><td>476</td></tr>
+<tr><td><code>function(n){return this===n}</code></td><td>n/a</td><td>0</td><td>119</td><td>3332</td><td>119</td><td>3332</td></tr>
+<tr><td><code>function(n,r){return n}</code></td><td>14</td><td>322</td><td>n/a</td><td>0</td><td>15</td><td>345</td></tr>
+<tr><td><code>function(n,r){return r}</code></td><td>11</td><td>253</td><td>n/a</td><td>0</td><td>11</td><td>253</td></tr>
+<tr><td><code>function(n,c){}</code></td><td>n/a</td><td>0</td><td>n/a</td><td>0</td><td>12</td><td>180</td></tr>
+<tr><td><code>()=&gt;{}</code></td><td>27</td><td>162</td><td>129</td><td>774</td><td>141</td><td>846</td></tr>
+<tr><td><code>a=&gt;a</code></td><td>12</td><td>48</td><td>n/a</td><td>0</td><td>12</td><td>48</td></tr>
+<tr><td><code>a=&gt;a()</code></td><td>12</td><td>72</td><td>n/a</td><td>0</td><td>n/a</td><td>0</td></tr>
+<tr><td><code>function(r){for(var t=1;t&lt;arguments.length;t++){var n,o=arguments[t];for(n in o)Object.prototype.hasOwnProperty.call(o,n)&amp;&amp;(r[n]=o[n])}return r}</code></td><td>2205</td><td>317520</td><td>2216</td><td>319104</td><td>197</td><td>28368</td></tr>
+<tr><td><code>function n(){return Object.assign&amp;&amp;Object.assign.bind(),n.apply(this,arguments)}</code></td><td>1197</td><td>95760</td><td>1204</td><td>96320</td><td>n/a</td><td>0</td></tr>
+<tr><td><code>function n(){return Object.assign,n.apply(this,arguments)}</code></td><td>1008</td><td>58464</td><td>1010</td><td>58580</td><td>n/a</td><td>0</td></tr>
+<tr><td><code>function(n,r){(null==r||r&gt;n.length)&amp;&amp;(r=n.length);for(var e=0,l=new Array(r);e&lt;r;e++)l[e]=n[e];return l}</code></td><td>93</td><td>9672</td><td>106</td><td>11024</td><td>n/a</td><td>0</td></tr>
+<tr><td><code>function(r){if(Array.isArray(r))return r}</code></td><td>77</td><td>3157</td><td>83</td><td>3403</td><td>36</td><td>1476</td></tr>
+<tr><td><code>function(){throw new TypeError('Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.')}</code></td><td>77</td><td>13244</td><td>83</td><td>14276</td><td>36</td><td>6192</td></tr>
+<tr><td><code>function(t){return t&amp;&amp;"object"==typeof t&amp;&amp;"default"in t?t:{default:t}}</code></td><td>76</td><td>5624</td><td>260</td><td>19240</td><td>n/a</td><td>0</td></tr>
+<tr><td><code>function(_,o){_.__proto__=o}</code></td><td>14</td><td>392</td><td>n/a</td><td>0</td><td>n/a</td><td>0</td></tr>
+<tr><td><code>function(o,r){for(var t in r)Object.prototype.hasOwnProperty.call(r,t)&amp;&amp;(o[t]=r[t])}</code></td><td>14</td><td>1176</td><td>n/a</td><td>0</td><td>n/a</td><td>0</td></tr>
+<tr><td><code>function(e){return e&amp;&amp;e.__esModule?e:{default:e}}</code></td><td>11</td><td>539</td><td>21</td><td>1029</td><td>n/a</td><td>0</td></tr>
+<tr><td><code>function(e,n,r){return n in e?Object.defineProperty(e,n,{value:r,enumerable:!0,configurable:!0,writable:!0}):e[n]=r,e}</code></td><td>n/a</td><td>0</td><td>115</td><td>13570</td><td>n/a</td><td>0</td></tr>
+<tr><td><code>function(r,n){return Array.isArray(r)?r.concat(n):"string"==typeof r?r:void 0}</code></td><td>n/a</td><td>0</td><td>19</td><td>1520</td><td>n/a</td><td>0</td></tr>
+<tr><td><code>function(n){return null!=n&amp;&amp;n instanceof Array}</code></td><td>n/a</td><td>0</td><td>21</td><td>987</td><td>n/a</td><td>0</td></tr>
+<tr><td><code>function(n,e){if(null==n)return{};for(var r,t={},f=Object.keys(n),u=0;u&lt;f.length;u++)r=f[u],0&lt;=e.indexOf(r)||(t[r]=n[r]);return t}</code></td><td>n/a</td><td>0</td><td>n/a</td><td>0</td><td>53</td><td>6890</td></tr>
+<tr><td><code>function(r,t){if("object"!=typeof r||null===r)return r;var e=r[Symbol.toPrimitive];if(void 0===e)return("string"===t?String:Number)(r);e=e.call(r,t||"default");if("object"!=typeof e)return e;throw new TypeError("@@toPrimitive must return a primitive value.")}</code></td><td>n/a</td><td>0</td><td>137</td><td>36853</td><td>51</td><td>13719</td></tr>
+<tr><td><code>function(e,r){return r=r||e.slice(0),Object.freeze(Object.defineProperties(e,{raw:{value:Object.freeze(r)}}))}</code></td><td>n/a</td><td>0</td><td>160</td><td>17600</td><td>n/a</td><td>0</td></tr>
+<tr><td><code>function(o){return o&amp;&amp;"function"==typeof Symbol&amp;&amp;o.constructor===Symbol&amp;&amp;o!==Symbol.prototype?"symbol":typeof o}</code></td><td>n/a</td><td>0</td><td>64</td><td>7424</td><td>n/a</td><td>0</td></tr>
+<tr><td><code>function(r){if("undefined"!=typeof Symbol&amp;&amp;null!=r[Symbol.iterator]||null!=r["@@iterator"])return Array.from(r)}</code></td><td>n/a</td><td>0</td><td>n/a</td><td>0</td><td>14</td><td>1624</td></tr>
+</tbody>
+</table>
 
 Interestingly enough, aside from a lot of `() => {}` and `(a, b) => a` and `() => true` (as I call them, utility) functions,
 there are a lot of ES6 / TypeScript helpers such as class definition and spread operator variants, presumingly made to be compatible with ES5-only browsers.
@@ -908,29 +767,32 @@ Other than those, replacing the original bundle with the optimized one worked li
 
 The results? With the threshold of `20` duplicates or more:
 
-+---------+---------------------+-----------------+------------------+---------------------+-------------------+
-| Bundler | Before optimization                                                                                |
-|         +---------------------+-----------------+------------------+---------------------+-------------------+
-|         | Bundle size         | Total functions | Unique functions | Unique functions, % | Duplicate code, % |
-+=========+=====================+=================+==================+=====================+===================+
-| bun     | 6.2M                | 8903            | 7443             | 83.6%               | 0.78%             |
-+---------+---------------------+-----------------+------------------+---------------------+-------------------+
-| esbuild | 8.7M                | 13057           | 10250            | 78.5%               | 3.9%              |
-+---------+---------------------+-----------------+------------------+---------------------+-------------------+
-| vite    | 3.9M                | 3502            | 2365             | 67.53%              | 6.39%             |
-+---------+---------------------+-----------------+------------------+---------------------+-------------------+
-| webpack | 4.4M                | 2898            | 1434             | 49.48%              | 6.91%             |
-+:-------:+---------------------+-----------------+------------------+---------------------+-------------------+
-| **After optimization**                                                                                       | 
-+---------+---------------------+-----------------+------------------+---------------------+-------------------+
-| bun     | 6.2M (same)         | 7865 (-1038)    | 7355 (-88)       | 93.52% (+9.92%)     | 0.51% (-0.27%)    |
-+---------+---------------------+-----------------+------------------+---------------------+-------------------+
-| esbuild | 8.5M (-0.2M)        | 3265 (-9792)    | 2990 (-7260)     | 91.58% (+13.08%)    | 0.62% (-3.28%)    |
-+---------+---------------------+-----------------+------------------+---------------------+-------------------+
-| vite    | 3.6M (-0.3M)        | 2483 (-1019)    | 2277 (-88)       | 91.7% (+24.17%)     | 1.68% (-4.71%)    |
-+---------+---------------------+-----------------+------------------+---------------------+-------------------+
-| webpack | 4.1M (-0.3M)        | 1484 (-1414)    | 1375 (-59)       | 92.65% (+43.17%)    | 0.43% (-6.48%)    |
-+---------+---------------------+-----------------+------------------+---------------------+-------------------+
+<table>
+<thead>
+<tr>
+<th rowspan="2">Bundler</th>
+<th colspan="5">Before optimization</th>
+</tr>
+<tr>
+<th>Bundle size</th>
+<th>Total functions</th>
+<th>Unique functions</th>
+<th>Unique functions, %</th>
+<th>Duplicate code, %</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>bun</td><td>6.2M</td><td>8903</td><td>7443</td><td>83.6%</td><td>0.78%</td></tr>
+<tr><td>esbuild</td><td>8.7M</td><td>13057</td><td>10250</td><td>78.5%</td><td>3.9%</td></tr>
+<tr><td>vite</td><td>3.9M</td><td>3502</td><td>2365</td><td>67.53%</td><td>6.39%</td></tr>
+<tr><td>webpack</td><td>4.4M</td><td>2898</td><td>1434</td><td>49.48%</td><td>6.91%</td></tr>
+<tr><td colspan="6"><strong>After optimization</strong></td></tr>
+<tr><td>bun</td><td>6.2M (same)</td><td>7865 (-1038)</td><td>7355 (-88)</td><td>93.52% (+9.92%)</td><td>0.51% (-0.27%)</td></tr>
+<tr><td>esbuild</td><td>8.5M (-0.2M)</td><td>3265 (-9792)</td><td>2990 (-7260)</td><td>91.58% (+13.08%)</td><td>0.62% (-3.28%)</td></tr>
+<tr><td>vite</td><td>3.6M (-0.3M)</td><td>2483 (-1019)</td><td>2277 (-88)</td><td>91.7% (+24.17%)</td><td>1.68% (-4.71%)</td></tr>
+<tr><td>webpack</td><td>4.1M (-0.3M)</td><td>1484 (-1414)</td><td>1375 (-59)</td><td>92.65% (+43.17%)</td><td>0.43% (-6.48%)</td></tr>
+</tbody>
+</table>
 
 In conclusion, the bundlers do a pretty average job at optimizing the bundles, even in production mode with some extra tuning.
 And if some brave soul is willing to invest even more time and effort than I did into developing a sophisticated solution
