@@ -1,6 +1,7 @@
----- GET
+---
+title: Java testing tips
 tags: [rest, qa, java, testing, backend, programming, frontend, data, api, jvm]
----- //
+---
 
     public <T> T getJSONOKResult(String urlPath, Class<T> responseType) {
         WebResource resource = resource(urlPath);

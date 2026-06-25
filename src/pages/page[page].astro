@@ -5,9 +5,8 @@ import PostPreview from '../components/PostPreview.astro';
 import Pagination from '../components/Pagination.astro';
 import { sortPosts, splitExcerpt, renderExcerpt, parsePostId, postUrl } from '../utils/posts';
 
-const PAGE_SIZE = 10;
-
 export async function getStaticPaths() {
+  const PAGE_SIZE = 10;
   const posts = await getCollection('posts');
   const drafts = import.meta.env.DEV ? await getCollection('drafts') : [];
   const all = sortPosts([...posts, ...drafts]);
@@ -19,6 +18,7 @@ export async function getStaticPaths() {
   }));
 }
 
+const PAGE_SIZE = 10;
 const { pageNum, totalPages } = Astro.props;
 
 const posts = await getCollection('posts');

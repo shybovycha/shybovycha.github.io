@@ -5,8 +5,7 @@ import { glob } from 'astro/loaders';
 const postSchema = z.object({
   title: z.string().optional(),
   tags: z.array(z.string()).optional(),
-  date: z.string().optional(),
-});
+}).passthrough();
 
 export const collections = {
   posts: defineCollection({
