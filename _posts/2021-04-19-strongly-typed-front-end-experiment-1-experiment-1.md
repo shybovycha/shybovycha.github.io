@@ -28,6 +28,7 @@ The implementations are made with:
 
 * Scala.js
 * ReasonML
+* ReScript
 * F#
 * PureScript
 * TypeScript
@@ -83,6 +84,31 @@ let hex2rgb = hex =>
       | Some([ Some(r), Some(g), Some(b) ]) => Some({ r: r, g: g, b: b })
       | _ => None
     })
+```
+
+### ReScript
+
+```reason
+type rgb = {
+  r: int,
+  g: int,
+  b: int,
+}
+
+let parse_hex = s => Int.fromString("0x" ++ s, ~radix=16)
+
+let hex2rgb = hex =>
+  RegExp.fromString("^#?([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})$")
+  ->RegExp.exec(hex)
+  ->Option.map(RegExp.Result.matches)
+  ->Option.map(a => Array.slice(a, ~start=0))
+  ->Option.map(a => Array.map(a, e => Option.flatMap(e, parse_hex)))
+  ->Option.map(parsed =>
+    switch parsed {
+    | [Some(r), Some(g), Some(b)] => Some({r, g, b})
+    | _ => None
+    }
+  )
 ```
 
 ### PureScript
@@ -582,7 +608,7 @@ Here is a comparison of the test results:
       <td>❌</td>
     </tr>
     <tr>
-      <td>ReScript</td>
+      <td>ReasonML</td>
       <td>✅</td>
     </tr>
     <tr>
@@ -631,24 +657,6 @@ Some implementations still throw error when the data type is not what the functi
 
     Error name:    "TypeError"
     Error message: "Cannot read property 'match' of undefined"
-```
-
-### ScalaJS
-
-```
- ● DarkenColor › in ScalaJS › hex2rgb › for object › undefined › does not fail
-
-    expect(received).not.toThrow()
-
-    Error name:    "org.scalajs.linker.runtime.UndefinedBehaviorError"
-    Error message: "java.lang.ClassCastException: undefined is not an instance of java.lang.String"
-
-  ● DarkenColor › in ScalaJS › hex2rgb › for number › positive › floating point › does not fail
-
-    expect(received).not.toThrow()
-
-    Error name:    "org.scalajs.linker.runtime.UndefinedBehaviorError"
-    Error message: "java.lang.ClassCastException: 3.14 is not an instance of java.lang.String"
 ```
 
 ### TypeScript
@@ -724,31 +732,35 @@ The pattern-matching-based implementation does not fail at all.
   <tbody>
     <tr>
       <td>F#</td>
-      <td>40K</td>
+      <td>13K</td>
     </tr>
     <tr>
       <td>PureScript</td>
-      <td>174K</td>
+      <td>5.5K</td>
     </tr>
     <tr>
-      <td>ReScript</td>
+      <td>ReasonML</td>
       <td>22K</td>
     </tr>
     <tr>
+      <td>ReScript</td>
+      <td>7.6K</td>
+    </tr>
+    <tr>
       <td>ScalaJS</td>
-      <td>197K</td>
+      <td>46K</td>
     </tr>
     <tr>
       <td>TypeScript</td>
-      <td>1.4K</td>
+      <td>0.9K</td>
+    </tr>
+    <tr>
+      <td>Gleam</td>
+      <td>4.8K</td>
     </tr>
     <tr>
       <td>Elm</td>
       <td>n/a</td>
-    </tr>
-    <tr>
-      <td>Gleam</td>
-      <td>10.8K</td>
     </tr>
   </tbody>
 </table>
